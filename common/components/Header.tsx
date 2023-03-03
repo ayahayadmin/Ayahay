@@ -2,7 +2,7 @@
 import React from 'react';
 import { CaretDownOutlined } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
-import { Button, Menu } from 'antd';
+import { Button, Menu, Space } from 'antd';
 import styles from './Header.module.css';
 
 type MenuItem = Required<MenuProps>['items'][number];
@@ -44,12 +44,14 @@ export default function Header() {
           </a>
         </div>
         <Menu mode='horizontal' defaultSelectedKeys={['1']} items={items} />
-        <div>
-          <Button type='primary' size='large'>
-            Book Now
-          </Button>
-          <Button size='large'>Sign In</Button>
-          <Button size='large'>Register</Button>
+        <div className={styles.buttons}>
+          <Space size='middle'>
+            <Button type='primary' size='large'>
+              Book Now
+            </Button>
+            <Button size='large'>Sign In</Button>
+            <Button size='large'>Register</Button>
+          </Space>
         </div>
       </div>
     </div>
