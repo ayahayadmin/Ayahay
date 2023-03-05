@@ -36,7 +36,7 @@ const items: MenuProps['items'] = [
 
 export default function Header() {
   return (
-    <div className={styles.containerFluid}>
+    <nav className={styles.containerFluid}>
       <div className={styles.header}>
         <div className={styles.logo}>
           <a href='https://www.google.com'>
@@ -54,6 +54,6 @@ export default function Header() {
           </Space>
         </div>
       </div>
-    </div>
+    </nav>
   );
 }
