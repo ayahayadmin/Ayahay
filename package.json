@@ -8,6 +8,9 @@
     "start": "next start",
     "lint": "next lint"
   },
+  "prettier": {
+    "singleQuote": true
+  },
   "dependencies": {
     "@ant-design/icons": "^5.0.1",
     "@types/lodash": "^4.14.191",
