@@ -3,7 +3,7 @@ import React from 'react';
 import { CaretDownOutlined } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import { Button, Menu, Space } from 'antd';
-import styles from './Header.module.css';
+import styles from './Header.module.scss';
 
 type MenuItem = Required<MenuProps>['items'][number];
 
