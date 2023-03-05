@@ -1,5 +1,5 @@
 import TripSearchQuery from "@/common/components/TripSearchQuery";
-import Port from "@/models/port";
+import Port from "@/common/models/port";
 
 export default function Home() {
   const portNames = [
