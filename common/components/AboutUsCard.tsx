@@ -1,36 +1,37 @@
 'use client';
 import React from 'react';
 import styles from './AboutUsCard.module.scss';
-import { Card, Col, Row, Space } from 'antd';
+import { Col, Row } from 'antd';
+import {
+  CheckCircleOutlined,
+  FieldTimeOutlined,
+  PhoneOutlined,
+} from '@ant-design/icons';
 
 export default function AboutUsCard() {
   return (
-    <div>
-      <Space
-        direction="vertical"
-        size="middle"
-        className={styles.containerFluid}
-      >
-        <h1>Why Choose Us</h1>
-        <sub>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</sub>
-        <Row gutter={16}>
-          <Col span={8}>
-            <Card title="Card title" bordered={false}>
-              Card content
-            </Card>
-          </Col>
-          <Col span={8}>
-            <Card title="Card title" bordered={false}>
-              Card content
-            </Card>
-          </Col>
-          <Col span={8}>
-            <Card title="Card title" bordered={false}>
-              Card content
-            </Card>
-          </Col>
-        </Row>
-      </Space>
+    <div className={styles.containerFluid}>
+      <h1 className={styles.title}>Why Choose Us</h1>
+      <sub className={styles.subTitle}>
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+      </sub>
+      <Row className={styles.rowCard}>
+        <Col span={8} className={styles.card}>
+          <CheckCircleOutlined className={styles.icon} />
+          <h3 className={styles.title}>Best Price Guarantee</h3>
+          <span>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</span>
+        </Col>
+        <Col span={8} className={styles.card}>
+          <FieldTimeOutlined className={styles.icon} />
+          <h3 className={styles.title}>Easy & Quick Booking</h3>
+          <span>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</span>
+        </Col>
+        <Col span={8} className={styles.card}>
+          <PhoneOutlined className={styles.icon} />
+          <h3 className={styles.title}>Customer Care 24/7</h3>
+          <span>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</span>
+        </Col>
+      </Row>
     </div>
   );
 }
