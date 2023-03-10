@@ -79,10 +79,10 @@ export default function TripSearchQuery({ ports }: TripSearchQueryProps) {
             { required: true, message: 'Please select a departure date.' },
           ]}
         >
-          <DatePicker />
+          <DatePicker format='MMM D, YYYY' />
         </Form.Item>
         <PassengerCount />
-        <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
+        <Form.Item>
           <Button type='primary' htmlType='submit'>
             Submit
           </Button>
