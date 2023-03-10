@@ -1,19 +1,21 @@
 'use client';
 
-import Port from "@/common/models/port";
-import {Form, Select} from "antd";
-import React, {useState} from "react";
+import Port from '@/common/models/port';
+import { Form, FormItemProps, Select } from 'antd';
+import React, { useState } from 'react';
 
 const { Option } = Select;
 
 interface PortAutoCompleteProps {
-  name: string,
   ports: Port[];
   excludePortId?: string;
 }
 
-export default function PortAutoComplete({name, ports, excludePortId}: PortAutoCompleteProps) {
-  const form = Form.useFormInstance();
+export default function PortAutoComplete({
+  ports,
+  excludePortId,
+  ...formItemProps
+}: PortAutoCompleteProps & FormItemProps) {
   const [portOptions, setPortOptions] = useState(ports);
 
   const onSearchPort = (value: string) => {
@@ -21,20 +23,29 @@ export default function PortAutoComplete({name, ports, excludePortId}: PortAutoC
     if (!value) {
       filteredPorts = [];
     } else {
-      filteredPorts = ports.filter(port => port.name.indexOf(value) >= 0);
+      filteredPorts = ports.filter((port) => port.name.indexOf(value) >= 0);
     }
     setPortOptions(filteredPorts);
   };
 
-  const onSelectPort = (value: number, _: any) => {
-    form.setFieldValue(name, value);
-  }
-
-  return <Select placeholder="Select Port" filterOption={false} notFoundContent={null} allowClear showSearch
-                 onSearch={onSearchPort} onSelect={onSelectPort} maxTagCount={5}>
-    {portOptions
-      .filter(port => !(excludePortId && port.id === +excludePortId))
-      .map(port => <Option key={port.id} value={port.id}>{port.name}</Option>)
-    }
-  </Select>
+  return (
+    <Form.Item {...formItemProps}>
+      <Select
+        placeholder='Select Port'
+        filterOption={false}
+        notFoundContent={null}
+        allowClear
+        showSearch
+        onSearch={onSearchPort}
+      >
+        {portOptions
+          .filter((port) => !(excludePortId && port.id === +excludePortId))
+          .map((port) => (
+            <Option key={port.id} value={port.id}>
+              {port.name}
+            </Option>
+          ))}
+      </Select>
+    </Form.Item>
+  );
 }

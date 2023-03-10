@@ -56,30 +56,22 @@ export default function TripSearchQuery({ ports }: TripSearchQueryProps) {
       </div>
 
       <div id='search-main'>
-        <Form.Item
+        <PortAutoComplete
+          ports={ports}
+          excludePortId={destPortId}
           label='Origin Port'
           name='srcPortId'
           rules={[{ required: true, message: 'Please select an origin port.' }]}
-        >
-          <PortAutoComplete
-            name='srcPortId'
-            ports={ports}
-            excludePortId={destPortId}
-          />
-        </Form.Item>
-        <Form.Item
+        />
+        <PortAutoComplete
+          ports={ports}
+          excludePortId={srcPortId}
           label='Destination Port'
           name='destPortId'
           rules={[
             { required: true, message: 'Please select a destination port.' },
           ]}
-        >
-          <PortAutoComplete
-            name='destPortId'
-            ports={ports}
-            excludePortId={srcPortId}
-          />
-        </Form.Item>
+        />
         <Form.Item
           label='Departure Date'
           name='depDate'
