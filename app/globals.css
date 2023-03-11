@@ -96,7 +96,8 @@ body {
   min-height: 100vh;
 }
 
-nav, footer {
+nav,
+footer {
   flex-grow: 0;
 }
 
