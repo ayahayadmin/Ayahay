@@ -7,4 +7,7 @@ export default interface SearchQuery {
   numAdults: number;
   numChildren: number;
   numInfants: number;
+  shippingLineIds?: number[];
+  cabinTypes?: string[];
+  sort: string;
 }

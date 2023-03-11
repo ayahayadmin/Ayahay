@@ -15,27 +15,13 @@ export default function PortAutoComplete({
   excludePortId,
   ...formItemProps
 }: PortAutoCompleteProps & FormItemProps) {
-  const form = Form.useFormInstance();
-
   const [allPorts, setAllPorts] = useState([] as Port[]);
   const [portOptions, setPortOptions] = useState([] as Port[]);
-  const [initialPortOption, setInitialPortOption] = useState<any>(undefined);
 
   const initializePorts = () => {
     const ports = getPorts();
     setAllPorts(ports);
     setPortOptions(ports);
-    if (formItemProps.name === undefined) {
-      return;
-    }
-
-    const portId = form.getFieldValue(formItemProps.name);
-    const defaultPort = ports.find((port) => port.id === portId);
-    if (defaultPort === undefined) {
-      return;
-    }
-
-    setInitialPortOption({ value: defaultPort.id, label: defaultPort.name });
   };
 
   useEffect(initializePorts, []);
@@ -51,7 +37,7 @@ export default function PortAutoComplete({
   };
 
   return (
-    <Form.Item {...formItemProps} initialValue={initialPortOption}>
+    <Form.Item {...formItemProps}>
       <Select
         placeholder='Select Port'
         filterOption={false}

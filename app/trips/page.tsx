@@ -2,14 +2,15 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { Form } from 'antd';
-import styles from '@/common/components/Header.module.scss';
-import dayjs from 'dayjs';
-import TripSearchQuery from '@/common/components/TripSearchQuery';
+import TripSearchQuery from '@/common/components/search/TripSearchQuery';
 import debounce from 'lodash/debounce';
 import {
   buildSearchQueryFromSearchForm,
   buildUrlQueryParamsFromSearchForm,
+  initializeSearchFormFromQueryParams,
 } from '@/common/services/search.service';
+import TripSearchFilters from '@/common/components/search/TripSearchFilters';
+import TripSortOptions from '@/common/components/form/TripSortOptions';
 
 export default function Trips() {
   const [form] = Form.useForm();
@@ -21,20 +22,7 @@ export default function Trips() {
   const onPageLoad = () => {
     const urlSearchParams = new URLSearchParams(window.location.search);
     const params = Object.fromEntries(urlSearchParams.entries());
-
-    form.setFieldsValue({
-      tripType: params.tripType,
-      srcPortId: +params.srcPortId,
-      destPortId: +params.destPortId,
-      numAdults: +params.numAdults,
-      numChildren: +params.numChildren,
-      numInfants: +params.numInfants,
-      departureDate: dayjs(params.departureDate),
-      returnDate: params.returnDate
-        ? dayjs(params.returnDate)
-        : dayjs(params.departureDate),
-    });
-
+    initializeSearchFormFromQueryParams(form, params);
     debounceSearch();
   };
 
@@ -63,11 +51,12 @@ export default function Trips() {
     <div>
       <Form
         form={form}
-        className={styles.containerFluid}
         onValuesChange={onFormFieldsChange}
         onFinish={(_) => debounceSearch()}
       >
         <TripSearchQuery />
+        <TripSearchFilters />
+        <TripSortOptions name='sort' label='Sort By' />
       </Form>
     </div>
   );
