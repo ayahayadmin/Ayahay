@@ -11,29 +11,15 @@ import {
 import { Form } from 'antd';
 import { getPorts } from '@/common/services/port.service';
 import { useRouter } from 'next/navigation';
+import dayjs from 'dayjs';
+import { buildUrlQueryParamsFromSearchForm } from '@/common/services/search.service';
 
 export default function Home() {
   const router = useRouter();
   const [form] = Form.useForm();
 
-  const ports: Port[] = getPorts();
-
-  const redirectToSearchResults = (formValues: any) => {
-    const searchQuery: any = {
-      tripType: formValues.tripType,
-      srcPortId: formValues.srcPortId.toString(),
-      destPortId: formValues.destPortId.toString(),
-      departureDate: formValues.departureDate.format('YYYY-MM-DD'),
-      numAdults: formValues.numAdults.toString(),
-      numChildren: formValues.numChildren.toString(),
-      numInfants: formValues.numInfants.toString(),
-    };
-
-    if (formValues.returnDate) {
-      searchQuery.returnDate = formValues.returnDate.format('YYYY-MM-DD');
-    }
-
-    const queryParams = new URLSearchParams(searchQuery).toString();
+  const redirectToSearchResults = (_: any) => {
+    const queryParams = buildUrlQueryParamsFromSearchForm(form);
     router.push(`/trips?${queryParams}`);
   };
 
@@ -47,10 +33,12 @@ export default function Home() {
           numAdults: DEFAULT_NUM_ADULTS,
           numChildren: DEFAULT_NUM_CHILDREN,
           numInfants: DEFAULT_NUM_INFANTS,
+          departureDate: dayjs(),
+          returnDate: dayjs(),
         }}
         onFinish={redirectToSearchResults}
       >
-        <TripSearchQuery ports={ports} />
+        <TripSearchQuery />
       </Form>
       <AboutUsCard />
     </div>

@@ -1,15 +1,10 @@
 'use client';
 import React from 'react';
 import { Button, DatePicker, Form, Radio } from 'antd';
-import Port from '@/common/models/port';
 import PortAutoComplete from '@/common/components/form/PortAutoComplete';
 import PassengerCount from '@/common/components/form/PassengerCount';
 
-interface TripSearchQueryProps {
-  ports: Port[];
-}
-
-export default function TripSearchQuery({ ports }: TripSearchQueryProps) {
+export default function TripSearchQuery() {
   const form = Form.useFormInstance();
   const tripType = Form.useWatch('tripType', form);
   const srcPortId = Form.useWatch('srcPortId', form);
@@ -28,14 +23,13 @@ export default function TripSearchQuery({ ports }: TripSearchQueryProps) {
 
       <div id='search-main'>
         <PortAutoComplete
-          ports={ports}
           excludePortId={destPortId}
           label='Origin Port'
           name='srcPortId'
           rules={[{ required: true, message: 'Please select an origin port.' }]}
         />
+        <div>{JSON.stringify(srcPortId)}</div>
         <PortAutoComplete
-          ports={ports}
           excludePortId={srcPortId}
           label='Destination Port'
           name='destPortId'
@@ -43,6 +37,7 @@ export default function TripSearchQuery({ ports }: TripSearchQueryProps) {
             { required: true, message: 'Please select a destination port.' },
           ]}
         />
+        <div>{JSON.stringify(destPortId)}</div>
         <Form.Item
           label='Departure Date'
           name='departureDate'
@@ -50,7 +45,7 @@ export default function TripSearchQuery({ ports }: TripSearchQueryProps) {
             { required: true, message: 'Please select a departure date.' },
           ]}
         >
-          <DatePicker format='MMM D, YYYY' />
+          <DatePicker format='MMM D, YYYY' allowClear={false} />
         </Form.Item>
         {tripType === 'round' && (
           <Form.Item
@@ -60,7 +55,7 @@ export default function TripSearchQuery({ ports }: TripSearchQueryProps) {
               { required: true, message: 'Please select a return date.' },
             ]}
           >
-            <DatePicker format='MMM D, YYYY' />
+            <DatePicker format='MMM D, YYYY' allowClear={false} />
           </Form.Item>
         )}
         <PassengerCount />

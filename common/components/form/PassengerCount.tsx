@@ -70,7 +70,10 @@ function PassengerAgeCount({ label, inputName }: PassengerAgeCountProps) {
       <div>
         <Button
           shape='circle'
-          disabled={numPassengerOfAge === 0}
+          disabled={
+            numPassengerOfAge === 0 ||
+            (inputName === 'numAdults' && numPassengerOfAge === 1)
+          }
           onClick={() => onDecrement()}
         >
           -
