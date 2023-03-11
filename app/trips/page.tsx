@@ -2,15 +2,17 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { Form } from 'antd';
-import TripSearchQuery from '@/common/components/search/TripSearchQuery';
+import styles from './trips.module.scss';
 import debounce from 'lodash/debounce';
 import {
   buildSearchQueryFromSearchForm,
   buildUrlQueryParamsFromSearchForm,
   initializeSearchFormFromQueryParams,
 } from '@/common/services/search.service';
+import TripSearchQuery from '@/common/components/search/TripSearchQuery';
 import TripSearchFilters from '@/common/components/search/TripSearchFilters';
 import TripSortOptions from '@/common/components/form/TripSortOptions';
+import SearchResult from './searchResults';
 
 export default function Trips() {
   const [form] = Form.useForm();
@@ -58,6 +60,12 @@ export default function Trips() {
         <TripSearchFilters />
         <TripSortOptions name='sort' label='Sort By' />
       </Form>
+      <div className={styles.tripsBody}>
+        <div className={styles.filter}>filter placeholder</div>
+        <div className={styles.searchResult}>
+          <SearchResult />
+        </div>
+      </div>
     </div>
   );
 }
