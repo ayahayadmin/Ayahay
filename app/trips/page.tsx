@@ -57,11 +57,12 @@ export default function Trips() {
         onFinish={(_) => debounceSearch()}
       >
         <TripSearchQuery />
-        <TripSearchFilters />
         <TripSortOptions name='sort' label='Sort By' />
       </Form>
       <div className={styles.tripsBody}>
-        <div className={styles.filter}>filter placeholder</div>
+        <div className={styles.filter}>
+          <TripSearchFilters />
+        </div>
         <div className={styles.searchResult}>
           <SearchResult />
         </div>
