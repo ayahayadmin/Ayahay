@@ -28,7 +28,6 @@ export default function TripSearchQuery() {
           name='srcPortId'
           rules={[{ required: true, message: 'Please select an origin port.' }]}
         />
-        <div>{JSON.stringify(srcPortId)}</div>
         <PortAutoComplete
           excludePortId={srcPortId}
           label='Destination Port'
@@ -37,7 +36,6 @@ export default function TripSearchQuery() {
             { required: true, message: 'Please select a destination port.' },
           ]}
         />
-        <div>{JSON.stringify(destPortId)}</div>
         <Form.Item
           label='Departure Date'
           name='departureDate'
