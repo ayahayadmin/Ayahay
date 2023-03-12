@@ -39,7 +39,7 @@ export default function PortAutoComplete({
   return (
     <Form.Item {...formItemProps}>
       <Select
-        placeholder='Select PortModel'
+        placeholder='Select Port'
         filterOption={false}
         notFoundContent={null}
         showSearch

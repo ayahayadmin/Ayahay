@@ -25,14 +25,14 @@ export default function TripSearchQuery() {
       <div id='search-main'>
         <PortAutoComplete
           excludePortId={destPortId}
-          label='Origin PortModel'
+          label='Origin Port'
           labelCol={{ span: 24 }}
           colon={false}
           name='srcPortId'
         />
         <PortAutoComplete
           excludePortId={srcPortId}
-          label='Destination PortModel'
+          label='Destination Port'
           labelCol={{ span: 24 }}
           colon={false}
           name='destPortId'

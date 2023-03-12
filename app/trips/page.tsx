@@ -52,14 +52,10 @@ export default function Trips() {
     window.history.replaceState({ path: updatedUrl }, '', updatedUrl);
   };
 
-  const onFormFieldsChange = (_: any, __: any) => {
-    debounceSearch();
-  };
-
   return (
     <Form
       form={form}
-      onValuesChange={onFormFieldsChange}
+      onValuesChange={(_, __) => debounceSearch()}
       onFinish={(_) => debounceSearch()}
     >
       <TripSearchQuery />
