@@ -1,58 +1,29 @@
 'use client';
 import React from 'react';
-import { CaretDownOutlined } from '@ant-design/icons';
-import type { MenuProps } from 'antd';
-import { Button, Menu, Space } from 'antd';
+import Image from 'next/image';
 import styles from './Header.module.scss';
-
-type MenuItem = Required<MenuProps>['items'][number];
-
-const getItem = (
-  label: React.ReactNode,
-  key: React.Key,
-  icon?: React.ReactNode,
-  children?: MenuItem[],
-  type?: 'group'
-): MenuItem => {
-  return {
-    key,
-    icon,
-    children,
-    label,
-    type,
-  } as MenuItem;
-};
-
-const items: MenuProps['items'] = [
-  getItem('Home', 'home'),
-  getItem('Destinations', 'destinations'),
-  getItem('About us', 'aboutUs'),
-  getItem('My Account', 'myAccount', <CaretDownOutlined />, [
-    getItem('Sub Menu 1', 'subMenu1'),
-    getItem('Sub Menu 2', 'subMenu2'),
-  ]),
-  getItem('Contact', 'contact'),
-];
+import AyahayLogo from '/public/assets/ayahay_logo.png';
 
 export default function Header() {
   return (
-    <nav className={styles.containerFluid}>
-      <div className={styles.header}>
-        <div className={styles.logo}>
-          <a href='https://www.google.com'>
-            <img src='/assets/ayahay_logo.png' alt='Ayahay Logo' />
-          </a>
-        </div>
-        <Menu mode='horizontal' defaultSelectedKeys={['1']} items={items} />
-        <div className={styles.buttons}>
-          <Space size='middle'>
-            <Button type='primary' size='large'>
-              Book Now
-            </Button>
-            <Button size='large'>Sign In</Button>
-            <Button size='large'>Register</Button>
-          </Space>
-        </div>
+    <nav className={styles['nav']}>
+      <div className={styles['nav-main']}>
+        <Image src={AyahayLogo} alt="Ayahay Logo" height={80}/>
+        <span className={styles['nav-links']}>
+          <ul>
+            <li><a href="#">Home</a></li>
+            <li><a href="#">Destinations</a></li>
+            <li><a href="#">About Us</a></li>
+            <li><a href="#">My Account</a></li>
+            <li><a href="#">Contact</a></li>
+          </ul>
+        </span>
+      </div>
+
+      <div className={styles['nav-buttons']}>
+        <a className="button" href="#">Book Now</a>
+        <a className="button" href="#">Sign In</a>
+        <a className="button" href="#">Register</a>
       </div>
     </nav>
   );

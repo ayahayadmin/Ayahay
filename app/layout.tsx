@@ -1,6 +1,10 @@
+'use client'
 import './globals.css';
 import Footer from '@/common/components/Footer';
 import Header from '@/common/components/Header';
+import {Jost} from 'next/font/google';
+
+const jost = Jost({subsets: ['latin'], display: 'swap'});
 
 export const metadata = {
   title: 'Ayahay',
@@ -13,7 +17,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang='en'>
+    <html lang='en' className={jost.className}>
       <body>
         <Header />
         <main>{children}</main>

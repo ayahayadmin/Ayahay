@@ -1,12 +1,133 @@
-$bg_color: #13357b;
-$font_color: #fff;
+.footer {
+  background-color: #13357b;
+  color: #fff;
+  padding: 60px 60px 20px 60px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
 
-.containerFluid {
-  padding: 40px 200px;
-  background-color: $bg_color;
-  color: $font_color;
-}
+    .cont {
+      display: flex;
+      flex-wrap: wrap;
+      flex: 1 1 50%;
+      gap: 20px 125px;
 
-.icon {
-  font-size: 20px;
-}
+      &:nth-of-type(1) {
+        gap: 25px 100px;
+      }
+
+      .break {
+        flex-basis: 100%;
+        height: 0;
+        }
+
+      .sub-cont {
+
+        .h1 {
+          font-size: 14px;
+          padding: 3px;
+
+          a {
+            font-size: 18px;
+            font-weight: 500;
+            transition: color 0.3s;
+
+            &:hover {
+              color: #3554D1;
+            }
+          }
+        }
+
+        .h2  {
+          font-size: 16px;
+          font-weight: 500;
+        }
+
+        .button {
+          background-color: #2b4a89;
+          border: 1px solid #2b4a89;
+          border-radius: 3px;
+          padding: 5px 10px;
+          margin: 10px 25px 10px 0;
+          display: inline-flex;
+          }
+
+        ul {
+          list-style-type: none;
+          margin-top: 30px;
+      
+          li {
+            margin-top: 10px;
+
+            a {
+              transition: 0.3s;
+
+              &:hover {
+                color: #3554D1;
+              }
+            }
+          }
+        }
+      }
+
+      .input-field {
+        position: relative;
+        width: 100%;
+        height: 110px;
+
+        .h2  {
+          font-size: 16px;
+          font-weight: 500;
+        }
+
+        input {
+          border-radius: 4px;
+          outline: none;
+          padding: 17px 20px;
+          margin-top: 5px;
+          width: 100%;
+        }
+
+        button {
+          position: absolute;
+          top: 45px;
+          right: 15px;
+          border: none;
+          background-color: #fff;
+          text-decoration: underline;
+        }
+      }
+    }
+
+    .cont-bottom {
+      font-size: 14px;
+      border-top: 1px solid rgba(255, 255, 255, 0.15);
+      padding-top: 20px;
+      margin-top: 50px;
+      display: flex;
+      flex-basis: 100%;
+      flex-wrap: wrap;
+
+      ul {
+        margin-left: 20px;
+    
+        li {
+          display: inline;
+
+          &:before {
+            content: "\ffed";
+            color: #fff;
+
+          }
+
+          a {
+            transition: 0.3s;
+
+            &:hover {
+              color: #3554D1;
+            }
+          }
+        }
+      }
+    }
+  }
