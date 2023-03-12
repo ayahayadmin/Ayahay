@@ -58,45 +58,50 @@ export default function SearchResult({ searchQuery }: SearchResultsProps) {
 
   const fetchTrips = (page: number) => {
     setLoading(true);
+    setTimeout(() => {
+      const sourceLoc = get(
+        find(ports, { id: toNumber(searchQuery.srcPortId) }),
+        'name'
+      );
+      const destinationLoc = get(
+        find(ports, { id: toNumber(searchQuery.destPortId) }),
+        'name'
+      );
 
-    const sourceLoc = get(
-      find(ports, { id: toNumber(searchQuery.srcPortId) }),
-      'name'
-    );
-    const destinationLoc = get(
-      find(ports, { id: toNumber(searchQuery.destPortId) }),
-      'name'
-    );
-
-    const trips = getTrips(sourceLoc!, destinationLoc!);
-    const { data, totalPages, totalItems } = trips;
-    const tripData = find(data, { page });
-    setTripData(tripData?.availableTrips || []);
-    setTotalPages(totalPages);
-    setTotalItems(totalItems);
-    setLoading(false);
+      const trips = getTrips(sourceLoc!, destinationLoc!);
+      const { data, totalPages, totalItems } = trips;
+      const tripData = find(data, { page });
+      setTripData(tripData?.availableTrips || []);
+      setTotalPages(totalPages);
+      setTotalItems(totalItems);
+      setLoading(false);
+    }, 1000);
   };
 
   return (
     <div>
       <strong>{totalItems} result(s)</strong> based on the search
-      {/* <Skeleton loading={loading} active paragraph>
-        Data
-      </Skeleton> */}
-      <Table
-        columns={columns}
-        dataSource={tripData}
-        className={styles.searchResult}
-        pagination={false}
-      ></Table>
-      {totalItems / PAGE_SIZE > 1 && (
-        <Pagination
-          total={totalItems}
-          current={page}
-          pageSize={PAGE_SIZE}
-          onChange={(page) => setPage(page)}
-        ></Pagination>
-      )}
+      <Skeleton
+        loading={loading}
+        active
+        title={false}
+        paragraph={{ rows: 5, width: [1300, 1300, 1300, 1300, 1300] }}
+      >
+        <Table
+          columns={columns}
+          dataSource={tripData}
+          className={styles.searchResult}
+          pagination={false}
+        ></Table>
+        {totalItems / PAGE_SIZE > 1 && (
+          <Pagination
+            total={totalItems}
+            current={page}
+            pageSize={PAGE_SIZE}
+            onChange={(page) => setPage(page)}
+          ></Pagination>
+        )}
+      </Skeleton>
     </div>
   );
 }
