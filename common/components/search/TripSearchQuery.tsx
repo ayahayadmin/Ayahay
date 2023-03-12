@@ -3,6 +3,7 @@ import React from 'react';
 import { Button, DatePicker, Form, Radio } from 'antd';
 import PortAutoComplete from '@/common/components/form/PortAutoComplete';
 import PassengerCount from '@/common/components/form/PassengerCount';
+import styles from './TripSearchQuery.module.scss';
 
 export default function TripSearchQuery() {
   const form = Form.useFormInstance();
@@ -43,10 +44,11 @@ export default function TripSearchQuery() {
           name='departureDate'
         >
           <DatePicker
+            className={styles['ant-picker-input']}
             format='MMM D, YYYY'
             allowClear={false}
             bordered={false}
-            size='middle'
+            size='large'
           />
         </Form.Item>
         {tripType === 'round' && (
@@ -57,10 +59,11 @@ export default function TripSearchQuery() {
             name='returnDate'
           >
             <DatePicker
+              className={styles['ant-picker-input']}
               format='MMM D, YYYY'
               allowClear={false}
               bordered={false}
-              size='middle'
+              size='large'
             />
           </Form.Item>
         )}
