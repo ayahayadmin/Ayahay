@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Pagination, Space, Table } from 'antd';
+import { Button, Pagination, Skeleton, Space, Table } from 'antd';
 import styles from './trips.module.scss';
-import { trips } from './mockData';
 import { AvailableTrips } from '@/common/models/trip.model';
-import { find } from 'lodash';
+import { find, get, toNumber } from 'lodash';
+import { getPorts } from '@/common/services/port.service';
+import { getTrips } from '@/common/services/trip.service';
+import SearchQuery from '@/common/models/search-query.model';
 
 const columns = [
   {
@@ -35,27 +37,52 @@ const columns = [
 ];
 const PAGE_SIZE = 10;
 
-export default function SearchResult() {
+interface SearchResultsProps {
+  searchQuery: SearchQuery;
+}
+
+export default function SearchResult({ searchQuery }: SearchResultsProps) {
   const [tripData, setTripData] = useState([] as AvailableTrips[]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [totalItems, setTotalItems] = useState(0);
+  const [loading, setLoading] = useState(false);
+
+  const ports = getPorts();
 
   useEffect(() => {
-    getTrips(page);
-  }, [page]);
+    console.log(searchQuery);
 
-  const getTrips = (page: number) => {
-    const fetch = trips;
-    const { data, totalPages, totalItems } = fetch;
+    fetchTrips(page);
+  }, [searchQuery, page]);
+
+  const fetchTrips = (page: number) => {
+    setLoading(true);
+
+    const sourceLoc = get(
+      find(ports, { id: toNumber(searchQuery.srcPortId) }),
+      'name'
+    );
+    const destinationLoc = get(
+      find(ports, { id: toNumber(searchQuery.destPortId) }),
+      'name'
+    );
+
+    const trips = getTrips(sourceLoc!, destinationLoc!);
+    const { data, totalPages, totalItems } = trips;
     const tripData = find(data, { page });
-    setTripData(tripData!.availableTrips);
+    setTripData(tripData?.availableTrips || []);
     setTotalPages(totalPages);
     setTotalItems(totalItems);
+    setLoading(false);
   };
 
   return (
     <div>
+      <strong>{totalItems} result(s)</strong> based on the search
+      {/* <Skeleton loading={loading} active paragraph>
+        Data
+      </Skeleton> */}
       <Table
         columns={columns}
         dataSource={tripData}
