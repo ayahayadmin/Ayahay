@@ -29,6 +29,12 @@ export default function Trips() {
   };
 
   useEffect(onPageLoad, []);
+
+  /*
+    these form items are updated thru form.setFieldValue, so Form.onValueChange does not
+    fire when they are updated. as a workaround, we watch the items manually for form changes
+    and use it as dependency in useEffect
+   */
   useEffect(() => debounceSearch(), [numAdults, numChildren, numInfants]);
 
   const debounceSearch = useCallback(debounce(performSearch, 300), []);
@@ -50,15 +56,13 @@ export default function Trips() {
   };
 
   return (
-    <div>
-      <Form
-        form={form}
-        onValuesChange={onFormFieldsChange}
-        onFinish={(_) => debounceSearch()}
-      >
-        <TripSearchQuery />
-        <TripSortOptions name='sort' label='Sort By' />
-      </Form>
+    <Form
+      form={form}
+      onValuesChange={onFormFieldsChange}
+      onFinish={(_) => debounceSearch()}
+    >
+      <TripSearchQuery />
+      <TripSortOptions name='sort' label='Sort By' />
       <div className={styles.tripsBody}>
         <div className={styles.filter}>
           <TripSearchFilters />
@@ -67,6 +71,6 @@ export default function Trips() {
           <SearchResult />
         </div>
       </div>
-    </div>
+    </Form>
   );
 }
