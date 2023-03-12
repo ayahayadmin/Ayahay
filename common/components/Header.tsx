@@ -2,7 +2,7 @@
 import React from 'react';
 import Image from 'next/image';
 import styles from './Header.module.scss';
-import AyahayLogo from '/public/assets/ayahay_logo.png';
+import AyahayLogo from '/public/assets/ayahay-logo.png';
 import Link from 'next/link';
 
 export default function Header() {
