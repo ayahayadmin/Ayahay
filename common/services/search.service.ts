@@ -1,18 +1,26 @@
 import { FormInstance } from 'antd';
-import SearchQuery from '@/common/models/search-query';
+import SearchQuery from '@/common/models/search-query.model';
 import dayjs from 'dayjs';
+import {
+  DEFAULT_NUM_ADULTS,
+  DEFAULT_NUM_CHILDREN,
+  DEFAULT_NUM_INFANTS,
+  DEFAULT_TRIP_TYPE,
+} from '@/common/constants/form';
 
 export function initializeSearchFormFromQueryParams(
   form: FormInstance,
   params: { [p: string]: string }
 ) {
   form.setFieldsValue({
-    tripType: params.tripType,
-    srcPortId: +params.srcPortId,
-    destPortId: +params.destPortId,
-    numAdults: +params.numAdults,
-    numChildren: +params.numChildren,
-    numInfants: +params.numInfants,
+    tripType: params.tripType ?? DEFAULT_TRIP_TYPE,
+    srcPortId: params.srcPortId ? +params.srcPortId : undefined,
+    destPortId: params.destPortId ? +params.destPortId : undefined,
+    numAdults: params.numAdults ? +params.numAdults : DEFAULT_NUM_ADULTS,
+    numChildren: params.numChildren
+      ? +params.numChildren
+      : DEFAULT_NUM_CHILDREN,
+    numInfants: params.numInfants ? +params.numInfants : DEFAULT_NUM_INFANTS,
     departureDate: dayjs(params.departureDate),
     returnDate: params.returnDate
       ? dayjs(params.returnDate)

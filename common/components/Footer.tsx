@@ -8,11 +8,7 @@ import {
 } from '@ant-design/icons';
 import { Col, Input, Row, Space } from 'antd';
 
-const { Search } = Input;
-
 export default function Footer() {
-  const onSearch = (value: string) => console.log(value);
-
   return (
     <footer className={styles['footer']}>
       <div className={styles['main-cont']}>
@@ -34,6 +30,20 @@ export default function Footer() {
           <div className={styles['break']}></div>
           <div className={styles['sub-cont']}>
             <div className={styles['h2']}>Follow us on social media</div>
+            <Space>
+            <FacebookFilled
+              className={styles.icon}
+              style={{ fontSize: '28px' }}
+            />
+            <InstagramFilled
+              className={styles.icon}
+              style={{ fontSize: '28px' }}
+            />
+            <TwitterSquareFilled
+              className={styles.icon}
+              style={{ fontSize: '28px' }}
+            />
+          </Space>
           </div>
         </div>
 
@@ -79,6 +89,6 @@ export default function Footer() {
             </ul>
         </div>
       </div>
-  </footer>
-  )
+    </footer>
+  );
 }

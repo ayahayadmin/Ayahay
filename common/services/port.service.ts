@@ -1,4 +1,4 @@
-import Port from '@/common/models/port';
+import Port from '@/common/models/port.model';
 
 export function getPorts(): Port[] {
   const portNames = [
@@ -25,8 +25,8 @@ export function getPorts(): Port[] {
     'Getafe',
     'Guimaras',
     'Hagnaya',
-    'lligan',
-    'Ilolo',
+    'Iligan',
+    'Iloilo',
     'Isabel, Leyte',
     'Jagna, Bohol',
     'Medellin, Cebu',

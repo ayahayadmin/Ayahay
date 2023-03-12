@@ -1,6 +1,6 @@
 'use client';
 
-import Port from '@/common/models/port';
+import Port from '@/common/models/port.model';
 import { Form, FormItemProps, Select } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { getPorts } from '@/common/services/port.service';
@@ -44,6 +44,9 @@ export default function PortAutoComplete({
         notFoundContent={null}
         showSearch
         onSearch={onSearchPort}
+        bordered={false}
+        size='large'
+        showArrow={false}
       >
         {portOptions
           .filter((port) => !(excludePortId && port.id === +excludePortId))

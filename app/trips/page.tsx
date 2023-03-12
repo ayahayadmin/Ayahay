@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Form } from 'antd';
 import styles from './trips.module.scss';
 import debounce from 'lodash/debounce';
@@ -10,9 +10,11 @@ import {
   initializeSearchFormFromQueryParams,
 } from '@/common/services/search.service';
 import TripSearchQuery from '@/common/components/search/TripSearchQuery';
-import TripSearchFilters from '@/common/components/search/TripSearchFilters';
 import TripSortOptions from '@/common/components/form/TripSortOptions';
-import SearchResult from './searchResults';
+import SearchResult from '@/app/trips/searchResults';
+import CabinFilter from '@/common/components/form/CabinFilter';
+import ShippingLineFilter from '@/common/components/form/ShippingLineFilter';
+import SearchQuery from '@/common/models/search-query.model';
 
 export default function Trips() {
   const [form] = Form.useForm();
@@ -20,6 +22,8 @@ export default function Trips() {
   const numAdults = Form.useWatch('numAdults', form);
   const numChildren = Form.useWatch('numChildren', form);
   const numInfants = Form.useWatch('numInfants', form);
+
+  const [searchQuery, setSearchQuery] = useState({} as SearchQuery);
 
   const onPageLoad = () => {
     const urlSearchParams = new URLSearchParams(window.location.search);
@@ -29,12 +33,19 @@ export default function Trips() {
   };
 
   useEffect(onPageLoad, []);
+
+  /*
+    these form items are updated thru form.setFieldValue, so Form.onValueChange does not
+    fire when they are updated. as a workaround, we watch the items manually for form changes
+    and use it as dependency in useEffect
+   */
   useEffect(() => debounceSearch(), [numAdults, numChildren, numInfants]);
 
   const debounceSearch = useCallback(debounce(performSearch, 300), []);
 
   function performSearch() {
-    const searchQuery = buildSearchQueryFromSearchForm(form);
+    const query = buildSearchQueryFromSearchForm(form);
+    setSearchQuery(query);
     updateUrl();
     console.log(searchQuery);
   }
@@ -45,28 +56,23 @@ export default function Trips() {
     window.history.replaceState({ path: updatedUrl }, '', updatedUrl);
   };
 
-  const onFormFieldsChange = (_: any, __: any) => {
-    debounceSearch();
-  };
-
   return (
-    <div>
-      <Form
-        form={form}
-        onValuesChange={onFormFieldsChange}
-        onFinish={(_) => debounceSearch()}
-      >
-        <TripSearchQuery />
-        <TripSortOptions name='sort' label='Sort By' />
-      </Form>
+    <Form
+      form={form}
+      onValuesChange={(_, __) => debounceSearch()}
+      onFinish={(_) => debounceSearch()}
+    >
+      <TripSearchQuery />
+      <TripSortOptions name='sort' label='Sort By' />
       <div className={styles.tripsBody}>
         <div className={styles.filter}>
-          <TripSearchFilters />
+          <CabinFilter name='cabinTypes' label='Cabin Types' />
+          <ShippingLineFilter name='shippingLineIds' label='Shipping Lines' />
         </div>
         <div className={styles.searchResult}>
-          <SearchResult />
+          <SearchResult searchQuery={searchQuery} />
         </div>
       </div>
-    </div>
+    </Form>
   );
 }

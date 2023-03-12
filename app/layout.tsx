@@ -1,10 +1,11 @@
-'use client'
+'use client';
 import './globals.css';
 import Footer from '@/common/components/Footer';
 import Header from '@/common/components/Header';
-import {Jost} from 'next/font/google';
+import { Jost } from 'next/font/google';
+import { App, ConfigProvider } from 'antd';
 
-const jost = Jost({subsets: ['latin'], display: 'swap'});
+const jost = Jost({ subsets: ['latin'], display: 'swap' });
 
 export const metadata = {
   title: 'Ayahay',
@@ -20,7 +21,18 @@ export default function RootLayout({
     <html lang='en' className={jost.className}>
       <body>
         <Header />
-        <main>{children}</main>
+        <ConfigProvider
+          theme={{
+            token: {
+              fontFamily: jost.style.fontFamily,
+            },
+          }}
+        >
+          <App>
+            <main>{children}</main>
+          </App>
+        </ConfigProvider>
+
         <Footer />
       </body>
     </html>

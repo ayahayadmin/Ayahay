@@ -104,3 +104,7 @@ footer {
 main {
   flex-grow: 1;
 }
+
+.ant-picker-input input {
+  font-family: inherit;
+}

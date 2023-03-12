@@ -3,6 +3,7 @@ import React from 'react';
 import { Button, DatePicker, Form, Radio } from 'antd';
 import PortAutoComplete from '@/common/components/form/PortAutoComplete';
 import PassengerCount from '@/common/components/form/PassengerCount';
+import styles from './TripSearchQuery.module.scss';
 
 export default function TripSearchQuery() {
   const form = Form.useFormInstance();
@@ -13,7 +14,7 @@ export default function TripSearchQuery() {
   return (
     <>
       <div id='search-type'>
-        <Form.Item name='tripType'>
+        <Form.Item name='tripType' colon={false}>
           <Radio.Group>
             <Radio value='single'>Single Trip</Radio>
             <Radio value='round'>Round Trip</Radio>
@@ -25,35 +26,45 @@ export default function TripSearchQuery() {
         <PortAutoComplete
           excludePortId={destPortId}
           label='Origin Port'
+          labelCol={{ span: 24 }}
+          colon={false}
           name='srcPortId'
-          rules={[{ required: true, message: 'Please select an origin port.' }]}
         />
         <PortAutoComplete
           excludePortId={srcPortId}
           label='Destination Port'
+          labelCol={{ span: 24 }}
+          colon={false}
           name='destPortId'
-          rules={[
-            { required: true, message: 'Please select a destination port.' },
-          ]}
         />
         <Form.Item
           label='Departure Date'
+          labelCol={{ span: 24 }}
+          colon={false}
           name='departureDate'
-          rules={[
-            { required: true, message: 'Please select a departure date.' },
-          ]}
         >
-          <DatePicker format='MMM D, YYYY' allowClear={false} />
+          <DatePicker
+            className={styles['ant-picker-input']}
+            format='MMM D, YYYY'
+            allowClear={false}
+            bordered={false}
+            size='large'
+          />
         </Form.Item>
         {tripType === 'round' && (
           <Form.Item
             label='Return Date'
+            labelCol={{ span: 24 }}
+            colon={false}
             name='returnDate'
-            rules={[
-              { required: true, message: 'Please select a return date.' },
-            ]}
           >
-            <DatePicker format='MMM D, YYYY' allowClear={false} />
+            <DatePicker
+              className={styles['ant-picker-input']}
+              format='MMM D, YYYY'
+              allowClear={false}
+              bordered={false}
+              size='large'
+            />
           </Form.Item>
         )}
         <PassengerCount />

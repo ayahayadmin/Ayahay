@@ -5,6 +5,7 @@ import {
   DEFAULT_NUM_ADULTS,
   DEFAULT_NUM_CHILDREN,
   DEFAULT_NUM_INFANTS,
+  DEFAULT_TRIP_TYPE,
 } from '@/common/constants/form';
 import { Form } from 'antd';
 import { useRouter } from 'next/navigation';
@@ -25,7 +26,7 @@ export default function Home() {
       <Form
         form={form}
         initialValues={{
-          tripType: 'single',
+          tripType: DEFAULT_TRIP_TYPE,
           numAdults: DEFAULT_NUM_ADULTS,
           numChildren: DEFAULT_NUM_CHILDREN,
           numInfants: DEFAULT_NUM_INFANTS,
