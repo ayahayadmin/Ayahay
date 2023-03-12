@@ -27,3 +27,8 @@ export const mockTrip: Trip = {
   departureDateIso: '2023-03-12T04:50:22+0000',
   baseFare: 20,
 };
+
+export interface TripData {
+  availableTrips: AvailableTrips[];
+  page: number;
+}
