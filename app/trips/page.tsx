@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Form } from 'antd';
 import styles from './trips.module.scss';
 import debounce from 'lodash/debounce';
@@ -10,9 +10,10 @@ import {
   initializeSearchFormFromQueryParams,
 } from '@/common/services/search.service';
 import TripSearchQuery from '@/common/components/search/TripSearchQuery';
-import TripSearchFilters from '@/common/components/search/TripSearchFilters';
 import TripSortOptions from '@/common/components/form/TripSortOptions';
-import SearchResult from './searchResults';
+import SearchResult from '@/app/trips/searchResults';
+import CabinFilter from '@/common/components/form/CabinFilter';
+import ShippingLineFilter from '@/common/components/form/ShippingLineFilter';
 
 export default function Trips() {
   const [form] = Form.useForm();
@@ -65,7 +66,8 @@ export default function Trips() {
       <TripSortOptions name='sort' label='Sort By' />
       <div className={styles.tripsBody}>
         <div className={styles.filter}>
-          <TripSearchFilters />
+          <CabinFilter name='cabinTypes' label='Cabin Types' />
+          <ShippingLineFilter name='shippingLineIds' label='Shipping Lines' />
         </div>
         <div className={styles.searchResult}>
           <SearchResult />

@@ -1,4 +1,4 @@
-import Port from '@/common/models/port';
+import Port from '@/common/models/port.model';
 
 export function getPorts(): Port[] {
   const portNames = [

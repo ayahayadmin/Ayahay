@@ -1,5 +1,5 @@
 import { FormInstance } from 'antd';
-import SearchQuery from '@/common/models/search-query';
+import SearchQuery from '@/common/models/search-query.model';
 import dayjs from 'dayjs';
 import {
   DEFAULT_NUM_ADULTS,

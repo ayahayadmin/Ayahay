@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Button, Pagination, Space, Table } from 'antd';
 import styles from './trips.module.scss';
 import { trips } from './mockData';
-import { AvailableTrips, Trip } from '@/common/models/trip';
+import { AvailableTrips, Trip } from '@/common/models/trip.model';
 import { find } from 'lodash';
 
 const columns = [

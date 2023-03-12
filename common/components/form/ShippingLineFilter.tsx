@@ -3,7 +3,7 @@
 import { Form, FormItemProps, Select, SelectProps } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { getShippingLines } from '@/common/services/shipping-line.service';
-import ShippingLine from '@/common/models/shipping-line';
+import ShippingLine from '@/common/models/shipping-line.model';
 
 const { Option } = Select;
 

@@ -1,4 +1,4 @@
-import ShippingLine from '@/common/models/shipping-line';
+import ShippingLine from '@/common/models/shipping-line.model';
 
 export function getShippingLines(): ShippingLine[] {
   const shippingLineNames = [
