@@ -14,6 +14,7 @@ import TripSortOptions from '@/common/components/form/TripSortOptions';
 import SearchResult from '@/app/trips/searchResults';
 import CabinFilter from '@/common/components/form/CabinFilter';
 import ShippingLineFilter from '@/common/components/form/ShippingLineFilter';
+import SearchQuery from '@/common/models/search-query.model';
 
 export default function Trips() {
   const [form] = Form.useForm();
@@ -21,6 +22,8 @@ export default function Trips() {
   const numAdults = Form.useWatch('numAdults', form);
   const numChildren = Form.useWatch('numChildren', form);
   const numInfants = Form.useWatch('numInfants', form);
+
+  const [searchQuery, setSearchQuery] = useState({} as SearchQuery);
 
   const onPageLoad = () => {
     const urlSearchParams = new URLSearchParams(window.location.search);
@@ -41,7 +44,8 @@ export default function Trips() {
   const debounceSearch = useCallback(debounce(performSearch, 300), []);
 
   function performSearch() {
-    const searchQuery = buildSearchQueryFromSearchForm(form);
+    const query = buildSearchQueryFromSearchForm(form);
+    setSearchQuery(query);
     updateUrl();
     console.log(searchQuery);
   }
@@ -66,7 +70,7 @@ export default function Trips() {
           <ShippingLineFilter name='shippingLineIds' label='Shipping Lines' />
         </div>
         <div className={styles.searchResult}>
-          <SearchResult />
+          <SearchResult searchQuery={searchQuery} />
         </div>
       </div>
     </Form>
