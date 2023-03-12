@@ -44,6 +44,9 @@ export default function PortAutoComplete({
         notFoundContent={null}
         showSearch
         onSearch={onSearchPort}
+        bordered={false}
+        size='large'
+        showArrow={false}
       >
         {portOptions
           .filter((port) => !(excludePortId && port.id === +excludePortId))
