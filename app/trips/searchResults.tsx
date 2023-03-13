@@ -1,28 +1,37 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Pagination, Skeleton, Space, Table } from 'antd';
 import styles from './trips.module.scss';
-import { AvailableTrips } from '@/common/models/trip.model';
+import Trip from '@/common/models/trip.model';
 import { find, get, toNumber } from 'lodash';
 import { getPorts } from '@/common/services/port.service';
 import { getTrips } from '@/common/services/trip.service';
 import SearchQuery from '@/common/models/search-query.model';
+import Port from '@/common/models/port.model';
+import ShippingLine from '@/common/models/shipping-line.model';
 
 const columns = [
   {
     key: 'shippingLine',
     dataIndex: 'shippingLine',
+    render: (text: ShippingLine) => <span>{text.name}</span>,
   },
   {
-    key: 'sourceLoc',
-    dataIndex: 'sourceLoc',
+    key: 'srcPort',
+    dataIndex: 'srcPort',
+    render: (text: Port) => <span>{text.name}</span>,
   },
   {
-    key: 'destinationLoc',
-    dataIndex: 'destinationLoc',
+    key: 'destPort',
+    dataIndex: 'destPort',
+    render: (text: Port) => <span>{text.name}</span>,
   },
   {
-    key: 'departureDate',
-    dataIndex: 'departureDate',
+    key: 'departureDateIso',
+    dataIndex: 'departureDateIso',
+  },
+  {
+    key: 'baseFare',
+    dataIndex: 'baseFare',
   },
   {
     key: 'action',
@@ -42,7 +51,7 @@ interface SearchResultsProps {
 }
 
 export default function SearchResult({ searchQuery }: SearchResultsProps) {
-  const [tripData, setTripData] = useState([] as AvailableTrips[]);
+  const [tripData, setTripData] = useState([] as Trip[]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [totalItems, setTotalItems] = useState(0);
@@ -51,24 +60,22 @@ export default function SearchResult({ searchQuery }: SearchResultsProps) {
   const ports = getPorts();
 
   useEffect(() => {
-    console.log(searchQuery);
-
     fetchTrips(page);
   }, [searchQuery, page]);
 
   const fetchTrips = (page: number) => {
     setLoading(true);
     setTimeout(() => {
-      const sourceLoc = get(
+      const srcPort = get(
         find(ports, { id: toNumber(searchQuery.srcPortId) }),
         'name'
       );
-      const destinationLoc = get(
+      const destPort = get(
         find(ports, { id: toNumber(searchQuery.destPortId) }),
         'name'
       );
 
-      const trips = getTrips(sourceLoc!, destinationLoc!);
+      const trips = getTrips(srcPort!, destPort!);
       const { data, totalPages, totalItems } = trips;
       const tripData = find(data, { page });
       setTripData(tripData?.availableTrips || []);
