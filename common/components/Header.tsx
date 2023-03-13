@@ -35,10 +35,10 @@ export default function Header() {
         <Link href='/trips' className='button'>
           Book Now
         </Link>
-        <a className='button' href='#'>
+        <a className='button' href='/auth/signIn'>
           Sign In
         </a>
-        <a className='button' href='#'>
+        <a className='button' href='/auth/register'>
           Register
         </a>
       </div>
