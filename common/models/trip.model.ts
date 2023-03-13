@@ -12,13 +12,6 @@ export default interface Trip {
   baseFare: number;
 }
 
-export interface AvailableTrips {
-  shippingLine: string;
-  sourceLoc: string;
-  destinationLoc: string;
-  departureDate: string;
-}
-
 export const mockTrip: Trip = {
   id: 1,
   shippingLine: mockShippingLine,
@@ -29,6 +22,6 @@ export const mockTrip: Trip = {
 };
 
 export interface TripData {
-  availableTrips: AvailableTrips[];
+  availableTrips: Trip[];
   page: number;
 }
