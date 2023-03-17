@@ -20,7 +20,7 @@ export function getPorts(): Port[] {
     'Dumaguete',
     'Dipolog',
     'Dapa, Siargao',
-    'EB MagaIona,  Negros Occidental',
+    'EB MagaIona, Negros Occidental',
     'Estancia',
     'Getafe',
     'Guimaras',
