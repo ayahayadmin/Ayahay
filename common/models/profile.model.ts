@@ -1,4 +1,4 @@
-import { CIVIL_STATUS, SEX } from '../constants/enum';
+import { CIVIL_STATUS, ROLE, SEX } from '../constants/enum';
 
 export interface BasicProfile {
   firstName: string;
@@ -6,6 +6,7 @@ export interface BasicProfile {
   email: string;
   password: string;
   confirmPassword: string;
+  role: ROLE;
 }
 
 export interface Profile extends BasicProfile {
