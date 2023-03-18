@@ -1,3 +1,8 @@
+export enum ROLE {
+  Client = 'Client',
+  Admin = 'Admmin',
+}
+
 export enum SEX {
   Male = 'Male',
   Female = 'Female',
