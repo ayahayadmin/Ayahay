@@ -17,3 +17,8 @@ export interface Profile extends BasicProfile {
   address: string;
   nationality: string;
 }
+
+export interface LoginForm {
+  email: string;
+  password: string;
+}
