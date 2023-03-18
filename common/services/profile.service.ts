@@ -1,5 +1,6 @@
+import { find } from 'lodash';
 import { ROLE } from '../constants/enum';
-import { BasicProfile } from '../models/profile.model';
+import { BasicProfile, LoginForm } from '../models/profile.model';
 
 const profilesMock = [
   {
@@ -31,4 +32,20 @@ export function saveProfile(values: BasicProfile) {
     password,
     role,
   };
+}
+
+export function getProfiles() {
+  return profilesMock;
+}
+
+export function onLogin(credentials: LoginForm) {
+  const { email, password } = credentials;
+  const profiles = getProfiles();
+
+  const profile = find(profiles, { email, password });
+
+  if (!profile) {
+    throw 'Profile Not Found!';
+  }
+  return profile; //return JWT
 }
