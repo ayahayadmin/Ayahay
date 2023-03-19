@@ -25,3 +25,9 @@ export interface TripData {
   availableTrips: Trip[];
   page: number;
 }
+
+export interface TripPaxes {
+  numAdults: number;
+  numChildren: number;
+  numInfants: number;
+}
