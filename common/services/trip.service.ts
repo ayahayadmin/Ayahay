@@ -4,7 +4,17 @@ import Trip, {
   TripPaxes,
 } from '@/common/models/trip.model';
 import dayjs from 'dayjs';
-import { ceil, forEach, orderBy, random, split, sum, values } from 'lodash';
+import {
+  ceil,
+  find,
+  forEach,
+  orderBy,
+  random,
+  split,
+  sum,
+  values,
+} from 'lodash';
+import { getShippingLines } from '@/common/services/shipping-line.service';
 
 export function getTrip(tripId: number): Trip {
   return mockTrip;
@@ -15,10 +25,12 @@ export function getTrips(
   destPortName: string,
   departureDate: string,
   paxes: TripPaxes,
-  sort: string
+  sort: string,
+  shippingLineIds: number[] | undefined
 ) {
   const today = dayjs();
   const todayPlus5days = today.add(5, 'day').toISOString();
+  const shippingLines = getShippingLines();
 
   const trips = [
     {
@@ -383,27 +395,26 @@ export function getTrips(
   const [dateQuery, timeQuery] = split(departureDate, 'T');
   const totalPaxes = sum(values(paxes));
   const availableTripsFiltered = trips.filter(
-    ({ srcPort, destPort, departureDateIso, slots }) => {
+    ({ srcPort, destPort, departureDateIso, slots, shippingLine }) => {
       const [date, time] = split(departureDateIso, 'T');
       const sameSrcPort = srcPort.name === srcPortName;
       const sameDestPort = destPort.name === destPortName;
       const sameDate = date === dateQuery;
       const slotAvailable = totalPaxes <= slots;
+      const shippingLineFilter = find(shippingLines, shippingLine); //in prog
 
       console.log(`${totalPaxes} : ${slots}`);
-      return sameSrcPort && sameDestPort && sameDate && slotAvailable;
+      return (
+        sameSrcPort &&
+        sameDestPort &&
+        sameDate &&
+        slotAvailable &&
+        shippingLineFilter
+      );
     }
   );
   const totalItems = availableTripsFiltered.length;
   const totalPages = ceil(totalItems / 10);
-
-  // console.log(`service sort: ${sort}`);
-
-  // if (sort === 'basePrice') {
-  //   console.log('oo nga');
-  // } else {
-  //   console.log('di nga');
-  // }
 
   const sortedAvailableTrips =
     sort === 'basePrice'
