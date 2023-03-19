@@ -14,3 +14,9 @@ export enum CIVIL_STATUS {
   Divorced = 'Divorced',
   Widowed = 'Widowed',
 }
+
+export enum CABIN_TYPE {
+  Economy = 'Economy Class',
+  Business = 'Business Class',
+  First = 'First Class',
+}

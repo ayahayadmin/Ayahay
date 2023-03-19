@@ -15,7 +15,7 @@ export default function TripSearchQuery() {
   return (
     <>
       <div id='search-type'>
-        <Form.Item name='tripType' colon={false}>
+        <Form.Item name='tripType'>
           <Radio.Group>
             <Radio value='single'>Single Trip</Radio>
             <Radio value='round'>Round Trip</Radio>

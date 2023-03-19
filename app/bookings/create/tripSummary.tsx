@@ -1,6 +1,8 @@
-import { Descriptions, Skeleton } from 'antd';
+import { Descriptions, Skeleton, Typography } from 'antd';
 import Trip from '@/common/models/trip.model';
 import dayjs from 'dayjs';
+
+const { Title } = Typography;
 
 interface TripSummaryProps {
   trip?: Trip;
@@ -9,9 +11,10 @@ interface TripSummaryProps {
 export default function TripSummary({ trip }: TripSummaryProps) {
   return (
     <article>
+      <Title level={2}>Trip Summary</Title>
       <Skeleton loading={trip === undefined} active>
         {trip && (
-          <Descriptions title='Trip Summary' bordered>
+          <Descriptions bordered>
             <Descriptions.Item label='Origin Port'>
               {trip.srcPort.name}
             </Descriptions.Item>
