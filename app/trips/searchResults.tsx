@@ -2,14 +2,26 @@ import React, { useEffect, useState } from 'react';
 import { Button, Pagination, Skeleton, Space, Table } from 'antd';
 import styles from './trips.module.scss';
 import Trip from '@/common/models/trip.model';
-import { find, get, toNumber } from 'lodash';
+import { find, get, split, toNumber } from 'lodash';
 import { getPorts } from '@/common/services/port.service';
 import { getTrips } from '@/common/services/trip.service';
 import SearchQuery from '@/common/models/search-query.model';
 import Port from '@/common/models/port.model';
 import ShippingLine from '@/common/models/shipping-line.model';
+import { getTime } from '@/common/services/search.service';
 
 const columns = [
+  {
+    key: 'logo',
+    dataIndex: 'shippingLine',
+    render: (text: ShippingLine) => (
+      <img
+        src='/assets/logo-placeholder.png'
+        alt={`${text.name} Logo`}
+        height={80}
+      />
+    ),
+  },
   {
     key: 'shippingLine',
     dataIndex: 'shippingLine',
@@ -26,12 +38,24 @@ const columns = [
     render: (text: Port) => <span>{text.name}</span>,
   },
   {
-    key: 'departureDateIso',
+    key: 'departureDate',
     dataIndex: 'departureDateIso',
+    render: (text: string) => <span>{split(text, 'T')[0]}</span>,
+  },
+  {
+    key: 'departureTime',
+    dataIndex: 'departureDateIso',
+    render: (text: string) => <span>{getTime(text)}</span>,
+  },
+  {
+    key: 'slots',
+    dataIndex: 'slots',
+    render: (text: string) => <span>{`${text} slot/s`}</span>,
   },
   {
     key: 'baseFare',
     dataIndex: 'baseFare',
+    render: (text: string) => <span>{`PHP ${text}`}</span>,
   },
   {
     key: 'action',
@@ -56,14 +80,20 @@ export default function SearchResult({ searchQuery }: SearchResultsProps) {
   const [totalPages, setTotalPages] = useState(0);
   const [totalItems, setTotalItems] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [sort, setSort] = useState('');
 
   const ports = getPorts();
 
   useEffect(() => {
+    const { sort } = searchQuery;
+    console.log(`tsx sort: ${sort}`);
+
+    setSort(sort); //same problem nanaman sa work, yung hindi makuha yung latest value ugh
     fetchTrips(page);
   }, [searchQuery, page]);
 
   const fetchTrips = (page: number) => {
+    console.log(searchQuery);
     setLoading(true);
     setTimeout(() => {
       const srcPort = get(
@@ -74,8 +104,18 @@ export default function SearchResult({ searchQuery }: SearchResultsProps) {
         find(ports, { id: toNumber(searchQuery.destPortId) }),
         'name'
       );
-
-      const trips = getTrips(srcPort!, destPort!);
+      const paxes = {
+        numAdults: get(searchQuery, 'numAdults'),
+        numChildren: get(searchQuery, 'numChildren'),
+        numInfants: get(searchQuery, 'numInfants'),
+      };
+      const trips = getTrips(
+        srcPort!,
+        destPort!,
+        searchQuery.departureDateIso,
+        paxes,
+        sort
+      );
       const { data, totalPages, totalItems } = trips;
       const tripData = find(data, { page });
       setTripData(tripData?.availableTrips || []);
