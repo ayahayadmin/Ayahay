@@ -59,7 +59,7 @@ export default function PassengerInformationForm() {
               <Form.Item
                 {...restField}
                 name={[name, 'birthday']}
-                label='Birthday'
+                label='Date of Birth'
                 colon={false}
                 rules={[{ required: true, message: 'Missing date of birth' }]}
               >

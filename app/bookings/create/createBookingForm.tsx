@@ -36,22 +36,18 @@ export default function CreateBookingForm({ trip }: CreateBookingFormProps) {
 
   const onClickNext = async () => {
     try {
-      if (passengers === undefined) {
-        return;
-      }
+      const passengerList: any[] = passengers ?? [];
       const fieldNames = steps[currentStep].fieldNamesToValidate;
       const namePaths: (string | number)[][] = [];
-      passengers.forEach((_: any, index: any) => {
+      passengerList.forEach((_, index) => {
         fieldNames.forEach((fieldName) =>
           namePaths.push(['passengers', index, fieldName])
         );
       });
-      console.log(namePaths);
-      const values = await form.validateFields(namePaths);
-      console.log(values);
+      await form.validateFields(namePaths);
       nextStep();
-    } catch (e) {
-      console.error(e);
+    } catch (formErrors) {
+      console.error(formErrors);
     }
   };
 
