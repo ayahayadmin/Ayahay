@@ -4,6 +4,7 @@ import { Button, DatePicker, Form, Radio } from 'antd';
 import PortAutoComplete from '@/common/components/form/PortAutoComplete';
 import PassengerCount from '@/common/components/form/PassengerCount';
 import styles from './TripSearchQuery.module.scss';
+import dayjs from 'dayjs';
 
 export default function TripSearchQuery() {
   const form = Form.useFormInstance();
@@ -45,6 +46,7 @@ export default function TripSearchQuery() {
         >
           <DatePicker
             className={styles['ant-picker-input']}
+            disabledDate={(current) => current < dayjs().endOf('day')}
             format='MMM D, YYYY'
             allowClear={false}
             bordered={false}
