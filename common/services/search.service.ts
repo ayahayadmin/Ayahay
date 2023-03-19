@@ -38,7 +38,7 @@ export function buildUrlQueryParamsFromSearchForm(form: FormInstance): string {
     tripType: form.getFieldValue('tripType'),
     srcPortId: form.getFieldValue('srcPortId')?.toString(),
     destPortId: form.getFieldValue('destPortId')?.toString(),
-    departureDate: form.getFieldValue('departureDate')?.format('YYYY-MM-DD'),
+    departureDate: form.getFieldValue('departureDate')?.toISOString(),
     numAdults: form.getFieldValue('numAdults')?.toString(),
     numChildren: form.getFieldValue('numChildren')?.toString(),
     numInfants: form.getFieldValue('numInfants')?.toString(),
@@ -85,4 +85,8 @@ export function buildSearchQueryFromSearchForm(
   }
 
   return searchQuery;
+}
+
+export function getTime(date: string) {
+  return new Date(date).toLocaleTimeString('en-US');
 }
