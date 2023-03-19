@@ -80,41 +80,40 @@ export default function SearchResult({ searchQuery }: SearchResultsProps) {
   const [totalPages, setTotalPages] = useState(0);
   const [totalItems, setTotalItems] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [sort, setSort] = useState('');
 
   const ports = getPorts();
 
   useEffect(() => {
-    const { sort } = searchQuery;
-    console.log(`tsx sort: ${sort}`);
-
-    setSort(sort); //same problem nanaman sa work, yung hindi makuha yung latest value ugh
     fetchTrips(page);
   }, [searchQuery, page]);
 
   const fetchTrips = (page: number) => {
-    console.log(searchQuery);
     setLoading(true);
+    const {
+      departureDateIso,
+      destPortId,
+      numAdults,
+      numChildren,
+      numInfants,
+      shippingLineIds,
+      sort,
+      srcPortId,
+    } = searchQuery;
     setTimeout(() => {
-      const srcPort = get(
-        find(ports, { id: toNumber(searchQuery.srcPortId) }),
-        'name'
-      );
-      const destPort = get(
-        find(ports, { id: toNumber(searchQuery.destPortId) }),
-        'name'
-      );
+      const srcPort = get(find(ports, { id: toNumber(srcPortId) }), 'name');
+      const destPort = get(find(ports, { id: toNumber(destPortId) }), 'name');
       const paxes = {
-        numAdults: get(searchQuery, 'numAdults'),
-        numChildren: get(searchQuery, 'numChildren'),
-        numInfants: get(searchQuery, 'numInfants'),
+        numAdults,
+        numChildren,
+        numInfants,
       };
       const trips = getTrips(
         srcPort!,
         destPort!,
-        searchQuery.departureDateIso,
+        departureDateIso,
         paxes,
-        sort
+        sort,
+        shippingLineIds
       );
       const { data, totalPages, totalItems } = trips;
       const tripData = find(data, { page });
