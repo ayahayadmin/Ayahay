@@ -6,7 +6,7 @@ import {
   DEFAULT_NUM_CHILDREN,
   DEFAULT_NUM_INFANTS,
   DEFAULT_TRIP_TYPE,
-} from '@/common/constants/form';
+} from '@/common/constants/default';
 
 export function initializeSearchFormFromQueryParams(
   form: FormInstance,

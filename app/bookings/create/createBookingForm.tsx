@@ -3,6 +3,7 @@ import Trip from '@/common/models/trip.model';
 import PassengerInformationForm from '@/common/components/booking/PassengerInformationForm';
 import React, { useState } from 'react';
 import PassengerPreferencesForm from '@/common/components/booking/PassengerPreferencesForm';
+import { DEFAULT_PASSENGER } from '@/common/constants/default';
 
 const { Title } = Typography;
 
@@ -25,7 +26,7 @@ const steps = [
     ],
   },
   { title: 'Passenger Preferences', fieldNamesToValidate: [''] },
-  { title: 'Passenger Vehicles', fieldNamesToValidate: [''] },
+  { title: 'Confirm Booking', fieldNamesToValidate: [''] },
 ];
 
 export default function CreateBookingForm({ trip }: CreateBookingFormProps) {
@@ -65,7 +66,7 @@ export default function CreateBookingForm({ trip }: CreateBookingFormProps) {
     <Form
       form={form}
       initialValues={{
-        passengers: [{}],
+        passengers: [DEFAULT_PASSENGER],
       }}
       onValuesChange={(changesValues, values) => console.log(values)}
       onFinish={(values) => console.log(values)}
@@ -77,7 +78,10 @@ export default function CreateBookingForm({ trip }: CreateBookingFormProps) {
       </div>
       <div style={{ display: currentStep === 1 ? 'block' : 'none' }}>
         <Title level={2}>Passenger Preferences</Title>
-        <PassengerPreferencesForm />
+        <PassengerPreferencesForm trip={trip} />
+      </div>
+      <div style={{ display: currentStep === 2 ? 'block' : 'none' }}>
+        <Title level={2}>Confirm Booking</Title>
       </div>
       <Form.Item>
         {currentStep < steps.length - 1 && (

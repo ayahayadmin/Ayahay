@@ -5,6 +5,8 @@ import PortAutoComplete from '@/common/components/form/PortAutoComplete';
 import PassengerCount from '@/common/components/form/PassengerCount';
 import styles from './TripSearchQuery.module.scss';
 import dayjs from 'dayjs';
+import EnumRadio from '@/common/components/form/EnumRadio';
+import { TRIP_TYPE } from '@/common/constants/enum';
 
 export default function TripSearchQuery() {
   const form = Form.useFormInstance();
@@ -15,12 +17,7 @@ export default function TripSearchQuery() {
   return (
     <>
       <div id='search-type'>
-        <Form.Item name='tripType'>
-          <Radio.Group>
-            <Radio value='single'>Single Trip</Radio>
-            <Radio value='round'>Round Trip</Radio>
-          </Radio.Group>
-        </Form.Item>
+        <EnumRadio _enum={TRIP_TYPE} name='tripType' />
       </div>
 
       <div id='search-main'>

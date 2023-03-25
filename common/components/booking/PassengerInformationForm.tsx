@@ -2,6 +2,7 @@ import { Button, DatePicker, Divider, Form, Input, Radio } from 'antd';
 import React from 'react';
 import { CIVIL_STATUS, SEX } from '@/common/constants/enum';
 import EnumRadio from '@/common/components/form/EnumRadio';
+import { DEFAULT_PASSENGER } from '@/common/constants/default';
 
 export default function PassengerInformationForm() {
   const form = Form.useFormInstance();
@@ -12,7 +13,8 @@ export default function PassengerInformationForm() {
         <>
           {fields.map(({ key, name, ...restField }, index) => (
             <div key={key}>
-              <Divider>Passenger {index + 1}</Divider>
+              {index === 0 && <Divider>Your Information</Divider>}
+              {index > 0 && <Divider>Companion {index} Information</Divider>}
               <Form.Item
                 {...restField}
                 name={[name, 'firstName']}
@@ -89,7 +91,7 @@ export default function PassengerInformationForm() {
             </div>
           ))}
           <Form.Item>
-            <Button type='dashed' onClick={() => add({})} block>
+            <Button type='dashed' onClick={() => add(DEFAULT_PASSENGER)} block>
               Add Passenger
             </Button>
           </Form.Item>

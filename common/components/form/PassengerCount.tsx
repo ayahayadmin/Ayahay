@@ -5,7 +5,7 @@ import {
   DEFAULT_NUM_ADULTS,
   DEFAULT_NUM_CHILDREN,
   DEFAULT_NUM_INFANTS,
-} from '@/common/constants/form';
+} from '@/common/constants/default';
 
 export default function PassengerCount() {
   const form = Form.useFormInstance();
