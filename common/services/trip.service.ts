@@ -1,11 +1,37 @@
-import Trip, { mockTrip, TripData } from '@/common/models/trip.model';
-import { ceil, filter, forEach } from 'lodash';
+import Trip, {
+  mockTrip,
+  TripData,
+  TripPaxes,
+} from '@/common/models/trip.model';
+import dayjs from 'dayjs';
+import {
+  ceil,
+  find,
+  forEach,
+  orderBy,
+  random,
+  split,
+  sum,
+  values,
+} from 'lodash';
+import { getShippingLines } from '@/common/services/shipping-line.service';
 
 export function getTrip(tripId: number): Trip {
   return mockTrip;
 }
 
-export function getTrips(srcPortName: string, destPortName: string) {
+export function getTrips(
+  srcPortName: string,
+  destPortName: string,
+  departureDate: string,
+  paxes: TripPaxes,
+  sort: string,
+  shippingLineIds: number[] | undefined
+) {
+  const today = dayjs();
+  const todayPlus5days = today.add(5, 'day').toISOString();
+  const shippingLines = getShippingLines();
+
   const trips = [
     {
       shippingLine: {
@@ -20,7 +46,9 @@ export function getTrips(srcPortName: string, destPortName: string) {
         id: 0,
         name: 'Bacolod',
       },
-      departureDateIso: '2023-03-20',
+      departureDateIso: today.toISOString(),
+      baseFare: getBaseFare(),
+      slots: random(0, 10),
     },
     {
       shippingLine: {
@@ -35,7 +63,9 @@ export function getTrips(srcPortName: string, destPortName: string) {
         id: 0,
         name: 'Bacolod',
       },
-      departureDateIso: '2023-03-20',
+      departureDateIso: today.toISOString(),
+      baseFare: getBaseFare(),
+      slots: random(0, 10),
     },
     {
       shippingLine: {
@@ -50,7 +80,9 @@ export function getTrips(srcPortName: string, destPortName: string) {
         id: 0,
         name: 'Bacolod',
       },
-      departureDateIso: '2023-03-20',
+      departureDateIso: today.toISOString(),
+      baseFare: getBaseFare(),
+      slots: random(0, 10),
     },
     {
       shippingLine: {
@@ -65,7 +97,9 @@ export function getTrips(srcPortName: string, destPortName: string) {
         id: 0,
         name: 'Bacolod',
       },
-      departureDateIso: '2023-03-20',
+      departureDateIso: today.toISOString(),
+      baseFare: getBaseFare(),
+      slots: random(0, 10),
     },
     {
       shippingLine: {
@@ -80,7 +114,9 @@ export function getTrips(srcPortName: string, destPortName: string) {
         id: 0,
         name: 'Bacolod',
       },
-      departureDateIso: '2023-03-20',
+      departureDateIso: today.toISOString(),
+      baseFare: getBaseFare(),
+      slots: random(0, 10),
     },
     {
       shippingLine: {
@@ -95,7 +131,9 @@ export function getTrips(srcPortName: string, destPortName: string) {
         id: 0,
         name: 'Bacolod',
       },
-      departureDateIso: '2023-03-20',
+      departureDateIso: today.toISOString(),
+      baseFare: getBaseFare(),
+      slots: random(0, 10),
     },
     {
       shippingLine: {
@@ -110,7 +148,9 @@ export function getTrips(srcPortName: string, destPortName: string) {
         id: 0,
         name: 'Bacolod',
       },
-      departureDateIso: '2023-03-20',
+      departureDateIso: today.toISOString(),
+      baseFare: getBaseFare(),
+      slots: random(0, 10),
     },
     {
       shippingLine: {
@@ -125,7 +165,9 @@ export function getTrips(srcPortName: string, destPortName: string) {
         id: 0,
         name: 'Bacolod',
       },
-      departureDateIso: '2023-03-20',
+      departureDateIso: today.toISOString(),
+      baseFare: getBaseFare(),
+      slots: random(0, 10),
     },
     {
       shippingLine: {
@@ -140,7 +182,9 @@ export function getTrips(srcPortName: string, destPortName: string) {
         id: 0,
         name: 'Bacolod',
       },
-      departureDateIso: '2023-03-20',
+      departureDateIso: today.toISOString(),
+      baseFare: getBaseFare(),
+      slots: random(0, 10),
     },
     {
       shippingLine: {
@@ -155,7 +199,9 @@ export function getTrips(srcPortName: string, destPortName: string) {
         id: 0,
         name: 'Bacolod',
       },
-      departureDateIso: '2023-03-20',
+      departureDateIso: today.toISOString(),
+      baseFare: getBaseFare(),
+      slots: random(0, 10),
     },
     {
       shippingLine: {
@@ -170,7 +216,9 @@ export function getTrips(srcPortName: string, destPortName: string) {
         id: 36,
         name: 'Ozamiz',
       },
-      departureDateIso: '2023-03-25',
+      departureDateIso: todayPlus5days,
+      baseFare: getBaseFare(),
+      slots: random(0, 10),
     },
     {
       shippingLine: {
@@ -185,7 +233,9 @@ export function getTrips(srcPortName: string, destPortName: string) {
         id: 24,
         name: 'Iloilo',
       },
-      departureDateIso: '2023-03-20',
+      departureDateIso: today.toISOString(),
+      baseFare: getBaseFare(),
+      slots: random(0, 10),
     },
     {
       shippingLine: {
@@ -200,7 +250,9 @@ export function getTrips(srcPortName: string, destPortName: string) {
         id: 24,
         name: 'Iloilo',
       },
-      departureDateIso: '2023-03-25',
+      departureDateIso: todayPlus5days,
+      baseFare: getBaseFare(),
+      slots: random(0, 10),
     },
     {
       shippingLine: {
@@ -215,7 +267,9 @@ export function getTrips(srcPortName: string, destPortName: string) {
         id: 0,
         name: 'Bacolod',
       },
-      departureDateIso: '2023-03-25',
+      departureDateIso: todayPlus5days,
+      baseFare: getBaseFare(),
+      slots: random(0, 10),
     },
     {
       shippingLine: {
@@ -230,7 +284,9 @@ export function getTrips(srcPortName: string, destPortName: string) {
         id: 30,
         name: 'Masbate',
       },
-      departureDateIso: '2023-03-20',
+      departureDateIso: today.toISOString(),
+      baseFare: getBaseFare(),
+      slots: random(0, 10),
     },
     {
       shippingLine: {
@@ -245,7 +301,9 @@ export function getTrips(srcPortName: string, destPortName: string) {
         id: 33,
         name: 'Nasipit',
       },
-      departureDateIso: '2023-03-20',
+      departureDateIso: today.toISOString(),
+      baseFare: getBaseFare(),
+      slots: random(0, 10),
     },
     {
       shippingLine: {
@@ -260,7 +318,9 @@ export function getTrips(srcPortName: string, destPortName: string) {
         id: 33,
         name: 'Nasipit',
       },
-      departureDateIso: '2023-03-25',
+      departureDateIso: todayPlus5days,
+      baseFare: getBaseFare(),
+      slots: random(0, 10),
     },
     {
       shippingLine: {
@@ -275,7 +335,9 @@ export function getTrips(srcPortName: string, destPortName: string) {
         id: 0,
         name: 'Bacolod',
       },
-      departureDateIso: '2023-03-25',
+      departureDateIso: todayPlus5days,
+      baseFare: getBaseFare(),
+      slots: random(0, 10),
     },
     {
       shippingLine: {
@@ -290,7 +352,9 @@ export function getTrips(srcPortName: string, destPortName: string) {
         id: 25,
         name: 'Isabel, Leyte',
       },
-      departureDateIso: '2023-03-20',
+      departureDateIso: today.toISOString(),
+      baseFare: getBaseFare(),
+      slots: random(0, 10),
     },
     {
       shippingLine: {
@@ -305,7 +369,9 @@ export function getTrips(srcPortName: string, destPortName: string) {
         id: 32,
         name: 'Manila',
       },
-      departureDateIso: '2023-03-25',
+      departureDateIso: todayPlus5days,
+      baseFare: getBaseFare(),
+      slots: random(0, 10),
     },
     {
       shippingLine: {
@@ -320,27 +386,50 @@ export function getTrips(srcPortName: string, destPortName: string) {
         id: 32,
         name: 'Manila',
       },
-      departureDateIso: '2023-03-20',
+      departureDateIso: today.toISOString(),
+      baseFare: getBaseFare(),
+      slots: random(0, 10),
     },
   ];
 
-  const availableTripsFiltered = filter(trips, {
-    srcPort: { name: srcPortName },
-    destPort: { name: destPortName },
-  });
+  const [dateQuery, timeQuery] = split(departureDate, 'T');
+  const totalPaxes = sum(values(paxes));
+  const availableTripsFiltered = trips.filter(
+    ({ srcPort, destPort, departureDateIso, slots, shippingLine }) => {
+      const [date, time] = split(departureDateIso, 'T');
+      const sameSrcPort = srcPort.name === srcPortName;
+      const sameDestPort = destPort.name === destPortName;
+      const sameDate = date === dateQuery;
+      const slotAvailable = totalPaxes <= slots;
+      const shippingLineFilter = find(shippingLines, shippingLine); //in prog
+
+      console.log(`${totalPaxes} : ${slots}`);
+      return (
+        sameSrcPort &&
+        sameDestPort &&
+        sameDate &&
+        slotAvailable &&
+        shippingLineFilter
+      );
+    }
+  );
   const totalItems = availableTripsFiltered.length;
   const totalPages = ceil(totalItems / 10);
 
+  const sortedAvailableTrips =
+    sort === 'basePrice'
+      ? orderBy(availableTripsFiltered, ['baseFare'])
+      : orderBy(availableTripsFiltered, ['departureDateIso']);
+
   const data: TripData[] = [];
   let availableTrips: Trip[] = [];
-  forEach(availableTripsFiltered, (trip, idx) => {
+  forEach(sortedAvailableTrips, (trip, idx) => {
     const incrementOfTen = (idx + 1) % 10 === 0;
     const lastElement = idx + 1 === totalItems;
 
     availableTrips.push({
       ...trip,
       id: 1,
-      baseFare: getBaseFare(),
     });
 
     if (incrementOfTen || lastElement) {
@@ -360,5 +449,5 @@ export function getTrips(srcPortName: string, destPortName: string) {
 }
 
 export const getBaseFare = () => {
-  return 9999;
+  return random(1000, 9999);
 };

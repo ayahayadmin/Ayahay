@@ -2,14 +2,26 @@ import React, { useEffect, useState } from 'react';
 import { Button, Pagination, Skeleton, Space, Table } from 'antd';
 import styles from './trips.module.scss';
 import Trip from '@/common/models/trip.model';
-import { find, get, toNumber } from 'lodash';
+import { find, get, split, toNumber } from 'lodash';
 import { getPorts } from '@/common/services/port.service';
 import { getTrips } from '@/common/services/trip.service';
 import SearchQuery from '@/common/models/search-query.model';
 import Port from '@/common/models/port.model';
 import ShippingLine from '@/common/models/shipping-line.model';
+import { getTime } from '@/common/services/search.service';
 
 const columns = [
+  {
+    key: 'logo',
+    dataIndex: 'shippingLine',
+    render: (text: ShippingLine) => (
+      <img
+        src='/assets/logo-placeholder.png'
+        alt={`${text.name} Logo`}
+        height={80}
+      />
+    ),
+  },
   {
     key: 'shippingLine',
     dataIndex: 'shippingLine',
@@ -26,12 +38,24 @@ const columns = [
     render: (text: Port) => <span>{text.name}</span>,
   },
   {
-    key: 'departureDateIso',
+    key: 'departureDate',
     dataIndex: 'departureDateIso',
+    render: (text: string) => <span>{split(text, 'T')[0]}</span>,
+  },
+  {
+    key: 'departureTime',
+    dataIndex: 'departureDateIso',
+    render: (text: string) => <span>{getTime(text)}</span>,
+  },
+  {
+    key: 'slots',
+    dataIndex: 'slots',
+    render: (text: string) => <span>{`${text} slot/s`}</span>,
   },
   {
     key: 'baseFare',
     dataIndex: 'baseFare',
+    render: (text: string) => <span>{`PHP ${text}`}</span>,
   },
   {
     key: 'action',
@@ -65,17 +89,32 @@ export default function SearchResult({ searchQuery }: SearchResultsProps) {
 
   const fetchTrips = (page: number) => {
     setLoading(true);
+    const {
+      departureDateIso,
+      destPortId,
+      numAdults,
+      numChildren,
+      numInfants,
+      shippingLineIds,
+      sort,
+      srcPortId,
+    } = searchQuery;
     setTimeout(() => {
-      const srcPort = get(
-        find(ports, { id: toNumber(searchQuery.srcPortId) }),
-        'name'
+      const srcPort = get(find(ports, { id: toNumber(srcPortId) }), 'name');
+      const destPort = get(find(ports, { id: toNumber(destPortId) }), 'name');
+      const paxes = {
+        numAdults,
+        numChildren,
+        numInfants,
+      };
+      const trips = getTrips(
+        srcPort!,
+        destPort!,
+        departureDateIso,
+        paxes,
+        sort,
+        shippingLineIds
       );
-      const destPort = get(
-        find(ports, { id: toNumber(searchQuery.destPortId) }),
-        'name'
-      );
-
-      const trips = getTrips(srcPort!, destPort!);
       const { data, totalPages, totalItems } = trips;
       const tripData = find(data, { page });
       setTripData(tripData?.availableTrips || []);
