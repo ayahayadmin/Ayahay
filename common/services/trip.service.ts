@@ -6,8 +6,9 @@ import Trip, {
 import dayjs from 'dayjs';
 import {
   ceil,
-  find,
   forEach,
+  includes,
+  isEmpty,
   orderBy,
   random,
   split,
@@ -15,6 +16,7 @@ import {
   values,
 } from 'lodash';
 import { getShippingLines } from '@/common/services/shipping-line.service';
+import { SEAT_TYPE } from '../constants/enum';
 
 export function getTrip(tripId: number): Trip {
   return mockTrip;
@@ -30,7 +32,6 @@ export function getTrips(
 ) {
   const today = dayjs();
   const todayPlus5days = today.add(5, 'day').toISOString();
-  const shippingLines = getShippingLines();
 
   const trips = [
     {
@@ -48,7 +49,7 @@ export function getTrips(
       },
       departureDateIso: today.toISOString(),
       baseFare: getBaseFare(),
-      slots: random(0, 10),
+      slots: random(1, 10),
     },
     {
       shippingLine: {
@@ -65,7 +66,7 @@ export function getTrips(
       },
       departureDateIso: today.toISOString(),
       baseFare: getBaseFare(),
-      slots: random(0, 10),
+      slots: random(1, 10),
     },
     {
       shippingLine: {
@@ -82,7 +83,7 @@ export function getTrips(
       },
       departureDateIso: today.toISOString(),
       baseFare: getBaseFare(),
-      slots: random(0, 10),
+      slots: random(1, 10),
     },
     {
       shippingLine: {
@@ -99,7 +100,7 @@ export function getTrips(
       },
       departureDateIso: today.toISOString(),
       baseFare: getBaseFare(),
-      slots: random(0, 10),
+      slots: random(1, 10),
     },
     {
       shippingLine: {
@@ -116,7 +117,7 @@ export function getTrips(
       },
       departureDateIso: today.toISOString(),
       baseFare: getBaseFare(),
-      slots: random(0, 10),
+      slots: random(1, 10),
     },
     {
       shippingLine: {
@@ -133,7 +134,7 @@ export function getTrips(
       },
       departureDateIso: today.toISOString(),
       baseFare: getBaseFare(),
-      slots: random(0, 10),
+      slots: random(1, 10),
     },
     {
       shippingLine: {
@@ -150,7 +151,7 @@ export function getTrips(
       },
       departureDateIso: today.toISOString(),
       baseFare: getBaseFare(),
-      slots: random(0, 10),
+      slots: random(1, 10),
     },
     {
       shippingLine: {
@@ -167,7 +168,7 @@ export function getTrips(
       },
       departureDateIso: today.toISOString(),
       baseFare: getBaseFare(),
-      slots: random(0, 10),
+      slots: random(1, 10),
     },
     {
       shippingLine: {
@@ -184,7 +185,7 @@ export function getTrips(
       },
       departureDateIso: today.toISOString(),
       baseFare: getBaseFare(),
-      slots: random(0, 10),
+      slots: random(1, 10),
     },
     {
       shippingLine: {
@@ -201,7 +202,7 @@ export function getTrips(
       },
       departureDateIso: today.toISOString(),
       baseFare: getBaseFare(),
-      slots: random(0, 10),
+      slots: random(1, 10),
     },
     {
       shippingLine: {
@@ -218,7 +219,7 @@ export function getTrips(
       },
       departureDateIso: todayPlus5days,
       baseFare: getBaseFare(),
-      slots: random(0, 10),
+      slots: random(1, 10),
     },
     {
       shippingLine: {
@@ -235,7 +236,7 @@ export function getTrips(
       },
       departureDateIso: today.toISOString(),
       baseFare: getBaseFare(),
-      slots: random(0, 10),
+      slots: random(1, 10),
     },
     {
       shippingLine: {
@@ -252,7 +253,7 @@ export function getTrips(
       },
       departureDateIso: todayPlus5days,
       baseFare: getBaseFare(),
-      slots: random(0, 10),
+      slots: random(1, 10),
     },
     {
       shippingLine: {
@@ -267,9 +268,9 @@ export function getTrips(
         id: 0,
         name: 'Bacolod',
       },
-      departureDateIso: todayPlus5days,
+      departureDateIso: today.toISOString(),
       baseFare: getBaseFare(),
-      slots: random(0, 10),
+      slots: random(1, 10),
     },
     {
       shippingLine: {
@@ -286,7 +287,7 @@ export function getTrips(
       },
       departureDateIso: today.toISOString(),
       baseFare: getBaseFare(),
-      slots: random(0, 10),
+      slots: random(1, 10),
     },
     {
       shippingLine: {
@@ -303,7 +304,7 @@ export function getTrips(
       },
       departureDateIso: today.toISOString(),
       baseFare: getBaseFare(),
-      slots: random(0, 10),
+      slots: random(1, 10),
     },
     {
       shippingLine: {
@@ -320,7 +321,7 @@ export function getTrips(
       },
       departureDateIso: todayPlus5days,
       baseFare: getBaseFare(),
-      slots: random(0, 10),
+      slots: random(1, 10),
     },
     {
       shippingLine: {
@@ -335,9 +336,9 @@ export function getTrips(
         id: 0,
         name: 'Bacolod',
       },
-      departureDateIso: todayPlus5days,
+      departureDateIso: today.toISOString(),
       baseFare: getBaseFare(),
-      slots: random(0, 10),
+      slots: random(1, 10),
     },
     {
       shippingLine: {
@@ -354,7 +355,7 @@ export function getTrips(
       },
       departureDateIso: today.toISOString(),
       baseFare: getBaseFare(),
-      slots: random(0, 10),
+      slots: random(1, 10),
     },
     {
       shippingLine: {
@@ -371,7 +372,7 @@ export function getTrips(
       },
       departureDateIso: todayPlus5days,
       baseFare: getBaseFare(),
-      slots: random(0, 10),
+      slots: random(1, 10),
     },
     {
       shippingLine: {
@@ -388,7 +389,7 @@ export function getTrips(
       },
       departureDateIso: today.toISOString(),
       baseFare: getBaseFare(),
-      slots: random(0, 10),
+      slots: random(1, 10),
     },
   ];
 
@@ -401,9 +402,10 @@ export function getTrips(
       const sameDestPort = destPort.name === destPortName;
       const sameDate = date === dateQuery;
       const slotAvailable = totalPaxes <= slots;
-      const shippingLineFilter = find(shippingLines, shippingLine); //in prog
+      const shippingLineFilter = isEmpty(shippingLineIds)
+        ? true
+        : includes(shippingLineIds, shippingLine.id);
 
-      console.log(`${totalPaxes} : ${slots}`);
       return (
         sameSrcPort &&
         sameDestPort &&
@@ -430,6 +432,8 @@ export function getTrips(
     availableTrips.push({
       ...trip,
       id: 1,
+      availableSeatTypes: getAvailableSeats(),
+      meals: ['Tapsilog', 'Bacsilog', 'Longsilog'],
     });
 
     if (incrementOfTen || lastElement) {
@@ -450,4 +454,8 @@ export function getTrips(
 
 export const getBaseFare = () => {
   return random(1000, 9999);
+};
+
+export const getAvailableSeats = () => {
+  return [SEAT_TYPE.Window, SEAT_TYPE.SingleBed];
 };
