@@ -84,8 +84,13 @@ export default function SearchResult({ searchQuery }: SearchResultsProps) {
   const ports = getPorts();
 
   useEffect(() => {
+    setPage(1);
     fetchTrips(page);
-  }, [searchQuery, page]);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    fetchTrips(page);
+  }, [page]);
 
   const fetchTrips = (page: number) => {
     setLoading(true);
