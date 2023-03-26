@@ -434,6 +434,7 @@ export function getTrips(
       id: 1,
       availableSeatTypes: getAvailableSeats(),
       meals: ['Tapsilog', 'Bacsilog', 'Longsilog'],
+      shipId: 1,
     });
 
     if (incrementOfTen || lastElement) {
