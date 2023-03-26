@@ -7,6 +7,7 @@ import {
   DEFAULT_NUM_INFANTS,
   DEFAULT_TRIP_TYPE,
 } from '@/common/constants/default';
+import AdminSearchQuery from '../models/admin-search-query';
 
 export function initializeSearchFormFromQueryParams(
   form: FormInstance,
@@ -30,6 +31,15 @@ export function initializeSearchFormFromQueryParams(
       .map((idString) => +idString),
     cabinTypes: params.cabinTypes?.split(','),
     sort: params.sort ?? 'departureDate',
+  });
+}
+
+export function initializeAdminSearchFormFromQueryParams(
+  form: FormInstance,
+  params: { [p: string]: string }
+) {
+  form.setFieldsValue({
+    cabinTypes: params.cabinTypes?.split(','),
   });
 }
 
@@ -62,6 +72,22 @@ export function buildUrlQueryParamsFromSearchForm(form: FormInstance): string {
   return new URLSearchParams(searchQuery).toString();
 }
 
+export function buildUrlQueryParamsFromAdminSearchForm(
+  form: FormInstance
+): string {
+  const searchQuery: Record<string, string> = {
+    cabinTypes: form.getFieldValue('cabinTypes')?.toString(),
+  };
+
+  Object.keys(searchQuery).forEach((key) => {
+    if (searchQuery[key] === undefined) {
+      delete searchQuery[key];
+    }
+  });
+
+  return new URLSearchParams(searchQuery).toString();
+}
+
 export function buildSearchQueryFromSearchForm(
   form: FormInstance
 ): SearchQuery {
@@ -83,6 +109,16 @@ export function buildSearchQueryFromSearchForm(
       .getFieldValue('departureDate')
       .toISOString();
   }
+
+  return searchQuery;
+}
+
+export function buildAdminSearchQueryFromSearchForm(
+  form: FormInstance
+): AdminSearchQuery {
+  const searchQuery: AdminSearchQuery = {
+    cabinTypes: form.getFieldValue('cabinTypes'),
+  };
 
   return searchQuery;
 }
