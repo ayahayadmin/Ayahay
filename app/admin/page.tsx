@@ -9,7 +9,27 @@ import {
 import { Form } from 'antd';
 import { debounce } from 'lodash';
 import { useCallback, useEffect, useState } from 'react';
+import PieChart from '../../common/components/charts/pieChart';
 import TripResults from './tripResults';
+import styles from './page.module.scss';
+import BarChart from '@/common/components/charts/barChart';
+import LineChart from '@/common/components/charts/lineChart';
+
+const data = {
+  labels: ['Red', 'Blue', 'Yellow'],
+  datasets: [
+    {
+      label: 'My First Dataset',
+      data: [300, 50, 100],
+      backgroundColor: [
+        'rgb(255, 99, 132)',
+        'rgb(54, 162, 235)',
+        'rgb(255, 205, 86)',
+      ],
+      hoverOffset: 4,
+    },
+  ],
+};
 
 export default function Admin() {
   const [form] = Form.useForm();
@@ -46,6 +66,15 @@ export default function Admin() {
       onFinish={(_) => debounceSearch()}
     >
       <div>
+        <div className={styles.chart}>
+          <PieChart data={data} />
+        </div>
+        <div className={styles.chart}>
+          <BarChart data={data} />
+        </div>
+        <div className={styles.chart}>
+          <LineChart data={data} />
+        </div>
         <CabinFilter name='cabinTypes' label='Cabin Types' />
         <TripResults searchQuery={searchQuery} />
       </div>
