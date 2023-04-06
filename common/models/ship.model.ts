@@ -8,6 +8,6 @@ export default interface Ship {
 export const mockShip: Ship = {
   id: 1,
   name: 'Cokaliong',
-  passengerCapacity: 50,
+  passengerCapacity: 150,
   vehicleCapacity: 10,
 };

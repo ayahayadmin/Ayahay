@@ -15,9 +15,19 @@ export const mockCabinEconomy: Cabin = {
   shipId: 1,
   type: CABIN_TYPE.Economy,
   name: 'first floor',
-  passengerCapacity: 50,
-  numOfRows: 10,
-  numOfCols: 5,
+  passengerCapacity: 120,
+  numOfRows: 20,
+  numOfCols: 6,
+};
+
+export const mockCabinEconomy2: Cabin = {
+  id: 1,
+  shipId: 1,
+  type: CABIN_TYPE.Economy,
+  name: 'second floor',
+  passengerCapacity: 120,
+  numOfRows: 20,
+  numOfCols: 6,
 };
 
 export const mockCabinBusiness: Cabin = {
@@ -25,9 +35,9 @@ export const mockCabinBusiness: Cabin = {
   shipId: 1,
   type: CABIN_TYPE.Business,
   name: 'first floor',
-  passengerCapacity: 50,
+  passengerCapacity: 60,
   numOfRows: 10,
-  numOfCols: 5,
+  numOfCols: 6,
 };
 
 export const mockCabinFirst: Cabin = {
@@ -35,7 +45,7 @@ export const mockCabinFirst: Cabin = {
   shipId: 1,
   type: CABIN_TYPE.First,
   name: 'first floor',
-  passengerCapacity: 50,
-  numOfRows: 10,
-  numOfCols: 5,
+  passengerCapacity: 30,
+  numOfRows: 5,
+  numOfCols: 6,
 };
