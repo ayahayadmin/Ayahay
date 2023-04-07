@@ -1,6 +1,6 @@
 import Booking, { mockBooking } from "./booking.model";
 import Passenger, { mockPassenger } from "./passenger";
-import Seat from "./seat.model";
+import Seat, { mockSeat } from "./seat.model";
 
 export default interface BookingPassenger {
   id: number;
