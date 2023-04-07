@@ -14,3 +14,14 @@ export default interface Passenger {
   nationality: string;
   passengerPreferences?: PassengerPreferences;
 }
+
+export const mockPassenger: Passenger = {
+  id: 1,
+  firstName: 'John',
+  lastName: 'Doe',
+  sex: SEX.Male,
+  civilStatus: CIVIL_STATUS.Single,
+  birthdayIso: '1999/09/09',
+  address: 'Quezon City',
+  nationality: 'Filipino',
+}

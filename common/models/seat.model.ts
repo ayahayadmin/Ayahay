@@ -8,14 +8,16 @@ export default interface Seat {
   type: SEAT_TYPE;
 }
 
+export const mockSeat: Seat = {
+  id: 1,
+  deckId: 1,
+  rowNumber: 2,
+  columnNumber: 5,
+  type: SEAT_TYPE.Aisle,
+};
+
 export const mockSeats: Seat[] = [
-  {
-    id: 1,
-    deckId: 1,
-    rowNumber: 2,
-    columnNumber: 5,
-    type: SEAT_TYPE.Aisle,
-  },
+  mockSeat,
   {
     id: 2,
     deckId: 2,

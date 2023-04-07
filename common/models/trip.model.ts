@@ -3,10 +3,11 @@ import ShippingLine, {
 } from '@/common/models/shipping-line.model';
 import Port, { mockPort, mockPort2 } from '@/common/models/port.model';
 import { SEAT_TYPE } from '@/common/constants/enum';
+import Ship, { mockShip } from './ship.model';
 
 export default interface Trip {
   id: number;
-  shipId: number;
+  ship: Ship;
   shippingLine: ShippingLine;
   srcPort: Port;
   destPort: Port;
@@ -18,7 +19,7 @@ export default interface Trip {
 
 export const mockTrip: Trip = {
   id: 1,
-  shipId: 1,
+  ship: mockShip,
   shippingLine: mockShippingLine,
   srcPort: mockPort,
   destPort: mockPort,
@@ -37,7 +38,7 @@ export const mockTrip: Trip = {
 export const mockTrips: Trip[] = [
   {
     id: 1,
-    shipId: 1,
+    ship: mockShip,
     shippingLine: mockShippingLine,
     srcPort: mockPort,
     destPort: mockPort,
@@ -54,7 +55,7 @@ export const mockTrips: Trip[] = [
   },
   {
     id: 2,
-    shipId: 1,
+    ship: mockShip,
     shippingLine: mockShippingLine,
     srcPort: mockPort2,
     destPort: mockPort2,
