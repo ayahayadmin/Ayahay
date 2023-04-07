@@ -31,7 +31,14 @@ export const mockSeats: Seat[] = [
     id: 3,
     deckId: 3,
     rowNumber: 5,
-    columnNumber: 10,
+    columnNumber: 5,
     type: SEAT_TYPE.Window,
+  },
+  {
+    id: 4,
+    deckId: 4,
+    rowNumber: 19,
+    columnNumber: 5,
+    type: SEAT_TYPE.SingleBed,
   },
 ];
