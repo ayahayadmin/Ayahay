@@ -11,15 +11,17 @@ export default interface BookingPassenger {
   totalPrice: number;
 }
 
+export const mockBookingPassenger = {
+  id: 1,
+  booking: mockBooking,
+  passenger: mockPassenger,
+  seat: mockSeat,
+  meal: 'Tapsilog',
+  totalPrice: 1000,
+};
+
 export const mockBookingPassengers: BookingPassenger[] = [
-  {
-    id: 1,
-    booking: mockBooking,
-    passenger: mockPassenger,
-    seat: mockSeat,
-    meal: 'Tapsilog',
-    totalPrice: 1000,
-  },
+  mockBookingPassenger,
   {
     id: 2,
     booking: mockBooking,
