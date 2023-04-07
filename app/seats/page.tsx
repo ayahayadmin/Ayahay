@@ -9,21 +9,17 @@ import {
   mockCabinEconomy2,
   mockCabinFirst,
 } from '@/common/models/cabin.model';
+import Seat, { mockSeats } from '@/common/models/seat.model';
 
 export default function Seats() {
-  //props: shipId, trip preference, cabin type, floor
+  //props: shipId, trip preference, cabin type, floor, seats occupied
   const shipId = 1;
   const cabinType = CABIN_TYPE.Economy;
   const floor = 'second floor';
-  const bookedSeats = [
-    { row: 0, column: 1 },
-    { row: 5, column: 5 },
-    { row: 19, column: 5 },
-  ];
 
   const [rows, setRows] = useState(0);
   const [cols, setCols] = useState(0);
-  const [seatState, setSeatState] = useState(false);
+  const [bookedSeats, setBookedSeats] = useState([] as Seat[]);
 
   useEffect(() => {
     const fetchCabins = [
@@ -32,16 +28,24 @@ export default function Seats() {
       mockCabinBusiness,
       mockCabinFirst,
     ];
+    const fetchSeats = mockSeats;
+    setBookedSeats(fetchSeats);
 
     const cabin = find(fetchCabins, { shipId, type: cabinType, name: floor });
     setRows(cabin!.numOfRows);
     setCols(cabin!.numOfCols);
-  });
+  }, []);
 
   const onSeatClick = (row: number, col: number) => {
-    console.log(`${row} ${col}`);
-
-    setSeatState(!seatState);
+    const seatElement = document.getElementById(`${row} ${col}`);
+    if (
+      seatElement?.classList.contains(`${styles.seat}`) &&
+      !seatElement?.classList.contains(`${styles.selected}`)
+    ) {
+      seatElement!.classList.add(`${styles.selected}`);
+    } else {
+      seatElement!.classList.remove(`${styles.selected}`);
+    }
   };
 
   return (
@@ -76,19 +80,15 @@ export default function Seats() {
             <div className={styles.row}>
               {times(cols, (colIdx) => {
                 let soldClassName = find(bookedSeats, {
-                  row: rowIdx,
-                  column: colIdx,
+                  rowNumber: rowIdx,
+                  columnNumber: colIdx,
                 })
                   ? styles.sold
                   : '';
-                const selectedClassName = styles.selected;
                 return (
                   <div
-                    className={
-                      seatState
-                        ? `${seatClassName} ${selectedClassName}`
-                        : `${seatClassName} ${soldClassName}`
-                    }
+                    className={`${seatClassName} ${soldClassName}`}
+                    id={`${rowIdx} ${colIdx}`}
                     onClick={() => onSeatClick(rowIdx, colIdx)}
                   ></div>
                 );
