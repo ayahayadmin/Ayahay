@@ -4,9 +4,9 @@ import Seat, { mockSeat } from "./seat.model";
 
 export default interface BookingPassenger {
   id: number;
-  booking: Booking,
-  passenger: Passenger,
-  seat: Seat,
+  booking?: Booking,
+  passenger?: Passenger,
+  seat?: Seat,
   meal: string;
   totalPrice: number;
 }

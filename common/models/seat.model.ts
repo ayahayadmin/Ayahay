@@ -1,4 +1,5 @@
 import { SEAT_TYPE } from '../constants/enum';
+import Cabin from './cabin.model';
 
 export default interface Seat {
   id: number;
@@ -6,6 +7,7 @@ export default interface Seat {
   rowNumber: number;
   columnNumber: number;
   type: SEAT_TYPE;
+  cabin?: Cabin;
 }
 
 export const mockSeat: Seat = {
