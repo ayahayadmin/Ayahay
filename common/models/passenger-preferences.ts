@@ -6,3 +6,9 @@ export default interface PassengerPreferences {
   cabin: CABIN_TYPE | 'Any';
   meal: string | 'Any';
 }
+
+export const mockPreferences: PassengerPreferences = {
+  seat: 'Any',
+  cabin: 'Any',
+  meal: 'Any',
+};

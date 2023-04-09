@@ -3,18 +3,17 @@ import React from 'react';
 
 interface EnumProps {
   _enum: any;
-  children?: React.ReactNode;
+  disabled: boolean;
 }
 
 export default function EnumRadio({
   _enum,
-  children,
+  disabled,
   ...formItemProps
 }: EnumProps & FormItemProps) {
   return (
     <Form.Item {...formItemProps}>
-      <Radio.Group>
-        {children}
+      <Radio.Group disabled={disabled}>
         {Object.keys(_enum).map((enumKey) => (
           <Radio value={enumKey} key={enumKey}>
             {_enum[enumKey]}

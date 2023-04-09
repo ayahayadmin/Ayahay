@@ -1,8 +1,13 @@
-import { Divider, Form, Radio, Select, Skeleton } from 'antd';
+import { Button, Divider, Form, Radio, Select, Skeleton } from 'antd';
 import React from 'react';
 
 import Trip from '@/common/models/trip.model';
-import { CABIN_TYPE, SEAT_TYPE, SEX } from '@/common/constants/enum';
+import {
+  CABIN_TYPE,
+  getEnumKeyFromValue,
+  SEAT_TYPE,
+  SEX,
+} from '@/common/constants/enum';
 import EnumRadio from '@/common/components/form/EnumRadio';
 
 interface PassengerPreferencesFormProps {
@@ -39,28 +44,46 @@ export default function PassengerPreferencesForm({
                   {`Preferences for ${passengers[index].firstName} ${passengers[index].lastName}`}
                 </Divider>
                 {index > 0 && (
-                  <button onClick={() => copyPreferences(0, index)}>
+                  <Button type='link' onClick={() => copyPreferences(0, index)}>
                     {passengers[index].firstName} has the same preferences as me
-                  </button>
+                  </Button>
                 )}
-                <EnumRadio
-                  _enum={SEAT_TYPE}
+                <Form.Item
                   {...restField}
                   name={[name, 'preferences', 'seat']}
                   label='Seat Preference'
                   colon={false}
                 >
-                  <Radio value='Any'>Any</Radio>
-                </EnumRadio>
-                <EnumRadio
-                  _enum={CABIN_TYPE}
+                  <Radio.Group>
+                    <Radio value='Any'>Any</Radio>
+                    {trip.availableSeatTypes.map((seatType, index) => (
+                      <Radio
+                        value={getEnumKeyFromValue(SEAT_TYPE, seatType)}
+                        key={index}
+                      >
+                        {seatType}
+                      </Radio>
+                    ))}
+                  </Radio.Group>
+                </Form.Item>
+                <Form.Item
                   {...restField}
                   name={[name, 'preferences', 'cabin']}
                   label='Cabin Preference'
                   colon={false}
                 >
-                  <Radio value='Any'>Any</Radio>
-                </EnumRadio>
+                  <Radio.Group>
+                    <Radio value='Any'>Any</Radio>
+                    {trip.availableCabins.map((cabin, index) => (
+                      <Radio
+                        value={getEnumKeyFromValue(CABIN_TYPE, cabin)}
+                        key={index}
+                      >
+                        {cabin}
+                      </Radio>
+                    ))}
+                  </Radio.Group>
+                </Form.Item>
                 <Form.Item
                   {...restField}
                   name={[name, 'preferences', 'meal']}
@@ -78,9 +101,12 @@ export default function PassengerPreferencesForm({
                   />
                 </Form.Item>
                 {index === 0 && passengers.length > 1 && (
-                  <button onClick={() => copyToCompanionPreferences()}>
+                  <Button
+                    type='link'
+                    onClick={() => copyToCompanionPreferences()}
+                  >
                     My companions all have the same seat preferences
-                  </button>
+                  </Button>
                 )}
               </div>
             ))}

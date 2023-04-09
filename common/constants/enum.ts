@@ -34,3 +34,7 @@ export enum TRIP_TYPE {
   Round = 'Round Trip',
   Multiple = 'Multiple Trips',
 }
+
+export function getEnumKeyFromValue(enumType: any, enumValue: any): string {
+  return Object.keys(enumType).find((key) => enumType[key] === enumValue) || '';
+}

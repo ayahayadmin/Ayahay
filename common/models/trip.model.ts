@@ -2,7 +2,7 @@ import ShippingLine, {
   mockShippingLine,
 } from '@/common/models/shipping-line.model';
 import Port, { mockPort, mockPort2 } from '@/common/models/port.model';
-import { SEAT_TYPE } from '@/common/constants/enum';
+import { CABIN_TYPE, SEAT_TYPE } from '@/common/constants/enum';
 import Ship, { mockShip } from './ship.model';
 
 export default interface Trip {
@@ -14,6 +14,7 @@ export default interface Trip {
   departureDateIso: string;
   baseFare: number;
   availableSeatTypes: SEAT_TYPE[];
+  availableCabins: CABIN_TYPE[];
   meals: string[];
 }
 
@@ -32,6 +33,7 @@ export const mockTrip: Trip = {
     SEAT_TYPE.LowerBunkBed,
     SEAT_TYPE.UpperBunkBed,
   ],
+  availableCabins: [CABIN_TYPE.Business, CABIN_TYPE.Economy, CABIN_TYPE.First],
   meals: ['Tapsilog', 'Bacsilog', 'Longsilog'],
 };
 
@@ -51,6 +53,11 @@ export const mockTrips: Trip[] = [
       SEAT_TYPE.LowerBunkBed,
       SEAT_TYPE.UpperBunkBed,
     ],
+    availableCabins: [
+      CABIN_TYPE.Business,
+      CABIN_TYPE.Economy,
+      CABIN_TYPE.First,
+    ],
     meals: ['Tapsilog', 'Bacsilog', 'Longsilog'],
   },
   {
@@ -67,6 +74,11 @@ export const mockTrips: Trip[] = [
       SEAT_TYPE.Window,
       SEAT_TYPE.LowerBunkBed,
       SEAT_TYPE.UpperBunkBed,
+    ],
+    availableCabins: [
+      CABIN_TYPE.Business,
+      CABIN_TYPE.Economy,
+      CABIN_TYPE.First,
     ],
     meals: ['Tapsilog', 'Bacsilog', 'Longsilog'],
   },

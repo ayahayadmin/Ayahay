@@ -2,7 +2,7 @@
 
 import { Typography } from 'antd';
 import { useEffect, useState } from 'react';
-import TripSummary from '@/app/bookings/create/tripSummary';
+import TripSummary from '@/common/components/booking/TripSummary';
 import { useRouter } from 'next/navigation';
 import Trip from '@/common/models/trip.model';
 import { getTrip } from '@/common/services/trip.service';
@@ -35,7 +35,10 @@ export default function CreateBooking() {
   return (
     <div>
       <Title level={1}>Create Booking</Title>
-      <TripSummary trip={trip} />
+      <article>
+        <Title level={2}>Trip Summary</Title>
+        <TripSummary trip={trip} />
+      </article>
       <CreateBookingForm trip={trip} />
     </div>
   );

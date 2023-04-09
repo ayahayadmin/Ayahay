@@ -1,11 +1,30 @@
 import { Button, DatePicker, Divider, Form, Input, Radio } from 'antd';
-import React from 'react';
+import React, { useState } from 'react';
 import { CIVIL_STATUS, SEX } from '@/common/constants/enum';
 import EnumRadio from '@/common/components/form/EnumRadio';
 import { DEFAULT_PASSENGER } from '@/common/constants/default';
+import Passenger from '@/common/models/passenger';
+import AddCompanionsModal from '@/common/components/booking/AddCompanionsModal';
 
-export default function PassengerInformationForm() {
+interface PassengerInformationFormProps {
+  loggedInPassenger?: Passenger;
+}
+
+export default function PassengerInformationForm({
+  loggedInPassenger,
+}: PassengerInformationFormProps) {
   const form = Form.useFormInstance();
+  const passengers = Form.useWatch('passengers', form);
+  const [companionModalOpen, setCompanionModalOpen] = useState(false);
+
+  const addPassengers = (companions: Passenger[]) => {
+    setCompanionModalOpen(false);
+    let nextIndex = passengers.length;
+    companions.forEach((companion) => {
+      form.setFieldValue(['passengers', nextIndex], companion);
+      nextIndex++;
+    });
+  };
 
   return (
     <Form.List name='passengers'>
@@ -22,7 +41,10 @@ export default function PassengerInformationForm() {
                 colon={false}
                 rules={[{ required: true, message: 'Missing first name' }]}
               >
-                <Input placeholder='First Name' />
+                <Input
+                  disabled={passengers?.[index]?.id !== undefined}
+                  placeholder='First Name'
+                />
               </Form.Item>
               <Form.Item
                 {...restField}
@@ -31,7 +53,10 @@ export default function PassengerInformationForm() {
                 colon={false}
                 rules={[{ required: true, message: 'Missing last name' }]}
               >
-                <Input placeholder='Last Name' />
+                <Input
+                  disabled={passengers?.[index]?.id !== undefined}
+                  placeholder='Last Name'
+                />
               </Form.Item>
               <Form.Item
                 {...restField}
@@ -40,10 +65,14 @@ export default function PassengerInformationForm() {
                 colon={false}
                 rules={[{ required: true, message: 'Missing occupation' }]}
               >
-                <Input placeholder='Doctor, Lawyer, or Failure' />
+                <Input
+                  disabled={passengers?.[index]?.id !== undefined}
+                  placeholder='Doctor, Lawyer, or Failure'
+                />
               </Form.Item>
               <EnumRadio
                 _enum={SEX}
+                disabled={passengers?.[index]?.id !== undefined}
                 {...restField}
                 name={[name, 'sex']}
                 label='Sex'
@@ -52,6 +81,7 @@ export default function PassengerInformationForm() {
               />
               <EnumRadio
                 _enum={CIVIL_STATUS}
+                disabled={passengers?.[index]?.id !== undefined}
                 {...restField}
                 name={[name, 'civilStatus']}
                 label='Civil Status'
@@ -65,7 +95,11 @@ export default function PassengerInformationForm() {
                 colon={false}
                 rules={[{ required: true, message: 'Missing date of birth' }]}
               >
-                <DatePicker format='YYYY/MM/DD' placeholder='YYYY/MM/DD' />
+                <DatePicker
+                  disabled={passengers?.[index]?.id !== undefined}
+                  format='YYYY/MM/DD'
+                  placeholder='YYYY/MM/DD'
+                />
               </Form.Item>
               <Form.Item
                 {...restField}
@@ -74,7 +108,10 @@ export default function PassengerInformationForm() {
                 colon={false}
                 rules={[{ required: true, message: 'Missing address' }]}
               >
-                <Input placeholder='Region, Province, Municipality' />
+                <Input
+                  disabled={passengers?.[index]?.id !== undefined}
+                  placeholder='Region, Province, Municipality'
+                />
               </Form.Item>
               <Form.Item
                 {...restField}
@@ -83,18 +120,37 @@ export default function PassengerInformationForm() {
                 colon={false}
                 rules={[{ required: true, message: 'Missing nationality' }]}
               >
-                <Input placeholder='Filipino, Chinese, American, etc.' />
+                <Input
+                  disabled={passengers?.[index]?.id !== undefined}
+                  placeholder='Filipino, Chinese, American, etc.'
+                />
               </Form.Item>
               {index > 0 && (
                 <Button onClick={() => remove(name)}>Remove Passenger</Button>
               )}
             </div>
           ))}
-          <Form.Item>
-            <Button type='dashed' onClick={() => add(DEFAULT_PASSENGER)} block>
-              Add Passenger
+
+          <Button type='dashed' onClick={() => add(DEFAULT_PASSENGER)} block>
+            Add Companion
+          </Button>
+          {loggedInPassenger && (
+            <Button
+              type='dashed'
+              onClick={() => setCompanionModalOpen(true)}
+              block
+            >
+              Add Recent Companions
             </Button>
-          </Form.Item>
+          )}
+          {loggedInPassenger && (
+            <AddCompanionsModal
+              open={companionModalOpen}
+              loggedInPassenger={loggedInPassenger}
+              onSubmitCompanions={addPassengers}
+              onCancel={() => setCompanionModalOpen(false)}
+            />
+          )}
         </>
       )}
     </Form.List>
