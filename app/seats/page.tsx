@@ -1,5 +1,5 @@
 'use client';
-import { find, times } from 'lodash';
+import { filter, find, split, times } from 'lodash';
 import styles from './page.module.scss';
 import { useEffect, useState } from 'react';
 import { CABIN_TYPE } from '@/common/constants/enum';
@@ -10,16 +10,28 @@ import {
   mockCabinFirst,
 } from '@/common/models/cabin.model';
 import Seat, { mockSeats } from '@/common/models/seat.model';
+import { Select } from 'antd';
+
+const options = [
+  //this is the available cabin and floors in a ship. mock for now
+  { value: 'Economy,first floor', label: 'Economy, First Floor' },
+  { value: 'Economy,second floor', label: 'Economy, Second Floor' },
+  { value: 'Business,first floor', label: 'Business, First Floor' },
+  { value: 'First,first floor', label: 'First, First Floor' },
+];
 
 export default function Seats() {
-  //props: shipId, trip preference, cabin type, floor, seats occupied
+  //props: shipId, trip preference, Cabin object (cabin type & floor), seats occupied
   const shipId = 1;
   const cabinType = CABIN_TYPE.Economy;
   const floor = 'second floor';
+  const preSelectedValue = `${split(cabinType, ' ')[0]},${floor}`;
 
   const [rows, setRows] = useState(0);
   const [cols, setCols] = useState(0);
   const [bookedSeats, setBookedSeats] = useState([] as Seat[]);
+  const [selectedCabin, setSelectedCabin] = useState(preSelectedValue);
+  const [capacity, setCapacity] = useState(0);
 
   useEffect(() => {
     const fetchCabins = [
@@ -29,12 +41,35 @@ export default function Seats() {
       mockCabinFirst,
     ];
     const fetchSeats = mockSeats;
-    setBookedSeats(fetchSeats);
 
-    const cabin = find(fetchCabins, { shipId, type: cabinType, name: floor });
+    const [type, name] = split(selectedCabin, ',');
+
+    const cabin = find(fetchCabins, {
+      shipId,
+      type: CABIN_TYPE[type as keyof typeof CABIN_TYPE],
+      name,
+    });
+    const seatsBooked = filter(fetchSeats, {
+      cabin: { type: CABIN_TYPE[type as keyof typeof CABIN_TYPE], name },
+    });
+
     setRows(cabin!.numOfRows);
     setCols(cabin!.numOfCols);
-  }, []);
+    setCapacity(cabin!.passengerCapacity);
+    setBookedSeats(seatsBooked);
+  }, [selectedCabin]);
+
+  const onChange = (value: string) => {
+    const selectedSeatsElement = document.getElementsByClassName(
+      `${styles.selected}`
+    );
+
+    while (selectedSeatsElement.length) {
+      selectedSeatsElement[0].classList.remove(`${styles.selected}`);
+    }
+
+    setSelectedCabin(value);
+  };
 
   const onSeatClick = (row: number, col: number) => {
     const seatElement = document.getElementById(`${row} ${col}`);
@@ -51,28 +86,14 @@ export default function Seats() {
   return (
     <div>
       <div className={styles.movieContainer}>
-        <label>Select a cabin</label>
-        <select id='movie'>
-          <option value='220'>{CABIN_TYPE.Economy}</option>
-          <option value='320'>{CABIN_TYPE.Business}</option>
-          <option value='250'>{CABIN_TYPE.First}</option>
-        </select>
+        Cabin Type:{' '}
+        <Select
+          defaultValue={preSelectedValue}
+          onChange={onChange}
+          options={options}
+        ></Select>
       </div>
 
-      {/* <ul className={styles.showcase}>
-        <li>
-          <div className={styles.seat}></div>
-          <small>Available</small>
-        </li>
-        <li>
-          <div className={`${styles.seat} ${styles.selected}`}></div>
-          <small>Selected</small>
-        </li>
-        <li>
-          <div className={`${styles.seat} ${styles.sold}`}></div>
-          <small>Sold</small>
-        </li>
-      </ul> */}
       <div className={styles.container}>
         {times(rows, (rowIdx) => {
           let seatClassName = styles.seat;
@@ -98,10 +119,11 @@ export default function Seats() {
         })}
       </div>
 
-      <p className={styles.text}>
-        You have selected <span id='count'>0</span> seat for a price of RS.
-        <span id='total'>0</span>
-      </p>
+      <div className={styles.text}>
+        Total cabin capacity: <span>{capacity}</span>
+        <br></br>
+        Seats left unoccupied: <span>{capacity - bookedSeats.length}</span>
+      </div>
     </div>
   );
 }
