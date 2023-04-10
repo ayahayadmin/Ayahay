@@ -25,8 +25,8 @@ export const mockCabinEconomy2: Cabin = {
   shipId: 1,
   type: CABIN_TYPE.Economy,
   name: 'second floor',
-  passengerCapacity: 120,
-  numOfRows: 20,
+  passengerCapacity: 60,
+  numOfRows: 10,
   numOfCols: 6,
 };
 
