@@ -1,3 +1,41 @@
 .ant-picker-input svg {
   display: none;
 }
+
+.trip-search-query {
+    padding: 20px 50px;
+    display: flex;
+    flex-direction: column;
+
+    button {
+        background-color: #051036;
+    }
+
+    .search-container {
+        margin: 0;
+
+        .search-main {
+            background-color: #fff;
+            border-radius: 4px;
+            padding: 10px;
+            width: fit-content;
+            display: flex;
+            align-items: center;
+
+            .port-card {
+                padding: 0 60px 0 20px;
+                border-right: 1px solid #DDDDDD;
+            }
+
+            .date-card {
+                padding: 0 0 0 20px;
+                border-right: 1px solid #DDDDDD;
+            }
+
+            .travellers-card {
+                padding: 0 20px 0 20px;
+
+            }
+        }
+    }
+}

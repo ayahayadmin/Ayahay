@@ -1,0 +1,30 @@
+.main-title {
+    margin: 25px 50px 0px 50px;
+}
+
+.main-container {
+    display: flex;
+    align-items: start;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 50px;
+    padding: 0 50px 50px 50px;
+
+    .passenger-info {
+        border: 1px solid #DDD;
+        border-radius: 4px;
+        flex: 1 0 auto;
+    }
+
+    .trip-summary {
+        max-width: 425px;
+        padding: 25px;
+        border: 1px solid #DDD;
+        border-radius: 4px;
+
+        h2 {
+            margin-bottom: 20px;
+        }
+
+    }
+}

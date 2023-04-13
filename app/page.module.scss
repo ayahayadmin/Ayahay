@@ -1,3 +1,19 @@
+.heading {
+    background-color: #edf0fb;
+
+    .h1 {
+        color: #051036;
+        font-size: 60px;
+        font-weight: 500;
+        padding-left: 50px;
+    }
+    
+    .h2 {
+        color: #697488;
+        padding-left: 50px;
+    }
+}
+
 .main {
   display: flex;
   flex-direction: column;
