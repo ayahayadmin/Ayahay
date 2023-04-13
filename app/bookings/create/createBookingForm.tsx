@@ -1,11 +1,13 @@
-import { Button, Form, Steps, Typography } from 'antd';
+import { Button, Form, Spin, Steps, Typography } from 'antd';
 import Trip from '@/common/models/trip.model';
 import PassengerInformationForm from '@/common/components/booking/PassengerInformationForm';
 import React, { useState } from 'react';
 import PassengerPreferencesForm from '@/common/components/booking/PassengerPreferencesForm';
 import { DEFAULT_PASSENGER } from '@/common/constants/default';
-import PassengersSummary from '@/common/components/booking/PassengersSummary';
-import Passenger, { mockFather } from '@/common/models/passenger';
+import BookingSummary from '@/common/components/booking/BookingSummary';
+import Passenger, { mockFather, toFormValue } from '@/common/models/passenger';
+import Booking from '@/common/models/booking.model';
+import { createTentativeBookingFromPassengerPreferences } from '@/common/services/booking.service';
 
 const { Title } = Typography;
 
@@ -14,46 +16,20 @@ interface CreateBookingFormProps {
 }
 
 const steps = [
-  {
-    title: 'Passenger Information',
-    fieldNamesToValidate: [
-      'firstName',
-      'lastName',
-      'occupation',
-      'sex',
-      'civilStatus',
-      'birthday',
-      'address',
-      'nationality',
-    ],
-  },
-  { title: 'Passenger Preferences', fieldNamesToValidate: [] },
-  { title: 'Confirm Passengers', fieldNamesToValidate: [] },
+  { title: 'Passenger Information' },
+  { title: 'Passenger Preferences' },
+  { title: 'Review Booking' },
+  { title: 'Confirm Booking' },
 ];
 
 export default function CreateBookingForm({ trip }: CreateBookingFormProps) {
   const [form] = Form.useForm();
   const passengers = Form.useWatch('passengers', form);
+  const [loadingMessage, setLoadingMessage] = useState<string>('');
   const [loggedInPassenger, setLoggedInPassenger] = useState<Passenger>();
+  const [bookingPreview, setBookingPreview] = useState<Booking>();
 
   const [currentStep, setCurrentStep] = useState(0);
-
-  const validateFieldsInCurrentStep = async () => {
-    try {
-      const passengerList: any[] = passengers ?? [];
-      const fieldNames = steps[currentStep].fieldNamesToValidate;
-      const namePaths: (string | number)[][] = [];
-      passengerList.forEach((_, index) => {
-        fieldNames.forEach((fieldName) =>
-          namePaths.push(['passengers', index, fieldName])
-        );
-      });
-      await form.validateFields(namePaths);
-      nextStep();
-    } catch (formErrors) {
-      console.error(formErrors);
-    }
-  };
 
   const nextStep = () => {
     setCurrentStep(currentStep + 1);
@@ -63,9 +39,27 @@ export default function CreateBookingForm({ trip }: CreateBookingFormProps) {
     setCurrentStep(currentStep - 1);
   };
 
+  const findSeats = () => {
+    setLoadingMessage(
+      'Looking for available seats that match your preferences...'
+    );
+    setTimeout(() => {
+      if (trip === undefined) {
+        return;
+      }
+      const tentativeBooking = createTentativeBookingFromPassengerPreferences(
+        trip?.id,
+        passengers.map((passenger: Passenger) => passenger.preferences)
+      );
+      setBookingPreview(tentativeBooking);
+      setLoadingMessage('');
+      nextStep();
+    }, 5000);
+  };
+
   const onLogin = () => {
     setLoggedInPassenger(mockFather);
-    form.setFieldValue(['passengers', 0], mockFather);
+    form.setFieldValue(['passengers', 0], toFormValue(mockFather));
   };
 
   const items = steps.map(({ title }) => ({ key: title, title: title }));
@@ -80,38 +74,36 @@ export default function CreateBookingForm({ trip }: CreateBookingFormProps) {
       onFinish={(values) => console.log(values)}
     >
       <Steps current={currentStep} items={items} />
-      <div style={{ display: currentStep === 0 ? 'block' : 'none' }}>
-        <Title level={2}>Passenger Information</Title>
-        <Button type='link' onClick={() => onLogin()}>
-          Have an account? Log in to book faster.
-        </Button>
-        <PassengerInformationForm loggedInPassenger={loggedInPassenger} />
-      </div>
-      <div style={{ display: currentStep === 1 ? 'block' : 'none' }}>
-        <Title level={2}>Passenger Preferences</Title>
-        <PassengerPreferencesForm trip={trip} />
-      </div>
-      <div style={{ display: currentStep === 2 ? 'block' : 'none' }}>
-        <Title level={2}>Confirm Passengers</Title>
-        <PassengersSummary passengers={passengers} />
-      </div>
-      <Form.Item>
-        {currentStep < steps.length - 1 && (
-          <Button type='primary' onClick={() => validateFieldsInCurrentStep()}>
-            Next
+      <Spin spinning={loadingMessage?.length > 0} tip={loadingMessage}>
+        <div style={{ display: currentStep === 0 ? 'block' : 'none' }}>
+          <Title level={2}>Passenger Information</Title>
+          <Button type='link' onClick={() => onLogin()}>
+            Have an account? Log in to book faster.
           </Button>
-        )}
-        {currentStep === steps.length - 1 && (
-          <Button type='primary' htmlType='submit'>
-            Done
-          </Button>
-        )}
-        {currentStep > 0 && (
-          <Button style={{ margin: '0 8px' }} onClick={() => previousStep()}>
-            Previous
-          </Button>
-        )}
-      </Form.Item>
+          <PassengerInformationForm
+            loggedInPassenger={loggedInPassenger}
+            onNextStep={nextStep}
+            onPreviousStep={previousStep}
+          />
+        </div>
+        <div style={{ display: currentStep === 1 ? 'block' : 'none' }}>
+          <Title level={2}>Passenger Preferences</Title>
+          <PassengerPreferencesForm
+            trip={trip}
+            onNextStep={findSeats}
+            onPreviousStep={previousStep}
+          />
+        </div>
+        <div style={{ display: currentStep === 2 ? 'block' : 'none' }}>
+          <Title level={2}>Review Booking</Title>
+          <BookingSummary booking={bookingPreview} />
+          <div>
+            <Button type='primary' onClick={() => nextStep()}>
+              Next
+            </Button>
+          </div>
+        </div>
+      </Spin>
     </Form>
   );
 }
