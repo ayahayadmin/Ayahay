@@ -1,4 +1,5 @@
 import { Button, Form, Spin, Steps, Typography } from 'antd';
+import styles from './createBookingForm.module.scss';
 import Trip from '@/common/models/trip.model';
 import PassengerInformationForm from '@/common/components/booking/PassengerInformationForm';
 import React, { useState } from 'react';
@@ -67,6 +68,7 @@ export default function CreateBookingForm({ trip }: CreateBookingFormProps) {
   return (
     <Form
       form={form}
+      className={styles['main-container']}
       initialValues={{
         passengers: [DEFAULT_PASSENGER],
       }}
