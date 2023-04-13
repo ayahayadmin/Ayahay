@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
 import { Form } from 'antd';
-import styles from './trips.module.scss';
+import styles from './page.module.scss';
 import debounce from 'lodash/debounce';
 import {
   buildSearchQueryFromSearchForm,
@@ -62,17 +62,31 @@ export default function Trips() {
       onValuesChange={(_, __) => debounceSearch()}
       onFinish={(_) => debounceSearch()}
     >
-      <TripSearchQuery />
-      <TripSortOptions name='sort' label='Sort By' />
-      <div className={styles.tripsBody}>
-        <div className={styles.filter}>
-          <CabinFilter name='cabinTypes' label='Cabin Types' />
-          <ShippingLineFilter name='shippingLineIds' label='Shipping Lines' />
+    <div className={styles['query-container']}>
+        <TripSearchQuery />
+    </div>
+        <div className={styles['main-container']}>
+            <div className={styles['left-container']}>
+                <div className={styles['left-card']}>
+                    <div className={styles['cabin-card']}>
+                        <CabinFilter name='cabinTypes' label='Cabin Types' />
+                    </div>
+                    <div className={styles['shipping-card']}>
+                        <ShippingLineFilter name='shippingLineIds' label='Shipping Lines' />
+                    </div>
+                </div>
+            </div>
+            <div className={styles['right-container']}>
+                <div className={styles['sort-container']}>
+                    <div className={styles['sort-card']}>
+                        <TripSortOptions name='sort' label='Sort By' />
+                    </div>
+                </div>
+                <div className={styles['results-card']}>
+                    <SearchResult searchQuery={searchQuery} />
+                </div>
+            </div>
         </div>
-        <div className={styles.searchResult}>
-          <SearchResult searchQuery={searchQuery} />
-        </div>
-      </div>
     </Form>
   );
 }

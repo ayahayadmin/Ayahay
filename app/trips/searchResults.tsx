@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Pagination, Skeleton, Space, Table } from 'antd';
-import styles from './trips.module.scss';
+import styles from './page.module.scss';
 import Trip from '@/common/models/trip.model';
 import { find, get, split, toNumber } from 'lodash';
 import { getPorts } from '@/common/services/port.service';
@@ -131,12 +131,14 @@ export default function SearchResult({ searchQuery }: SearchResultsProps) {
 
   return (
     <div>
-      <strong>{totalItems} result(s)</strong> based on the search
+      <div>
+        <strong>{totalItems} result(s)</strong> based on the search
+      </div>
       <Skeleton
         loading={loading}
         active
         title={false}
-        paragraph={{ rows: 5, width: [1300, 1300, 1300, 1300, 1300] }}
+        paragraph={{ rows: 5, width: ['100%', '100%', '100%', '100%', '100%'] }}
       >
         <Table
           columns={columns}
