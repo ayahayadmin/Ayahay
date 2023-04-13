@@ -29,10 +29,12 @@ export default function PassengerCount() {
       content={passengerCountPopoverContent}
       trigger='click'
     >
-      <span>{numAdults ?? DEFAULT_NUM_ADULTS} Adults | </span>
-      <span>{numChildren ?? DEFAULT_NUM_CHILDREN} Children | </span>
-      <span>{numInfants ?? DEFAULT_NUM_INFANTS} Infants</span>
-
+      <label>Travellers</label>
+      <div>
+        <span>{numAdults ?? DEFAULT_NUM_ADULTS} Adults | </span>
+        <span>{numChildren ?? DEFAULT_NUM_CHILDREN} Children | </span>
+        <span>{numInfants ?? DEFAULT_NUM_INFANTS} Infants</span>
+      </div>
       <Form.Item name='numAdults' hidden={true}>
         <InputNumber />
       </Form.Item>
