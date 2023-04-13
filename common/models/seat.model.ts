@@ -1,6 +1,5 @@
-import { CABIN_TYPE } from '../constants/enum';
 import { SEAT_TYPE } from '../constants/enum';
-import Cabin from './cabin.model';
+import Cabin, { mockCabinEconomy } from './cabin.model';
 
 export default interface Seat {
   id: number;
@@ -8,18 +7,8 @@ export default interface Seat {
   rowNumber: number;
   columnNumber: number;
   type: SEAT_TYPE;
-  cabin: Cabin;
+  cabin?: Cabin;
 }
-
-const mockCabinEconomy1: Cabin = {
-  id: 1,
-  shipId: 1,
-  type: CABIN_TYPE.Economy,
-  name: 'first floor',
-  passengerCapacity: 120,
-  numOfRows: 20,
-  numOfCols: 6,
-};
 
 export const mockSeat: Seat = {
   id: 1,
@@ -27,7 +16,6 @@ export const mockSeat: Seat = {
   rowNumber: 2,
   columnNumber: 5,
   type: SEAT_TYPE.Aisle,
-  cabin: mockCabinEconomy1,
 };
 
 export const mockSeats: Seat[] = [
@@ -38,7 +26,6 @@ export const mockSeats: Seat[] = [
     rowNumber: 1,
     columnNumber: 1,
     type: SEAT_TYPE.Window,
-    cabin: mockCabinEconomy1,
   },
   {
     id: 3,
@@ -46,7 +33,6 @@ export const mockSeats: Seat[] = [
     rowNumber: 5,
     columnNumber: 5,
     type: SEAT_TYPE.Window,
-    cabin: mockCabinEconomy1,
   },
   {
     id: 4,
@@ -54,6 +40,5 @@ export const mockSeats: Seat[] = [
     rowNumber: 19,
     columnNumber: 5,
     type: SEAT_TYPE.SingleBed,
-    cabin: mockCabinEconomy1,
   },
 ];

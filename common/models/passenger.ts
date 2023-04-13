@@ -3,6 +3,7 @@ import { Profile } from '@/common/models/profile.model';
 import PassengerPreferences, {
   mockPreferences,
 } from '@/common/models/passenger-preferences';
+import dayjs from 'dayjs';
 
 export default interface Passenger {
   id?: number;
@@ -70,3 +71,12 @@ export const mockFather: Passenger = {
   preferences: mockPreferences,
   companions: [mockWife, mockSon],
 };
+
+// antd form doesn't accept ISO date strings as valid dates, so we have to manually set it
+export function toFormValue(passenger: Passenger) {
+  const { birthdayIso, ...otherPassengerProperties } = passenger;
+  return {
+    birthdayIso: dayjs(birthdayIso),
+    ...otherPassengerProperties,
+  };
+}
