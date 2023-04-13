@@ -11,6 +11,7 @@ import { Form } from 'antd';
 import { useRouter } from 'next/navigation';
 import dayjs from 'dayjs';
 import { buildUrlQueryParamsFromSearchForm } from '@/common/services/search.service';
+import styles from './page.module.scss';
 
 export default function Home() {
   const router = useRouter();
@@ -35,7 +36,13 @@ export default function Home() {
         }}
         onFinish={redirectToSearchResults}
       >
-        <TripSearchQuery />
+        <div className={styles['heading']}>
+            <div className={styles['h1']}>Where Do You Want to Go?</div>
+            <div className={styles['h2']}>Travel around the Philippines</div>
+            <TripSearchQuery />
+        </div>
+
+        
       </Form>
       <AboutUsCard />
     </div>
