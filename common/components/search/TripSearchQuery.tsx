@@ -15,64 +15,74 @@ export default function TripSearchQuery() {
   const destPortId = Form.useWatch('destPortId', form);
 
   return (
-    <>
-      <div id='search-type'>
-        <EnumRadio _enum={TRIP_TYPE} name='tripType' />
-      </div>
+    <article className={styles['trip-search-query']}>
+            <div className={styles['search-container']}>
+                <div className={styles['search-type']}>
+                    <EnumRadio _enum={TRIP_TYPE} name='tripType' />
+                </div>
 
-      <div id='search-main'>
-        <PortAutoComplete
-          excludePortId={destPortId}
-          label='Origin Port'
-          labelCol={{ span: 24 }}
-          colon={false}
-          name='srcPortId'
-        />
-        <PortAutoComplete
-          excludePortId={srcPortId}
-          label='Destination Port'
-          labelCol={{ span: 24 }}
-          colon={false}
-          name='destPortId'
-        />
-        <Form.Item
-          label='Departure Date'
-          labelCol={{ span: 24 }}
-          colon={false}
-          name='departureDate'
-        >
-          <DatePicker
-            className={styles['ant-picker-input']}
-            disabledDate={(current) => current < dayjs().endOf('day')}
-            format='MMM D, YYYY'
-            allowClear={false}
-            bordered={false}
-            size='large'
-          />
-        </Form.Item>
-        {tripType === 'round' && (
-          <Form.Item
-            label='Return Date'
-            labelCol={{ span: 24 }}
-            colon={false}
-            name='returnDate'
-          >
-            <DatePicker
-              className={styles['ant-picker-input']}
-              format='MMM D, YYYY'
-              allowClear={false}
-              bordered={false}
-              size='large'
-            />
-          </Form.Item>
-        )}
-        <PassengerCount />
-        <Form.Item>
-          <Button type='primary' htmlType='submit'>
-            Submit
-          </Button>
-        </Form.Item>
-      </div>
-    </>
+                <div className={styles['search-main']}>
+                    <div className={styles['port-card']}>
+                        <label>Origin Port</label>
+                        <PortAutoComplete
+                        excludePortId={destPortId}
+                        labelCol={{ span: 24 }}
+                        colon={false}
+                        name='srcPortId'
+                        />
+                    </div>
+                    <div className={styles['port-card']}>
+                        <label>Destination Port</label>
+                        <PortAutoComplete
+                        excludePortId={srcPortId}
+                        labelCol={{ span: 24 }}
+                        colon={false}
+                        name='destPortId'
+                        />
+                    </div>
+                    <div className={styles['date-card']}>
+                        <label>Departure Date</label>
+                        <Form.Item
+                        labelCol={{ span: 24 }}
+                        colon={false}
+                        name='departureDate'
+                        >
+                        <DatePicker
+                        className={styles['ant-picker-input']}
+                        disabledDate={(current) => current < dayjs().endOf('day')}
+                        format='MMM D, YYYY'
+                        allowClear={false}
+                        bordered={false}
+                        size='large'
+                        />
+                        </Form.Item>
+                        {tripType === 'round' && (
+                        <Form.Item
+                        label='Return Date'
+                        labelCol={{ span: 24 }}
+                        colon={false}
+                        name='returnDate'
+                        >
+                        <DatePicker
+                        className={styles['ant-picker-input']}
+                        format='MMM D, YYYY'
+                        allowClear={false}
+                        bordered={false}
+                        size='large'
+                        />
+                        </Form.Item>
+                        )}
+                    </div>
+                    <div className={styles['travellers-card']}>
+                        <PassengerCount />
+                    </div>
+                    <Form.Item>
+                    <Button     type='primary' htmlType='submit'>
+                        Submit
+                    </Button>
+                    </Form.Item>
+                </div>
+            </div>
+    </article>
   );
 }
