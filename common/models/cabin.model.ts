@@ -56,5 +56,6 @@ export const mockCabinFirst: Cabin = {
 export const mockCabins: Cabin[] = [
   mockCabinBusiness,
   mockCabinEconomy,
+  mockCabinEconomy2,
   mockCabinFirst,
 ];

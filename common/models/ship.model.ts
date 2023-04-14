@@ -1,4 +1,3 @@
-import Seat, { mockSeats } from './seat.model';
 import Cabin, { mockCabins } from '@/common/models/cabin.model';
 
 export default interface Ship {
@@ -16,3 +15,14 @@ export const mockShip: Ship = {
   vehicleCapacity: 10,
   cabins: mockCabins,
 };
+
+export const mockShips: Ship[] = [
+  mockShip,
+  {
+    id: 2,
+    name: 'Gothong',
+    passengerCapacity: 150,
+    vehicleCapacity: 10,
+    cabins: mockCabins,
+  },
+];
