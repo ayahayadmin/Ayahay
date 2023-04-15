@@ -43,5 +43,3 @@ export const mockSeats: Seat[] = [
     type: SEAT_TYPE.SingleBed,
   },
 ];
-
-mockSeats.forEach((seat) => (seat.cabin = mockCabinEconomy));

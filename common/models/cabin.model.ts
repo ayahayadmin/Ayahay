@@ -65,4 +65,4 @@ export const mockCabins: Cabin[] = [
   mockCabinFirst,
 ];
 
-mockCabins.forEach((cabin) => (cabin.ship = mockShip));
+mockSeats.forEach((seat) => (seat.cabin = mockCabinEconomy));
