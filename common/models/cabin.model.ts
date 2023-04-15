@@ -4,17 +4,19 @@ import Ship, { mockShip } from '@/common/models/ship.model';
 
 export default interface Cabin {
   id: number;
+  shipId: number;
   ship?: Ship;
   type: CABIN_TYPE;
   name: string;
   passengerCapacity: number;
   numOfRows: number;
   numOfCols: number;
-  seats?: Seat[];
+  seats: Seat[];
 }
 
 export const mockCabinEconomy: Cabin = {
   id: 1,
+  shipId: 1,
   type: CABIN_TYPE.Economy,
   name: 'first floor',
   passengerCapacity: 120,
@@ -24,7 +26,8 @@ export const mockCabinEconomy: Cabin = {
 };
 
 export const mockCabinEconomy2: Cabin = {
-  id: 1,
+  id: 2,
+  shipId: 1,
   type: CABIN_TYPE.Economy,
   name: 'second floor',
   passengerCapacity: 60,
@@ -34,7 +37,8 @@ export const mockCabinEconomy2: Cabin = {
 };
 
 export const mockCabinBusiness: Cabin = {
-  id: 2,
+  id: 3,
+  shipId: 1,
   type: CABIN_TYPE.Business,
   name: 'first floor',
   passengerCapacity: 60,
@@ -44,7 +48,8 @@ export const mockCabinBusiness: Cabin = {
 };
 
 export const mockCabinFirst: Cabin = {
-  id: 3,
+  id: 4,
+  shipId: 1,
   type: CABIN_TYPE.First,
   name: 'first floor',
   passengerCapacity: 30,
@@ -59,3 +64,5 @@ export const mockCabins: Cabin[] = [
   mockCabinEconomy2,
   mockCabinFirst,
 ];
+
+mockCabins.forEach((cabin) => (cabin.ship = mockShip));
