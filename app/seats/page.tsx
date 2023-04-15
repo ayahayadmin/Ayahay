@@ -1,16 +1,15 @@
 'use client';
-import { filter, find, split, times } from 'lodash';
+import { filter, find, get, map, split, times } from 'lodash';
 import styles from './page.module.scss';
 import { useEffect, useState } from 'react';
 import { CABIN_TYPE } from '@/common/constants/enum';
-import {
-  mockCabinBusiness,
-  mockCabinEconomy,
-  mockCabinEconomy2,
-  mockCabinFirst,
-} from '@/common/models/cabin.model';
-import Seat, { mockSeats } from '@/common/models/seat.model';
+import Seat from '@/common/models/seat.model';
 import { Select } from 'antd';
+import { mockShips } from '@/common/models/ship.model';
+import { mockTrip } from '@/common/models/trip.model';
+import { getAllBookingsOfTrip } from '@/common/services/booking.service';
+import { mockBookingPassengers } from '@/common/models/booking-passenger.model';
+import { mockBookings } from '@/common/models/booking.model';
 
 const options = [
   //this is the available cabin and floors in a ship. mock for now
@@ -22,6 +21,7 @@ const options = [
 
 export default function Seats() {
   //props: shipId, trip preference, Cabin object (cabin type & floor), seats occupied
+  const trip = mockTrip;
   const shipId = 1;
   const cabinType = CABIN_TYPE.Economy;
   const floor = 'second floor';
@@ -34,23 +34,25 @@ export default function Seats() {
   const [capacity, setCapacity] = useState(0);
 
   useEffect(() => {
-    const fetchCabins = [
-      mockCabinEconomy,
-      mockCabinEconomy2,
-      mockCabinBusiness,
-      mockCabinFirst,
-    ];
-    const fetchSeats = mockSeats;
+    const fetchShip = mockShips;
+    const fetchBookings = mockBookings; //getAllBookingsOfTrip(trip.id);
+    const fetchBookingPassenger = mockBookingPassengers;
 
     const [type, name] = split(selectedCabin, ',');
 
-    const cabin = find(fetchCabins, {
-      shipId,
+    const ship = find(fetchShip, { id: shipId });
+    const filteredBookings = filter(fetchBookings, { trip });
+
+    const cabin = find(get(ship, 'cabins'), {
       type: CABIN_TYPE[type as keyof typeof CABIN_TYPE],
       name,
     });
-    const seatsBooked = filter(fetchSeats, {
-      cabin: { type: CABIN_TYPE[type as keyof typeof CABIN_TYPE], name },
+    const seatsBooked = map(filteredBookings, (booking) => {
+      const occupiedSeat = get(
+        find(fetchBookingPassenger, { bookingId: booking.id }),
+        'seat'
+      );
+      return occupiedSeat!;
     });
 
     setRows(cabin!.numOfRows);
