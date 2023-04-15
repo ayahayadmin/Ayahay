@@ -1,5 +1,5 @@
-import BookingPassenger from "./booking-passenger.model";
-import Trip, { mockTrip } from "./trip.model";
+import BookingPassenger from './booking-passenger.model';
+import Trip, { mockTrip } from './trip.model';
 
 export default interface Booking {
   id: number;
@@ -8,7 +8,7 @@ export default interface Booking {
   numOfCars: number;
   paymentReference: string;
   checkInDate: string;
-  bookingPassengers?: BookingPassenger[]
+  bookingPassengers?: BookingPassenger[];
 }
 
 export const mockBooking: Booking = {
