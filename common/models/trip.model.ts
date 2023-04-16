@@ -24,7 +24,7 @@ export const mockTrip: Trip = {
   ship: mockShip,
   shippingLine: mockShippingLine,
   srcPort: mockPort,
-  destPort: mockPort,
+  destPort: mockPort2,
   type: 'Single',
   departureDateIso: '2023-03-12T04:50:22+0000',
   baseFare: 20,

@@ -1,8 +1,10 @@
 import { SEAT_TYPE } from '../constants/enum';
+import Cabin from '@/common/models/cabin.model';
 
 export default interface Seat {
   id: number;
   cabinId: number;
+  cabin?: Cabin;
   name: string;
   rowNumber: number;
   columnNumber: number;
@@ -16,25 +18,38 @@ let mockFirstClassSeats: Seat[] = [];
 for (let i = 0; i < 2; i++) {
   for (let j = 1; j <= 4; j++) {
     let seatType: keyof typeof SEAT_TYPE;
-    if (j === 0) {
+    if (j === 1) {
       seatType = 'Window';
-    } else if (j === 1) {
-      seatType = 'Aisle';
     } else if (j === 2) {
+      seatType = 'Aisle';
+    } else if (j === 3) {
       seatType = 'LowerBunkBed';
     } else {
       seatType = 'UpperBunkBed';
     }
     const seat = {
-      id: i * 2 + j,
       rowNumber: i,
       columnNumber: j,
-      name: `${i === 0 ? 'A' : 'B'}${j}`,
       type: seatType,
     };
-    mockEconomyClassSeats.push({ cabinId: 1, ...seat });
-    mockBusinessClassSeats.push({ cabinId: 3, ...seat });
-    mockFirstClassSeats.push({ cabinId: 4, ...seat });
+    mockEconomyClassSeats.push({
+      id: i * 4 + j,
+      cabinId: 1,
+      name: `EC-${i === 0 ? 'A' : 'B'}${j}`,
+      ...seat,
+    });
+    mockBusinessClassSeats.push({
+      id: i * 4 + j + 50,
+      cabinId: 3,
+      name: `BC-${i === 0 ? 'A' : 'B'}${j}`,
+      ...seat,
+    });
+    mockFirstClassSeats.push({
+      id: i * 4 + j + 100,
+      cabinId: 4,
+      name: `FC-${i === 0 ? 'A' : 'B'}${j}`,
+      ...seat,
+    });
   }
 }
 
