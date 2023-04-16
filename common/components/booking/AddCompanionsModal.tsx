@@ -35,7 +35,7 @@ export default function AddCompanionsModal({
 
   return (
     <Modal onOk={onOkModal} {...modalProps}>
-      <Title level={2}>Add Recent Companions</Title>
+      <Title level={2}>Add Travel Buddies</Title>
       <Checkbox.Group
         options={options}
         onChange={(checkedValues) => setSelectedCompanionIndices(checkedValues)}

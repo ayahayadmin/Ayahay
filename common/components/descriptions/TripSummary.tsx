@@ -29,7 +29,7 @@ export default function TripSummary({ trip }: TripSummaryProps) {
           <Descriptions.Item label='Departure Date'>
             {dayjs(trip.departureDateIso).format('MMM D, YYYY')}
           </Descriptions.Item>
-          <Descriptions.Item label='Negotiated Amount'>
+          <Descriptions.Item label='Shipping Line'>
             {trip.shippingLine.name}
           </Descriptions.Item>
         </Descriptions>

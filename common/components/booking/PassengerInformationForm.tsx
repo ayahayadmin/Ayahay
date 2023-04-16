@@ -194,7 +194,7 @@ export default function PassengerInformationForm({
                 onClick={() => setCompanionModalOpen(true)}
                 block
               >
-                Add Recent Companions
+                Add Travel Buddies
               </Button>
             )}
             {loggedInPassenger && (
