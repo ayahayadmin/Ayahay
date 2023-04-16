@@ -16,7 +16,7 @@ export default function Seats() {
   const trip = mockTrip;
   const shipId = 1;
   const cabinType = CABIN_TYPE.Economy;
-  const floor = 'second floor';
+  const floor = 'first floor';
   const preSelectedValue = `${cabinType},${floor}`;
 
   const [options, setOptions] = useState(
@@ -45,7 +45,7 @@ export default function Seats() {
         label: `${cabin.type}, ${upperFirst(cabin.name)}`,
       };
     });
-    const cabin: any = find(cabins, { type, name });
+    const cabin: any = find(cabins, { type: split(type, ' ')[0], name });
     const seatsBooked = map(filteredBookings, (booking) => {
       const occupiedSeat = get(
         find(fetchBookingPassenger, { bookingId: booking.id }),
