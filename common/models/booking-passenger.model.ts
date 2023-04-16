@@ -80,7 +80,7 @@ export const mockBookingPassengers: BookingPassenger[] = [
     bookingId: 7,
     booking: mockBooking,
     passenger: mockPassenger,
-    seat: mockSeat,
+    seat: mockSeat5,
     meal: 'Tapsilog',
     totalPrice: 1000,
   },
