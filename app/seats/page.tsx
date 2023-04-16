@@ -1,15 +1,39 @@
 'use client';
-import { filter, find, get, map, split, times, upperFirst } from 'lodash';
+import {
+  filter,
+  find,
+  forEach,
+  get,
+  isEmpty,
+  map,
+  split,
+  times,
+  upperFirst,
+} from 'lodash';
 import styles from './page.module.scss';
 import { useEffect, useState } from 'react';
 import { CABIN_TYPE } from '@/common/constants/enum';
-import Seat from '@/common/models/seat.model';
-import { Select } from 'antd';
+import Seat, { mockSeats } from '@/common/models/seat.model';
+import { Modal, Select } from 'antd';
 import { mockShips } from '@/common/models/ship.model';
 import { mockTrip } from '@/common/models/trip.model';
 import { getAllBookingsOfTrip } from '@/common/services/booking.service';
-import { mockBookingPassengers } from '@/common/models/booking-passenger.model';
-import { mockBookings } from '@/common/models/booking.model';
+import BookingPassenger, {
+  mockBookingPassengers,
+} from '@/common/models/booking-passenger.model';
+
+interface PassengerInfo {
+  name: string;
+  occupation: string;
+  birthday: string;
+}
+
+const seatInfoInitial = {
+  sold: false,
+  location: '',
+  name: '',
+  type: '',
+};
 
 export default function Seats() {
   //props: shipId, trip preference, Cabin object (cabin type & floor), seats occupied
@@ -27,8 +51,16 @@ export default function Seats() {
   const [bookedSeats, setBookedSeats] = useState([] as Seat[]);
   const [selectedCabin, setSelectedCabin] = useState(preSelectedValue);
   const [capacity, setCapacity] = useState(0);
+  const [passengersBooked, setPassengersBooked] = useState(
+    [] as BookingPassenger[]
+  );
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [seatInfo, setSeatInfo] = useState({ ...seatInfoInitial });
+  const [passengerInfo, setPassengerInfo] = useState([] as PassengerInfo[]);
 
   useEffect(() => {
+    const bookingPassengers: BookingPassenger[] = [];
     const fetchShip = mockShips;
     const fetchBookings = getAllBookingsOfTrip(trip.id);
     const fetchBookingPassenger = mockBookingPassengers;
@@ -47,10 +79,12 @@ export default function Seats() {
     });
     const cabin: any = find(cabins, { type: split(type, ' ')[0], name });
     const seatsBooked = map(filteredBookings, (booking) => {
-      const occupiedSeat = get(
-        find(fetchBookingPassenger, { bookingId: booking.id }),
-        'seat'
-      );
+      const bookingPassenger = find(fetchBookingPassenger, {
+        bookingId: booking.id,
+      });
+      bookingPassengers.push(bookingPassenger!);
+      const occupiedSeat = get(bookingPassenger, 'seat');
+
       return occupiedSeat!;
     });
 
@@ -59,6 +93,7 @@ export default function Seats() {
     setCols(cabin!.numOfCols);
     setCapacity(cabin!.passengerCapacity);
     setBookedSeats(seatsBooked);
+    setPassengersBooked(bookingPassengers);
   }, [selectedCabin]);
 
   const onChange = (value: string) => {
@@ -77,12 +112,71 @@ export default function Seats() {
     const seatElement = document.getElementById(`${row} ${col}`);
     if (
       seatElement?.classList.contains(`${styles.seat}`) &&
-      !seatElement?.classList.contains(`${styles.selected}`)
+      seatElement?.classList.contains(`${styles.sold}`)
     ) {
-      seatElement!.classList.add(`${styles.selected}`);
+      const passengersInSeat: BookingPassenger[] = passengersBooked.filter(
+        (passenger) =>
+          passenger.seat?.rowNumber === row &&
+          passenger.seat.columnNumber === col
+      );
+      let seatInfo = {
+        sold: true,
+        location: '',
+        name: '',
+        type: '',
+      };
+      let passengerInfo: PassengerInfo[] = [];
+
+      forEach(passengersInSeat, (passengerInSeat) => {
+        const seat = passengerInSeat.seat;
+        const passenger = passengerInSeat.passenger;
+        seatInfo = {
+          sold: true,
+          location: `${seat?.rowNumber}x${seat?.columnNumber}`,
+          name: `${seat?.name}`,
+          type: `${seat?.type}`,
+        };
+        passengerInfo.push({
+          name: `${passenger?.firstName} ${passenger?.lastName}`,
+          occupation: `${passenger?.occupation}`,
+          birthday: `${passenger?.birthdayIso}`,
+        });
+      });
+
+      setSeatInfo(seatInfo);
+      setPassengerInfo(passengerInfo);
     } else {
-      seatElement!.classList.remove(`${styles.selected}`);
+      const fetchSeats = mockSeats;
+      const seat = find(fetchSeats, { rowNumber: row, columnNumber: col });
+      setSeatInfo({
+        sold: false,
+        location: `${seat?.rowNumber}x${seat?.columnNumber}`,
+        name: `${seat?.name}`,
+        type: `${seat?.type}`,
+      });
     }
+    setIsModalOpen(true);
+
+    // if (
+    //   seatElement?.classList.contains(`${styles.seat}`) &&
+    //   !seatElement?.classList.contains(`${styles.selected}`)
+    // ) {
+    //   seatElement!.classList.add(`${styles.selected}`);
+    // } else {
+    //   seatElement!.classList.remove(`${styles.selected}`);
+    // }
+  };
+
+  const onModalOkClick = () => {
+    setSeatInfo(seatInfoInitial);
+    setPassengerInfo([]);
+    setIsModalOpen(false);
+  };
+
+  const onModalCancelClick = () => {
+    setSeatInfo(seatInfoInitial);
+    setPassengerInfo([]);
+    setIsModalOpen(false);
   };
 
   return (
@@ -126,6 +220,36 @@ export default function Seats() {
         <br></br>
         Seats left unoccupied: <span>{capacity - bookedSeats.length}</span>
       </div>
+
+      <Modal
+        title='More Info'
+        open={isModalOpen}
+        onOk={onModalOkClick}
+        onCancel={onModalCancelClick}
+      >
+        <h3>Seat Information:</h3>
+        <div>
+          <p>{seatInfo.sold ? 'Seat is occupied' : 'Seat is unoccupied'}</p>
+          <p>Location: {seatInfo.location}</p>
+          <p>Name: {seatInfo.name}</p>
+          <p>Type: {seatInfo.type}</p>
+        </div>
+
+        {!isEmpty(passengerInfo) && <h3>Passenger Information:</h3>}
+        <div>
+          {map(passengerInfo, (passenger, idx) => {
+            const { name, occupation, birthday } = passenger;
+            return (
+              <div>
+                <h4>Passenger {idx + 1}</h4>
+                <p>Name: {name}</p>
+                <p>Occupation: {occupation}</p>
+                <p>Birthday: {birthday}</p>
+              </div>
+            );
+          })}
+        </div>
+      </Modal>
     </div>
   );
 }
