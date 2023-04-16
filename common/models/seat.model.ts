@@ -36,8 +36,8 @@ for (let i = 0; i < 2; i++) {
       type: seatType,
     };
     mockEconomyClassSeats.push({ cabinId: 1, ...seat });
-    mockBusinessClassSeats.push({ cabinId: 1, ...seat });
-    mockFirstClassSeats.push({ cabinId: 1, ...seat });
+    mockBusinessClassSeats.push({ cabinId: 3, ...seat });
+    mockFirstClassSeats.push({ cabinId: 4, ...seat });
   }
 }
 
