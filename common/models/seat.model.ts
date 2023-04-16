@@ -1,11 +1,8 @@
 import { SEAT_TYPE } from '../constants/enum';
-import Cabin, { mockCabinEconomy, mockCabins } from './cabin.model';
-import { mockShip } from '@/common/models/ship.model';
 
 export default interface Seat {
   id: number;
   cabinId: number;
-  cabin?: Cabin;
   name: string;
   rowNumber: number;
   columnNumber: number;

@@ -5,7 +5,7 @@ import Seat, {
   mockFirstClassSeats,
   mockSeats,
 } from '@/common/models/seat.model';
-import Ship, { mockShip } from '@/common/models/ship.model';
+import Ship from '@/common/models/ship.model';
 
 export default interface Cabin {
   id: number;

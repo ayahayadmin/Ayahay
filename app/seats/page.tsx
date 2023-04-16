@@ -30,7 +30,7 @@ export default function Seats() {
 
   useEffect(() => {
     const fetchShip = mockShips;
-    const fetchBookings = mockBookings; //getAllBookingsOfTrip(trip.id);
+    const fetchBookings = getAllBookingsOfTrip(trip.id);
     const fetchBookingPassenger = mockBookingPassengers;
 
     const [type, name] = split(selectedCabin, ',');
