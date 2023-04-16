@@ -105,46 +105,80 @@ function matchSeatFromPreferences(
   const { cabin: preferredCabin, seat: preferredSeatType } =
     passengerPreferences;
 
-  let seatsMatchingPreferences = availableSeatsInTrip;
-  let matchedSeat: Seat;
+  let seatsInPreferredCabin = availableSeatsInTrip;
+  let seatsWithPreferredSeatType = availableSeatsInTrip;
 
   if (preferredCabin !== 'Any') {
-    seatsMatchingPreferences = seatsMatchingPreferences.filter(
+    seatsInPreferredCabin = seatsInPreferredCabin.filter(
       (seat) => seat.cabin?.type === preferredCabin
     );
   }
 
   if (preferredSeatType !== 'Any') {
-    seatsMatchingPreferences = seatsMatchingPreferences.filter(
+    seatsWithPreferredSeatType = seatsWithPreferredSeatType.filter(
       (seat) => seat.type === preferredSeatType
     );
   }
 
-  if (seatsMatchingPreferences.length === 0) {
-    matchedSeat = availableSeatsInTrip[0];
-  } else {
-    matchedSeat = seatsMatchingPreferences[0];
-  }
+  const matchedSeat = getBestSeat(
+    availableSeatsInTrip,
+    seatsInPreferredCabin,
+    seatsWithPreferredSeatType
+  );
 
-  let cabinFee = 0;
+  let totalPrice = baseFare;
   switch (matchedSeat.cabin?.type) {
     case 'First':
-      cabinFee = 3000;
+      totalPrice *= 3;
       break;
     case 'Business':
-      cabinFee = 2000;
+      totalPrice *= 2;
       break;
-    case 'Economy':
-      cabinFee = 1000;
   }
-
-  const supplyFee = (100 - seatsMatchingPreferences.length) * 20;
-  const totalPrice = cabinFee + supplyFee + baseFare;
 
   return {
     id: 1,
+    bookingId: -1,
     seat: matchedSeat,
-    meal: 'Bacsilog',
+    meal:
+      passengerPreferences.meal !== 'Any'
+        ? passengerPreferences.meal
+        : 'Bacsilog',
     totalPrice,
   };
+}
+
+function getBestSeat(
+  availableSeatsInTrip: Seat[],
+  seatsInPreferredCabin: Seat[],
+  seatsWithPreferredSeatType: Seat[]
+): Seat {
+  // score that determines how "preferred" a seat is; the higher, the more preferred
+  let bestScore = -1;
+  let bestSeat = availableSeatsInTrip[0];
+  // if one seat has preferred cabin and another has preferred seat type, we want to prioritize cabin preference
+  const CABIN_WEIGHT = 10;
+  const SEAT_TYPE_WEIGHT = 1;
+  const idsOfSeatsInPreferredCabin = new Set<number>();
+  const idsOfSeatsWithPreferredSeatType = new Set<number>();
+  seatsInPreferredCabin
+    .map((seat) => seat.id)
+    .forEach((id) => idsOfSeatsInPreferredCabin.add(id));
+  seatsWithPreferredSeatType
+    .map((seat) => seat.id)
+    .forEach((id) => idsOfSeatsWithPreferredSeatType.add(id));
+  availableSeatsInTrip.forEach((seat) => {
+    let currentSeatScore = 0;
+    if (idsOfSeatsInPreferredCabin.has(seat.id)) {
+      currentSeatScore += CABIN_WEIGHT;
+    }
+    if (idsOfSeatsWithPreferredSeatType.has(seat.id)) {
+      currentSeatScore += SEAT_TYPE_WEIGHT;
+    }
+    if (currentSeatScore > bestScore) {
+      bestScore = currentSeatScore;
+      bestSeat = seat;
+    }
+  });
+  return bestSeat;
 }
