@@ -35,7 +35,7 @@
 
 .seat.sold {
   background-color: red;
-  pointer-events: none;
+  // pointer-events: none;
 }
 
 .seat:nth-of-type(3) {
@@ -46,12 +46,12 @@
 //   margin-left: 18px;
 // }
 
-.seat:not(.sold):hover {
+.seat:hover {
   cursor: pointer;
   transform: scale(1.2);
 }
 
-.showcase .seat:not(.sold):hover {
+.showcase .seat:hover {
   cursor: default;
   transform: scale(1);
 }
