@@ -28,7 +28,7 @@ interface PassengerInfo {
   birthday: string;
 }
 
-const seatInfoInitial = {
+const blockInfoInitial = {
   sold: false,
   location: '',
   name: '',
@@ -41,7 +41,7 @@ export default function Seats() {
   const shipId = 1;
   const cabinType = CABIN_TYPE.Economy;
   const floor = 'first floor';
-  const preSelectedValue = `${cabinType},${floor}`;
+  const preSelectedValue = `${split(cabinType, ' ')[0]},${floor}`;
 
   const [options, setOptions] = useState(
     [] as { value: string; label: string }[]
@@ -56,7 +56,7 @@ export default function Seats() {
   );
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [seatInfo, setSeatInfo] = useState({ ...seatInfoInitial });
+  const [blockInfo, setBlockInfo] = useState({ ...blockInfoInitial });
   const [passengerInfo, setPassengerInfo] = useState([] as PassengerInfo[]);
 
   useEffect(() => {
@@ -119,7 +119,7 @@ export default function Seats() {
           passenger.seat?.rowNumber === row &&
           passenger.seat.columnNumber === col
       );
-      let seatInfo = {
+      let blockInfo = {
         sold: true,
         location: '',
         name: '',
@@ -130,7 +130,7 @@ export default function Seats() {
       forEach(passengersInSeat, (passengerInSeat) => {
         const seat = passengerInSeat.seat;
         const passenger = passengerInSeat.passenger;
-        seatInfo = {
+        blockInfo = {
           sold: true,
           location: `${seat?.rowNumber}x${seat?.columnNumber}`,
           name: `${seat?.name}`,
@@ -143,12 +143,12 @@ export default function Seats() {
         });
       });
 
-      setSeatInfo(seatInfo);
+      setBlockInfo(blockInfo);
       setPassengerInfo(passengerInfo);
     } else {
       const fetchSeats = mockSeats;
       const seat = find(fetchSeats, { rowNumber: row, columnNumber: col });
-      setSeatInfo({
+      setBlockInfo({
         sold: false,
         location: `${seat?.rowNumber}x${seat?.columnNumber}`,
         name: `${seat?.name}`,
@@ -168,13 +168,13 @@ export default function Seats() {
   };
 
   const onModalOkClick = () => {
-    setSeatInfo(seatInfoInitial);
+    setBlockInfo(blockInfoInitial);
     setPassengerInfo([]);
     setIsModalOpen(false);
   };
 
   const onModalCancelClick = () => {
-    setSeatInfo(seatInfoInitial);
+    setBlockInfo(blockInfoInitial);
     setPassengerInfo([]);
     setIsModalOpen(false);
   };
@@ -215,11 +215,11 @@ export default function Seats() {
         })}
       </div>
 
-      <div className={styles.text}>
+      {/* <div className={styles.text}>
         Total cabin capacity: <span>{capacity}</span>
         <br></br>
         Seats left unoccupied: <span>{capacity - bookedSeats.length}</span>
-      </div>
+      </div> */}
 
       <Modal
         title='More Info'
@@ -227,12 +227,16 @@ export default function Seats() {
         onOk={onModalOkClick}
         onCancel={onModalCancelClick}
       >
-        <h3>Seat Information:</h3>
+        <h3>Block Information:</h3>
         <div>
-          <p>{seatInfo.sold ? 'Seat is occupied' : 'Seat is unoccupied'}</p>
-          <p>Location: {seatInfo.location}</p>
-          <p>Name: {seatInfo.name}</p>
-          <p>Type: {seatInfo.type}</p>
+          <p>
+            {blockInfo.sold
+              ? `Block is occupied by ${passengerInfo.length} passenger/s`
+              : 'Block is unoccupied'}
+          </p>
+          <p>Location: {blockInfo.location}</p>
+          <p>Name: {blockInfo.name}</p>
+          <p>Type: {blockInfo.type}</p>
         </div>
 
         {!isEmpty(passengerInfo) && <h3>Passenger Information:</h3>}
