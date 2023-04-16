@@ -87,6 +87,10 @@ export const mockSeat5: Seat = {
 
 export const mockSeats: Seat[] = [
   mockSeat,
+  mockSeat2,
+  mockSeat3,
+  mockSeat4,
+  mockSeat5,
   {
     id: 6,
     cabinId: 1,
