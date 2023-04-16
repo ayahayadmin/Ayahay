@@ -1,5 +1,5 @@
 import Booking, { mockBooking } from './booking.model';
-import Passenger, { mockPassenger } from './passenger';
+import Passenger, { mockPassenger } from './passenger.model';
 import Seat, {
   mockSeat,
   mockSeat2,

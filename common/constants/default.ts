@@ -1,6 +1,6 @@
 import { TRIP_TYPE } from '@/common/constants/enum';
 import PassengerPreferences from '@/common/models/passenger-preferences';
-import Passenger from '@/common/models/passenger';
+import Passenger from '@/common/models/passenger.model';
 
 export const DEFAULT_TRIP_TYPE = 'Single';
 export const DEFAULT_NUM_ADULTS = 1;

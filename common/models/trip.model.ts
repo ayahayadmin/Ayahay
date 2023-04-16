@@ -2,7 +2,7 @@ import ShippingLine, {
   mockShippingLine,
 } from '@/common/models/shipping-line.model';
 import Port, { mockPort, mockPort2 } from '@/common/models/port.model';
-import { CABIN_TYPE, SEAT_TYPE } from '@/common/constants/enum';
+import { CABIN_TYPE, SEAT_TYPE, TRIP_TYPE } from '@/common/constants/enum';
 import Ship, { mockShip } from './ship.model';
 
 export default interface Trip {
@@ -11,10 +11,11 @@ export default interface Trip {
   shippingLine: ShippingLine;
   srcPort: Port;
   destPort: Port;
+  type: keyof typeof TRIP_TYPE;
   departureDateIso: string;
   baseFare: number;
-  availableSeatTypes: SEAT_TYPE[];
-  availableCabins: CABIN_TYPE[];
+  availableSeatTypes: (keyof typeof SEAT_TYPE)[];
+  availableCabins: (keyof typeof CABIN_TYPE)[];
   meals: string[];
 }
 
@@ -24,62 +25,39 @@ export const mockTrip: Trip = {
   shippingLine: mockShippingLine,
   srcPort: mockPort,
   destPort: mockPort,
+  type: 'Single',
   departureDateIso: '2023-03-12T04:50:22+0000',
   baseFare: 20,
   availableSeatTypes: [
-    SEAT_TYPE.Aisle,
-    SEAT_TYPE.SingleBed,
-    SEAT_TYPE.Window,
-    SEAT_TYPE.LowerBunkBed,
-    SEAT_TYPE.UpperBunkBed,
+    'Aisle',
+    'SingleBed',
+    'Window',
+    'LowerBunkBed',
+    'UpperBunkBed',
   ],
-  availableCabins: [CABIN_TYPE.Business, CABIN_TYPE.Economy, CABIN_TYPE.First],
+  availableCabins: ['Business', 'Economy', 'First'],
   meals: ['Tapsilog', 'Bacsilog', 'Longsilog'],
 };
 
 export const mockTrips: Trip[] = [
-  {
-    id: 1,
-    ship: mockShip,
-    shippingLine: mockShippingLine,
-    srcPort: mockPort,
-    destPort: mockPort,
-    departureDateIso: '2023-03-12T04:50:22+0000',
-    baseFare: 20,
-    availableSeatTypes: [
-      SEAT_TYPE.Aisle,
-      SEAT_TYPE.SingleBed,
-      SEAT_TYPE.Window,
-      SEAT_TYPE.LowerBunkBed,
-      SEAT_TYPE.UpperBunkBed,
-    ],
-    availableCabins: [
-      CABIN_TYPE.Business,
-      CABIN_TYPE.Economy,
-      CABIN_TYPE.First,
-    ],
-    meals: ['Tapsilog', 'Bacsilog', 'Longsilog'],
-  },
+  mockTrip,
   {
     id: 2,
     ship: mockShip,
     shippingLine: mockShippingLine,
     srcPort: mockPort2,
     destPort: mockPort2,
+    type: 'Single',
     departureDateIso: '2023-03-12T04:50:22+0000',
     baseFare: 20,
     availableSeatTypes: [
-      SEAT_TYPE.Aisle,
-      SEAT_TYPE.SingleBed,
-      SEAT_TYPE.Window,
-      SEAT_TYPE.LowerBunkBed,
-      SEAT_TYPE.UpperBunkBed,
+      'Aisle',
+      'SingleBed',
+      'Window',
+      'LowerBunkBed',
+      'UpperBunkBed',
     ],
-    availableCabins: [
-      CABIN_TYPE.Business,
-      CABIN_TYPE.Economy,
-      CABIN_TYPE.First,
-    ],
+    availableCabins: ['Business', 'Economy', 'First'],
     meals: ['Tapsilog', 'Bacsilog', 'Longsilog'],
   },
 ];

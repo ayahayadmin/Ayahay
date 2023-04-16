@@ -1,4 +1,4 @@
-import { CIVIL_STATUS, SEX } from '@/common/constants/enum';
+import { CIVIL_STATUS, OCCUPATION, SEX } from '@/common/constants/enum';
 import { Profile } from '@/common/models/profile.model';
 import PassengerPreferences, {
   mockPreferences,
@@ -10,9 +10,9 @@ export default interface Passenger {
   profile?: Profile;
   firstName: string;
   lastName: string;
-  occupation: string;
-  sex: SEX;
-  civilStatus: CIVIL_STATUS;
+  occupation: keyof typeof OCCUPATION;
+  sex: keyof typeof SEX;
+  civilStatus: keyof typeof CIVIL_STATUS;
   birthdayIso: string;
   address: string;
   nationality: string;
@@ -25,11 +25,12 @@ export const mockPassenger: Passenger = {
   firstName: 'John',
   lastName: 'Doe',
   occupation: 'Student',
-  sex: SEX.Male,
-  civilStatus: CIVIL_STATUS.Single,
+  sex: 'Male',
+  civilStatus: 'Single',
   birthdayIso: '1999/09/09',
   address: 'Quezon City',
   nationality: 'Filipino',
+  preferences: mockPreferences,
 };
 
 export const mockSon: Passenger = {
@@ -37,8 +38,8 @@ export const mockSon: Passenger = {
   firstName: 'Son',
   lastName: 'Santos',
   occupation: 'Student',
-  sex: SEX.Male,
-  civilStatus: CIVIL_STATUS.Single,
+  sex: 'Male',
+  civilStatus: 'Single',
   birthdayIso: '2018-05-05',
   address: 'Mandaluyong City',
   nationality: 'Filipino',
@@ -49,9 +50,9 @@ export const mockWife: Passenger = {
   id: 2,
   firstName: 'Wife',
   lastName: 'Santos',
-  occupation: 'Housewife',
-  sex: SEX.Female,
-  civilStatus: CIVIL_STATUS.Married,
+  occupation: 'Unemployed',
+  sex: 'Female',
+  civilStatus: 'Married',
   birthdayIso: '1999-05-05',
   address: 'Mandaluyong City',
   nationality: 'Filipino',
@@ -62,9 +63,9 @@ export const mockFather: Passenger = {
   id: 1,
   firstName: 'Father',
   lastName: 'Santos',
-  occupation: 'Software Engineer',
-  sex: SEX.Male,
-  civilStatus: CIVIL_STATUS.Married,
+  occupation: 'Employed',
+  sex: 'Male',
+  civilStatus: 'Married',
   birthdayIso: '1999-10-20',
   address: 'Mandaluyong City',
   nationality: 'Filipino',

@@ -1,4 +1,12 @@
-import { Button, Divider, Form, Radio, Select, Skeleton } from 'antd';
+import {
+  Button,
+  Divider,
+  Form,
+  Radio,
+  Select,
+  Skeleton,
+  Typography,
+} from 'antd';
 import React from 'react';
 
 import Trip from '@/common/models/trip.model';
@@ -9,6 +17,8 @@ import {
   SEX,
 } from '@/common/constants/enum';
 import EnumRadio from '@/common/components/form/EnumRadio';
+
+const { Title } = Typography;
 
 interface PassengerPreferencesFormProps {
   trip?: Trip;
@@ -40,6 +50,7 @@ export default function PassengerPreferencesForm({
     passengers &&
     trip && (
       <>
+        <Title level={2}>Passenger Preferences</Title>
         <Form.List name='passengers'>
           {(fields, _) => (
             <>
@@ -66,11 +77,8 @@ export default function PassengerPreferencesForm({
                     <Radio.Group>
                       <Radio value='Any'>Any</Radio>
                       {trip.availableSeatTypes.map((seatType, index) => (
-                        <Radio
-                          value={getEnumKeyFromValue(SEAT_TYPE, seatType)}
-                          key={index}
-                        >
-                          {seatType}
+                        <Radio value={seatType} key={index}>
+                          {SEAT_TYPE[seatType]}
                         </Radio>
                       ))}
                     </Radio.Group>
@@ -84,11 +92,8 @@ export default function PassengerPreferencesForm({
                     <Radio.Group>
                       <Radio value='Any'>Any</Radio>
                       {trip.availableCabins.map((cabin, index) => (
-                        <Radio
-                          value={getEnumKeyFromValue(CABIN_TYPE, cabin)}
-                          key={index}
-                        >
-                          {cabin}
+                        <Radio value={cabin} key={index}>
+                          {CABIN_TYPE[cabin]}
                         </Radio>
                       ))}
                     </Radio.Group>

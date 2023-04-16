@@ -457,6 +457,6 @@ export const getBaseFare = () => {
   return random(1000, 9999);
 };
 
-export const getAvailableSeats = () => {
-  return [SEAT_TYPE.Window, SEAT_TYPE.SingleBed];
+export const getAvailableSeats = (): (keyof typeof SEAT_TYPE)[] => {
+  return ['Window', 'SingleBed'];
 };

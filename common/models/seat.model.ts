@@ -6,9 +6,10 @@ export default interface Seat {
   id: number;
   cabinId: number;
   cabin?: Cabin;
+  name: string;
   rowNumber: number;
   columnNumber: number;
-  type: SEAT_TYPE;
+  type: keyof typeof SEAT_TYPE;
 }
 
 export const mockSeat: Seat = {
@@ -16,62 +17,70 @@ export const mockSeat: Seat = {
   cabinId: 1,
   rowNumber: 2,
   columnNumber: 5,
-  type: SEAT_TYPE.Aisle,
+  name: 'B5',
+  type: 'Aisle',
 };
 
 export const mockSeat2: Seat = {
-  id: 1,
+  id: 2,
   cabinId: 1,
   rowNumber: 1,
   columnNumber: 1,
-  type: SEAT_TYPE.Aisle,
+  name: 'A1',
+  type: 'Aisle',
 };
 
 export const mockSeat3: Seat = {
-  id: 1,
+  id: 3,
   cabinId: 1,
   rowNumber: 8,
   columnNumber: 4,
-  type: SEAT_TYPE.Aisle,
+  name: 'H4',
+  type: 'Aisle',
 };
 
 export const mockSeat4: Seat = {
-  id: 1,
+  id: 4,
   cabinId: 1,
   rowNumber: 3,
   columnNumber: 3,
-  type: SEAT_TYPE.Aisle,
+  name: 'C3',
+  type: 'Aisle',
 };
 
 export const mockSeat5: Seat = {
-  id: 1,
+  id: 5,
   cabinId: 1,
   rowNumber: 2,
   columnNumber: 4,
-  type: SEAT_TYPE.Aisle,
+  name: 'B4',
+  type: 'Aisle',
 };
 
 export const mockSeats: Seat[] = [
   mockSeat,
   {
-    id: 2,
+    id: 6,
     cabinId: 1,
     rowNumber: 1,
     columnNumber: 1,
-    type: SEAT_TYPE.Window,
+    name: 'A1',
+    type: 'Window',
   },
   {
-    id: 3,
+    id: 7,
     cabinId: 1,
     rowNumber: 5,
     columnNumber: 5,
-    type: SEAT_TYPE.Window,
+    name: 'E5',
+    type: 'Window',
   },
   {
-    id: 4,
+    id: 8,
     cabinId: 1,
     rowNumber: 19,
     columnNumber: 5,
-    type: SEAT_TYPE.SingleBed,
+    name: 'S5',
+    type: 'SingleBed',
   },
 ];

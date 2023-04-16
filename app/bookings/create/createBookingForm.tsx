@@ -6,11 +6,13 @@ import React, { useState } from 'react';
 import PassengerPreferencesForm from '@/common/components/booking/PassengerPreferencesForm';
 import { DEFAULT_PASSENGER } from '@/common/constants/default';
 import BookingSummary from '@/common/components/booking/BookingSummary';
-import Passenger, { mockFather, toFormValue } from '@/common/models/passenger';
+import Passenger, {
+  mockFather,
+  toFormValue,
+} from '@/common/models/passenger.model';
 import Booking from '@/common/models/booking.model';
 import { createTentativeBookingFromPassengerPreferences } from '@/common/services/booking.service';
-
-const { Title } = Typography;
+import BookingConfirmation from '@/common/components/booking/BookingConfirmation';
 
 interface CreateBookingFormProps {
   trip?: Trip;
@@ -19,7 +21,6 @@ interface CreateBookingFormProps {
 const steps = [
   { title: 'Passenger Information' },
   { title: 'Passenger Preferences' },
-  { title: 'Review Booking' },
   { title: 'Confirm Booking' },
 ];
 
@@ -27,7 +28,6 @@ export default function CreateBookingForm({ trip }: CreateBookingFormProps) {
   const [form] = Form.useForm();
   const passengers = Form.useWatch('passengers', form);
   const [loadingMessage, setLoadingMessage] = useState<string>('');
-  const [loggedInPassenger, setLoggedInPassenger] = useState<Passenger>();
   const [bookingPreview, setBookingPreview] = useState<Booking>();
 
   const [currentStep, setCurrentStep] = useState(0);
@@ -50,17 +50,17 @@ export default function CreateBookingForm({ trip }: CreateBookingFormProps) {
       }
       const tentativeBooking = createTentativeBookingFromPassengerPreferences(
         trip?.id,
-        passengers.map((passenger: Passenger) => passenger.preferences)
+        passengers.map((passenger: Passenger) => {
+          if (passenger.preferences) {
+            passenger.preferences.passenger = passenger;
+          }
+          return passenger.preferences;
+        })
       );
       setBookingPreview(tentativeBooking);
       setLoadingMessage('');
       nextStep();
-    }, 5000);
-  };
-
-  const onLogin = () => {
-    setLoggedInPassenger(mockFather);
-    form.setFieldValue(['passengers', 0], toFormValue(mockFather));
+    }, 3000);
   };
 
   const items = steps.map(({ title }) => ({ key: title, title: title }));
@@ -78,18 +78,12 @@ export default function CreateBookingForm({ trip }: CreateBookingFormProps) {
       <Steps current={currentStep} items={items} />
       <Spin spinning={loadingMessage?.length > 0} tip={loadingMessage}>
         <div style={{ display: currentStep === 0 ? 'block' : 'none' }}>
-          <Title level={2}>Passenger Information</Title>
-          <Button type='link' onClick={() => onLogin()}>
-            Have an account? Log in to book faster.
-          </Button>
           <PassengerInformationForm
-            loggedInPassenger={loggedInPassenger}
             onNextStep={nextStep}
             onPreviousStep={previousStep}
           />
         </div>
         <div style={{ display: currentStep === 1 ? 'block' : 'none' }}>
-          <Title level={2}>Passenger Preferences</Title>
           <PassengerPreferencesForm
             trip={trip}
             onNextStep={findSeats}
@@ -97,13 +91,10 @@ export default function CreateBookingForm({ trip }: CreateBookingFormProps) {
           />
         </div>
         <div style={{ display: currentStep === 2 ? 'block' : 'none' }}>
-          <Title level={2}>Review Booking</Title>
-          <BookingSummary booking={bookingPreview} />
-          <div>
-            <Button type='primary' onClick={() => nextStep()}>
-              Next
-            </Button>
-          </div>
+          <BookingConfirmation
+            booking={bookingPreview}
+            onPreviousStep={previousStep}
+          />
         </div>
       </Spin>
     </Form>

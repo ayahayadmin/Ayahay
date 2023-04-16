@@ -1,24 +1,36 @@
-import { Button, DatePicker, Divider, Form, Input, Radio } from 'antd';
+import {
+  Button,
+  DatePicker,
+  Divider,
+  Form,
+  Input,
+  Radio,
+  Typography,
+} from 'antd';
 import React, { useState } from 'react';
-import { CIVIL_STATUS, SEX } from '@/common/constants/enum';
+import { CIVIL_STATUS, OCCUPATION, SEX } from '@/common/constants/enum';
 import EnumRadio from '@/common/components/form/EnumRadio';
 import { DEFAULT_PASSENGER } from '@/common/constants/default';
-import Passenger, { toFormValue } from '@/common/models/passenger';
+import Passenger, {
+  mockFather,
+  toFormValue,
+} from '@/common/models/passenger.model';
 import AddCompanionsModal from '@/common/components/booking/AddCompanionsModal';
 
+const { Title } = Typography;
+
 interface PassengerInformationFormProps {
-  loggedInPassenger?: Passenger;
   onNextStep?: () => void;
   onPreviousStep?: () => void;
 }
 
 export default function PassengerInformationForm({
-  loggedInPassenger,
   onNextStep,
   onPreviousStep,
 }: PassengerInformationFormProps) {
   const form = Form.useFormInstance();
   const passengers = Form.useWatch('passengers', form);
+  const [loggedInPassenger, setLoggedInPassenger] = useState<Passenger>();
   const [companionModalOpen, setCompanionModalOpen] = useState(false);
 
   const addPassengers = (companions: Passenger[]) => {
@@ -61,8 +73,17 @@ export default function PassengerInformationForm({
     }
   };
 
+  const onLogin = () => {
+    setLoggedInPassenger(mockFather);
+    form.setFieldValue(['passengers', 0], toFormValue(mockFather));
+  };
+
   return (
     <>
+      <Title level={2}>Passenger Information</Title>
+      <Button type='link' onClick={() => onLogin()}>
+        Have an account? Log in to book faster.
+      </Button>
       <Form.List name='passengers'>
         {(fields, { add, remove }) => (
           <>
@@ -94,18 +115,6 @@ export default function PassengerInformationForm({
                     placeholder='Last Name'
                   />
                 </Form.Item>
-                <Form.Item
-                  {...restField}
-                  name={[name, 'occupation']}
-                  label='Occupation'
-                  colon={false}
-                  rules={[{ required: true, message: 'Missing occupation' }]}
-                >
-                  <Input
-                    disabled={passengers?.[index]?.id !== undefined}
-                    placeholder='Doctor, Lawyer, or Failure'
-                  />
-                </Form.Item>
                 <EnumRadio
                   _enum={SEX}
                   disabled={passengers?.[index]?.id !== undefined}
@@ -114,6 +123,15 @@ export default function PassengerInformationForm({
                   label='Sex'
                   colon={false}
                   rules={[{ required: true, message: 'Missing sex' }]}
+                />
+                <EnumRadio
+                  _enum={OCCUPATION}
+                  disabled={passengers?.[index]?.id !== undefined}
+                  {...restField}
+                  name={[name, 'occupation']}
+                  label='Occupation'
+                  colon={false}
+                  rules={[{ required: true, message: 'Missing occupation' }]}
                 />
                 <EnumRadio
                   _enum={CIVIL_STATUS}

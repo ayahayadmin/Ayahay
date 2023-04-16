@@ -1,9 +1,11 @@
 import { CABIN_TYPE, SEAT_TYPE } from '@/common/constants/enum';
+import Passenger from '@/common/models/passenger.model';
 
 export default interface PassengerPreferences {
   passengerId?: number;
-  seat: SEAT_TYPE | 'Any';
-  cabin: CABIN_TYPE | 'Any';
+  passenger?: Passenger;
+  seat: keyof typeof SEAT_TYPE | 'Any';
+  cabin: keyof typeof CABIN_TYPE | 'Any';
   meal: string | 'Any';
 }
 

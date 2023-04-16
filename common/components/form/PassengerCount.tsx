@@ -25,7 +25,7 @@ export default function PassengerCount() {
   return (
     <Popover
       placement='bottomLeft'
-      title='Passenger Count'
+      title='PassengerModel Count'
       content={passengerCountPopoverContent}
       trigger='click'
     >

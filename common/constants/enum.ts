@@ -35,6 +35,9 @@ export enum TRIP_TYPE {
   Multiple = 'Multiple Trips',
 }
 
-export function getEnumKeyFromValue(enumType: any, enumValue: any): string {
-  return Object.keys(enumType).find((key) => enumType[key] === enumValue) || '';
+export enum OCCUPATION {
+  Student = 'Student',
+  Employed = 'Employed',
+  SelfEmployed = 'Self-Employed',
+  Unemployed = 'Unemployed',
 }
