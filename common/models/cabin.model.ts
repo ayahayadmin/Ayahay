@@ -1,5 +1,10 @@
 import { CABIN_TYPE } from '../constants/enum';
-import Seat, { mockSeats } from '@/common/models/seat.model';
+import Seat, {
+  mockBusinessClassSeats,
+  mockEconomyClassSeats,
+  mockFirstClassSeats,
+  mockSeats,
+} from '@/common/models/seat.model';
 import Ship, { mockShip } from '@/common/models/ship.model';
 
 export default interface Cabin {
@@ -22,7 +27,7 @@ export const mockCabinEconomy: Cabin = {
   passengerCapacity: 120,
   numOfRows: 20,
   numOfCols: 6,
-  seats: mockSeats,
+  seats: mockEconomyClassSeats,
 };
 
 export const mockCabinEconomy2: Cabin = {
@@ -44,7 +49,7 @@ export const mockCabinBusiness: Cabin = {
   passengerCapacity: 60,
   numOfRows: 10,
   numOfCols: 6,
-  seats: mockSeats,
+  seats: mockBusinessClassSeats,
 };
 
 export const mockCabinFirst: Cabin = {
@@ -55,12 +60,11 @@ export const mockCabinFirst: Cabin = {
   passengerCapacity: 30,
   numOfRows: 5,
   numOfCols: 6,
-  seats: mockSeats,
+  seats: mockFirstClassSeats,
 };
 
 export const mockCabins: Cabin[] = [
   mockCabinBusiness,
   mockCabinEconomy,
-  mockCabinEconomy2,
   mockCabinFirst,
 ];

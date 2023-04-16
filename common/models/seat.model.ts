@@ -12,6 +12,37 @@ export default interface Seat {
   type: keyof typeof SEAT_TYPE;
 }
 
+let mockEconomyClassSeats: Seat[] = [];
+let mockBusinessClassSeats: Seat[] = [];
+let mockFirstClassSeats: Seat[] = [];
+
+for (let i = 0; i < 2; i++) {
+  for (let j = 1; j <= 4; j++) {
+    let seatType: keyof typeof SEAT_TYPE;
+    if (j === 0) {
+      seatType = 'Window';
+    } else if (j === 1) {
+      seatType = 'Aisle';
+    } else if (j === 2) {
+      seatType = 'LowerBunkBed';
+    } else {
+      seatType = 'UpperBunkBed';
+    }
+    const seat = {
+      id: i * 2 + j,
+      rowNumber: i,
+      columnNumber: j,
+      name: `${i === 0 ? 'A' : 'B'}${j}`,
+      type: seatType,
+    };
+    mockEconomyClassSeats.push({ cabinId: 1, ...seat });
+    mockBusinessClassSeats.push({ cabinId: 1, ...seat });
+    mockFirstClassSeats.push({ cabinId: 1, ...seat });
+  }
+}
+
+export { mockEconomyClassSeats, mockBusinessClassSeats, mockFirstClassSeats };
+
 export const mockSeat: Seat = {
   id: 1,
   cabinId: 1,
