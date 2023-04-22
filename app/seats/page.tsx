@@ -48,6 +48,7 @@ export default function Seats() {
   );
   const [rows, setRows] = useState(0);
   const [cols, setCols] = useState(0);
+  const [seatLayout, setSeatLayout] = useState([] as Seat[]);
   const [bookedSeats, setBookedSeats] = useState([] as Seat[]);
   const [selectedCabin, setSelectedCabin] = useState(preSelectedValue);
   const [capacity, setCapacity] = useState(0);
@@ -91,6 +92,7 @@ export default function Seats() {
     setOptions(availableCabinType);
     setRows(cabin!.numOfRows);
     setCols(cabin!.numOfCols);
+    setSeatLayout(cabin.seats);
     setCapacity(cabin!.passengerCapacity);
     setBookedSeats(seatsBooked);
     setPassengersBooked(bookingPassengers);
@@ -109,10 +111,10 @@ export default function Seats() {
   };
 
   const onSeatClick = (row: number, col: number) => {
-    const seatElement = document.getElementById(`${row} ${col}`);
+    const blockElement = document.getElementById(`${row} ${col}`);
     if (
-      seatElement?.classList.contains(`${styles.seat}`) &&
-      seatElement?.classList.contains(`${styles.sold}`)
+      blockElement?.classList.contains(`${styles.block}`) &&
+      blockElement?.classList.contains(`${styles.sold}`)
     ) {
       const passengersInSeat: BookingPassenger[] = passengersBooked.filter(
         (passenger) =>
@@ -192,7 +194,7 @@ export default function Seats() {
 
       <div className={styles.container}>
         {times(rows, (rowIdx) => {
-          let seatClassName = styles.seat;
+          let blockClassName = styles.block;
           return (
             <div className={styles.row}>
               {times(cols, (colIdx) => {
@@ -202,12 +204,18 @@ export default function Seats() {
                 })
                   ? styles.sold
                   : '';
+                let blockLabel = find(seatLayout, {
+                  rowNumber: rowIdx,
+                  columnNumber: colIdx,
+                })?.name;
                 return (
                   <div
-                    className={`${seatClassName} ${soldClassName}`}
+                    className={`${blockClassName} ${soldClassName}`}
                     id={`${rowIdx} ${colIdx}`}
                     onClick={() => onSeatClick(rowIdx, colIdx)}
-                  ></div>
+                  >
+                    {blockLabel}
+                  </div>
                 );
               })}
             </div>
