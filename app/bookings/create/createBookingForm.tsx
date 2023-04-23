@@ -5,7 +5,7 @@ import PassengerInformationForm from '@/common/components/booking/PassengerInfor
 import React, { useState } from 'react';
 import PassengerPreferencesForm from '@/common/components/booking/PassengerPreferencesForm';
 import { DEFAULT_PASSENGER } from '@/common/constants/default';
-import BookingSummary from '@/common/components/booking/BookingSummary';
+import BookingPassengersSummary from '@/common/components/booking/BookingPassengersSummary';
 import Passenger, {
   mockFather,
   toFormValue,
@@ -13,9 +13,11 @@ import Passenger, {
 import Booking from '@/common/models/booking.model';
 import { createTentativeBookingFromPassengerPreferences } from '@/common/services/booking.service';
 import BookingConfirmation from '@/common/components/booking/BookingConfirmation';
+import { useRouter } from 'next/router';
 
 interface CreateBookingFormProps {
   trip?: Trip;
+  onComplete: (booking: Booking) => void;
 }
 
 const steps = [
@@ -24,7 +26,10 @@ const steps = [
   { title: 'Confirm Booking' },
 ];
 
-export default function CreateBookingForm({ trip }: CreateBookingFormProps) {
+export default function CreateBookingForm({
+  trip,
+  onComplete,
+}: CreateBookingFormProps) {
   const [form] = Form.useForm();
   const passengers = Form.useWatch('passengers', form);
   const [loadingMessage, setLoadingMessage] = useState<string>('');
@@ -50,17 +55,31 @@ export default function CreateBookingForm({ trip }: CreateBookingFormProps) {
       }
       const tentativeBooking = createTentativeBookingFromPassengerPreferences(
         trip?.id,
-        passengers.map((passenger: Passenger) => {
+        passengers.map((passenger: Passenger, index: number) => {
+          // TODO: remove following 4 lines after back-end has been setup
+          passenger.id = index;
           if (passenger.preferences) {
-            passenger.preferences.passenger = passenger;
+            passenger.preferences.passengerId = index;
           }
+
           return passenger.preferences;
         })
+      );
+      if (tentativeBooking === undefined) {
+        return;
+      }
+
+      // TODO: remove this after back-end has been set up
+      tentativeBooking.bookingPassengers?.forEach(
+        (booking) =>
+          (booking.passenger = passengers.find(
+            (passenger: Passenger) => passenger.id === booking.passengerId
+          ))
       );
       setBookingPreview(tentativeBooking);
       setLoadingMessage('');
       nextStep();
-    }, 3000);
+    }, 1000);
   };
 
   const items = steps.map(({ title }) => ({ key: title, title: title }));
@@ -94,6 +113,7 @@ export default function CreateBookingForm({ trip }: CreateBookingFormProps) {
           <BookingConfirmation
             booking={bookingPreview}
             onPreviousStep={previousStep}
+            onSuccessfulPayment={onComplete}
           />
         </div>
       </Spin>

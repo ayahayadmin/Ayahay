@@ -15,7 +15,6 @@ export function createTentativeBookingFromPassengerPreferences(
   const trip = getTrip(tripId);
 
   let availableSeats = getAvailableSeatsInTrip(trip);
-
   if (availableSeats?.length < passengerPreferences.length) {
     return undefined;
   }
@@ -29,7 +28,11 @@ export function createTentativeBookingFromPassengerPreferences(
       trip.baseFare
     );
     const matchedSeat = bookingPassenger?.seat;
-    bookingPassenger.passenger = preferences.passenger;
+    // TODO: remove this workaround to avoid circular dep
+    if (matchedSeat?.cabin?.seats) {
+      matchedSeat.cabin.seats = [];
+    }
+    bookingPassenger.passengerId = preferences.passengerId ?? -1;
     bookingPassengers.push(bookingPassenger);
     availableSeats = availableSeats.filter(
       (seat) => seat.id !== matchedSeat?.id
@@ -74,13 +77,22 @@ function getAvailableSeatsInTrip(trip: Trip): Seat[] {
   );
 }
 
-export function getAllBookingsOfTrip(tripId: number): Booking[] {
+export function getAllBookings(): Booking[] {
   const bookings = localStorage.getItem('bookings');
   if (bookings === null) {
+    mockBookings.forEach((booking) =>
+      booking.trip?.ship?.cabins?.forEach((cabin) =>
+        cabin.seats.forEach((seat) => (seat.cabin = undefined))
+      )
+    );
     localStorage.setItem('bookings', JSON.stringify(mockBookings));
     return mockBookings;
   }
   return JSON.parse(bookings);
+}
+
+export function getAllBookingsOfTrip(tripId: number): Booking[] {
+  return getAllBookings();
 }
 
 export function getAllBookingPassengersOfTrip(
@@ -139,6 +151,7 @@ function matchSeatFromPreferences(
   return {
     id: 1,
     bookingId: -1,
+    passengerId: -1,
     seat: matchedSeat,
     meal:
       passengerPreferences.meal !== 'Any'
@@ -181,4 +194,20 @@ function getBestSeat(
     }
   });
   return bestSeat;
+}
+
+export function createBooking(booking: Booking): Booking {
+  const bookings = getAllBookings();
+  booking.id = bookings.length + 1;
+  bookings.push(booking);
+  booking.trip?.ship?.cabins?.forEach((cabin) =>
+    cabin.seats.forEach((seat) => (seat.cabin = undefined))
+  );
+  localStorage.setItem('bookings', JSON.stringify(bookings));
+  return booking;
+}
+
+export function getBookingById(bookingId: number): Booking | undefined {
+  const bookings = getAllBookings();
+  return bookings.find((booking) => booking.id === bookingId);
 }

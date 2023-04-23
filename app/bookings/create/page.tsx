@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import Trip from '@/common/models/trip.model';
 import { getTrip } from '@/common/services/trip.service';
 import CreateBookingForm from '@/app/bookings/create/createBookingForm';
+import Booking from '@/common/models/booking.model';
 
 const { Title } = Typography;
 
@@ -33,6 +34,10 @@ export default function CreateBooking() {
 
   useEffect(onPageLoad, []);
 
+  const onComplete = (booking: Booking) => {
+    router.push(`/bookings/${booking.id}`);
+  };
+
   return (
     <div>
       <Title level={1} className={styles['main-title']}>
@@ -40,7 +45,7 @@ export default function CreateBooking() {
       </Title>
       <div className={styles['main-container']}>
         <div className={styles['passenger-info']}>
-          <CreateBookingForm trip={trip} />
+          <CreateBookingForm trip={trip} onComplete={onComplete} />
         </div>
         <article className={styles['trip-summary']}>
           <Title level={2}>Trip Summary</Title>
