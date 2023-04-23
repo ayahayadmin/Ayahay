@@ -3,7 +3,8 @@ import Trip, { mockTrip } from './trip.model';
 
 export default interface Booking {
   id: number;
-  trip: Trip;
+  tripId: number;
+  trip?: Trip;
   totalPrice: number;
   numOfCars: number;
   paymentReference: string;
@@ -13,6 +14,7 @@ export default interface Booking {
 
 export const mockBooking: Booking = {
   id: 1,
+  tripId: mockTrip.id,
   trip: mockTrip,
   totalPrice: 1000,
   numOfCars: 1,
@@ -24,6 +26,7 @@ export const mockBookings: Booking[] = [
   mockBooking,
   {
     id: 2,
+    tripId: mockTrip.id,
     trip: mockTrip,
     totalPrice: 1000,
     numOfCars: 1,
@@ -32,6 +35,7 @@ export const mockBookings: Booking[] = [
   },
   {
     id: 3,
+    tripId: mockTrip.id,
     trip: mockTrip,
     totalPrice: 1000,
     numOfCars: 1,
@@ -40,6 +44,7 @@ export const mockBookings: Booking[] = [
   },
   {
     id: 4,
+    tripId: mockTrip.id,
     trip: mockTrip,
     totalPrice: 1000,
     numOfCars: 1,
@@ -48,6 +53,7 @@ export const mockBookings: Booking[] = [
   },
   {
     id: 5,
+    tripId: mockTrip.id,
     trip: mockTrip,
     totalPrice: 1000,
     numOfCars: 1,
@@ -56,6 +62,7 @@ export const mockBookings: Booking[] = [
   },
   {
     id: 6,
+    tripId: mockTrip.id,
     trip: mockTrip,
     totalPrice: 1000,
     numOfCars: 1,
@@ -64,6 +71,7 @@ export const mockBookings: Booking[] = [
   },
   {
     id: 7,
+    tripId: mockTrip.id,
     trip: mockTrip,
     totalPrice: 1000,
     numOfCars: 1,

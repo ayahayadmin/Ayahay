@@ -3,7 +3,6 @@ import Passenger from '@/common/models/passenger.model';
 
 export default interface PassengerPreferences {
   passengerId?: number;
-  passenger?: Passenger;
   seat: keyof typeof SEAT_TYPE | 'Any';
   cabin: keyof typeof CABIN_TYPE | 'Any';
   meal: string | 'Any';

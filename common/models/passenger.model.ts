@@ -6,7 +6,7 @@ import PassengerPreferences, {
 import dayjs from 'dayjs';
 
 export default interface Passenger {
-  id?: number;
+  id: number;
   profile?: Profile;
   firstName: string;
   lastName: string;

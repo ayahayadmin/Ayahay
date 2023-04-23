@@ -12,6 +12,7 @@ export default interface BookingPassenger {
   id: number;
   bookingId: number;
   booking?: Booking;
+  passengerId: number;
   passenger?: Passenger;
   seat?: Seat;
   meal: string;
@@ -22,6 +23,7 @@ export const mockBookingPassenger: BookingPassenger = {
   id: 1,
   bookingId: 1,
   booking: mockBooking,
+  passengerId: mockPassenger.id,
   passenger: mockPassenger,
   seat: mockSeat,
   meal: 'Tapsilog',
@@ -34,6 +36,7 @@ export const mockBookingPassengers: BookingPassenger[] = [
     id: 2,
     bookingId: 2,
     booking: mockBooking,
+    passengerId: mockPassenger.id,
     passenger: mockPassenger,
     seat: mockSeat,
     meal: 'Tapsilog',
@@ -43,6 +46,7 @@ export const mockBookingPassengers: BookingPassenger[] = [
     id: 3,
     bookingId: 3,
     booking: mockBooking,
+    passengerId: mockPassenger.id,
     passenger: mockPassenger,
     seat: mockSeat2,
     meal: 'Tapsilog',
@@ -52,6 +56,7 @@ export const mockBookingPassengers: BookingPassenger[] = [
     id: 4,
     bookingId: 4,
     booking: mockBooking,
+    passengerId: mockPassenger.id,
     passenger: mockPassenger,
     seat: mockSeat3,
     meal: 'Tapsilog',
@@ -61,6 +66,7 @@ export const mockBookingPassengers: BookingPassenger[] = [
     id: 5,
     bookingId: 5,
     booking: mockBooking,
+    passengerId: mockPassenger.id,
     passenger: mockPassenger,
     seat: mockSeat4,
     meal: 'Tapsilog',
@@ -70,6 +76,7 @@ export const mockBookingPassengers: BookingPassenger[] = [
     id: 6,
     bookingId: 6,
     booking: mockBooking,
+    passengerId: mockPassenger.id,
     passenger: mockPassenger,
     seat: mockSeat5,
     meal: 'Tapsilog',
@@ -79,6 +86,7 @@ export const mockBookingPassengers: BookingPassenger[] = [
     id: 7,
     bookingId: 7,
     booking: mockBooking,
+    passengerId: mockPassenger.id,
     passenger: mockPassenger,
     seat: mockSeat5,
     meal: 'Tapsilog',
