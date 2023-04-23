@@ -11,7 +11,9 @@ interface BookingSummaryProps {
   booking?: Booking;
 }
 
-export default function BookingSummary({ booking }: BookingSummaryProps) {
+export default function BookingPassengersSummary({
+  booking,
+}: BookingSummaryProps) {
   return (
     <Skeleton loading={booking === undefined} active>
       {booking &&
