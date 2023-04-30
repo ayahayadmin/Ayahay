@@ -15,7 +15,7 @@ const formItemLayout = {
   },
 };
 
-export default function SignIn() {
+export default function SignInForm() {
   const [error, setError] = useState('');
 
   const onFinish = (values: LoginForm) => {
