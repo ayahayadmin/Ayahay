@@ -7,7 +7,7 @@ import Link from 'next/link';
 
 export default function Header() {
   return (
-    <nav className={styles['nav']}>
+    <nav className={styles['nav-container']}>
       <div className={styles['nav-main']}>
         <Image src={AyahayLogo} alt='Ayahay Logo' height={80} />
         <span className={styles['nav-links']}>
