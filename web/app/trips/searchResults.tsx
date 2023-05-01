@@ -1,6 +1,6 @@
+import styles from './searchResults.module.scss';
 import React, { useEffect, useState } from 'react';
 import { Button, Pagination, Skeleton, Space, Table } from 'antd';
-import styles from './page.module.scss';
 import {
   ITrip,
   IPort,
@@ -57,7 +57,7 @@ const columns = [
   {
     key: 'baseFare',
     dataIndex: 'baseFare',
-    render: (text: string) => <span>{`PHP ${text}`}</span>,
+    render: (text: string) => <span className={styles['price']}>{`PHP ${text}`}</span>,
   },
   {
     key: 'action',
@@ -133,7 +133,7 @@ export default function SearchResult({ searchQuery }: SearchResultsProps) {
 
   return (
     <div>
-      <div>
+      <div className={styles['results-container']}>
         <strong>{totalItems} result(s)</strong> based on the search
       </div>
       <Skeleton
@@ -145,7 +145,7 @@ export default function SearchResult({ searchQuery }: SearchResultsProps) {
         <Table
           columns={columns}
           dataSource={tripData}
-          className={styles.searchResult}
+          className={styles['search-result']}
           pagination={false}
         ></Table>
         {totalItems / PAGE_SIZE > 1 && (
