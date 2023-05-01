@@ -1,8 +1,8 @@
-import AdminSearchQuery from '@/common/models/admin-search-query';
-import { mockBookingPassengers } from '@/common/models/booking-passenger.model';
-import Booking, { mockBookings } from '@/common/models/booking.model';
-import { mockSeats } from '@/common/models/seat.model';
-import Trip, { mockTrips } from '@/common/models/trip.model';
+import { AdminSearchQuery } from '@ayahay/models/admin-search-query';
+import { mockBookingPassengers } from '@ayahay/models/booking-passenger.model';
+import { IBooking, mockBookings } from '@ayahay/models/booking.model';
+import { mockSeats } from '@ayahay/models/seat.model';
+import { ITrip, mockTrips } from '@ayahay/models/trip.model';
 import { Collapse } from 'antd';
 import { filter, find, forEach, map } from 'lodash';
 import { useEffect, useState } from 'react';
@@ -14,8 +14,8 @@ interface SearchResultsProp {
 }
 
 export default function TripResults({ searchQuery }: SearchResultsProp) {
-  const [trips, setTrips] = useState([] as Trip[]);
-  const [bookings, setBookings] = useState([] as Booking[]);
+  const [trips, setTrips] = useState([] as ITrip[]);
+  const [bookings, setBookings] = useState([] as IBooking[]);
   const [seats, setSeats] = useState([] as any);
 
   useEffect(() => {
@@ -38,7 +38,7 @@ export default function TripResults({ searchQuery }: SearchResultsProp) {
       const bookingPassenger = find(allBookingPassengers, { id: booking.id });
       let seatId;
       if (bookingPassenger) {
-        seatId = bookingPassenger.seatId;
+        seatId = bookingPassenger.seat?.id;
       }
       const seats = find(allSeats, { id: seatId });
       seatAssignments.push([seats?.rowNumber, seats?.columnNumber]);

@@ -1,6 +1,4 @@
 'use client';
-import CabinFilter from '@/common/components/form/CabinFilter';
-import AdminSearchQuery from '@/common/models/admin-search-query';
 import {
   buildAdminSearchQueryFromSearchForm,
   buildUrlQueryParamsFromAdminSearchForm,
@@ -9,11 +7,8 @@ import {
 import { Form } from 'antd';
 import { debounce } from 'lodash';
 import { useCallback, useEffect, useState } from 'react';
-import PieChart from '../../common/components/charts/pieChart';
-import TripResults from './tripResults';
-import styles from './page.module.scss';
-import BarChart from '@/common/components/charts/barChart';
-import LineChart from '@/common/components/charts/lineChart';
+import Trips from './trips';
+import { AdminSearchQuery } from '@ayahay/models/admin-search-query';
 
 const data = {
   labels: ['Red', 'Blue', 'Yellow'],
@@ -66,7 +61,8 @@ export default function Admin() {
       onFinish={(_) => debounceSearch()}
     >
       <div>
-        <div className={styles.chart}>
+        <Trips />
+        {/* <div className={styles.chart}>
           <PieChart data={data} />
         </div>
         <div className={styles.chart}>
@@ -76,7 +72,7 @@ export default function Admin() {
           <LineChart data={data} />
         </div>
         <CabinFilter name='cabinTypes' label='Cabin Types' />
-        <TripResults searchQuery={searchQuery} />
+        <TripResults searchQuery={searchQuery} /> */}
       </div>
     </Form>
   );
