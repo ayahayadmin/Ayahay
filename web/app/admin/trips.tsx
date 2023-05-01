@@ -1,13 +1,19 @@
-import { ITrip, mockTrips } from '@ayahay/models/trip.model';
-import { filter, find, split } from 'lodash';
 import React, { useEffect, useState } from 'react';
+import { ITrip, mockTrips } from '@ayahay/models/trip.model';
+import { filter, split } from 'lodash';
 import { getTime } from '@/services/search.service';
 import { Button, Space, Table } from 'antd';
 import { useRouter } from 'next/navigation';
 import { IShippingLine } from '@ayahay/models/shipping-line.model';
 import { IPort } from '@ayahay/models/port.model';
+import Seats from './details/seats';
 
 const PAGE_SIZE = 10;
+const rowDataInitial = {
+  shipId: -1,
+  cabinType: '',
+  floor: '',
+};
 
 export default function Trips() {
   //props: ShipId
@@ -15,8 +21,27 @@ export default function Trips() {
 
   const router = useRouter();
   const [trips, setTrips] = useState([] as ITrip[]);
-  //   const [buttonClicked, setButtonClicked] = useState(false);
+  // const [buttonClicked, setButtonClicked] = useState(false);
+  // const [rowData, setRowData] = useState({ ...rowDataInitial });
 
+  const onDetailsClick = (data: any) => {
+    // setButtonClicked(true);
+    // setRowData({
+    //   shipId: data.ship.id,
+    //   cabinType: data.ship.cabins[0].type,
+    //   floor: data.ship.cabins[0].name,
+    // });
+    const rowData = {
+      shipId: data.ship.id,
+      cabinType: data.ship.cabins[0].type,
+      floor: data.ship.cabins[0].name,
+    };
+    return (
+      <div>
+        <Seats rowData={rowData} />
+      </div>
+    );
+  };
   //   useEffect(() => {
   //     console.log('pasok');
 
@@ -53,11 +78,11 @@ export default function Trips() {
       dataIndex: 'departureDateIso',
       render: (text: string) => <span>{getTime(text)}</span>,
     },
-    {
-      key: 'slots',
-      dataIndex: 'slots',
-      render: (text: string) => <span>{`${text} slot/s`}</span>,
-    },
+    // {
+    //   key: 'slots',
+    //   dataIndex: 'slots',
+    //   render: (text: string) => <span>{`${text} slot/s`}</span>,
+    // },
     {
       key: 'baseFare',
       dataIndex: 'baseFare',
@@ -70,18 +95,20 @@ export default function Trips() {
           <Button
             type='primary'
             size='large'
-            onClick={() =>
-              router.push(`/admin/details?shipId=${record.ship.id}`)
-            }
+            // onClick={() => onDetailsClick(record)}
+            onClick={() => router.push(`/admin/details?tripId=${record.id}`)}
           >
             Details
-            {/* &cabinType=${record.ship.cabins[0].type}&floor=${record.ship.cabins[0].name} */}
           </Button>
         </Space>
       ),
     },
   ];
 
+  // {/* shipId=${record.ship.id}&cabinType=${record.ship.cabins[0].type}&floor=${record.ship.cabins[0].name} */}
+  //           {/* router.push(
+  //               `/admin/details?shipId=${record.ship.id}&cabinType=${record.ship.cabins[0].type}`
+  //             ) */}
   useEffect(() => {
     const fetchTrips = filter(mockTrips, { shippingLine: { id: shipId } });
     setTrips(fetchTrips);
@@ -95,6 +122,7 @@ export default function Trips() {
         // className={styles.searchResult}
         pagination={false}
       ></Table>
+      {/* {buttonClicked && <Seats rowData={rowData} />} */}
     </div>
   );
 }
