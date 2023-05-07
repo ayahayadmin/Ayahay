@@ -1,0 +1,89 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output = "./../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Seat {
+  id Int @default(autoincrement()) @id
+  cabinId Int
+  cabin Cabin @relation(fields: [cabinId], references: [id])
+  name String
+  rowNumber Int
+  columnNumber Int
+  type String
+  bookingPassenger BookingPassenger?
+}
+
+model Cabin {
+  id Int @default(autoincrement()) @id
+  shipId Int
+  ship Ship @relation(fields: [shipId], references: [id])
+  type String
+  name String
+  passengerCapacity Int
+  numOfRows Int
+  numOfColumns Int
+  seats Seat[]
+}
+
+model Ship {
+  id Int @default(autoincrement()) @id
+  name String
+  passengerCapacity Int
+  vehicleCapacity Int
+  cabins Cabin[]
+  trip Trip?
+}
+
+model Trip {
+  id Int @default(autoincrement()) @id
+  shipId Int @unique
+  ship Ship @relation(fields: [shipId], references: [id])
+  booking Booking?
+}
+
+model Booking {
+  id Int @default(autoincrement()) @id
+  tripId Int @unique
+  trip Trip @relation(fields: [tripId], references: [id])
+  totalPrice Float
+  paymentReference String
+  checkInDate DateTime
+  passengers BookingPassenger[]
+}
+
+model Passenger {
+  id Int @default(autoincrement()) @id
+  firstName String
+  lastName String
+  occupation String
+  sex String
+  civilStatus String
+  birthday DateTime
+  address String
+  nationality String
+  buddyId Int?
+  buddy Passenger? @relation("PassengerBuddies", fields: [buddyId], references: [id])
+  buddies Passenger[] @relation("PassengerBuddies")
+  bookingPassenger BookingPassenger?
+}
+
+model BookingPassenger {
+  id Int @default(autoincrement()) @id
+  bookingId Int @unique
+  booking Booking @relation(fields: [bookingId], references: [id])
+  passengerId Int @unique
+  passenger Passenger @relation(fields: [passengerId], references: [id])
+  seatId Int @unique
+  seat Seat @relation(fields: [seatId], references: [id])
+  meal String
+  totalPrice Float
+}
