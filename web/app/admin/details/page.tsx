@@ -71,7 +71,7 @@ export default function Details() {
       </div>
       <div>
         <h3>Booking Info:</h3>
-        <TripBookings />
+        <TripBookings tripId={tripData.id} />
       </div>
       <div className={styles.chart}>
         <PieChart data={data} />
@@ -93,6 +93,3 @@ export default function Details() {
     </div>
   );
 }
-
-// we can include graphs
-// we can include seat map
