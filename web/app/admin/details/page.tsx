@@ -2,14 +2,12 @@
 import { getTime } from '@/services/search.service';
 import { ITrip, mockTrips } from '@ayahay/models/trip.model';
 import { Button } from 'antd';
-import { filter, find, join, split } from 'lodash';
+import { find, join, split } from 'lodash';
 import React, { useEffect, useState } from 'react';
 import Seats from './seats';
 import styles from './page.module.scss';
-import { getAllBookingsOfTrip } from '@/services/booking.service';
-import LineChart from '@/components/charts/lineChart';
-import { Pie } from 'react-chartjs-2';
 import PieChart from '@/components/charts/pieChart';
+import TripBookings from './tripBookings';
 
 const data = {
   labels: ['Red', 'Blue', 'Yellow'],
@@ -73,6 +71,7 @@ export default function Details() {
       </div>
       <div>
         <h3>Booking Info:</h3>
+        <TripBookings />
       </div>
       <div className={styles.chart}>
         <PieChart data={data} />
@@ -84,7 +83,13 @@ export default function Details() {
       >
         Seat Map
       </Button>
-      {seatMapBtnClicked && <Seats />}
+      {seatMapBtnClicked && (
+        <Seats
+          shipId={tripData.ship.id}
+          cabinType={tripData.ship.cabins[0].type}
+          floor={tripData.ship.cabins[0].name}
+        />
+      )}
     </div>
   );
 }
