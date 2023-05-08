@@ -3,12 +3,14 @@ import {
   Controller,
   Delete,
   Get,
+  NotFoundException,
   Param,
   Post,
   Put,
   Query,
 } from '@nestjs/common';
 import { BookingService } from './booking.service';
+import { IBooking } from '@ayahay/models';
 
 @Controller('bookings')
 export class BookingController {
@@ -18,7 +20,51 @@ export class BookingController {
   async getAllBookings() {}
 
   @Get(':id')
-  async getBookingById(@Param('id') id: string) {}
+  async getBookingSummaryById(
+    @Param('id') id: string
+  ): Promise<IBooking | undefined> {
+    const booking = await this.bookingService.bookingSummary({
+      id: Number(id),
+    });
+
+    if (booking === null) {
+      throw new NotFoundException('Booking not found');
+    }
+
+    const { passengers, trip, checkInDate, ...bookingProperties } = booking;
+    const { srcPort, destPort, departureDate, ...tripProperties } = trip;
+
+    return {
+      trip: {
+        srcPort: { ...srcPort },
+        destPort: { ...destPort },
+        departureDateIso: departureDate.toISOString(),
+        availableCabins: [],
+        availableSeatTypes: [],
+        meals: [],
+        ...tripProperties,
+      },
+      bookingPassengers: passengers.map((passenger) => {
+        const {
+          seat,
+          passenger: passengerInformation,
+          ...bookingPassengerProperties
+        } = passenger;
+        const { birthday, ...passengerProperties } = passengerInformation;
+        return {
+          seat: { ...seat },
+          passenger: {
+            birthdayIso: birthday.toISOString(),
+            ...passengerProperties,
+          },
+          ...bookingPassengerProperties,
+        };
+      }),
+      checkInDate: checkInDate.toISOString(),
+      numOfCars: 0,
+      ...bookingProperties,
+    } as IBooking;
+  }
 
   @Post()
   async createBooking() {}
