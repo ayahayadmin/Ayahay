@@ -3,7 +3,7 @@
 
 generator client {
   provider = "prisma-client-js"
-  output = "./../node_modules/.prisma/client"
+  output = "../../node_modules/.prisma/client"
 }
 
 datasource db {
@@ -19,7 +19,7 @@ model Seat {
   rowNumber Int
   columnNumber Int
   type String
-  bookingPassenger BookingPassenger?
+  bookingPassengers BookingPassenger[]
 }
 
 model Cabin {
@@ -40,19 +40,41 @@ model Ship {
   passengerCapacity Int
   vehicleCapacity Int
   cabins Cabin[]
-  trip Trip?
+  trips Trip[]
 }
 
 model Trip {
   id Int @default(autoincrement()) @id
-  shipId Int @unique
+  shipId Int
   ship Ship @relation(fields: [shipId], references: [id])
-  booking Booking?
+  bookings Booking[]
+  shippingLineId Int
+  shippingLine ShippingLine @relation(fields: [shippingLineId], references: [id])
+  srcPortId Int
+  srcPort Port @relation("srcPort", fields: [srcPortId], references: [id])
+  destPortId Int
+  destPort Port @relation("destPort", fields: [destPortId], references: [id])
+  type String
+  departureDate DateTime
+  baseFare Float
+}
+
+model ShippingLine {
+  id Int @default(autoincrement()) @id
+  name String
+  trips Trip[]
+}
+
+model Port {
+  id Int @default(autoincrement()) @id
+  tripsSrc Trip[] @relation("srcPort")
+  tripsDest Trip[] @relation("destPort")
+  name String
 }
 
 model Booking {
   id Int @default(autoincrement()) @id
-  tripId Int @unique
+  tripId Int
   trip Trip @relation(fields: [tripId], references: [id])
   totalPrice Float
   paymentReference String
@@ -73,16 +95,16 @@ model Passenger {
   buddyId Int?
   buddy Passenger? @relation("PassengerBuddies", fields: [buddyId], references: [id])
   buddies Passenger[] @relation("PassengerBuddies")
-  bookingPassenger BookingPassenger?
+  bookings BookingPassenger[]
 }
 
 model BookingPassenger {
   id Int @default(autoincrement()) @id
-  bookingId Int @unique
+  bookingId Int
   booking Booking @relation(fields: [bookingId], references: [id])
-  passengerId Int @unique
+  passengerId Int
   passenger Passenger @relation(fields: [passengerId], references: [id])
-  seatId Int @unique
+  seatId Int
   seat Seat @relation(fields: [seatId], references: [id])
   meal String
   totalPrice Float
