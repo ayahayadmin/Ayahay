@@ -46,6 +46,7 @@ export function createTentativeBookingFromPassengerPreferences(
 
   return {
     id: 1,
+    tripId,
     trip,
     totalPrice,
     numOfCars: 1,
@@ -65,7 +66,7 @@ function getAvailableSeatsInTrip(trip: ITrip): ISeat[] {
   });
 
   return (
-    trip.ship.cabins
+    trip.ship?.cabins
       .map((cabin) => {
         cabin.seats?.forEach((seat) => (seat.cabin = cabin));
         return cabin.seats;
@@ -211,4 +212,15 @@ export function createBooking(booking: IBooking): IBooking {
 export function getBookingById(bookingId: number): IBooking | undefined {
   const bookings = getAllBookings();
   return bookings.find((booking) => booking.id === bookingId);
+}
+
+export function getBookingPassengersByTripId(
+  tripId: number
+): IBookingPassenger[] {
+  const bookings = getAllBookings();
+  const booking = bookings.find((booking) => booking.tripId === tripId);
+  if (booking?.bookingPassengers === undefined) {
+    return [];
+  }
+  return booking.bookingPassengers;
 }
