@@ -25,8 +25,8 @@ export const mockCabinEconomy: ICabin = {
   shipId: 1,
   type: 'Economy',
   name: 'first floor',
-  passengerCapacity: 120,
-  numOfRows: 20,
+  passengerCapacity: 30,
+  numOfRows: 5,
   numOfCols: 6,
   seats: mockEconomyClassSeats,
 };
@@ -36,8 +36,8 @@ export const mockCabinEconomy2: ICabin = {
   shipId: 1,
   type: 'Economy',
   name: 'second floor',
-  passengerCapacity: 60,
-  numOfRows: 10,
+  passengerCapacity: 30,
+  numOfRows: 5,
   numOfCols: 6,
   seats: mockSeats,
 };
@@ -47,8 +47,8 @@ export const mockCabinBusiness: ICabin = {
   shipId: 1,
   type: 'Business',
   name: 'first floor',
-  passengerCapacity: 60,
-  numOfRows: 10,
+  passengerCapacity: 30,
+  numOfRows: 5,
   numOfCols: 6,
   seats: mockBusinessClassSeats,
 };

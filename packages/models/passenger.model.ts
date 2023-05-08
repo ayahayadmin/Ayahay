@@ -1,9 +1,6 @@
 import { CIVIL_STATUS, OCCUPATION, SEX } from '@ayahay/constants/enum';
 import { IProfile } from './profile.model';
-import {
-  PassengerPreferences,
-  mockPreferences,
-} from './passenger-preferences';
+import { PassengerPreferences, mockPreferences } from './passenger-preferences';
 import dayjs from 'dayjs';
 
 export interface IPassenger {
@@ -22,7 +19,7 @@ export interface IPassenger {
 }
 
 export const mockPassenger: IPassenger = {
-  id: 1,
+  id: 4,
   firstName: 'John',
   lastName: 'Doe',
   occupation: 'Student',
@@ -82,3 +79,10 @@ export function toFormValue(passenger: IPassenger) {
     ...otherPassengerProperties,
   };
 }
+
+export const mockPassengers: IPassenger[] = [
+  mockPassenger,
+  mockFather,
+  mockWife,
+  mockSon,
+];

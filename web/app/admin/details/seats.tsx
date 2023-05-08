@@ -22,7 +22,6 @@ import {
   mockBookingPassengers,
 } from '@ayahay/models/booking-passenger.model';
 import { ICabin } from '@ayahay/models/cabin.model';
-import { CABIN_TYPE } from '@ayahay/constants/enum';
 
 interface PassengerInfo {
   name: string;
@@ -30,12 +29,10 @@ interface PassengerInfo {
   birthday: string;
 }
 
-interface RowDataProps {
-  rowData: {
-    shipId: number;
-    cabinType: string;
-    floor: string;
-  };
+interface SeatProps {
+  shipId: number;
+  cabinType: string;
+  floor: string;
 }
 
 const blockInfoInitial = {
@@ -45,26 +42,9 @@ const blockInfoInitial = {
   type: '',
 };
 
-export default function Seats({ rowData }: RowDataProps) {
-  //props: shipId, trip preference, Cabin object (cabin type & floor), seats occupied
-  const trip = mockTrip;
-  const shipId = 1;
-  const cabinType = CABIN_TYPE.Economy;
-  const floor = 'first floor';
-  // const preSelectedValue = `${split(cabinType, ' ')[0]},${floor}`;
-
-  // const urlSearchParams = new URLSearchParams(window.location.search);
-  // const params = Object.fromEntries(urlSearchParams.entries());
-  // console.log(params);
-  // const { shipId, cabinType, floor } = params;
-  // console.log(shipId);
-  // console.log(cabinType);
-  // console.log(floor);
-
-  const preSelectedValue = `${split(cabinType, ' ')[0]},${floor}`;
-
-  console.log(rowData);
-
+export default function Seats({ shipId, cabinType, floor }: SeatProps) {
+  const trip = mockTrip; //might remove this and need the trip ID as props
+  const preSelectedValue = `${cabinType},${floor}`;
   const [options, setOptions] = useState(
     [] as { value: string; label: string }[]
   );
@@ -85,14 +65,14 @@ export default function Seats({ rowData }: RowDataProps) {
   useEffect(() => {
     const bookingPassengers: IBookingPassenger[] = [];
     const fetchShip = mockShips;
-    const fetchBookings = getAllBookingsOfTrip(trip.id);
+    const fetchBookings = getAllBookingsOfTrip(trip.id); //getAllBookingsOfTrip should return bookings in a trip
     const fetchBookingPassenger = mockBookingPassengers;
 
     const [type, name] = split(selectedCabin, ',');
 
     const ship = find(fetchShip, { id: shipId });
     const cabins: ICabin[] = get(ship, 'cabins')!;
-    const filteredBookings = filter(fetchBookings, { trip });
+    const filteredBookings = filter(fetchBookings, { trip }); //might not be needed in the future since getAllBookingsOfTrip() should be returning the books within the given trip
 
     const availableCabinType = map(cabins, (cabin) => {
       return {
