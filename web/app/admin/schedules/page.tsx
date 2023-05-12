@@ -7,7 +7,7 @@ import {
 import { Form } from 'antd';
 import { debounce } from 'lodash';
 import { useCallback, useEffect, useState } from 'react';
-import Trips from './schedules/trips';
+import Trips from './trips';
 import { AdminSearchQuery } from '@ayahay/models/admin-search-query';
 
 const data = {
@@ -26,7 +26,7 @@ const data = {
   ],
 };
 
-export default function Admin() {
+export default function Schedules() {
   const [form] = Form.useForm();
   const [searchQuery, setSearchQuery] = useState({} as AdminSearchQuery);
 

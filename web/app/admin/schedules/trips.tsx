@@ -6,7 +6,7 @@ import { Button, Space, Table } from 'antd';
 import { useRouter } from 'next/navigation';
 import { IShippingLine } from '@ayahay/models/shipping-line.model';
 import { IPort } from '@ayahay/models/port.model';
-import Seats from './details/seats';
+import Seats from '../details/seats';
 
 const PAGE_SIZE = 10;
 const rowDataInitial = {
@@ -22,7 +22,7 @@ export default function Trips() {
   const router = useRouter();
   const [trips, setTrips] = useState([] as ITrip[]);
   // const [buttonClicked, setButtonClicked] = useState(false);
-  // const [rowData, setRowData] = useState({ ...rowDataInitial });
+  const [rowData, setRowData] = useState({ ...rowDataInitial });
 
   const onDetailsClick = (data: any) => {
     // setButtonClicked(true);
@@ -31,11 +31,11 @@ export default function Trips() {
     //   cabinType: data.ship.cabins[0].type,
     //   floor: data.ship.cabins[0].name,
     // });
-    const rowData = {
-      shipId: data.ship.id,
-      cabinType: data.ship.cabins[0].type,
-      floor: data.ship.cabins[0].name,
-    };
+    // const rowData = {
+    //   shipId: data.ship.id,
+    //   cabinType: data.ship.cabins[0].type,
+    //   floor: data.ship.cabins[0].name,
+    // };
     return (
       <div>
         <Seats rowData={rowData} />
