@@ -7,7 +7,7 @@ import {
 import { Form } from 'antd';
 import { debounce } from 'lodash';
 import { useCallback, useEffect, useState } from 'react';
-import Trips from './trips';
+import Trips from './bookingLIst';
 import { AdminSearchQuery } from '@ayahay/models/admin-search-query';
 
 const data = {
