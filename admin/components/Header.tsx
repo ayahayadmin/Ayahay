@@ -13,19 +13,19 @@ export default function Header() {
         <span className={styles['nav-links']}>
           <ul>
             <li>
-              <Link href='/'>Home</Link>
+              <Link href='/'>Scan QR</Link>
             </li>
             <li>
-              <Link href='/trips'>Destinations</Link>
+              <Link href='/schedules'>Schedules</Link>
             </li>
             <li>
-              <a href='#'>About Us</a>
+              <a href='#'>Dashboard</a>
             </li>
             <li>
-              <a href='#'>My Account</a>
+              <a href='#'>Database</a>
             </li>
             <li>
-              <a href='#'>Contact</a>
+              <a href='#'>Upload</a>
             </li>
           </ul>
         </span>
