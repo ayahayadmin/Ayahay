@@ -1,0 +1,34 @@
+{
+  "name": "@ayahay/admin",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@ayahay/models": "^0.1.0",
+    "@ayahay/constants": "^0.1.0",
+    "@ant-design/icons": "^5.0.1",
+    "@types/lodash": "^4.14.191",
+    "@types/node": "18.14.5",
+    "@types/react": "18.0.28",
+    "@types/react-dom": "18.0.11",
+    "@types/react-router-dom": "^5.3.3",
+    "antd": "^5.2.3",
+    "chart.js": "^4.2.1",
+    "dayjs": "^1.11.7",
+    "eslint": "8.35.0",
+    "eslint-config-next": "13.2.3",
+    "lodash": "^4.17.21",
+    "next": "13.2.3",
+    "react": "18.2.0",
+    "react-chartjs-2": "^5.2.0",
+    "react-dom": "18.2.0",
+    "react-qr-code": "^2.0.11",
+    "sass": "^1.58.3",
+    "typescript": "4.9.5"
+  }
+}

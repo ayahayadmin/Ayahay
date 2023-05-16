@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "workspaces": [
+    "admin",
     "web",
     "api",
     "packages/*"
@@ -15,6 +16,7 @@
   },
   "scripts": {
     "start:api": "yarn --cwd api start:dev",
-    "start:web": "yarn --cwd web dev"
+    "start:web": "yarn --cwd web dev",
+    "start:admin": "yarn --cwd admin dev"
   }
 }
