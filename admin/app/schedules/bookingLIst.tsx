@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { IShippingLine } from '@ayahay/models/shipping-line.model';
 import { IPort } from '@ayahay/models/port.model';
 import Seats from '../details/seats';
+import { getBookingPassengersByTripId } from '@/services/booking.service';
 
 const PAGE_SIZE = 10;
 const rowDataInitial = {
@@ -15,7 +16,7 @@ const rowDataInitial = {
   floor: '',
 };
 
-export default function Trips() {
+export default function BookingList() {
   //props: ShipId
   const shipId = 1;
 
@@ -24,24 +25,24 @@ export default function Trips() {
   // const [buttonClicked, setButtonClicked] = useState(false);
   const [rowData, setRowData] = useState({ ...rowDataInitial });
 
-  const onDetailsClick = (data: any) => {
-    // setButtonClicked(true);
-    // setRowData({
-    //   shipId: data.ship.id,
-    //   cabinType: data.ship.cabins[0].type,
-    //   floor: data.ship.cabins[0].name,
-    // });
-    // const rowData = {
-    //   shipId: data.ship.id,
-    //   cabinType: data.ship.cabins[0].type,
-    //   floor: data.ship.cabins[0].name,
-    // };
-    return (
-      <div>
-        <Seats rowData={rowData} />
-      </div>
-    );
-  };
+  // const onDetailsClick = (data: any) => {
+  //   // setButtonClicked(true);
+  //   // setRowData({
+  //   //   shipId: data.ship.id,
+  //   //   cabinType: data.ship.cabins[0].type,
+  //   //   floor: data.ship.cabins[0].name,
+  //   // });
+  //   // const rowData = {
+  //   //   shipId: data.ship.id,
+  //   //   cabinType: data.ship.cabins[0].type,
+  //   //   floor: data.ship.cabins[0].name,
+  //   // };
+  //   return (
+  //     <div>
+  //       <Seats rowData={rowData} />
+  //     </div>
+  //   );
+  // };
   //   useEffect(() => {
   //     console.log('pasok');
 
@@ -110,8 +111,11 @@ export default function Trips() {
   //               `/admin/details?shipId=${record.ship.id}&cabinType=${record.ship.cabins[0].type}`
   //             ) */}
   useEffect(() => {
-    const fetchTrips = filter(mockTrips, { shippingLine: { id: shipId } });
-    setTrips(fetchTrips);
+    //probably get all tripIds given date range?
+    //for now, will assume we have the tripId
+    const tripId = 1;
+    const bookingPassengers = getBookingPassengersByTripId(tripId);
+    console.log(bookingPassengers);
   }, []);
 
   return (
