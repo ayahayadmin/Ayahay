@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ITrip, mockTrips } from '@ayahay/models/trip.model';
-import { filter, split } from 'lodash';
+import { filter, find, map, split } from 'lodash';
 import { getTime } from '@/services/search.service';
 import { Button, Space, Table } from 'antd';
 import { useRouter } from 'next/navigation';
@@ -8,6 +8,12 @@ import { IShippingLine } from '@ayahay/models/shipping-line.model';
 import { IPort } from '@ayahay/models/port.model';
 import Seats from '../details/seats';
 import { getBookingPassengersByTripId } from '@/services/booking.service';
+import {
+  IBooking,
+  IPassenger,
+  mockBookingPassengers,
+  mockBookings,
+} from '@/../packages/models';
 
 const PAGE_SIZE = 10;
 const rowDataInitial = {
@@ -21,88 +27,29 @@ export default function BookingList() {
   const shipId = 1;
 
   const router = useRouter();
-  const [trips, setTrips] = useState([] as ITrip[]);
+  const [passengerssData, setPassengersData] = useState([] as IPassenger[]);
   // const [buttonClicked, setButtonClicked] = useState(false);
   const [rowData, setRowData] = useState({ ...rowDataInitial });
 
-  // const onDetailsClick = (data: any) => {
-  //   // setButtonClicked(true);
-  //   // setRowData({
-  //   //   shipId: data.ship.id,
-  //   //   cabinType: data.ship.cabins[0].type,
-  //   //   floor: data.ship.cabins[0].name,
-  //   // });
-  //   // const rowData = {
-  //   //   shipId: data.ship.id,
-  //   //   cabinType: data.ship.cabins[0].type,
-  //   //   floor: data.ship.cabins[0].name,
-  //   // };
-  //   return (
-  //     <div>
-  //       <Seats rowData={rowData} />
-  //     </div>
-  //   );
-  // };
-  //   useEffect(() => {
-  //     console.log('pasok');
-
-  //     router.push(`/admin/details`);
-  //   }, [buttonClicked]);
-
   const columns = [
     {
-      key: 'logo',
-      dataIndex: 'shippingLine',
-    },
-    {
-      key: 'shippingLine',
-      dataIndex: 'shippingLine',
-      render: (text: IShippingLine) => <span>{text.name}</span>,
-    },
-    {
-      key: 'srcPort',
-      dataIndex: 'srcPort',
-      render: (text: IPort) => <span>{text.name}</span>,
-    },
-    {
-      key: 'departureDate',
-      dataIndex: 'departureDateIso',
-      render: (text: string) => <span>{split(text, 'T')[0]}</span>,
-    },
-    {
-      key: 'destPort',
-      dataIndex: 'destPort',
-      render: (text: IPort) => <span>{text.name}</span>,
-    },
-    {
-      key: 'departureTime',
-      dataIndex: 'departureDateIso',
-      render: (text: string) => <span>{getTime(text)}</span>,
-    },
-    // {
-    //   key: 'slots',
-    //   dataIndex: 'slots',
-    //   render: (text: string) => <span>{`${text} slot/s`}</span>,
-    // },
-    {
-      key: 'baseFare',
-      dataIndex: 'baseFare',
-      render: (text: string) => <span>{`PHP ${text}`}</span>,
-    },
-    {
-      key: 'action',
+      title: 'Full Name',
+      key: 'firstName',
       render: (text: any, record: any) => (
-        <Space size='middle'>
-          <Button
-            type='primary'
-            size='large'
-            // onClick={() => onDetailsClick(record)}
-            onClick={() => router.push(`/admin/details?tripId=${record.id}`)}
-          >
-            Details
-          </Button>
-        </Space>
+        <span>
+          {record.lastName}, {record.firstName}
+        </span>
       ),
+    },
+    {
+      title: 'Occupation',
+      key: 'occupation',
+      dataIndex: 'occupation',
+    },
+    {
+      title: 'Birthdate',
+      key: 'birthdayIso',
+      dataIndex: 'birthdayIso',
     },
   ];
 
@@ -112,17 +59,28 @@ export default function BookingList() {
   //             ) */}
   useEffect(() => {
     //probably get all tripIds given date range?
-    //for now, will assume we have the tripId
+    //for now, will assume we have only ONE tripId (cuz there could be many trips given a date)
     const tripId = 1;
-    const bookingPassengers = getBookingPassengersByTripId(tripId);
-    console.log(bookingPassengers);
+    // const bookingPassengers = getBookingPassengersByTripId(tripId); // still waiting for Carlos to update
+    // console.log(bookingPassengers);
+
+    const bookingsTemp = filter(mockBookings, { tripId }); //pretending this doesn't exists
+    const bookingPassengers = map(bookingsTemp, (booking) => {
+      return find(mockBookingPassengers, { bookingId: booking.id });
+    });
+
+    const passengers = map(
+      bookingPassengers,
+      (bookingPassenger) => bookingPassenger?.passenger!
+    );
+    setPassengersData(passengers);
   }, []);
 
   return (
     <div>
       <Table
         columns={columns}
-        dataSource={trips}
+        dataSource={passengerssData}
         // className={styles.searchResult}
         pagination={false}
       ></Table>
