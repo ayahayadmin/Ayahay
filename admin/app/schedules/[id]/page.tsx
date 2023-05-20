@@ -1,3 +1,4 @@
+'use client';
 import React, { useEffect, useState } from 'react';
 import { ITrip, mockTrips } from '@ayahay/models/trip.model';
 import { filter, find, map, split } from 'lodash';
@@ -6,7 +7,7 @@ import { Button, Space, Table } from 'antd';
 import { useRouter } from 'next/navigation';
 import { IShippingLine } from '@ayahay/models/shipping-line.model';
 import { IPort } from '@ayahay/models/port.model';
-import Seats from '../details/seats';
+import Seats from '../../details/seats';
 import { getBookingPassengersByTripId } from '@/services/booking.service';
 import {
   IBooking,
@@ -22,12 +23,13 @@ const rowDataInitial = {
   floor: '',
 };
 
-export default function BookingList() {
-  //props: ShipId
-  const shipId = 1;
+interface BookingListProps {
+  id: number;
+}
 
+export default function BookingList({ params }: any) {
   const router = useRouter();
-  const [passengerssData, setPassengersData] = useState([] as IPassenger[]);
+  const [passengersData, setPassengersData] = useState([] as IPassenger[]);
   // const [buttonClicked, setButtonClicked] = useState(false);
   const [rowData, setRowData] = useState({ ...rowDataInitial });
 
@@ -60,11 +62,11 @@ export default function BookingList() {
   useEffect(() => {
     //probably get all tripIds given date range?
     //for now, will assume we have only ONE tripId (cuz there could be many trips given a date)
-    const tripId = 1;
+    // const tripId = 1;
     // const bookingPassengers = getBookingPassengersByTripId(tripId); // still waiting for Carlos to update
     // console.log(bookingPassengers);
 
-    const bookingsTemp = filter(mockBookings, { tripId }); //pretending this doesn't exists
+    const bookingsTemp = filter(mockBookings, { tripId: Number(params.id) }); //pretending this doesn't exists
     const bookingPassengers = map(bookingsTemp, (booking) => {
       return find(mockBookingPassengers, { bookingId: booking.id });
     });
@@ -80,7 +82,7 @@ export default function BookingList() {
     <div>
       <Table
         columns={columns}
-        dataSource={passengerssData}
+        dataSource={passengersData}
         // className={styles.searchResult}
         pagination={false}
       ></Table>
