@@ -99,4 +99,14 @@ export const mockBookingPassengers: IBookingPassenger[] = [
     meal: 'Tapsilog',
     totalPrice: 1000,
   },
+  {
+    id: 8,
+    bookingId: 8,
+    booking: mockBooking,
+    passengerId: mockPassenger.id,
+    passenger: mockPassenger,
+    seat: mockSeat5,
+    meal: 'Tapsilog',
+    totalPrice: 1000,
+  },
 ];

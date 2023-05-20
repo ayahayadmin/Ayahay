@@ -1,5 +1,5 @@
 import { IBookingPassenger } from './booking-passenger.model';
-import { ITrip, mockTrip } from './trip.model';
+import { ITrip, mockTrip, mockTrips } from './trip.model';
 
 export interface IBooking {
   id: number;
@@ -73,6 +73,15 @@ export const mockBookings: IBooking[] = [
     id: 7,
     tripId: mockTrip.id,
     trip: mockTrip,
+    totalPrice: 1000,
+    numOfCars: 1,
+    paymentReference: '941d1d5a-1f22-4d4d-95b6-f7e1a25a144e',
+    checkInDate: '2023-03-26T04:50:22+0000',
+  },
+  {
+    id: 8,
+    tripId: 2,
+    trip: mockTrips[1],
     totalPrice: 1000,
     numOfCars: 1,
     paymentReference: '941d1d5a-1f22-4d4d-95b6-f7e1a25a144e',
