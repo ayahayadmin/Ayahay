@@ -7,8 +7,9 @@ import {
 import { Form } from 'antd';
 import { debounce } from 'lodash';
 import { useCallback, useEffect, useState } from 'react';
-import Trips from './bookingList';
+import BookingList from './[id]/page';
 import { AdminSearchQuery } from '@ayahay/models/admin-search-query';
+import TripList from './tripList';
 
 const data = {
   labels: ['Red', 'Blue', 'Yellow'],
@@ -61,7 +62,8 @@ export default function Schedules() {
       onFinish={(_) => debounceSearch()}
     >
       <div>
-        <Trips />
+        <TripList />
+        {/* <BookingList /> */}
         {/* <div className={styles.chart}>
           <PieChart data={data} />
         </div>
