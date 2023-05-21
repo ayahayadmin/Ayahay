@@ -1,5 +1,11 @@
 import { IBooking, mockBooking } from './booking.model';
-import { IPassenger, mockPassenger } from './passenger.model';
+import {
+  IPassenger,
+  mockFather,
+  mockPassenger,
+  mockSon,
+  mockWife,
+} from './passenger.model';
 import {
   ISeat,
   mockSeat,
@@ -58,7 +64,7 @@ export const mockBookingPassengers: IBookingPassenger[] = [
     bookingId: 4,
     booking: mockBooking,
     passengerId: mockPassenger.id,
-    passenger: mockPassenger,
+    passenger: mockFather,
     seat: mockSeat3,
     meal: 'Tapsilog',
     totalPrice: 1000,
@@ -78,7 +84,7 @@ export const mockBookingPassengers: IBookingPassenger[] = [
     bookingId: 6,
     booking: mockBooking,
     passengerId: mockPassenger.id,
-    passenger: mockPassenger,
+    passenger: mockWife,
     seat: mockSeat5,
     meal: 'Tapsilog',
     totalPrice: 1000,
@@ -86,6 +92,16 @@ export const mockBookingPassengers: IBookingPassenger[] = [
   {
     id: 7,
     bookingId: 7,
+    booking: mockBooking,
+    passengerId: mockPassenger.id,
+    passenger: mockSon,
+    seat: mockSeat5,
+    meal: 'Tapsilog',
+    totalPrice: 1000,
+  },
+  {
+    id: 8,
+    bookingId: 8,
     booking: mockBooking,
     passengerId: mockPassenger.id,
     passenger: mockPassenger,
