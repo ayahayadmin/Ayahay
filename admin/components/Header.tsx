@@ -19,7 +19,7 @@ export default function Header() {
         <span className={styles['nav-links']}>
           <ul>
             <li>
-              <Link href='/schedules'>Schedules</Link>
+              <Link href='/trips'>Trips</Link>
             </li>
             <li>
               <a href='#'>Dashboard</a>
@@ -35,10 +35,10 @@ export default function Header() {
       </div>
 
       <div className={styles['nav-buttons']}>
-        <Search 
-          placeholder="Search for booking..." 
-          onSearch={onSearch} 
-          style={{ width: 200 }} 
+        <Search
+          placeholder='Search for booking...'
+          onSearch={onSearch}
+          style={{ width: 200 }}
         />
         <Avatar icon={<UserOutlined />} />
       </div>
