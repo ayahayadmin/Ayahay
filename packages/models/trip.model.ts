@@ -2,6 +2,7 @@ import { IShippingLine, mockShippingLine } from './shipping-line.model';
 import { IPort, mockPort, mockPort2 } from './port.model';
 import { CABIN_TYPE, SEAT_TYPE, TRIP_TYPE } from '@ayahay/constants/enum';
 import { IShip, mockShip } from './ship.model';
+import dayjs from 'dayjs';
 
 export interface ITrip {
   id: number;
@@ -20,6 +21,9 @@ export interface ITrip {
   meals: string[];
 }
 
+const today = dayjs().toISOString();
+const fiveDaysLater = dayjs().add(5, 'day').toISOString();
+
 export const mockTrip: ITrip = {
   id: 1,
   shipId: mockShip.id,
@@ -30,7 +34,7 @@ export const mockTrip: ITrip = {
   srcPort: mockPort,
   destPortId: mockPort2.id,
   destPort: mockPort2,
-  departureDateIso: '2023-03-12T04:50:22+0000',
+  departureDateIso: today,
   baseFare: 20,
   availableSeatTypes: [
     'Aisle',
@@ -55,7 +59,7 @@ export const mockTrips: ITrip[] = [
     srcPort: mockPort2,
     destPortId: mockPort2.id,
     destPort: mockPort2,
-    departureDateIso: '2023-03-12T04:50:22+0000',
+    departureDateIso: fiveDaysLater,
     baseFare: 20,
     availableSeatTypes: [
       'Aisle',
