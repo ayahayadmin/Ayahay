@@ -1,6 +1,4 @@
-'use client';
-
-import { Form, FormItemProps, Select, SelectProps } from 'antd';
+import { Form, FormItemProps, Select } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { getShippingLines } from '@/services/shipping-line.service';
 import { IShippingLine } from '@ayahay/models';

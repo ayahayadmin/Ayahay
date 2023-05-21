@@ -1,5 +1,3 @@
-'use client';
-
 import { Form, FormItemProps, Select } from 'antd';
 import React, { useEffect } from 'react';
 

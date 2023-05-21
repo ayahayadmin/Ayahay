@@ -1,4 +1,3 @@
-'use client';
 import { Button, Form, InputNumber, Popover } from 'antd';
 import React from 'react';
 import {

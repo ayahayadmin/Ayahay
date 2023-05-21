@@ -1,4 +1,5 @@
-import { Descriptions, Skeleton, Typography } from 'antd';
+import React from 'react';
+import { Descriptions, Skeleton } from 'antd';
 import { IPassenger } from '@ayahay/models';
 import dayjs from 'dayjs';
 import {

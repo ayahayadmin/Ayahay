@@ -1,7 +1,7 @@
 import { Descriptions, Skeleton, Typography } from 'antd';
 import { IBooking } from '@ayahay/models/booking.model';
 import React from 'react';
-import PassengerSummary from '@/components/descriptions/PassengerSummary';
+import PassengerSummary from './PassengerSummary';
 import { CABIN_TYPE, SEAT_TYPE } from '@ayahay/constants/enum';
 
 const { Title } = Typography;

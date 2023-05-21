@@ -1,6 +1,6 @@
 import { IBooking } from '@ayahay/models/booking.model';
 import React from 'react';
-import BookingPassengersSummary from '@/components/booking/BookingPassengersSummary';
+import BookingPassengersSummary from '@ayahay/components/descriptions/BookingPassengersSummary';
 import { Button, Typography } from 'antd';
 import { createBooking } from '@/services/booking.service';
 

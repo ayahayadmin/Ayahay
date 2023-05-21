@@ -11,6 +11,7 @@
   "dependencies": {
     "@ayahay/models": "^0.1.0",
     "@ayahay/constants": "^0.1.0",
+    "@ayahay/components": "^0.1.0",
     "@ant-design/icons": "^5.0.1",
     "@types/lodash": "^4.14.191",
     "@types/node": "18.14.5",

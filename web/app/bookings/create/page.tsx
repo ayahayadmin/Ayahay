@@ -3,7 +3,7 @@
 import styles from './page.module.scss';
 import { Typography } from 'antd';
 import { useEffect, useState } from 'react';
-import TripSummary from '@/components/descriptions/TripSummary';
+import TripSummary from '@ayahay/components/descriptions/TripSummary';
 import { useRouter } from 'next/navigation';
 import { ITrip, IBooking } from '@ayahay/models';
 import { getTrip } from '@/services/trip.service';
