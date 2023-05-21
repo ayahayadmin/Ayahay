@@ -1,39 +1,94 @@
 'use client';
 import React, { useEffect, useState } from 'react';
-import { ITrip, mockTrips } from '@ayahay/models/trip.model';
-import { filter, find, map, split } from 'lodash';
-import { getTime } from '@/services/search.service';
-import { Button, Space, Table } from 'antd';
+import { filter, find, map } from 'lodash';
+import { Button, Form, Input, Modal, Select, Space, Table } from 'antd';
 import { useRouter } from 'next/navigation';
-import { IShippingLine } from '@ayahay/models/shipping-line.model';
-import { IPort } from '@ayahay/models/port.model';
-import Seats from '../../details/seats';
-import { getBookingPassengersByTripId } from '@/services/booking.service';
 import {
-  IBooking,
   IPassenger,
   mockBookingPassengers,
   mockBookings,
 } from '@/../packages/models';
+import { PlusOutlined } from '@ant-design/icons';
+import styles from './page.module.scss';
 
+const { Option } = Select;
 const PAGE_SIZE = 10;
-const rowDataInitial = {
-  shipId: -1,
-  cabinType: '',
-  floor: '',
+const formItemLayout = {
+  labelCol: {
+    xs: { span: 24 },
+    sm: { span: 4 },
+  },
+  wrapperCol: {
+    xs: { span: 24 },
+    sm: { span: 20 },
+  },
 };
 
-interface BookingListProps {
-  id: number;
-}
+const formItemLayoutWithOutLabel = {
+  wrapperCol: {
+    xs: { span: 24, offset: 0 },
+    sm: { span: 20, offset: 4 },
+  },
+};
+const OPTIONS = [
+  {
+    value: 'id', //might change this to referenceNum in the future, will use ID as of now
+    label: 'ID',
+  },
+  {
+    value: 'firstName',
+    label: 'First Name',
+  },
+  {
+    value: 'lastName',
+    label: 'Last Name',
+  },
+];
 
 export default function BookingList({ params }: any) {
   const router = useRouter();
+  const [form] = Form.useForm();
   const [passengersData, setPassengersData] = useState([] as IPassenger[]);
   // const [buttonClicked, setButtonClicked] = useState(false);
-  const [rowData, setRowData] = useState({ ...rowDataInitial });
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [passengerName, setPassengerName] = useState('');
+
+  const onFinish = (values: any) => {
+    //TO DO: search for the passenger given the values
+    console.log('Received values of form: ', values);
+  };
+
+  const prefixSelector = (
+    <Form.Item name='prefix' noStyle>
+      <Select style={{ width: 70 }}>
+        <Option value='id'>ID</Option>
+        <Option value='firstName'>First Name</Option>
+        <Option value='lastName'>Last Name</Option>
+      </Select>
+    </Form.Item>
+  );
+
+  const onClickConfirm = (id: number, firstName: string, lastName: string) => {
+    //id should be unique, thinking of adding referenceNum property? para yun lang gamitin, pwede syang UUID. For now ID muna
+    setPassengerName(`${lastName}, ${firstName}`);
+    setIsModalOpen(true);
+  };
+
+  const onClickYes = () => {
+    //TO DO: Confirm passenger by adding today's date in "checkInDate"
+    setIsModalOpen(false);
+  };
+
+  const onClickCancel = () => {
+    setIsModalOpen(false);
+  };
 
   const columns = [
+    {
+      title: 'Reference #',
+      key: 'referenceNum',
+      dataIndex: 'id',
+    },
     {
       title: 'Full Name',
       key: 'firstName',
@@ -53,6 +108,22 @@ export default function BookingList({ params }: any) {
       key: 'birthdayIso',
       dataIndex: 'birthdayIso',
     },
+    {
+      key: 'action',
+      render: (text: any, record: any) => (
+        <Space size='middle'>
+          <Button
+            type='primary'
+            size='large'
+            onClick={() =>
+              onClickConfirm(record.id, record.firstName, record.lastName)
+            }
+          >
+            Confirm
+          </Button>
+        </Space>
+      ),
+    },
   ];
 
   // {/* shipId=${record.ship.id}&cabinType=${record.ship.cabins[0].type}&floor=${record.ship.cabins[0].name} */}
@@ -60,9 +131,6 @@ export default function BookingList({ params }: any) {
   //               `/admin/details?shipId=${record.ship.id}&cabinType=${record.ship.cabins[0].type}`
   //             ) */}
   useEffect(() => {
-    //probably get all tripIds given date range?
-    //for now, will assume we have only ONE tripId (cuz there could be many trips given a date)
-    // const tripId = 1;
     // const bookingPassengers = getBookingPassengersByTripId(tripId); // still waiting for Carlos to update
     // console.log(bookingPassengers);
 
@@ -80,12 +148,86 @@ export default function BookingList({ params }: any) {
 
   return (
     <div>
-      <Table
-        columns={columns}
-        dataSource={passengersData}
-        // className={styles.searchResult}
-        pagination={false}
-      ></Table>
+      <div>
+        <Form
+          name='dynamic_form_item'
+          // {...formItemLayoutWithOutLabel}
+          onFinish={onFinish}
+          style={{ maxWidth: 600 }}
+        >
+          <Form.List name='queries'>
+            {(fields, { add, remove }, { errors }) => (
+              <>
+                {fields.map((field, index) => (
+                  <Form.Item required={false} key={field.key}>
+                    <Space.Compact style={{ width: '100%' }}>
+                      <Form.Item
+                        name={[field.name, 'value']}
+                        // label='ID'
+                        // rules={[
+                        //   { required: true, message: 'Please input your phone number!' },
+                        // ]}
+                      >
+                        <Input
+                          addonBefore={
+                            <Form.Item name={[field.name, 'type']} noStyle>
+                              <Select options={OPTIONS} />
+                            </Form.Item>
+                          }
+                          // style={{ width: '60%' }}
+                        />
+                      </Form.Item>
+                      {fields.length > 1 ? (
+                        <Button
+                          type='primary'
+                          onClick={() => remove(field.name)}
+                          danger
+                        >
+                          Remove
+                        </Button>
+                      ) : null}
+                    </Space.Compact>
+                  </Form.Item>
+                ))}
+                <Form.Item>
+                  <Button
+                    type='dashed'
+                    onClick={() => add()}
+                    style={{ width: '60%' }}
+                    icon={<PlusOutlined />}
+                  >
+                    Add field
+                  </Button>
+                  <Form.ErrorList errors={errors} />
+                </Form.Item>
+              </>
+            )}
+          </Form.List>
+          <Form.Item>
+            <Button type='primary' htmlType='submit'>
+              Submit
+            </Button>
+          </Form.Item>
+        </Form>
+      </div>
+      <div>
+        <Table
+          columns={columns}
+          dataSource={passengersData}
+          // className={styles.searchResult}
+          pagination={false}
+        ></Table>
+      </div>
+      <div>
+        <Modal
+          title='Basic Modal'
+          open={isModalOpen}
+          onOk={onClickYes}
+          onCancel={onClickCancel}
+        >
+          <p>Confirm attendance of {passengerName}?</p>
+        </Modal>
+      </div>
       {/* {buttonClicked && <Seats rowData={rowData} />} */}
     </div>
   );
