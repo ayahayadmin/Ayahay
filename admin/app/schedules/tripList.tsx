@@ -1,34 +1,28 @@
 import React, { useEffect, useState } from 'react';
-import { ITrip, mockTrip, mockTrips } from '@ayahay/models/trip.model';
-import { filter, find, map, split } from 'lodash';
+import { ITrip, mockTrips } from '@ayahay/models/trip.model';
+import { filter, split } from 'lodash';
 import { getTime } from '@/services/search.service';
-import { Button, Space, Table } from 'antd';
+import { DatePicker, Table } from 'antd';
 import { useRouter } from 'next/navigation';
 import { IShippingLine } from '@ayahay/models/shipping-line.model';
 import { IPort } from '@ayahay/models/port.model';
-import Seats from '../details/seats';
-import { getBookingPassengersByTripId } from '@/services/booking.service';
-import {
-  IBooking,
-  IPassenger,
-  mockBookingPassengers,
-  mockBookings,
-} from '@/../packages/models';
-import BookingList from './[id]/page';
+import dayjs, { Dayjs } from 'dayjs';
+import { RangePickerProps } from 'antd/es/date-picker';
+import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
+import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
+
+const { RangePicker } = DatePicker;
+dayjs.extend(isSameOrBefore);
+dayjs.extend(isSameOrAfter);
 
 const PAGE_SIZE = 10;
-const rowDataInitial = {
-  shipId: -1,
-  cabinType: '',
-  floor: '',
-};
 
 export default function TripList() {
-  //props: ShipId
-  const shipId = 1;
-
+  const dateToday = dayjs();
   const router = useRouter();
   const [tripsData, setTripsData] = useState([] as ITrip[]);
+  const [startDate, setStartDate] = useState(dateToday.startOf('day') as Dayjs);
+  const [endDate, setEndDate] = useState(dateToday.endOf('day') as Dayjs);
 
   const columns = [
     {
@@ -80,36 +74,50 @@ export default function TripList() {
     },
   ];
 
-  // {/* shipId=${record.ship.id}&cabinType=${record.ship.cabins[0].type}&floor=${record.ship.cabins[0].name} */}
-  //           {/* router.push(
-  //               `/admin/details?shipId=${record.ship.id}&cabinType=${record.ship.cabins[0].type}`
-  //             ) */}
   useEffect(() => {
-    //probably get all tripIds given date range? default date would always be today, then admin can extend range
-    //for now, we hardcode tripIds (there could be many trips given a date)
-    const tripIds = [1, 2];
-    const trips = map(tripIds, (id) => {
-      return find(mockTrips, { id })!;
+    const trips = filter(mockTrips, (trip) => {
+      return (
+        startDate.isSameOrBefore(trip.departureDateIso) &&
+        endDate.isSameOrAfter(trip.departureDateIso)
+      );
     });
 
     setTripsData(trips);
-  }, []);
+  }, [startDate, endDate]);
+
+  const disabledDate: RangePickerProps['disabledDate'] = (current) => {
+    return current && current < dayjs().startOf('day');
+  };
+
+  const onChange: RangePickerProps['onChange'] = (date, dateString) => {
+    setStartDate(dayjs(dateString[0]).startOf('day'));
+    setEndDate(dayjs(dateString[1]).endOf('day'));
+  };
 
   return (
     <div>
-      <Table
-        columns={columns}
-        dataSource={tripsData}
-        // className={styles.searchResult}
-        onRow={(record, rowIdx) => {
-          return {
-            onClick: (event) => {
-              router.push(`/schedules/${record.id}`);
-            },
-          };
-        }}
-        pagination={false}
-      ></Table>
+      <div>
+        <RangePicker
+          defaultValue={[startDate, endDate]}
+          disabledDate={disabledDate}
+          onChange={onChange}
+        />
+      </div>
+      <div>
+        <Table
+          columns={columns}
+          dataSource={tripsData}
+          // className={styles.searchResult}
+          onRow={(record, rowIdx) => {
+            return {
+              onClick: (event) => {
+                router.push(`/schedules/${record.id}`);
+              },
+            };
+          }}
+          pagination={false}
+        ></Table>
+      </div>
     </div>
   );
 }
