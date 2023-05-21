@@ -1,6 +1,9 @@
 import {
+  IBooking,
   ITrip,
+  mockBookings,
   mockTrip,
+  mockTrips,
   TripData,
   TripPaxes,
 } from '@ayahay/models';
@@ -17,6 +20,7 @@ import {
   values,
 } from 'lodash';
 import { SEAT_TYPE } from '@ayahay/constants/enum';
+import { getAllBookings } from '@/services/booking.service';
 
 export function getTrip(tripId: number): ITrip {
   return mockTrip;
@@ -451,6 +455,21 @@ export function getTrips(
     totalPages,
     totalItems,
   };
+}
+
+export function getAllTrips(): ITrip[] {
+  const trips = localStorage.getItem('trips');
+  if (trips === null) {
+    localStorage.setItem('bookings', JSON.stringify(mockTrips));
+    return mockTrips;
+  }
+  return JSON.parse(trips);
+}
+
+export function addTrips(newTrips: ITrip[]) {
+  const trips = getAllTrips();
+  trips.push(...newTrips);
+  localStorage.setItem('trips', JSON.stringify(trips));
 }
 
 export const getBaseFare = () => {

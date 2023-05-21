@@ -32,8 +32,6 @@ export default function RootLayout({
             <main>{children}</main>
           </App>
         </ConfigProvider>
-
-        <Footer />
       </body>
     </html>
   );
