@@ -218,9 +218,19 @@ export function getBookingPassengersByTripId(
   tripId: number
 ): IBookingPassenger[] {
   const bookings = getAllBookings();
-  const booking = bookings.find((booking) => booking.tripId === tripId);
-  if (booking?.bookingPassengers === undefined) {
-    return [];
-  }
-  return booking.bookingPassengers;
+  const tripBookings = bookings.filter(
+    (booking) =>
+      booking.tripId === tripId &&
+      booking.bookingPassengers &&
+      booking.bookingPassengers.length > 0
+  );
+  return tripBookings
+    .map((booking) => booking.bookingPassengers ?? [])
+    .reduce(
+      (bookingAPassengers, bookingBPassengers) => [
+        ...bookingAPassengers,
+        ...bookingBPassengers,
+      ],
+      []
+    );
 }
