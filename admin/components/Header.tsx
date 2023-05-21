@@ -1,5 +1,4 @@
-'use client';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import styles from './Header.module.scss';
 import AyahayLogo from '/public/assets/ayahay-logo.png';
@@ -10,7 +9,19 @@ import { UserOutlined } from '@ant-design/icons';
 const { Search } = Input;
 
 export default function Header() {
-  const onSearch = (value: string) => console.log(value);
+  const [query, setQuery] = useState('');
+
+  const onPageLoad = () => {
+    const urlSearchParams = new URLSearchParams(window.location.search);
+    const params = Object.fromEntries(urlSearchParams.entries());
+
+    setQuery(params.query);
+  };
+
+  useEffect(onPageLoad, []);
+
+  const onSearch = (value: string) =>
+    window.location.assign(`/search?query=${value}`);
 
   return (
     <nav className={styles['nav-container']}>
@@ -28,7 +39,7 @@ export default function Header() {
               <a href='#'>Database</a>
             </li>
             <li>
-              <a href='#'>Upload</a>
+              <a href='/trips/upload'>Upload</a>
             </li>
           </ul>
         </span>
@@ -39,6 +50,8 @@ export default function Header() {
           placeholder='Search for booking...'
           onSearch={onSearch}
           style={{ width: 200 }}
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
         />
         <Avatar icon={<UserOutlined />} />
       </div>

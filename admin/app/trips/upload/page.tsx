@@ -10,13 +10,10 @@ const { Dragger } = Upload;
 
 export default function UploadTrips() {
   const onUpload = ({ file, onProgress, onSuccess }) => {
-    onProgress({ percent: 0 });
+    onProgress({ percent: 50 });
     setTimeout(() => {
-      onProgress({ percent: 50 });
-      processTripCsv(file, () => {
-        onProgress({ percent: 100 });
-        onSuccess('Ok');
-      });
+      onProgress({ percent: 100 });
+      processTripCsv(file, onSuccess);
     }, 1000);
   };
 
