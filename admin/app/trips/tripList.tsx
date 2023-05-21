@@ -111,7 +111,7 @@ export default function TripList() {
           onRow={(record, rowIdx) => {
             return {
               onClick: (event) => {
-                router.push(`/schedules/${record.id}`);
+                router.push(`/trips/${record.id}`);
               },
             };
           }}
