@@ -13,7 +13,6 @@ export interface ITrip {
   srcPort?: IPort;
   destPortId: number;
   destPort?: IPort;
-  type: keyof typeof TRIP_TYPE;
   departureDateIso: string;
   baseFare: number;
   availableSeatTypes: (keyof typeof SEAT_TYPE)[];
@@ -31,7 +30,6 @@ export const mockTrip: ITrip = {
   srcPort: mockPort,
   destPortId: mockPort2.id,
   destPort: mockPort2,
-  type: 'Single',
   departureDateIso: '2023-03-12T04:50:22+0000',
   baseFare: 20,
   availableSeatTypes: [
@@ -57,7 +55,6 @@ export const mockTrips: ITrip[] = [
     srcPort: mockPort2,
     destPortId: mockPort2.id,
     destPort: mockPort2,
-    type: 'Single',
     departureDateIso: '2023-03-12T04:50:22+0000',
     baseFare: 20,
     availableSeatTypes: [
