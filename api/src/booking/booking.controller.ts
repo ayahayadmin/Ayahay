@@ -60,7 +60,6 @@ export class BookingController {
           ...bookingPassengerProperties,
         };
       }),
-      checkInDate: checkInDate.toISOString(),
       numOfCars: 0,
       ...bookingProperties,
     } as IBooking;

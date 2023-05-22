@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Tabs, TabsProps, Typography } from 'antd';
 import debounce from 'lodash/debounce';
 import { useRouter, useSearchParams } from 'next/navigation';
+import BookingPassengerResults from '@/app/search/bookingPassengerResults';
 
 const { Title } = Typography;
 
@@ -56,7 +57,7 @@ export default function Search() {
     {
       key: 'BookingPassenger',
       label: 'Bookings',
-      children: 'Content of Bookings',
+      children: <BookingPassengerResults query={query} />,
     },
     {
       key: 'Trip',
