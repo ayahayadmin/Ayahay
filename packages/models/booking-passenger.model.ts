@@ -24,6 +24,8 @@ export interface IBookingPassenger {
   seat?: ISeat;
   meal: string;
   totalPrice: number;
+  referenceNo: string;
+  checkInDate?: string;
 }
 
 export const mockBookingPassenger: IBookingPassenger = {
@@ -35,6 +37,7 @@ export const mockBookingPassenger: IBookingPassenger = {
   seat: mockSeat,
   meal: 'Tapsilog',
   totalPrice: 1000,
+  referenceNo: 'ABCD',
 };
 
 export const mockBookingPassengers: IBookingPassenger[] = [
@@ -48,6 +51,7 @@ export const mockBookingPassengers: IBookingPassenger[] = [
     seat: mockSeat,
     meal: 'Tapsilog',
     totalPrice: 1000,
+    referenceNo: 'ABCD',
   },
   {
     id: 3,
@@ -58,6 +62,7 @@ export const mockBookingPassengers: IBookingPassenger[] = [
     seat: mockSeat2,
     meal: 'Tapsilog',
     totalPrice: 1000,
+    referenceNo: 'ABCD',
   },
   {
     id: 4,
@@ -68,6 +73,7 @@ export const mockBookingPassengers: IBookingPassenger[] = [
     seat: mockSeat3,
     meal: 'Tapsilog',
     totalPrice: 1000,
+    referenceNo: 'ABCD',
   },
   {
     id: 5,
@@ -78,6 +84,7 @@ export const mockBookingPassengers: IBookingPassenger[] = [
     seat: mockSeat4,
     meal: 'Tapsilog',
     totalPrice: 1000,
+    referenceNo: 'ABCD',
   },
   {
     id: 6,
@@ -88,6 +95,7 @@ export const mockBookingPassengers: IBookingPassenger[] = [
     seat: mockSeat5,
     meal: 'Tapsilog',
     totalPrice: 1000,
+    referenceNo: 'ABCD',
   },
   {
     id: 7,
@@ -98,6 +106,7 @@ export const mockBookingPassengers: IBookingPassenger[] = [
     seat: mockSeat5,
     meal: 'Tapsilog',
     totalPrice: 1000,
+    referenceNo: 'ABCD',
   },
   {
     id: 8,
@@ -108,5 +117,6 @@ export const mockBookingPassengers: IBookingPassenger[] = [
     seat: mockSeat5,
     meal: 'Tapsilog',
     totalPrice: 1000,
+    referenceNo: 'ABCD',
   },
 ];
