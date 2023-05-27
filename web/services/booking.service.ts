@@ -7,6 +7,10 @@ import {
   mockBookings,
   mockBookingPassengers,
 } from '@ayahay/models';
+import {
+  getCookieByName,
+  setCookieForAllSubdomains,
+} from '@ayahay/services/cookie.service';
 import { getTrip } from './trip.service';
 
 export function createTentativeBookingFromPassengerPreferences(
@@ -80,21 +84,30 @@ function getAvailableSeatsInTrip(trip: ITrip): ISeat[] {
 }
 
 export function getAllBookings(): IBooking[] {
-  const bookings = localStorage.getItem('bookings');
-  if (bookings === null) {
+  let bookingsJson: string | undefined | null;
+  if (location.href.includes('localhost')) {
+    bookingsJson = localStorage.getItem('bookings');
+  } else {
+    bookingsJson = getCookieByName('bookings');
+  }
+  if (bookingsJson === undefined || bookingsJson === null) {
     mockBookings.forEach((booking) =>
       booking.trip?.ship?.cabins?.forEach((cabin) =>
         cabin.seats.forEach((seat) => (seat.cabin = undefined))
       )
     );
-    localStorage.setItem('bookings', JSON.stringify(mockBookings));
+    if (location.href.includes('localhost')) {
+      localStorage.setItem('bookings', JSON.stringify(mockBookings));
+    } else {
+      setCookieForAllSubdomains(
+        'ayahay.com',
+        'bookings',
+        JSON.stringify(mockBookings)
+      );
+    }
     return mockBookings;
   }
-  return JSON.parse(bookings);
-}
-
-export function getAllBookingsOfTrip(tripId: number): IBooking[] {
-  return getAllBookings();
+  return JSON.parse(bookingsJson);
 }
 
 export function getAllBookingPassengersOfTrip(
@@ -155,6 +168,7 @@ function matchSeatFromPreferences(
     bookingId: -1,
     passengerId: -1,
     seat: matchedSeat,
+    referenceNo: 'ABCDE',
     meal:
       passengerPreferences.meal !== 'Any'
         ? passengerPreferences.meal
@@ -205,7 +219,15 @@ export function createBooking(booking: IBooking): IBooking {
   booking.trip?.ship?.cabins?.forEach((cabin) =>
     cabin.seats.forEach((seat) => (seat.cabin = undefined))
   );
-  localStorage.setItem('bookings', JSON.stringify(bookings));
+  if (location.href.includes('localhost')) {
+    localStorage.setItem('bookings', JSON.stringify(bookings));
+  } else {
+    setCookieForAllSubdomains(
+      'ayahay.com',
+      'bookings',
+      JSON.stringify(bookings)
+    );
+  }
   return booking;
 }
 
