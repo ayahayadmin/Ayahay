@@ -6,10 +6,6 @@ import {
   IBooking,
   mockBookings,
 } from '@ayahay/models';
-import {
-  getCookieByName,
-  setCookieForAllSubdomains,
-} from '@ayahay/services/cookie.service';
 import { getTrip } from './trip.service';
 
 export function createTentativeBookingFromPassengerPreferences(
@@ -83,23 +79,14 @@ function getAvailableSeatsInTrip(trip: ITrip): ISeat[] {
 }
 
 export function getAllBookings(): IBooking[] {
-  let bookingsJson: string | undefined | null;
-  if (location.href.includes('localhost')) {
-    bookingsJson = localStorage.getItem('bookings');
-  } else {
-    bookingsJson = getCookieByName('bookings');
-  }
+  const bookingsJson = localStorage.getItem('bookings');
   if (bookingsJson === undefined || bookingsJson === null) {
     mockBookings.forEach((booking) =>
       booking.trip?.ship?.cabins?.forEach((cabin) =>
         cabin.seats.forEach((seat) => (seat.cabin = undefined))
       )
     );
-    if (location.href.includes('localhost')) {
-      localStorage.setItem('bookings', JSON.stringify(mockBookings));
-    } else {
-      setCookieForAllSubdomains('bookings', JSON.stringify(mockBookings));
-    }
+    localStorage.setItem('bookings', JSON.stringify(mockBookings));
     return mockBookings;
   }
   return JSON.parse(bookingsJson);
@@ -221,11 +208,7 @@ export function createBooking(booking: IBooking): IBooking {
   booking.trip?.ship?.cabins?.forEach((cabin) =>
     cabin.seats.forEach((seat) => (seat.cabin = undefined))
   );
-  if (location.href.includes('localhost')) {
-    localStorage.setItem('bookings', JSON.stringify(bookings));
-  } else {
-    setCookieForAllSubdomains('bookings', JSON.stringify(bookings));
-  }
+  localStorage.setItem('bookings', JSON.stringify(bookings));
   return booking;
 }
 
