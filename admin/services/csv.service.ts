@@ -1,15 +1,18 @@
-import { ITrip, mockShip } from '@/../packages/models';
+import { ITrip, mockShip } from '@ayahay/models';
 import { addTrips } from '@/services/trip.service';
 
-export function processTripCsv(file: File, onSuccess: () => void) {
+export function processTripCsv(
+  file: File,
+  onSuccess: (trips: ITrip[]) => void
+) {
   const reader = new FileReader();
 
   reader.addEventListener(
     'load',
     () => {
       if (typeof reader.result === 'string') {
-        processTripRows(csvStringToArray(reader.result));
-        onSuccess();
+        const addedTrips = processTripRows(csvStringToArray(reader.result));
+        onSuccess(addedTrips);
       }
     },
     false
@@ -20,7 +23,7 @@ export function processTripCsv(file: File, onSuccess: () => void) {
   }
 }
 
-function processTripRows(rows: string[][]) {
+function processTripRows(rows: string[][]): ITrip[] {
   const trips: ITrip[] = [];
 
   // first row is header row; ignore that
@@ -30,6 +33,7 @@ function processTripRows(rows: string[][]) {
   }
 
   addTrips(trips);
+  return trips;
 }
 
 function processTripRow(row: string[]): ITrip {

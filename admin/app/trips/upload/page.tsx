@@ -1,20 +1,29 @@
 'use client';
 import styles from './page.module.scss';
 import { InboxOutlined, DownloadOutlined } from '@ant-design/icons';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { message, Button, Upload, Typography } from 'antd';
 import { processTripCsv } from '@/services/csv.service';
+import { ITrip } from '@ayahay/models';
 
 const { Title } = Typography;
 const { Dragger } = Upload;
 
 export default function UploadTrips() {
-  const onUpload = ({ file, onProgress, onSuccess }) => {
+  const onUpload = (options: any) => {
+    const { file, onProgress, onSuccess } = options;
     onProgress({ percent: 50 });
     setTimeout(() => {
       onProgress({ percent: 100 });
-      processTripCsv(file, onSuccess);
+      processTripCsv(file, (trips: ITrip[]) => {
+        onSuccess();
+        onSuccessfulUpload(trips);
+      });
     }, 1000);
+  };
+
+  const onSuccessfulUpload = (trips: ITrip[]) => {
+    message.success(`Successfully uploaded ${trips.length} trips.`);
   };
 
   return (
