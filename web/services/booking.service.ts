@@ -54,7 +54,7 @@ export function createTentativeBookingFromPassengerPreferences(
   } as IBooking;
 }
 
-function getAvailableSeatsInTrip(trip: ITrip): ISeat[] {
+export function getAvailableSeatsInTrip(trip: ITrip): ISeat[] {
   const allBookingPassengers = getAllBookingPassengersOfTrip(trip.id);
 
   const unavailableSeatIds: number[] = [];
@@ -118,29 +118,7 @@ function matchSeatFromPreferences(
   passengerPreferences: PassengerPreferences,
   baseFare: number
 ): IBookingPassenger {
-  const { cabin: preferredCabin, seat: preferredSeatType } =
-    passengerPreferences;
-
-  let seatsInPreferredCabin = availableSeatsInTrip;
-  let seatsWithPreferredSeatType = availableSeatsInTrip;
-
-  if (preferredCabin !== 'Any') {
-    seatsInPreferredCabin = seatsInPreferredCabin.filter(
-      (seat) => seat.cabin?.type === preferredCabin
-    );
-  }
-
-  if (preferredSeatType !== 'Any') {
-    seatsWithPreferredSeatType = seatsWithPreferredSeatType.filter(
-      (seat) => seat.type === preferredSeatType
-    );
-  }
-
-  const matchedSeat = getBestSeat(
-    availableSeatsInTrip,
-    seatsInPreferredCabin,
-    seatsWithPreferredSeatType
-  );
+  const matchedSeat = getBestSeat(availableSeatsInTrip, passengerPreferences);
 
   let totalPrice = baseFare;
   switch (matchedSeat.cabin?.type) {
@@ -166,11 +144,27 @@ function matchSeatFromPreferences(
   };
 }
 
-function getBestSeat(
+export function getBestSeat(
   availableSeatsInTrip: ISeat[],
-  seatsInPreferredCabin: ISeat[],
-  seatsWithPreferredSeatType: ISeat[]
+  passengerPreferences: PassengerPreferences
 ): ISeat {
+  const { cabin: preferredCabin, seat: preferredSeatType } =
+    passengerPreferences;
+  let seatsInPreferredCabin = availableSeatsInTrip;
+  let seatsWithPreferredSeatType = availableSeatsInTrip;
+
+  if (preferredCabin !== 'Any') {
+    seatsInPreferredCabin = seatsInPreferredCabin.filter(
+      (seat) => seat.cabin?.type === preferredCabin
+    );
+  }
+
+  if (preferredSeatType !== 'Any') {
+    seatsWithPreferredSeatType = seatsWithPreferredSeatType.filter(
+      (seat) => seat.type === preferredSeatType
+    );
+  }
+
   // score that determines how "preferred" a seat is; the higher, the more preferred
   let bestScore = -1;
   let bestSeat = availableSeatsInTrip[0];

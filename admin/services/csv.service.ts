@@ -1,9 +1,22 @@
-import { ITrip, mockShip } from '@ayahay/models';
-import { addTrips } from '@/services/trip.service';
+import { IBooking, ITrip, mockShip, mockTrip } from '@ayahay/models';
+import {
+  createBooking,
+  getAvailableSeatsInTrip,
+  getBestSeat,
+} from '@/services/booking.service';
+import { generateReferenceNo } from '@ayahay/services/random.service';
 
 export function processTripCsv(
   file: File,
   onSuccess: (trips: ITrip[]) => void
+) {
+  processCsvFile(file, processTripRow, onSuccess);
+}
+
+export function processCsvFile<T>(
+  file: File,
+  processRowFn: (row: string[]) => T,
+  onSuccess: (values: T[]) => void
 ) {
   const reader = new FileReader();
 
@@ -11,8 +24,9 @@ export function processTripCsv(
     'load',
     () => {
       if (typeof reader.result === 'string') {
-        const addedTrips = processTripRows(csvStringToArray(reader.result));
-        onSuccess(addedTrips);
+        const rows = csvStringToArray(reader.result);
+        const values = processCsvRows(rows, processRowFn);
+        onSuccess(values);
       }
     },
     false
@@ -23,17 +37,34 @@ export function processTripCsv(
   }
 }
 
-function processTripRows(rows: string[][]): ITrip[] {
-  const trips: ITrip[] = [];
+function csvStringToArray(strData: string): string[][] {
+  const objPattern = new RegExp(
+    '(\\,|\\r?\\n|\\r|^)(?:"([^"]*(?:""[^"]*)*)"|([^\\,\\r\\n]*))',
+    'gi'
+  );
+  let matches: RegExpMatchArray | null = null;
+  let result: string[][] = [[]];
+  while ((matches = objPattern.exec(strData))) {
+    if (matches[1].length && matches[1] !== ',') result.push([]);
+    result[result.length - 1].push(
+      matches[2] ? matches[2].replace(new RegExp('""', 'g'), '"') : matches[3]
+    );
+  }
+  return result;
+}
+
+function processCsvRows<T>(
+  rows: string[][],
+  processRowFn: (row: string[]) => T
+): T[] {
+  const values: T[] = [];
 
   // first row is header row; ignore that
   for (let i = 1; i < rows.length; i++) {
-    const trip = processTripRow(rows[i]);
-    trips.push(trip);
+    values.push(processRowFn(rows[i]));
   }
 
-  addTrips(trips);
-  return trips;
+  return values;
 }
 
 function processTripRow(row: string[]): ITrip {
@@ -51,7 +82,6 @@ function processTripRow(row: string[]): ITrip {
     trip[header] = row[i];
   }
 
-  console.log(trip);
   const randomId = Math.floor(Math.random() * 1000);
   return {
     id: randomId,
@@ -80,18 +110,76 @@ function processTripRow(row: string[]): ITrip {
   };
 }
 
-function csvStringToArray(strData: string): string[][] {
-  const objPattern = new RegExp(
-    '(\\,|\\r?\\n|\\r|^)(?:"([^"]*(?:""[^"]*)*)"|([^\\,\\r\\n]*))',
-    'gi'
-  );
-  let matches: RegExpMatchArray | null = null;
-  let result: string[][] = [[]];
-  while ((matches = objPattern.exec(strData))) {
-    if (matches[1].length && matches[1] !== ',') result.push([]);
-    result[result.length - 1].push(
-      matches[2] ? matches[2].replace(new RegExp('""', 'g'), '"') : matches[3]
-    );
+export function processBookingCsv(
+  file: File,
+  onSuccess: (bookings: IBooking[]) => void
+) {
+  processCsvFile(file, processBookingRow, onSuccess);
+}
+
+function processBookingRow(rowValues: string[]): IBooking {
+  const headers = [
+    'tripReferenceNo',
+    'totalPrice',
+    'paymentReference',
+    'firstName',
+    'lastName',
+    'occupation',
+    'sex',
+    'civilStatus',
+    'birthdayIso',
+    'address',
+    'nationality',
+  ];
+
+  let rowObject: any = {};
+  for (let i = 0; i < headers.length; i++) {
+    const header = headers[i];
+    rowObject[header] = rowValues[i];
   }
-  return result;
+
+  const randomId = Math.floor(Math.random() * 1000);
+
+  const availableSeats = getAvailableSeatsInTrip(mockTrip);
+  const seat = getBestSeat(availableSeats, {
+    seat: 'Any',
+    meal: 'Any',
+    cabin: 'Any',
+  });
+
+  const booking: IBooking = {
+    id: randomId,
+    tripId: mockTrip.id,
+    trip: mockTrip,
+    totalPrice: rowObject.totalPrice,
+    numOfCars: 0,
+    paymentReference: rowObject.paymentReference,
+    bookingPassengers: [
+      {
+        id: randomId,
+        bookingId: randomId,
+        passengerId: randomId,
+        passenger: {
+          id: randomId,
+          firstName: rowObject.firstName,
+          lastName: rowObject.lastName,
+          occupation: rowObject.occupation,
+          sex: rowObject.sex,
+          civilStatus: rowObject.civilStatus,
+          birthdayIso: new Date(rowObject.birthdayIso).toISOString(),
+          address: rowObject.address,
+          nationality: rowObject.nationality,
+        },
+        seatId: randomId,
+        seat,
+        meal: 'Bacsilog',
+        totalPrice: rowObject.totalPrice,
+        referenceNo: generateReferenceNo(randomId),
+      },
+    ],
+  };
+
+  createBooking(booking);
+
+  return booking;
 }

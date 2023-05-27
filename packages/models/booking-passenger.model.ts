@@ -21,6 +21,7 @@ export interface IBookingPassenger {
   booking?: IBooking;
   passengerId: number;
   passenger?: IPassenger;
+  seatId: number;
   seat?: ISeat;
   meal: string;
   totalPrice: number;
@@ -34,6 +35,7 @@ export const mockBookingPassenger: IBookingPassenger = {
   booking: mockBooking,
   passengerId: mockPassenger.id,
   passenger: mockPassenger,
+  seatId: mockSeat.id,
   seat: mockSeat,
   meal: 'Tapsilog',
   totalPrice: 1000,
@@ -48,6 +50,7 @@ export const mockBookingPassengers: IBookingPassenger[] = [
     booking: mockBooking,
     passengerId: mockPassenger.id,
     passenger: mockPassenger,
+    seatId: mockSeat.id,
     seat: mockSeat,
     meal: 'Tapsilog',
     totalPrice: 1000,
@@ -59,6 +62,7 @@ export const mockBookingPassengers: IBookingPassenger[] = [
     booking: mockBooking,
     passengerId: mockPassenger.id,
     passenger: mockPassenger,
+    seatId: mockSeat2.id,
     seat: mockSeat2,
     meal: 'Tapsilog',
     totalPrice: 1000,
@@ -70,6 +74,7 @@ export const mockBookingPassengers: IBookingPassenger[] = [
     booking: mockBooking,
     passengerId: mockPassenger.id,
     passenger: mockFather,
+    seatId: mockSeat3.id,
     seat: mockSeat3,
     meal: 'Tapsilog',
     totalPrice: 1000,
@@ -81,6 +86,7 @@ export const mockBookingPassengers: IBookingPassenger[] = [
     booking: mockBooking,
     passengerId: mockPassenger.id,
     passenger: mockPassenger,
+    seatId: mockSeat4.id,
     seat: mockSeat4,
     meal: 'Tapsilog',
     totalPrice: 1000,
@@ -92,6 +98,7 @@ export const mockBookingPassengers: IBookingPassenger[] = [
     booking: mockBooking,
     passengerId: mockPassenger.id,
     passenger: mockWife,
+    seatId: mockSeat5.id,
     seat: mockSeat5,
     meal: 'Tapsilog',
     totalPrice: 1000,
@@ -103,6 +110,7 @@ export const mockBookingPassengers: IBookingPassenger[] = [
     booking: mockBooking,
     passengerId: mockPassenger.id,
     passenger: mockSon,
+    seatId: mockSeat5.id,
     seat: mockSeat5,
     meal: 'Tapsilog',
     totalPrice: 1000,
@@ -114,6 +122,7 @@ export const mockBookingPassengers: IBookingPassenger[] = [
     booking: mockBooking,
     passengerId: mockPassenger.id,
     passenger: mockPassenger,
+    seatId: mockSeat5.id,
     seat: mockSeat5,
     meal: 'Tapsilog',
     totalPrice: 1000,

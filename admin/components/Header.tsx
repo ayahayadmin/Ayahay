@@ -39,7 +39,10 @@ export default function Header() {
               <a href='#'>Database</a>
             </li>
             <li>
-              <a href='/trips/upload'>Upload</a>
+              <a href='/upload/trips'>Upload Trips</a>
+            </li>
+            <li>
+              <a href='/upload/bookings'>Upload Bookings</a>
             </li>
           </ul>
         </span>
