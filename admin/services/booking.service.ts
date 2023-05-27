@@ -43,15 +43,22 @@ export function getAllBookingsOfTrip(tripId: number): IBooking[] {
 export function getAllBookingPassengersOfTrip(
   tripId: number
 ): IBookingPassenger[] {
-  const bookingPassengers = localStorage.getItem('bookingPassengers');
-  if (bookingPassengers === null) {
-    localStorage.setItem(
-      'bookingPassengers',
-      JSON.stringify(mockBookingPassengers)
+  const bookings = getAllBookings();
+  const tripBookings = bookings.filter(
+    (booking) =>
+      booking.tripId === tripId &&
+      booking.bookingPassengers &&
+      booking.bookingPassengers.length > 0
+  );
+  return tripBookings
+    .map((booking) => booking.bookingPassengers ?? [])
+    .reduce(
+      (bookingAPassengers, bookingBPassengers) => [
+        ...bookingAPassengers,
+        ...bookingBPassengers,
+      ],
+      []
     );
-    return mockBookingPassengers;
-  }
-  return JSON.parse(bookingPassengers);
 }
 
 export function createBooking(booking: IBooking): IBooking {
