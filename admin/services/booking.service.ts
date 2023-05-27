@@ -1,9 +1,4 @@
-import {
-  IBookingPassenger,
-  IBooking,
-  mockBookings,
-  mockBookingPassengers,
-} from '@ayahay/models';
+import { IBookingPassenger, IBooking, mockBookings } from '@ayahay/models';
 import {
   getCookieByName,
   setCookieForAllSubdomains,
@@ -25,11 +20,7 @@ export function getAllBookings(): IBooking[] {
     if (location.href.includes('localhost')) {
       localStorage.setItem('bookings', JSON.stringify(mockBookings));
     } else {
-      setCookieForAllSubdomains(
-        'ayahay.com',
-        'bookings',
-        JSON.stringify(mockBookings)
-      );
+      setCookieForAllSubdomains('bookings', JSON.stringify(mockBookings));
     }
     return mockBookings;
   }

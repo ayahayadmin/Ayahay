@@ -5,7 +5,6 @@ import {
   ITrip,
   IBooking,
   mockBookings,
-  mockBookingPassengers,
 } from '@ayahay/models';
 import {
   getCookieByName,
@@ -99,11 +98,7 @@ export function getAllBookings(): IBooking[] {
     if (location.href.includes('localhost')) {
       localStorage.setItem('bookings', JSON.stringify(mockBookings));
     } else {
-      setCookieForAllSubdomains(
-        'ayahay.com',
-        'bookings',
-        JSON.stringify(mockBookings)
-      );
+      setCookieForAllSubdomains('bookings', JSON.stringify(mockBookings));
     }
     return mockBookings;
   }
@@ -229,11 +224,7 @@ export function createBooking(booking: IBooking): IBooking {
   if (location.href.includes('localhost')) {
     localStorage.setItem('bookings', JSON.stringify(bookings));
   } else {
-    setCookieForAllSubdomains(
-      'ayahay.com',
-      'bookings',
-      JSON.stringify(bookings)
-    );
+    setCookieForAllSubdomains('bookings', JSON.stringify(bookings));
   }
   return booking;
 }

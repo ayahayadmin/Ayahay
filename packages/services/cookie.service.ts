@@ -4,13 +4,18 @@ export function getCookieByName(name: string): string | undefined {
   if (parts.length !== 2) {
     return undefined;
   }
-  return parts.pop().split(';').shift();
+  return parts.pop()?.split(';').shift();
 }
 
 export function setCookieForAllSubdomains(
-  baseDomain: string,
   cookieName: string,
   cookieValue: string
 ) {
+  const baseDomain = location.hostname
+    .split('.')
+    .reverse()
+    .splice(0, 2)
+    .reverse()
+    .join('.');
   document.cookie = `${cookieName}=${cookieValue};domain=.${baseDomain};path=/`;
 }
