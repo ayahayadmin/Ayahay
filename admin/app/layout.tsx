@@ -16,19 +16,17 @@ export default function RootLayout({
     <html lang='en' className={jost.className}>
       <body>
         <Header />
-        <ConfigProvider
-          theme={{
-            token: {
-              fontFamily: jost.style.fontFamily,
-            },
-          }}
-        >
-          <App>
-            <main>{children}</main>
-          </App>
-        </ConfigProvider>
-
-        <Footer />
+        <main>
+          <ConfigProvider
+            theme={{
+              token: {
+                fontFamily: jost.style.fontFamily,
+              },
+            }}
+          >
+            <App>{children}</App>
+          </ConfigProvider>
+        </main>
       </body>
     </html>
   );
