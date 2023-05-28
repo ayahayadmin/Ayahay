@@ -1,6 +1,6 @@
 'use client';
-import React, { useEffect, useState } from 'react';
-import { filter, find, map } from 'lodash';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
+import { filter, find, isEmpty, map } from 'lodash';
 import { Button, Form, Input, Modal, Select, Space, Table } from 'antd';
 import { useRouter } from 'next/navigation';
 import {
@@ -48,14 +48,22 @@ const OPTIONS = [
 export default function BookingList({ params }: any) {
   const router = useRouter();
   const [form] = Form.useForm();
+  const [allPassengersData, setAllPassengersData] = useState(
+    [] as IPassenger[]
+  );
   const [passengersData, setPassengersData] = useState([] as IPassenger[]);
   // const [buttonClicked, setButtonClicked] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [passengerName, setPassengerName] = useState('');
+  const [queryFilter, setQueryFilter] = useState([]);
 
   const onFinish = (values: any) => {
-    //TO DO: search for the passenger given the values
     console.log('Received values of form: ', values);
+    if (isEmpty(values.queries)) {
+      setPassengersData(allPassengersData);
+      return;
+    }
+    setQueryFilter(values.queries);
   };
 
   const prefixSelector = (
@@ -133,7 +141,6 @@ export default function BookingList({ params }: any) {
   useEffect(() => {
     // const bookingPassengers = getBookingPassengersByTripId(tripId); // still waiting for Carlos to update
     // console.log(bookingPassengers);
-
     const bookingsTemp = filter(mockBookings, { tripId: Number(params.id) }); //pretending this doesn't exists
     const bookingPassengers = map(bookingsTemp, (booking) => {
       return find(mockBookingPassengers, { bookingId: booking.id });
@@ -143,8 +150,29 @@ export default function BookingList({ params }: any) {
       bookingPassengers,
       (bookingPassenger) => bookingPassenger?.passenger!
     );
+
+    setAllPassengersData(passengers);
     setPassengersData(passengers);
   }, []);
+
+  useLayoutEffect(() => {
+    const filterData = queryFilter.reduce(
+      (acc, curr: { type: string; value: string | number }) => {
+        let value = curr.value;
+        if (curr.type === 'id') {
+          value = Number(curr.value);
+        }
+        return {
+          ...acc,
+          [curr.type]: value,
+        };
+      },
+      {}
+    );
+
+    const filteredPassengers = filter(allPassengersData, { ...filterData });
+    setPassengersData(filteredPassengers);
+  }, [queryFilter]);
 
   return (
     <div>
@@ -164,28 +192,40 @@ export default function BookingList({ params }: any) {
                       <Form.Item
                         name={[field.name, 'value']}
                         // label='ID'
-                        // rules={[
-                        //   { required: true, message: 'Please input your phone number!' },
-                        // ]}
+                        rules={[
+                          {
+                            required: true,
+                            message: 'Please provide a value',
+                          },
+                        ]}
                       >
                         <Input
                           addonBefore={
-                            <Form.Item name={[field.name, 'type']} noStyle>
+                            <Form.Item
+                              name={[field.name, 'type']}
+                              noStyle
+                              rules={[
+                                {
+                                  required: true,
+                                  message: 'Please choose filter type',
+                                },
+                              ]}
+                            >
                               <Select options={OPTIONS} />
                             </Form.Item>
                           }
                           // style={{ width: '60%' }}
                         />
                       </Form.Item>
-                      {fields.length > 1 ? (
-                        <Button
-                          type='primary'
-                          onClick={() => remove(field.name)}
-                          danger
-                        >
-                          Remove
-                        </Button>
-                      ) : null}
+                      {/* {fields.length > 1 ? ( */}
+                      <Button
+                        type='primary'
+                        onClick={() => remove(field.name)}
+                        danger
+                      >
+                        Remove
+                      </Button>
+                      {/* ) : null} */}
                     </Space.Compact>
                   </Form.Item>
                 ))}
