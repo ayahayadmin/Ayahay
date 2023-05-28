@@ -67,12 +67,6 @@ export default function TripList() {
       dataIndex: 'departureDateIso',
       render: (text: string) => <span>{getTime(text)}</span>,
     },
-    {
-      title: 'Slots',
-      key: 'slots',
-      dataIndex: 'slots',
-      render: (text: string) => <span>{`${text} slot/s`}</span>,
-    },
   ];
 
   useEffect(() => {
