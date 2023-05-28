@@ -33,7 +33,7 @@ export default function Header() {
               <Link href='/trips'>Trips</Link>
             </li>
             <li>
-              <a href='#'>Dashboard</a>
+              <a href='/dashboard'>Dashboard</a>
             </li>
             <li>
               <a href='#'>Database</a>
