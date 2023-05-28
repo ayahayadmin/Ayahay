@@ -11,7 +11,6 @@ import {
 import { PlusOutlined } from '@ant-design/icons';
 import styles from './page.module.scss';
 
-const { Option } = Select;
 const PAGE_SIZE = 10;
 const formItemLayout = {
   labelCol: {
@@ -47,7 +46,6 @@ const OPTIONS = [
 
 export default function BookingList({ params }: any) {
   const router = useRouter();
-  const [form] = Form.useForm();
   const [allPassengersData, setAllPassengersData] = useState(
     [] as IPassenger[]
   );
@@ -65,16 +63,6 @@ export default function BookingList({ params }: any) {
     }
     setQueryFilter(values.queries);
   };
-
-  const prefixSelector = (
-    <Form.Item name='prefix' noStyle>
-      <Select style={{ width: 70 }}>
-        <Option value='id'>ID</Option>
-        <Option value='firstName'>First Name</Option>
-        <Option value='lastName'>Last Name</Option>
-      </Select>
-    </Form.Item>
-  );
 
   const onClickConfirm = (id: number, firstName: string, lastName: string) => {
     //id should be unique, thinking of adding referenceNum property? para yun lang gamitin, pwede syang UUID. For now ID muna
