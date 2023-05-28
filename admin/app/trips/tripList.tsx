@@ -10,6 +10,7 @@ import dayjs, { Dayjs } from 'dayjs';
 import { RangePickerProps } from 'antd/es/date-picker';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
+import { getAllTrips } from '@/services/trip.service';
 
 const { RangePicker } = DatePicker;
 dayjs.extend(isSameOrBefore);
@@ -75,7 +76,7 @@ export default function TripList() {
   ];
 
   useEffect(() => {
-    const trips = filter(mockTrips, (trip) => {
+    const trips = filter(getAllTrips(), (trip) => {
       return (
         startDate.isSameOrBefore(trip.departureDateIso) &&
         endDate.isSameOrAfter(trip.departureDateIso)
