@@ -5,6 +5,7 @@ import React from 'react';
 import { message, Button, Upload, Typography } from 'antd';
 import { processTripCsv } from '@/services/csv.service';
 import { ITrip } from '@ayahay/models';
+import { addTrips } from '@/services/trip.service';
 
 const { Title } = Typography;
 const { Dragger } = Upload;
@@ -23,6 +24,7 @@ export default function UploadTrips() {
   };
 
   const onSuccessfulUpload = (trips: ITrip[]) => {
+    addTrips(trips);
     message.success(`Successfully uploaded ${trips.length} trips.`);
   };
 

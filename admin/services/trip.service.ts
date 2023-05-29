@@ -460,7 +460,7 @@ export function getTrips(
 export function getAllTrips(): ITrip[] {
   const trips = localStorage.getItem('trips');
   if (trips === null) {
-    localStorage.setItem('bookings', JSON.stringify(mockTrips));
+    localStorage.setItem('trips', JSON.stringify(mockTrips));
     return mockTrips;
   }
   return JSON.parse(trips);
