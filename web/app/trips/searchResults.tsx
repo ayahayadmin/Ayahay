@@ -1,12 +1,7 @@
 import styles from './searchResults.module.scss';
 import React, { useEffect, useState } from 'react';
 import { Button, Pagination, Skeleton, Space, Table } from 'antd';
-import {
-  ITrip,
-  IPort,
-  IShippingLine,
-  SearchQuery
-} from '@ayahay/models';
+import { ITrip, IPort, IShippingLine, SearchQuery } from '@ayahay/models';
 import { find, get, split, toNumber } from 'lodash';
 import { getPorts } from '@/services/port.service';
 import { getTrips } from '@/services/trip.service';
@@ -57,13 +52,20 @@ const columns = [
   {
     key: 'baseFare',
     dataIndex: 'baseFare',
-    render: (text: string) => <span className={styles['price']}>{`PHP ${text}`}</span>,
+    render: (text: string) => (
+      <span className={styles['price']}>{`PHP ${text}`}</span>
+    ),
   },
   {
     key: 'action',
     render: () => (
       <Space size='middle'>
-        <Button type='primary' size='large'>
+        <Button
+          type='primary'
+          size='large'
+          href='https://ayahay-booking-platform-web.vercel.app/bookings/create?tripId=1'
+          target='_blank'
+        >
           Book Now!
         </Button>
       </Space>
