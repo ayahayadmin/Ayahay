@@ -50,9 +50,8 @@ export default function BookingList({ params }: any) {
     [] as IPassenger[]
   );
   const [passengersData, setPassengersData] = useState([] as IPassenger[]);
-  // const [buttonClicked, setButtonClicked] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [passengerName, setPassengerName] = useState('');
+  const [passengerData, setPassengerData] = useState({} as IPassenger);
   const [queryFilter, setQueryFilter] = useState([]);
 
   const onFinish = (values: any) => {
@@ -64,9 +63,9 @@ export default function BookingList({ params }: any) {
     setQueryFilter(values.queries);
   };
 
-  const onClickConfirm = (id: number, firstName: string, lastName: string) => {
+  const onClickConfirm = (passengerRecord: IPassenger) => {
     //id should be unique, thinking of adding referenceNum property? para yun lang gamitin, pwede syang UUID. For now ID muna
-    setPassengerName(`${lastName}, ${firstName}`);
+    setPassengerData(passengerRecord);
     setIsModalOpen(true);
   };
 
@@ -90,7 +89,7 @@ export default function BookingList({ params }: any) {
       key: 'firstName',
       render: (text: any, record: any) => (
         <span>
-          {record.lastName}, {record.firstName}
+          {record.firstName} {record.lastName}
         </span>
       ),
     },
@@ -106,14 +105,12 @@ export default function BookingList({ params }: any) {
     },
     {
       key: 'action',
-      render: (text: any, record: any) => (
+      render: (text: any, record: IPassenger) => (
         <Space size='middle'>
           <Button
             type='primary'
             size='large'
-            onClick={() =>
-              onClickConfirm(record.id, record.firstName, record.lastName)
-            }
+            onClick={() => onClickConfirm(record)}
           >
             Confirm
           </Button>
@@ -248,12 +245,14 @@ export default function BookingList({ params }: any) {
       </div>
       <div>
         <Modal
-          title='Basic Modal'
+          title='Confirm attendance?'
           open={isModalOpen}
           onOk={onClickYes}
           onCancel={onClickCancel}
         >
-          <p>Confirm attendance of {passengerName}?</p>
+          <p>Name: {`${passengerData.firstName} ${passengerData.lastName}`} </p>
+          <p>Reference Num: {passengerData.id} </p>
+          <p>Birth Date: {passengerData.birthdayIso}</p>
         </Modal>
       </div>
       {/* {buttonClicked && <Seats rowData={rowData} />} */}
