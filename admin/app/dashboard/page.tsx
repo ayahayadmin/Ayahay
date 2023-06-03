@@ -1,12 +1,16 @@
 'use client';
-import { mockBookingPassengers, mockBookings } from '@/../packages/models';
+import {
+  IBookingPassenger,
+  mockBookingPassengers,
+  mockBookings,
+} from '@/../packages/models';
 import BarChart from '@/components/charts/barChart';
 import PieChart from '@/components/charts/pieChart';
 import { getAllTrips } from '@/services/trip.service';
 import { DatePicker } from 'antd';
 import { RangePickerProps } from 'antd/es/date-picker';
 import dayjs, { Dayjs } from 'dayjs';
-import { filter, find, includes, map } from 'lodash';
+import { filter, forEach, includes, keys } from 'lodash';
 import { useEffect, useState } from 'react';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
@@ -14,6 +18,14 @@ import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 const { RangePicker } = DatePicker;
 dayjs.extend(isSameOrBefore);
 dayjs.extend(isSameOrAfter);
+
+interface TripIdToTripName {
+  [key: string]: string;
+}
+
+interface TripToBookingPassenger {
+  [key: string]: IBookingPassenger[];
+}
 
 const data = {
   labels: ['Red', 'Blue', 'Yellow'],
@@ -50,16 +62,39 @@ export default function Dashboard() {
       );
     });
 
-    const tripIds = map(trips, (trip) => trip.id);
+    const tripIdAndName: TripIdToTripName = trips.reduce((acc, curr) => {
+      return {
+        ...acc,
+        [curr.id]: `${curr?.srcPort?.name}-${curr?.destPort?.name}`,
+      };
+    }, {});
+
+    const tripIds = keys(tripIdAndName);
     const bookingsTemp = mockBookings.filter((booking) =>
-      includes(tripIds, booking.tripId)
+      includes(tripIds, String(booking.tripId))
     );
 
-    const bookingPassengers = map(bookingsTemp, (booking) => {
-      return find(mockBookingPassengers, { bookingId: booking.id });
-    });
+    let bookingPassengersToTripMap: TripToBookingPassenger = {};
 
-    console.log(bookingPassengers);
+    forEach(bookingsTemp, (booking) => {
+      const key = tripIdAndName[String(booking.tripId)];
+      const bookingPassengers = filter(mockBookingPassengers, {
+        bookingId: booking.id,
+      });
+      console.log(key);
+      console.log(bookingPassengers);
+
+      if (bookingPassengersToTripMap.hasOwnProperty(key)) {
+        bookingPassengersToTripMap = {
+          ...bookingPassengersToTripMap,
+          [key]: [...bookingPassengersToTripMap[key], ...bookingPassengers],
+        };
+        console.log(bookingPassengersToTripMap);
+      } else {
+        bookingPassengersToTripMap[key] = bookingPassengers;
+        console.log(bookingPassengersToTripMap);
+      }
+    });
     // //TO DO: With bookingPassenger:
     // - Count how many passengers booked per trip (bar)
     // - Count how many checked-in (and not) (bar kasama sa bullet 1)
