@@ -62,6 +62,7 @@ export default function Dashboard() {
       );
     });
 
+    // Maps tripId: tripName
     const tripIdAndName: TripIdToTripName = trips.reduce((acc, curr) => {
       return {
         ...acc,
@@ -70,12 +71,14 @@ export default function Dashboard() {
     }, {});
 
     const tripIds = keys(tripIdAndName);
+
+    // Gets all bookings given trip Ids
     const bookingsTemp = mockBookings.filter((booking) =>
       includes(tripIds, String(booking.tripId))
     );
 
     let bookingPassengersToTripMap: TripToBookingPassenger = {};
-
+    // Maps trip name (src-dest) to bookingPassengers
     forEach(bookingsTemp, (booking) => {
       const key = tripIdAndName[String(booking.tripId)];
       const bookingPassengers = filter(mockBookingPassengers, {
