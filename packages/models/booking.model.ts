@@ -1,4 +1,7 @@
-import { IBookingPassenger } from './booking-passenger.model';
+import {
+  IBookingPassenger,
+  mockBookingPassengers,
+} from './booking-passenger.model';
 import { ITrip, mockTrip, mockTrips } from './trip.model';
 
 export interface IBooking {
@@ -14,17 +17,20 @@ export interface IBooking {
 
 export const mockBooking: IBooking = {
   id: 1,
+  referenceNo: 'ABCD1',
   tripId: mockTrip.id,
   trip: mockTrip,
   totalPrice: 1000,
   numOfCars: 1,
   paymentReference: '28b27d88-4e60-4812-9afe-789611e5e9e6',
+  bookingPassengers: mockBookingPassengers,
 };
 
 export const mockBookings: IBooking[] = [
   mockBooking,
   {
     id: 2,
+    referenceNo: 'ABCD2',
     tripId: mockTrip.id,
     trip: mockTrip,
     totalPrice: 1000,
@@ -33,6 +39,7 @@ export const mockBookings: IBooking[] = [
   },
   {
     id: 3,
+    referenceNo: 'ABCD3',
     tripId: mockTrip.id,
     trip: mockTrip,
     totalPrice: 1000,
@@ -41,6 +48,7 @@ export const mockBookings: IBooking[] = [
   },
   {
     id: 4,
+    referenceNo: 'ABCD4',
     tripId: mockTrip.id,
     trip: mockTrip,
     totalPrice: 1000,
@@ -49,6 +57,7 @@ export const mockBookings: IBooking[] = [
   },
   {
     id: 5,
+    referenceNo: 'ABCD5',
     tripId: mockTrip.id,
     trip: mockTrip,
     totalPrice: 1000,
@@ -57,6 +66,7 @@ export const mockBookings: IBooking[] = [
   },
   {
     id: 6,
+    referenceNo: 'ABCD6',
     tripId: mockTrip.id,
     trip: mockTrip,
     totalPrice: 1000,
@@ -65,6 +75,7 @@ export const mockBookings: IBooking[] = [
   },
   {
     id: 7,
+    referenceNo: 'ABCD7',
     tripId: mockTrip.id,
     trip: mockTrip,
     totalPrice: 1000,
@@ -73,6 +84,7 @@ export const mockBookings: IBooking[] = [
   },
   {
     id: 8,
+    referenceNo: 'ABCD8',
     tripId: 2,
     trip: mockTrips[1],
     totalPrice: 1000,
