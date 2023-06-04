@@ -1,9 +1,14 @@
-import { Badge, Button, Table } from 'antd';
+import { Badge, Button, notification, Table } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { ColumnsType } from 'antd/es/table';
-import { IBookingPassenger } from '@/../packages/models';
 import { getBookingPassengersFromQuery } from '@/services/booking-passenger.service';
 import { TableRowSelection } from 'antd/es/table/interface';
+import { checkInPassenger } from '@/services/booking.service';
+import dayjs from 'dayjs';
+import 'dayjs/plugin/relativeTime';
+
+const relativeTime = require('dayjs/plugin/relativeTime');
+dayjs.extend(relativeTime);
 
 interface BookingPassengerResultsProps {
   query: string;
@@ -18,69 +23,17 @@ interface DataType {
   passengerName: string;
   seatName: string;
   referenceNo: string;
-  checkInStatus: 'Checked-In' | 'Not Checked-In';
+  checkInDate: string | undefined;
 }
-
-const columns: ColumnsType<DataType> = [
-  {
-    key: 'tripSrcPortName',
-    dataIndex: 'tripSrcPortName',
-    title: 'Origin Port',
-  },
-  {
-    key: 'tripDestPortName',
-    dataIndex: 'tripDestPortName',
-    title: 'Destination Port',
-  },
-  {
-    key: 'tripDepartureDateIso',
-    dataIndex: 'tripDepartureDateIso',
-    title: 'Departure Date',
-  },
-  {
-    key: 'passengerName',
-    dataIndex: 'passengerName',
-    title: 'Passenger',
-  },
-  {
-    key: 'seatName',
-    dataIndex: 'seatName',
-    title: 'Seat',
-  },
-  {
-    key: 'referenceNo',
-    dataIndex: 'referenceNo',
-    title: 'Reference Number',
-  },
-  {
-    dataIndex: 'checkInStatus',
-    key: 'checkInStatus',
-    title: 'Check-In Status',
-    render: (status) => {
-      if (status === 'Checked-In') {
-        return <Badge status='success' text='Checked-In' />;
-      }
-      return <Badge status='default' text='Not Checked-In' />;
-    },
-  },
-  {
-    title: 'Actions',
-    render: (_, passenger) => {
-      if (passenger.checkInStatus === 'Checked-In') {
-        return <></>;
-      }
-      return <Button type='primary'>Check In</Button>;
-    },
-  },
-];
 
 export default function BookingPassengerResults({
   query,
 }: BookingPassengerResultsProps) {
+  const [api, contextHolder] = notification.useNotification();
   const [passengers, setPassengers] = useState<DataType[]>([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 
-  useEffect(() => {
+  const performSearch = () => {
     const bookingPassengers = getBookingPassengersFromQuery(query);
     setPassengers(
       bookingPassengers.map((bookingPassenger, index) => ({
@@ -95,12 +48,89 @@ export default function BookingPassengerResults({
         }`,
         seatName: bookingPassenger.seat?.name ?? '',
         referenceNo: bookingPassenger.referenceNo,
-        checkInStatus: bookingPassenger.checkInDate
-          ? 'Checked-In'
-          : 'Not Checked-In',
+        checkInDate: bookingPassenger.checkInDate,
       }))
     );
-  }, [query]);
+  };
+
+  useEffect(performSearch, [query]);
+
+  const onCheckIn = (passenger: DataType) => {
+    const updatedPassenger = checkInPassenger(passenger.id);
+    if (updatedPassenger === undefined) {
+      api.error({
+        message: 'Check In Failed',
+        description: 'The selected passenger has already checked in.',
+      });
+    } else {
+      api.success({
+        message: 'Check In Success',
+        description: 'The selected passenger has checked in successfully.',
+      });
+    }
+    performSearch();
+  };
+
+  const columns: ColumnsType<DataType> = [
+    {
+      key: 'tripSrcPortName',
+      dataIndex: 'tripSrcPortName',
+      title: 'Origin Port',
+    },
+    {
+      key: 'tripDestPortName',
+      dataIndex: 'tripDestPortName',
+      title: 'Destination Port',
+    },
+    {
+      key: 'tripDepartureDateIso',
+      dataIndex: 'tripDepartureDateIso',
+      title: 'Departure Date',
+    },
+    {
+      key: 'passengerName',
+      dataIndex: 'passengerName',
+      title: 'Passenger',
+    },
+    {
+      key: 'seatName',
+      dataIndex: 'seatName',
+      title: 'Seat',
+    },
+    {
+      key: 'referenceNo',
+      dataIndex: 'referenceNo',
+      title: 'Reference Number',
+    },
+    {
+      dataIndex: 'checkInDate',
+      key: 'checkInDate',
+      title: 'Check-In Status',
+      render: (checkInDate) => {
+        if (checkInDate === undefined) {
+          return <Badge status='default' text='Not checked in' />;
+        }
+        const checkInDateFromNow = dayjs(checkInDate).fromNow();
+
+        return (
+          <Badge status='success' text={`Checked in ${checkInDateFromNow}`} />
+        );
+      },
+    },
+    {
+      title: 'Actions',
+      render: (_, passenger) => {
+        if (passenger.checkInDate !== undefined) {
+          return <></>;
+        }
+        return (
+          <Button type='primary' onClick={() => onCheckIn(passenger)}>
+            Check In
+          </Button>
+        );
+      },
+    },
+  ];
 
   const rowSelection: TableRowSelection<DataType> = {
     selectedRowKeys: selectedRowKeys,
@@ -108,10 +138,13 @@ export default function BookingPassengerResults({
   };
 
   return (
-    <Table
-      rowSelection={rowSelection}
-      columns={columns}
-      dataSource={passengers}
-    ></Table>
+    <div>
+      {contextHolder}
+      <Table
+        rowSelection={rowSelection}
+        columns={columns}
+        dataSource={passengers}
+      ></Table>
+    </div>
   );
 }
