@@ -6,6 +6,7 @@ import dayjs from 'dayjs';
 
 export interface ITrip {
   id: number;
+  referenceNo: string;
   shipId: number;
   ship?: IShip;
   shippingLineId: number;
@@ -26,6 +27,7 @@ const fiveDaysLater = dayjs().add(5, 'day').toISOString();
 
 export const mockTrip: ITrip = {
   id: 1,
+  referenceNo: `ABCD1`,
   shipId: mockShip.id,
   ship: mockShip,
   shippingLineId: mockShippingLine.id,
@@ -51,6 +53,7 @@ export const mockTrips: ITrip[] = [
   mockTrip,
   {
     id: 2,
+    referenceNo: `ABCD2`,
     shipId: mockShip.id,
     ship: mockShip,
     shippingLineId: mockShippingLine.id,

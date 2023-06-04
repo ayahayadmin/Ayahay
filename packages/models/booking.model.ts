@@ -8,6 +8,7 @@ export interface IBooking {
   totalPrice: number;
   numOfCars: number;
   paymentReference: string;
+  referenceNo: string;
   bookingPassengers?: IBookingPassenger[];
 }
 

@@ -33,16 +33,16 @@ export default function Header() {
               <Link href='/trips'>Trips</Link>
             </li>
             <li>
-              <a href='/dashboard'>Dashboard</a>
+              <Link href='/dashboard'>Dashboard</Link>
             </li>
             <li>
-              <a href='#'>Database</a>
+              <Link href='/upload/trips'>Upload Trips</Link>
             </li>
             <li>
-              <a href='/upload/trips'>Upload Trips</a>
+              <Link href='/upload/bookings'>Upload Bookings</Link>
             </li>
             <li>
-              <a href='/upload/bookings'>Upload Bookings</a>
+              <Link href='/download/bookings'>Download Bookings</Link>
             </li>
           </ul>
         </span>

@@ -21,8 +21,13 @@ export function getAvailableSeatsInTrip(trip: ITrip): ISeat[] {
   return (
     trip.ship?.cabins
       .map((cabin) => {
-        cabin.seats?.forEach((seat) => (seat.cabin = cabin));
-        return cabin.seats;
+        return cabin.seats.map(
+          (seat) =>
+            ({
+              ...seat,
+              cabin: cabin,
+            } as ISeat)
+        );
       })
       .reduce(
         (cabinASeats, cabinBSeats) => [...cabinASeats, ...cabinBSeats],

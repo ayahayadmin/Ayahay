@@ -67,8 +67,13 @@ export function getAvailableSeatsInTrip(trip: ITrip): ISeat[] {
   return (
     trip.ship?.cabins
       .map((cabin) => {
-        cabin.seats?.forEach((seat) => (seat.cabin = cabin));
-        return cabin.seats;
+        return cabin.seats.map(
+          (seat) =>
+            ({
+              ...seat,
+              cabin: cabin,
+            } as ISeat)
+        );
       })
       .reduce(
         (cabinASeats, cabinBSeats) => [...cabinASeats, ...cabinBSeats],
@@ -134,6 +139,7 @@ function matchSeatFromPreferences(
     id: 1,
     bookingId: -1,
     passengerId: -1,
+    seatId: matchedSeat.id,
     seat: matchedSeat,
     referenceNo: 'ABCDE',
     meal:

@@ -1,10 +1,11 @@
-import { IBooking, ITrip, mockShip, mockTrip } from '@ayahay/models';
+import { IBooking, ITrip, mockShip, mockShippingLine } from '@ayahay/models';
 import {
   createBooking,
   getAvailableSeatsInTrip,
   getBestSeat,
 } from '@/services/booking.service';
 import { generateReferenceNo } from '@ayahay/services/random.service';
+import { addTrips, getTripByReferenceNo } from '@/services/trip.service';
 
 export function processTripCsv(
   file: File,
@@ -107,6 +108,7 @@ function processTripRow(row: string[]): ITrip {
     availableSeatTypes: [],
     availableCabins: [],
     meals: [],
+    referenceNo: generateReferenceNo(randomId),
   };
 }
 
@@ -120,6 +122,9 @@ export function processBookingCsv(
 function processBookingRow(rowValues: string[]): IBooking {
   const headers = [
     'tripReferenceNo',
+    'srcPortName',
+    'destPortName',
+    'departureDate',
     'totalPrice',
     'paymentReference',
     'firstName',
@@ -140,7 +145,37 @@ function processBookingRow(rowValues: string[]): IBooking {
 
   const randomId = Math.floor(Math.random() * 1000);
 
-  const availableSeats = getAvailableSeatsInTrip(mockTrip);
+  const tripReferenceNo = rowObject.tripReferenceNo;
+  let trip = getTripByReferenceNo(tripReferenceNo);
+  if (trip === undefined) {
+    trip = {
+      id: randomId,
+      shipId: randomId,
+      ship: mockShip,
+      shippingLineId: randomId,
+      shippingLine: mockShippingLine,
+      srcPortId: randomId,
+      srcPort: {
+        id: randomId,
+        name: rowObject.srcPortName,
+      },
+      destPortId: randomId,
+      destPort: {
+        id: randomId,
+        name: rowObject.destPortName,
+      },
+      departureDateIso: new Date(rowObject.departureDate).toISOString(),
+      baseFare: 100,
+      availableSeatTypes: [],
+      availableCabins: [],
+      meals: [],
+      referenceNo: tripReferenceNo,
+    };
+
+    addTrips([trip]);
+  }
+
+  const availableSeats = getAvailableSeatsInTrip(trip);
   const seat = getBestSeat(availableSeats, {
     seat: 'Any',
     meal: 'Any',
@@ -149,10 +184,11 @@ function processBookingRow(rowValues: string[]): IBooking {
 
   const booking: IBooking = {
     id: randomId,
-    tripId: mockTrip.id,
-    trip: mockTrip,
+    tripId: trip.id,
+    trip,
     totalPrice: rowObject.totalPrice,
     numOfCars: 0,
+    referenceNo: generateReferenceNo(randomId),
     paymentReference: rowObject.paymentReference,
     bookingPassengers: [
       {
@@ -182,4 +218,45 @@ function processBookingRow(rowValues: string[]): IBooking {
   createBooking(booking);
 
   return booking;
+}
+
+export function generateBookingCsv(bookings: IBooking[]): Blob {
+  const content = bookings
+    .filter(
+      (booking) =>
+        booking.bookingPassengers && booking.bookingPassengers.length > 0
+    )
+    .map((booking) => {
+      return (
+        booking.bookingPassengers &&
+        booking.bookingPassengers
+          .map((bookingPassenger) => {
+            return [
+              booking.referenceNo,
+              booking?.trip?.referenceNo ?? '',
+              booking?.trip?.srcPort?.name ?? '',
+              booking?.trip?.destPort?.name ?? '',
+              booking?.trip?.departureDateIso ?? '',
+              booking?.totalPrice,
+              bookingPassenger.referenceNo ?? '',
+              bookingPassenger.passenger?.firstName ?? '',
+              bookingPassenger.passenger?.lastName ?? '',
+              bookingPassenger.passenger?.occupation ?? '',
+              bookingPassenger.passenger?.sex ?? '',
+              bookingPassenger.passenger?.civilStatus ?? '',
+              bookingPassenger.passenger?.birthdayIso ?? '',
+              bookingPassenger.passenger?.address ?? '',
+              bookingPassenger.passenger?.nationality ?? '',
+            ]
+              .map(String) // convert every value to String
+              .map((v) => v.replaceAll('"', '""')) // escape double colons
+              .map((v) => `"${v}"`) // quote it
+              .join(','); // comma-separated;
+          })
+          .join('\r\n')
+      );
+    })
+    .join('\r\n'); // rows starting on new lines
+
+  return new Blob([content], { type: 'text/csv;charset=utf-8;' });
 }

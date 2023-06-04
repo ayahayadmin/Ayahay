@@ -479,3 +479,8 @@ export const getBaseFare = () => {
 export const getAvailableSeats = (): (keyof typeof SEAT_TYPE)[] => {
   return ['Window', 'SingleBed'];
 };
+
+export function getTripByReferenceNo(referenceNo: string): ITrip | undefined {
+  const trips = getAllTrips();
+  return trips.find((trip) => trip.referenceNo === referenceNo);
+}
