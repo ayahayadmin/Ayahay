@@ -10,7 +10,7 @@ import { getAllTrips } from '@/services/trip.service';
 import { DatePicker } from 'antd';
 import { RangePickerProps } from 'antd/es/date-picker';
 import dayjs, { Dayjs } from 'dayjs';
-import { filter, forEach, includes, keys } from 'lodash';
+import { filter, forEach, includes, keys, map } from 'lodash';
 import { useEffect, useState } from 'react';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
@@ -27,28 +27,16 @@ interface TripToBookingPassenger {
   [key: string]: IBookingPassenger[];
 }
 
-const data = {
-  labels: ['Red', 'Blue', 'Yellow'],
-  datasets: [
-    {
-      label: 'My First Dataset',
-      data: [300, 50, 100],
-      backgroundColor: [
-        'rgb(255, 99, 132)',
-        'rgb(54, 162, 235)',
-        'rgb(255, 205, 86)',
-      ],
-      hoverOffset: 4,
-    },
-  ],
-};
-
 export default function Dashboard() {
   const dateToday = dayjs();
   const [startMonth, setStartMonth] = useState(
     dateToday.startOf('month') as Dayjs
   );
   const [endMonth, setEndMonth] = useState(dateToday.endOf('month') as Dayjs);
+  const [tripNames, setTripNames] = useState([] as string[]);
+  const [tripWithBookingPassengers, setTripWithBookingPassengers] = useState(
+    {} as TripToBookingPassenger
+  );
 
   useEffect(() => {
     // const bookingPassengers = getBookingPassengersByTripId(tripId); // still waiting for Carlos to update
@@ -78,31 +66,35 @@ export default function Dashboard() {
     );
 
     let bookingPassengersToTripMap: TripToBookingPassenger = {};
+    let tripNameKey: string[] = [];
     // Maps trip name (src-dest) to bookingPassengers
     forEach(bookingsTemp, (booking) => {
       const key = tripIdAndName[String(booking.tripId)];
       const bookingPassengers = filter(mockBookingPassengers, {
         bookingId: booking.id,
       });
-      console.log(key);
-      console.log(bookingPassengers);
 
       if (bookingPassengersToTripMap.hasOwnProperty(key)) {
         bookingPassengersToTripMap = {
           ...bookingPassengersToTripMap,
           [key]: [...bookingPassengersToTripMap[key], ...bookingPassengers],
         };
-        console.log(bookingPassengersToTripMap);
       } else {
         bookingPassengersToTripMap[key] = bookingPassengers;
-        console.log(bookingPassengersToTripMap);
+        tripNameKey.push(key);
       }
     });
+
+    console.log(tripNameKey);
+    console.log(bookingPassengersToTripMap);
+    setTripNames(tripNameKey);
+    setTripWithBookingPassengers(bookingPassengersToTripMap);
+
     // //TO DO: With bookingPassenger:
-    // - Count how many passengers booked per trip (bar)
+    // - Count how many passengers booked per trip (bar) CHECK
     // - Count how many checked-in (and not) (bar kasama sa bullet 1)
     // - Count overall passengers given date range (number)
-  }, []);
+  }, [startMonth, endMonth]);
 
   const disabledDate: RangePickerProps['disabledDate'] = (current) => {
     const lastYear = dateToday.subtract(1, 'year');
@@ -124,7 +116,31 @@ export default function Dashboard() {
         />
       </div>
       <div>
-        <BarChart data={data} />
+        <BarChart
+          data={{
+            labels: [...tripNames],
+            datasets: [
+              {
+                label: 'Total Bookings',
+                data: [
+                  ...map(tripNames, (tripName) => {
+                    return tripWithBookingPassengers[tripName].length;
+                  }),
+                ],
+                hoverOffset: 4,
+              },
+              // {
+              //   label: 'Number of Checked-in Passengers',
+              //   data: [
+              //     ...map(tripNames, (tripName) => {
+              //       return tripWithBookingPassengers[tripName].length;
+              //     }),
+              //   ],
+              //   hoverOffset: 14,
+              // },
+            ],
+          }}
+        />
       </div>
     </div>
   );

@@ -22,6 +22,8 @@ export interface IBookingPassenger {
   checkInDate?: string;
 }
 
+const today = new Date().toISOString();
+
 export const mockBookingPassenger: IBookingPassenger = {
   id: 1,
   bookingId: 1,
@@ -46,6 +48,7 @@ export const mockBookingPassengers: IBookingPassenger[] = [
     meal: 'Tapsilog',
     totalPrice: 1000,
     referenceNo: 'ABCD',
+    checkInDate: today,
   },
   {
     id: 3,
@@ -68,5 +71,6 @@ export const mockBookingPassengers: IBookingPassenger[] = [
     meal: 'Tapsilog',
     totalPrice: 1000,
     referenceNo: 'ABCD',
+    checkInDate: today,
   },
 ];
