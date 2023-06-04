@@ -138,3 +138,30 @@ export function getBookingById(bookingId: number): IBooking | undefined {
   const bookings = getAllBookings();
   return bookings.find((booking) => booking.id === bookingId);
 }
+
+export function checkInPassenger(
+  bookingPassengerId: number
+): IBookingPassenger | undefined {
+  const bookings = getAllBookings();
+  const bookingPassengerToUpdate = bookings
+    .map((booking) => booking.bookingPassengers ?? [])
+    .reduce(
+      (bookingAPassengers, bookingBPassengers) => [
+        ...bookingAPassengers,
+        ...bookingBPassengers,
+      ],
+      []
+    )
+    .find((bookingPassenger) => bookingPassenger.id === bookingPassengerId);
+
+  if (
+    bookingPassengerToUpdate === undefined ||
+    bookingPassengerToUpdate.checkInDate !== undefined
+  ) {
+    return undefined;
+  }
+
+  bookingPassengerToUpdate.checkInDate = new Date().toISOString();
+  localStorage.setItem('bookings', JSON.stringify(bookings));
+  return bookingPassengerToUpdate;
+}
