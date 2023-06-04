@@ -30,7 +30,21 @@ export function getBookingPassengersFromQuery(
 
 function getBookingPassengers(bookings: IBooking[]): IBookingPassenger[] {
   return bookings
-    .map((booking) => booking.bookingPassengers ?? [])
+    .map((booking) => {
+      if (
+        booking.bookingPassengers === undefined ||
+        booking.bookingPassengers.length === 0
+      ) {
+        return [];
+      }
+      return booking.bookingPassengers.map(
+        (bookingPassenger) =>
+          ({
+            ...bookingPassenger,
+            booking: booking,
+          } as IBookingPassenger)
+      );
+    })
     .reduce(
       (bookingAPassengers, bookingBPassengers) => [
         ...bookingAPassengers,
