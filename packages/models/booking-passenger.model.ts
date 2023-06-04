@@ -14,6 +14,7 @@ import {
   mockSeat4,
   mockSeat5,
 } from './seat.model';
+import dayjs from 'dayjs';
 
 export interface IBookingPassenger {
   id: number;
@@ -28,6 +29,8 @@ export interface IBookingPassenger {
   referenceNo: string;
   checkInDate?: string;
 }
+
+const today = dayjs().toISOString();
 
 export const mockBookingPassenger: IBookingPassenger = {
   id: 1,
@@ -55,6 +58,7 @@ export const mockBookingPassengers: IBookingPassenger[] = [
     meal: 'Tapsilog',
     totalPrice: 1000,
     referenceNo: 'ABCD',
+    checkInDate: today,
   },
   {
     id: 3,
@@ -79,6 +83,7 @@ export const mockBookingPassengers: IBookingPassenger[] = [
     meal: 'Tapsilog',
     totalPrice: 1000,
     referenceNo: 'ABCD',
+    checkInDate: today,
   },
   {
     id: 5,
@@ -103,6 +108,7 @@ export const mockBookingPassengers: IBookingPassenger[] = [
     meal: 'Tapsilog',
     totalPrice: 1000,
     referenceNo: 'ABCD',
+    checkInDate: today,
   },
   {
     id: 7,
@@ -127,5 +133,6 @@ export const mockBookingPassengers: IBookingPassenger[] = [
     meal: 'Tapsilog',
     totalPrice: 1000,
     referenceNo: 'ABCD',
+    checkInDate: today,
   },
 ];
