@@ -8,6 +8,7 @@ import Seats from './seats';
 import styles from './page.module.scss';
 import PieChart from '@/components/charts/pieChart';
 import TripBookings from './tripBookings';
+import { useSearchParams } from 'next/navigation';
 
 const data = {
   labels: ['Red', 'Blue', 'Yellow'],
@@ -26,12 +27,12 @@ const data = {
 };
 
 export default function Details() {
+  const searchParams = useSearchParams();
   const [tripData, setTripData] = useState({} as ITrip);
   const [seatMapBtnClicked, setSeatMapBtnClicked] = useState(false);
 
   useEffect(() => {
-    const urlSearchParams = new URLSearchParams(window.location.search);
-    const params = Object.fromEntries(urlSearchParams.entries());
+    const params = Object.fromEntries(searchParams.entries());
     const fetchTrip = find(mockTrips, { id: Number(params.tripId) })!;
     // const fetchBookings = getAllBookingsOfTrip(fetchTrip?.id);
     // console.log(fetchBookings);

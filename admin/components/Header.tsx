@@ -5,15 +5,16 @@ import AyahayLogo from '/public/assets/ayahay-logo.png';
 import Link from 'next/link';
 import { Avatar, Input } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
+import { useSearchParams } from 'next/navigation';
 
 const { Search } = Input;
 
 export default function Header() {
+  const searchParams = useSearchParams();
   const [query, setQuery] = useState('');
 
   const onPageLoad = () => {
-    const urlSearchParams = new URLSearchParams(window.location.search);
-    const params = Object.fromEntries(urlSearchParams.entries());
+    const params = Object.fromEntries(searchParams.entries());
 
     setQuery(params.query);
   };

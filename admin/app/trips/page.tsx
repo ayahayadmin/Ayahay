@@ -10,14 +10,15 @@ import { useCallback, useEffect, useState } from 'react';
 import BookingList from './[id]/page';
 import { AdminSearchQuery } from '@ayahay/models/admin-search-query';
 import TripList from './tripList';
+import { useSearchParams } from 'next/navigation';
 
 export default function Schedules() {
+  const searchParams = useSearchParams();
   const [form] = Form.useForm();
   const [searchQuery, setSearchQuery] = useState({} as AdminSearchQuery);
 
   const onPageLoad = () => {
-    const urlSearchParams = new URLSearchParams(window.location.search);
-    const params = Object.fromEntries(urlSearchParams.entries());
+    const params = Object.fromEntries(searchParams.entries());
     initializeAdminSearchFormFromQueryParams(form, params);
     debounceSearch();
   };

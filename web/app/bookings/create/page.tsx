@@ -4,7 +4,7 @@ import styles from './page.module.scss';
 import { Typography } from 'antd';
 import { useEffect, useState } from 'react';
 import TripSummary from '@ayahay/components/descriptions/TripSummary';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { ITrip, IBooking } from '@ayahay/models';
 import { getTrip } from '@/services/trip.service';
 import CreateBookingForm from '@/app/bookings/create/createBookingForm';
@@ -12,12 +12,12 @@ import CreateBookingForm from '@/app/bookings/create/createBookingForm';
 const { Title } = Typography;
 
 export default function CreateBooking() {
+  const searchParams = useSearchParams();
   const router = useRouter();
   const [trip, setTrip] = useState<ITrip>();
 
   const onPageLoad = () => {
-    const urlSearchParams = new URLSearchParams(window.location.search);
-    const params = Object.fromEntries(urlSearchParams.entries());
+    const params = Object.fromEntries(searchParams.entries());
 
     const tripId = params?.tripId;
 

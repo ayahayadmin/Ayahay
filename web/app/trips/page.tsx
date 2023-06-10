@@ -15,9 +15,11 @@ import SearchResult from '@/app/trips/searchResults';
 import CabinFilter from '@/components/form/CabinFilter';
 import ShippingLineFilter from '@/components/form/ShippingLineFilter';
 import { SearchQuery } from '@ayahay/models';
+import { useSearchParams } from 'next/navigation';
 
 export default function Trips() {
   const [form] = Form.useForm();
+  const searchParams = useSearchParams();
 
   const numAdults = Form.useWatch('numAdults', form);
   const numChildren = Form.useWatch('numChildren', form);
@@ -26,8 +28,7 @@ export default function Trips() {
   const [searchQuery, setSearchQuery] = useState({} as SearchQuery);
 
   const onPageLoad = () => {
-    const urlSearchParams = new URLSearchParams(window.location.search);
-    const params = Object.fromEntries(urlSearchParams.entries());
+    const params = Object.fromEntries(searchParams.entries());
     initializeSearchFormFromQueryParams(form, params);
     debounceSearch();
   };
@@ -47,7 +48,6 @@ export default function Trips() {
     const query = buildSearchQueryFromSearchForm(form);
     setSearchQuery(query);
     updateUrl();
-    console.log(searchQuery);
   }
 
   const updateUrl = () => {
@@ -62,31 +62,34 @@ export default function Trips() {
       onValuesChange={(_, __) => debounceSearch()}
       onFinish={(_) => debounceSearch()}
     >
-    <div className={styles['query-container']}>
+      <div className={styles['query-container']}>
         <TripSearchQuery />
-    </div>
-        <div className={styles['main-container']}>
-            <div className={styles['left-container']}>
-                <div className={styles['left-card']}>
-                    <div className={styles['cabin-card']}>
-                        <CabinFilter name='cabinTypes' label='Cabin Types' />
-                    </div>
-                    <div className={styles['shipping-card']}>
-                        <ShippingLineFilter name='shippingLineIds' label='Shipping Lines' />
-                    </div>
-                </div>
+      </div>
+      <div className={styles['main-container']}>
+        <div className={styles['left-container']}>
+          <div className={styles['left-card']}>
+            <div className={styles['cabin-card']}>
+              <CabinFilter name='cabinTypes' label='Cabin Types' />
             </div>
-            <div className={styles['right-container']}>
-                <div className={styles['sort-container']}>
-                    <div className={styles['sort-card']}>
-                        <TripSortOptions name='sort' label='Sort By' />
-                    </div>
-                </div>
-                <div className={styles['results-card']}>
-                    <SearchResult searchQuery={searchQuery} />
-                </div>
+            <div className={styles['shipping-card']}>
+              <ShippingLineFilter
+                name='shippingLineIds'
+                label='Shipping Lines'
+              />
             </div>
+          </div>
         </div>
+        <div className={styles['right-container']}>
+          <div className={styles['sort-container']}>
+            <div className={styles['sort-card']}>
+              <TripSortOptions name='sort' label='Sort By' />
+            </div>
+          </div>
+          <div className={styles['results-card']}>
+            <SearchResult searchQuery={searchQuery} />
+          </div>
+        </div>
+      </div>
     </Form>
   );
 }

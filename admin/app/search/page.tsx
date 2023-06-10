@@ -1,9 +1,8 @@
 'use client';
 import styles from './page.module.scss';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Tabs, TabsProps, Typography } from 'antd';
-import debounce from 'lodash/debounce';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import BookingPassengerResults from '@/app/search/bookingPassengerResults';
 
 const { Title } = Typography;
@@ -14,13 +13,13 @@ enum SearchModel {
 }
 
 export default function Search() {
+  const searchParams = useSearchParams();
   const [query, setQuery] = useState('');
   const [searchModel, setSearchModel] =
     useState<keyof typeof SearchModel>('BookingPassenger');
 
   const onPageLoad = () => {
-    const urlSearchParams = new URLSearchParams(window.location.search);
-    const params = Object.fromEntries(urlSearchParams.entries());
+    const params = Object.fromEntries(searchParams.entries());
 
     setQuery(params.query);
     if (params.model && params.model in SearchModel) {
@@ -68,7 +67,7 @@ export default function Search() {
 
   return (
     <div className={styles['main-container']}>
-      <Title level={1}>Search Results for "{query}"</Title>
+      <Title level={1}>Search Results for &quot;{query}&quot;</Title>
       <Tabs
         defaultActiveKey='BookingPassenger'
         items={tabs}
