@@ -22,20 +22,12 @@
             display: flex;
             align-items: center;
 
-            .port-card {
-                padding: 0 60px 0 20px;
+            .search-input-wrapper {
+                min-width: 200px;
+                padding: 10px 20px;
                 border-right: 1px solid #DDDDDD;
             }
 
-            .date-card {
-                padding: 0 0 0 20px;
-                border-right: 1px solid #DDDDDD;
-            }
-
-            .travellers-card {
-                padding: 0 20px 0 20px;
-
-            }
         }
     }
 }

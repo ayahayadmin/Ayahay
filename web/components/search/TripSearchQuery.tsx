@@ -22,30 +22,33 @@ export default function TripSearchQuery() {
         </div>
 
         <div className={styles['search-main']}>
-          <div className={styles['port-card']}>
+          <div className={styles['search-input-wrapper']}>
             <label>Origin Port</label>
             <PortAutoComplete
               excludePortId={destPortId}
               labelCol={{ span: 24 }}
               colon={false}
               name='srcPortId'
+              style={{ marginBottom: 0 }}
             />
           </div>
-          <div className={styles['port-card']}>
+          <div className={styles['search-input-wrapper']}>
             <label>Destination Port</label>
             <PortAutoComplete
               excludePortId={srcPortId}
               labelCol={{ span: 24 }}
               colon={false}
               name='destPortId'
+              style={{ marginBottom: 0 }}
             />
           </div>
-          <div className={styles['date-card']}>
+          <div className={styles['search-input-wrapper']}>
             <label>Departure Date</label>
             <Form.Item
               labelCol={{ span: 24 }}
               colon={false}
               name='departureDate'
+              style={{ marginBottom: 0 }}
             >
               <DatePicker
                 className={styles['ant-picker-input']}
@@ -62,6 +65,7 @@ export default function TripSearchQuery() {
                 labelCol={{ span: 24 }}
                 colon={false}
                 name='returnDate'
+                style={{ marginBottom: 0 }}
               >
                 <DatePicker
                   className={styles['ant-picker-input']}
@@ -73,10 +77,13 @@ export default function TripSearchQuery() {
               </Form.Item>
             )}
           </div>
-          <div className={styles['travellers-card']}>
+          <div
+            className={styles['search-input-wrapper']}
+            style={{ borderRight: 0 }}
+          >
             <PassengerCount />
           </div>
-          <Form.Item>
+          <Form.Item style={{ marginBottom: 0 }}>
             <Button type='primary' htmlType='submit'>
               Submit
             </Button>
