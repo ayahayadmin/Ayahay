@@ -5,12 +5,11 @@ import {
   mockBookings,
 } from '@/../packages/models';
 import BarChart from '@/components/charts/barChart';
-import PieChart from '@/components/charts/pieChart';
 import { getAllTrips } from '@/services/trip.service';
 import { DatePicker } from 'antd';
 import { RangePickerProps } from 'antd/es/date-picker';
 import dayjs, { Dayjs } from 'dayjs';
-import { filter, forEach, includes, keys, map } from 'lodash';
+import { filter, forEach, includes, isEmpty, keys, map } from 'lodash';
 import { useEffect, useState } from 'react';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
@@ -27,6 +26,10 @@ interface TripToBookingPassenger {
   [key: string]: IBookingPassenger[];
 }
 
+interface CheckedInToTrip {
+  [key: string]: number;
+}
+
 export default function Dashboard() {
   const dateToday = dayjs();
   const [startMonth, setStartMonth] = useState(
@@ -37,6 +40,13 @@ export default function Dashboard() {
   const [tripWithBookingPassengers, setTripWithBookingPassengers] = useState(
     {} as TripToBookingPassenger
   );
+  const [checkedInCount, setCheckedInCount] = useState({} as CheckedInToTrip);
+
+  const countCheckedInBookingPassenger = (bookingPassengers: any) => {
+    return filter(bookingPassengers, (bookingPassenger) => {
+      return !isEmpty(bookingPassenger?.checkInDate); //returns bookingPassenger that has checkInDate property
+    }).length;
+  };
 
   useEffect(() => {
     // const bookingPassengers = getBookingPassengersByTripId(tripId); // still waiting for Carlos to update
@@ -67,6 +77,7 @@ export default function Dashboard() {
 
     let bookingPassengersToTripMap: TripToBookingPassenger = {};
     let tripNameKey: string[] = [];
+    let checkedInCountPerTrip: CheckedInToTrip = {};
     // Maps trip name (src-dest) to bookingPassengers
     forEach(bookingsTemp, (booking) => {
       const key = tripIdAndName[String(booking.tripId)];
@@ -79,21 +90,33 @@ export default function Dashboard() {
           ...bookingPassengersToTripMap,
           [key]: [...bookingPassengersToTripMap[key], ...bookingPassengers],
         };
+        checkedInCountPerTrip = {
+          ...checkedInCountPerTrip,
+          [key]:
+            checkedInCountPerTrip[key] +
+            countCheckedInBookingPassenger(bookingPassengers),
+        };
       } else {
         bookingPassengersToTripMap[key] = bookingPassengers;
         tripNameKey.push(key);
+        checkedInCountPerTrip[key] =
+          countCheckedInBookingPassenger(bookingPassengers);
       }
     });
 
     console.log(tripNameKey);
     console.log(bookingPassengersToTripMap);
+    console.log(checkedInCountPerTrip);
+
     setTripNames(tripNameKey);
     setTripWithBookingPassengers(bookingPassengersToTripMap);
+    setCheckedInCount(checkedInCountPerTrip);
 
     // //TO DO: With bookingPassenger:
     // - Count how many passengers booked per trip (bar) CHECK
-    // - Count how many checked-in (and not) (bar kasama sa bullet 1)
+    // - Count how many checked-in (and not) (bar kasama sa bullet 1) CHECK
     // - Count overall passengers given date range (number)
+    // - Check if isEmpty() really works on all cases, like what if ''/undefined/null si checkInDate?
   }, [startMonth, endMonth]);
 
   const disabledDate: RangePickerProps['disabledDate'] = (current) => {
@@ -121,23 +144,26 @@ export default function Dashboard() {
             labels: [...tripNames],
             datasets: [
               {
-                label: 'Total Bookings',
+                label: 'Not Checked-in Passengers',
                 data: [
                   ...map(tripNames, (tripName) => {
-                    return tripWithBookingPassengers[tripName].length;
+                    return (
+                      tripWithBookingPassengers[tripName].length -
+                      checkedInCount[tripName]
+                    );
                   }),
                 ],
                 hoverOffset: 4,
               },
-              // {
-              //   label: 'Number of Checked-in Passengers',
-              //   data: [
-              //     ...map(tripNames, (tripName) => {
-              //       return tripWithBookingPassengers[tripName].length;
-              //     }),
-              //   ],
-              //   hoverOffset: 14,
-              // },
+              {
+                label: 'Checked-in Passengers',
+                data: [
+                  ...map(tripNames, (tripName) => {
+                    return checkedInCount[tripName];
+                  }),
+                ],
+                hoverOffset: 14,
+              },
             ],
           }}
         />
