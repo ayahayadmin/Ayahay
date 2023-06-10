@@ -24,12 +24,12 @@ export default function PassengerCount() {
   return (
     <Popover
       placement='bottomLeft'
-      title='PassengerModel Count'
+      title='Passenger Count'
       content={passengerCountPopoverContent}
       trigger='click'
     >
       <label>Travellers</label>
-      <div>
+      <div style={{ padding: '6.5px 11px' }}>
         <span>{numAdults ?? DEFAULT_NUM_ADULTS} Adults | </span>
         <span>{numChildren ?? DEFAULT_NUM_CHILDREN} Children | </span>
         <span>{numInfants ?? DEFAULT_NUM_INFANTS} Infants</span>

@@ -79,7 +79,7 @@ export default function TripSearchQuery() {
           </div>
           <div
             className={styles['search-input-wrapper']}
-            style={{ borderRight: 0 }}
+            style={{ borderRight: 0, fontSize: '16px' }}
           >
             <PassengerCount />
           </div>

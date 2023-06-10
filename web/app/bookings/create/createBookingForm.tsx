@@ -86,7 +86,7 @@ export default function CreateBookingForm({
   return (
     <Form
       form={form}
-      className={styles['main-container']}
+      id={styles['create-booking-form']}
       initialValues={{
         passengers: [DEFAULT_PASSENGER],
       }}
