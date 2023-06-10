@@ -7,6 +7,17 @@ interface ChartProp {
   data: any;
 }
 
+const options = {
+  scales: {
+    x: {
+      stacked: true,
+    },
+    y: {
+      stacked: true,
+    },
+  },
+};
+
 export default function BarChart({ data }: ChartProp) {
-  return <Bar data={data}></Bar>;
+  return <Bar options={options} data={data}></Bar>;
 }
