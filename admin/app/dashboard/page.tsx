@@ -5,7 +5,7 @@ import { getAllTrips } from '@/services/trip.service';
 import { DatePicker } from 'antd';
 import { RangePickerProps } from 'antd/es/date-picker';
 import dayjs, { Dayjs } from 'dayjs';
-import { filter, forEach, isEmpty, keys, map } from 'lodash';
+import { filter, forEach, isEmpty, keys, map, sum } from 'lodash';
 import { useEffect, useState } from 'react';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
@@ -124,6 +124,16 @@ export default function Dashboard() {
           disabledDate={disabledDate}
           onChange={onChange}
         />
+      </div>
+      <div>
+        <h1>
+          Passenger count:{' '}
+          {sum(
+            map(tripWithBookingPassengers, (trip) => {
+              return trip.length;
+            })
+          )}
+        </h1>
       </div>
       <div>
         <BarChart
