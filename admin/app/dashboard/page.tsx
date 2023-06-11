@@ -10,6 +10,7 @@ import { useEffect, useState } from 'react';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import { getBookingPassengersByTripId } from '@/services/booking-passenger.service';
+import styles from './page.module.scss';
 
 const { RangePicker } = DatePicker;
 dayjs.extend(isSameOrBefore);
@@ -131,7 +132,7 @@ export default function Dashboard() {
           )}
         </h1>
       </div>
-      <div>
+      <div className={styles['bar-graph']}>
         <BarChart
           data={{
             labels: [...tripNames],
