@@ -109,7 +109,7 @@ export default function BookingList({ params }: any) {
             size='large'
             onClick={() => onClickConfirm(record)}
           >
-            Confirm
+            Check In
           </Button>
         </Space>
       ),
