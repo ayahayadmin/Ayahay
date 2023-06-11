@@ -2,6 +2,11 @@ import { CIVIL_STATUS, OCCUPATION, SEX } from '@ayahay/constants/enum';
 import { IProfile } from './profile.model';
 import { PassengerPreferences, mockPreferences } from './passenger-preferences';
 import dayjs from 'dayjs';
+import {
+  IPassengerVehicle,
+  mockInnova,
+  mockPickup,
+} from './passenger-vehicle.model';
 
 export interface IPassenger {
   id: number;
@@ -16,6 +21,7 @@ export interface IPassenger {
   nationality: string;
   preferences?: PassengerPreferences;
   companions?: IPassenger[];
+  vehicles?: IPassengerVehicle[];
 }
 
 export const mockPassenger: IPassenger = {
@@ -69,6 +75,7 @@ export const mockFather: IPassenger = {
   nationality: 'Filipino',
   preferences: mockPreferences,
   companions: [mockWife, mockSon],
+  vehicles: [mockInnova, mockPickup],
 };
 
 // antd form doesn't accept ISO date strings as valid dates, so we have to manually set it

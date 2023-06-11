@@ -5,12 +5,16 @@ import {
   ITrip,
   IBooking,
   mockBookings,
+  IBookingVehicle,
+  IPassenger,
+  IPassengerVehicle,
 } from '@ayahay/models';
 import { getTrip } from './trip.service';
 
 export function createTentativeBookingFromPassengerPreferences(
   tripId: number,
-  passengerPreferences: PassengerPreferences[]
+  passengerPreferences: PassengerPreferences[],
+  vehicles: any[]
 ): IBooking | undefined {
   const trip = getTrip(tripId);
 
@@ -39,18 +43,41 @@ export function createTentativeBookingFromPassengerPreferences(
     );
   });
 
-  const totalPrice = bookingPassengers
+  const randomId = Math.floor(Math.random() * 1000);
+
+  const bookingVehicles: IBookingVehicle[] = vehicles.map(
+    ({ plateNo, modelName, modelYear, modelBody }, index) => ({
+      id: randomId,
+      bookingId: 1,
+      vehicleId: randomId,
+      vehicle: {
+        id: randomId,
+        plateNo,
+        modelName,
+        modelYear,
+        modelBody,
+      } as IPassengerVehicle,
+      totalPrice: 100,
+    })
+  );
+
+  const passengersTotalPrice = bookingPassengers
     .map((passenger) => passenger.totalPrice)
     .reduce((priceA, priceB) => priceA + priceB, 0);
 
+  const vehiclesTotalPrice = bookingVehicles
+    .map((vehicle) => vehicle.totalPrice)
+    .reduce((priceA, priceB) => priceA + priceB, 0);
+
   return {
-    id: 1,
+    id: randomId,
     tripId,
     trip,
-    totalPrice,
+    totalPrice: passengersTotalPrice + vehiclesTotalPrice,
     numOfCars: 1,
     paymentReference: 'ABCDEFG',
     bookingPassengers,
+    bookingVehicles,
   } as IBooking;
 }
 

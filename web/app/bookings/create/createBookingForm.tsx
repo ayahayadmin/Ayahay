@@ -1,12 +1,6 @@
 import { Form, Spin, Steps, Typography } from 'antd';
 import styles from './createBookingForm.module.scss';
-import {
-  ITrip,
-  IBooking,
-  IPassenger,
-  mockFather,
-  toFormValue,
-} from '@ayahay/models';
+import { ITrip, IBooking, IPassenger } from '@ayahay/models';
 import { DEFAULT_PASSENGER } from '@ayahay/constants/default';
 import PassengerInformationForm from '@/components/booking/PassengerInformationForm';
 import React, { useState } from 'react';
@@ -31,6 +25,7 @@ export default function CreateBookingForm({
 }: CreateBookingFormProps) {
   const [form] = Form.useForm();
   const passengers = Form.useWatch('passengers', form);
+  const vehicles = Form.useWatch('vehicles', form);
   const [loadingMessage, setLoadingMessage] = useState<string>('');
   const [bookingPreview, setBookingPreview] = useState<IBooking>();
 
@@ -62,7 +57,8 @@ export default function CreateBookingForm({
           }
 
           return passenger.preferences;
-        })
+        }),
+        vehicles
       );
       if (tentativeBooking === undefined) {
         return;
@@ -89,6 +85,7 @@ export default function CreateBookingForm({
       id={styles['create-booking-form']}
       initialValues={{
         passengers: [DEFAULT_PASSENGER],
+        vehicles: [],
       }}
       onValuesChange={(changesValues, values) => console.log(values)}
       onFinish={(values) => console.log(values)}

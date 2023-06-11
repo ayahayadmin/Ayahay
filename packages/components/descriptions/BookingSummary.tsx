@@ -2,7 +2,7 @@ import { Descriptions, Skeleton, Typography } from 'antd';
 import { IBooking } from '@ayahay/models/booking.model';
 import React from 'react';
 import PassengerSummary from './PassengerSummary';
-import { CABIN_TYPE, SEAT_TYPE } from '@ayahay/constants/enum';
+import { CABIN_TYPE, SEAT_TYPE, VEHICLE_BODY } from '@ayahay/constants/enum';
 
 const { Title } = Typography;
 
@@ -10,9 +10,7 @@ interface BookingSummaryProps {
   booking?: IBooking;
 }
 
-export default function BookingPassengersSummary({
-  booking,
-}: BookingSummaryProps) {
+export default function BookingSummary({ booking }: BookingSummaryProps) {
   return (
     <Skeleton loading={booking === undefined} active>
       {booking &&
@@ -57,6 +55,31 @@ export default function BookingPassengersSummary({
             </article>
           )
         )}
+      {booking &&
+        booking.bookingVehicles &&
+        booking.bookingVehicles.map(({ vehicle, totalPrice }, index) => (
+          <article key={index}>
+            <Title level={3}>Vehicle {index + 1}</Title>
+            <Descriptions
+              bordered
+              column={{ xxl: 4, xl: 3, lg: 3, md: 3, sm: 2, xs: 1 }}
+            >
+              <Descriptions.Item label='Plate Number'>
+                {vehicle.plateNo}
+              </Descriptions.Item>
+              <Descriptions.Item label='Model Name'>
+                {vehicle.modelName}
+              </Descriptions.Item>
+              <Descriptions.Item label='Model Year Manufactured'>
+                {vehicle.modelYear}
+              </Descriptions.Item>
+              <Descriptions.Item label='Model Body'>
+                {VEHICLE_BODY[vehicle.modelBody]}
+              </Descriptions.Item>
+              <Descriptions.Item label='Price'>₱{totalPrice}</Descriptions.Item>
+            </Descriptions>
+          </article>
+        ))}
     </Skeleton>
   );
 }

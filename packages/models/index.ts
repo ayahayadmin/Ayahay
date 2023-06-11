@@ -11,3 +11,5 @@ export * from './seat.model';
 export * from './ship.model';
 export * from './shipping-line.model';
 export * from './trip.model';
+export * from './booking-vehicle.model';
+export * from './passenger-vehicle.model';

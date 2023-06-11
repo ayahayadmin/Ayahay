@@ -3,6 +3,7 @@ import {
   mockBookingPassengers,
 } from './booking-passenger.model';
 import { ITrip, mockTrip, mockTrips } from './trip.model';
+import { IBookingVehicle } from './booking-vehicle.model';
 
 export interface IBooking {
   id: number;
@@ -13,6 +14,7 @@ export interface IBooking {
   paymentReference: string;
   referenceNo: string;
   bookingPassengers?: IBookingPassenger[];
+  bookingVehicles?: IBookingVehicle[];
 }
 
 export const mockBooking: IBooking = {

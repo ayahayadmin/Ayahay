@@ -4,18 +4,27 @@ import {
   Divider,
   Form,
   Input,
+  Select,
   Typography,
 } from 'antd';
 import React, { useState } from 'react';
-import { CIVIL_STATUS, OCCUPATION, SEX } from '@ayahay/constants/enum';
+import {
+  CIVIL_STATUS,
+  OCCUPATION,
+  SEX,
+  VEHICLE_BODY,
+} from '@ayahay/constants/enum';
 import { DEFAULT_PASSENGER } from '@ayahay/constants/default';
 import {
   IPassenger,
+  IPassengerVehicle,
   mockFather,
   toFormValue,
-} from '@ayahay/models/passenger.model';
+} from '@ayahay/models';
 import EnumRadio from '@/components/form/EnumRadio';
 import AddCompanionsModal from '@/components/booking/AddCompanionsModal';
+import EnumSelect from '@/components/form/EnumSelect';
+import AddVehiclesModal from '@/components/booking/AddVehiclesModal';
 
 const { Title } = Typography;
 
@@ -24,20 +33,33 @@ interface PassengerInformationFormProps {
   onPreviousStep?: () => void;
 }
 
+const yearToday = new Date().getFullYear();
+
 export default function PassengerInformationForm({
   onNextStep,
   onPreviousStep,
 }: PassengerInformationFormProps) {
   const form = Form.useFormInstance();
   const passengers = Form.useWatch('passengers', form);
+  const vehicles = Form.useWatch('vehicles', form);
   const [loggedInPassenger, setLoggedInPassenger] = useState<IPassenger>();
   const [companionModalOpen, setCompanionModalOpen] = useState(false);
+  const [vehicleModalOpen, setVehicleModalOpen] = useState(false);
 
   const addPassengers = (companions: IPassenger[]) => {
     setCompanionModalOpen(false);
     let nextIndex = passengers.length;
     companions.forEach((companion) => {
       form.setFieldValue(['passengers', nextIndex], toFormValue(companion));
+      nextIndex++;
+    });
+  };
+
+  const addVehicles = (registeredVehicles: IPassengerVehicle[]) => {
+    setVehicleModalOpen(false);
+    let nextIndex = vehicles.length;
+    registeredVehicles.forEach((vehicle) => {
+      form.setFieldValue(['vehicles', nextIndex], vehicle);
       nextIndex++;
     });
   };
@@ -203,6 +225,96 @@ export default function PassengerInformationForm({
                 loggedInPassenger={loggedInPassenger}
                 onSubmitCompanions={addPassengers}
                 onCancel={() => setCompanionModalOpen(false)}
+              />
+            )}
+          </>
+        )}
+      </Form.List>
+      <Form.List name='vehicles'>
+        {(fields, { add, remove }) => (
+          <>
+            {fields.map(({ key, name, ...restField }, index) => (
+              <div key={key}>
+                <Divider>Vehicle {index + 1} Information</Divider>
+                <Form.Item
+                  {...restField}
+                  name={[name, 'plateNo']}
+                  label='Plate Number'
+                  colon={false}
+                  rules={[{ required: true, message: 'Missing plate number' }]}
+                >
+                  <Input
+                    disabled={vehicles?.[index]?.id !== undefined}
+                    placeholder='Plate Number'
+                  />
+                </Form.Item>
+                <Form.Item
+                  {...restField}
+                  name={[name, 'modelName']}
+                  label='Model Name'
+                  colon={false}
+                  rules={[{ required: true, message: 'Missing model name' }]}
+                >
+                  <Input
+                    disabled={vehicles?.[index]?.id !== undefined}
+                    placeholder='Toyota Innova, Lexus GX'
+                  />
+                </Form.Item>
+                <Form.Item
+                  {...restField}
+                  name={[name, 'modelYear']}
+                  label='Model Year Manufactured'
+                  colon={false}
+                  rules={[
+                    {
+                      required: true,
+                      message: 'Missing model year manufactured',
+                    },
+                  ]}
+                >
+                  <Select
+                    disabled={vehicles?.[index]?.id !== undefined}
+                    placeholder='Select an option...'
+                    options={Array.from(
+                      { length: 50 },
+                      (_, i) => yearToday - i
+                    ).map((year) => ({
+                      value: year,
+                      label: year,
+                    }))}
+                  />
+                </Form.Item>
+                <EnumSelect
+                  _enum={VEHICLE_BODY}
+                  disabled={vehicles?.[index]?.id !== undefined}
+                  {...restField}
+                  name={[name, 'modelBody']}
+                  label='Model Body'
+                  colon={false}
+                  rules={[{ required: true, message: 'Missing model body' }]}
+                />
+                <Button onClick={() => remove(name)}>Remove Vehicle</Button>
+              </div>
+            ))}
+
+            <Button type='dashed' onClick={() => add()} block>
+              Add Vehicle
+            </Button>
+            {loggedInPassenger && (
+              <Button
+                type='dashed'
+                onClick={() => setVehicleModalOpen(true)}
+                block
+              >
+                Add Registered Vehicle
+              </Button>
+            )}
+            {loggedInPassenger && (
+              <AddVehiclesModal
+                open={vehicleModalOpen}
+                loggedInPassenger={loggedInPassenger}
+                onSubmitVehicles={addVehicles}
+                onCancel={() => setVehicleModalOpen(false)}
               />
             )}
           </>

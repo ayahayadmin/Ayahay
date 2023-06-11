@@ -1,6 +1,6 @@
 import { IBooking } from '@ayahay/models/booking.model';
 import React from 'react';
-import BookingPassengersSummary from '@ayahay/components/descriptions/BookingPassengersSummary';
+import BookingSummary from '@ayahay/components/descriptions/BookingSummary';
 import { Button, Typography } from 'antd';
 import { createBooking } from '@/services/booking.service';
 
@@ -32,7 +32,7 @@ export default function BookingConfirmation({
   return (
     <div>
       <Title level={2}>Confirm Booking</Title>
-      {booking && <BookingPassengersSummary booking={booking} />}
+      {booking && <BookingSummary booking={booking} />}
       {!booking && (
         <p>
           Something went wrong. Please book again or contact a system
