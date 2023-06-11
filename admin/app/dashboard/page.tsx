@@ -91,10 +91,6 @@ export default function Dashboard() {
       }
     });
 
-    console.log(tripNameKey);
-    console.log(bookingPassengersToTripMap);
-    console.log(checkedInCountPerTrip);
-
     setTripNames(tripNameKey);
     setTripWithBookingPassengers(bookingPassengersToTripMap);
     setCheckedInCount(checkedInCountPerTrip);
@@ -102,7 +98,7 @@ export default function Dashboard() {
     // //TO DO: With bookingPassenger:
     // - Count how many passengers booked per trip (bar) CHECK
     // - Count how many checked-in (and not) (bar kasama sa bullet 1) CHECK
-    // - Count overall passengers given date range (number)
+    // - Count overall passengers given date range (number) CHECK
     // - Check if isEmpty() really works on all cases, like what if ''/undefined/null si checkInDate?
   }, [startMonth, endMonth]);
 
