@@ -1,18 +1,16 @@
 'use client';
-import {
-  IBookingPassenger,
-  mockBookingPassengers,
-  mockBookings,
-} from '@/../packages/models';
+import { IBookingPassenger } from '@/../packages/models';
 import BarChart from '@/components/charts/barChart';
 import { getAllTrips } from '@/services/trip.service';
 import { DatePicker } from 'antd';
 import { RangePickerProps } from 'antd/es/date-picker';
 import dayjs, { Dayjs } from 'dayjs';
-import { filter, forEach, includes, isEmpty, keys, map } from 'lodash';
+import { filter, forEach, isEmpty, keys, map, sum } from 'lodash';
 import { useEffect, useState } from 'react';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
+import { getBookingPassengersByTripId } from '@/services/booking-passenger.service';
+import styles from './page.module.scss';
 
 const { RangePicker } = DatePicker;
 dayjs.extend(isSameOrBefore);
@@ -49,10 +47,7 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    // const bookingPassengers = getBookingPassengersByTripId(tripId); // still waiting for Carlos to update
-    // console.log(bookingPassengers);
-
-    // might want to create a function in .service.tsx, cuz ginagamit din to ni tripList.tsx
+    // TO DO: might want to create a function in .service.tsx, cuz ginagamit din to ni tripList.tsx
     const trips = filter(getAllTrips(), (trip) => {
       return (
         startMonth.isSameOrBefore(trip.departureDateIso) &&
@@ -70,20 +65,13 @@ export default function Dashboard() {
 
     const tripIds = keys(tripIdAndName);
 
-    // Gets all bookings given trip Ids
-    const bookingsTemp = mockBookings.filter((booking) =>
-      includes(tripIds, String(booking.tripId))
-    );
-
     let bookingPassengersToTripMap: TripToBookingPassenger = {};
     let tripNameKey: string[] = [];
     let checkedInCountPerTrip: CheckedInToTrip = {};
     // Maps trip name (src-dest) to bookingPassengers
-    forEach(bookingsTemp, (booking) => {
-      const key = tripIdAndName[String(booking.tripId)];
-      const bookingPassengers = filter(mockBookingPassengers, {
-        bookingId: booking.id,
-      });
+    forEach(tripIds, (tripId) => {
+      const key = tripIdAndName[tripId];
+      const bookingPassengers = getBookingPassengersByTripId(Number(tripId));
 
       if (bookingPassengersToTripMap.hasOwnProperty(key)) {
         bookingPassengersToTripMap = {
@@ -104,10 +92,6 @@ export default function Dashboard() {
       }
     });
 
-    console.log(tripNameKey);
-    console.log(bookingPassengersToTripMap);
-    console.log(checkedInCountPerTrip);
-
     setTripNames(tripNameKey);
     setTripWithBookingPassengers(bookingPassengersToTripMap);
     setCheckedInCount(checkedInCountPerTrip);
@@ -115,7 +99,7 @@ export default function Dashboard() {
     // //TO DO: With bookingPassenger:
     // - Count how many passengers booked per trip (bar) CHECK
     // - Count how many checked-in (and not) (bar kasama sa bullet 1) CHECK
-    // - Count overall passengers given date range (number)
+    // - Count overall passengers given date range (number) CHECK
     // - Check if isEmpty() really works on all cases, like what if ''/undefined/null si checkInDate?
   }, [startMonth, endMonth]);
 
@@ -139,6 +123,16 @@ export default function Dashboard() {
         />
       </div>
       <div>
+        <h1>
+          Passenger count:{' '}
+          {sum(
+            map(tripWithBookingPassengers, (trip) => {
+              return trip.length;
+            })
+          )}
+        </h1>
+      </div>
+      <div className={styles['bar-graph']}>
         <BarChart
           data={{
             labels: [...tripNames],

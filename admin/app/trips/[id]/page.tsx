@@ -3,13 +3,10 @@ import React, { useEffect, useLayoutEffect, useState } from 'react';
 import { filter, find, isEmpty, map } from 'lodash';
 import { Button, Form, Input, Modal, Select, Space, Table } from 'antd';
 import { useRouter } from 'next/navigation';
-import {
-  IPassenger,
-  mockBookingPassengers,
-  mockBookings,
-} from '@/../packages/models';
+import { IPassenger } from '@/../packages/models';
 import { PlusOutlined } from '@ant-design/icons';
 import styles from './page.module.scss';
+import { getBookingPassengersByTripId } from '@/services/booking-passenger.service';
 
 const PAGE_SIZE = 10;
 const formItemLayout = {
@@ -124,12 +121,7 @@ export default function BookingList({ params }: any) {
   //               `/admin/details?shipId=${record.ship.id}&cabinType=${record.ship.cabins[0].type}`
   //             ) */}
   useEffect(() => {
-    // const bookingPassengers = getBookingPassengersByTripId(tripId); // still waiting for Carlos to update
-    // console.log(bookingPassengers);
-    const bookingsTemp = filter(mockBookings, { tripId: Number(params.id) }); //pretending this doesn't exists
-    const bookingPassengers = map(bookingsTemp, (booking) => {
-      return find(mockBookingPassengers, { bookingId: booking.id });
-    });
+    const bookingPassengers = getBookingPassengersByTripId(Number(params.id));
 
     const passengers = map(
       bookingPassengers,
