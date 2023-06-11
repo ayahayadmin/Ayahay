@@ -1,18 +1,15 @@
 'use client';
-import {
-  IBookingPassenger,
-  mockBookingPassengers,
-  mockBookings,
-} from '@/../packages/models';
+import { IBookingPassenger } from '@/../packages/models';
 import BarChart from '@/components/charts/barChart';
 import { getAllTrips } from '@/services/trip.service';
 import { DatePicker } from 'antd';
 import { RangePickerProps } from 'antd/es/date-picker';
 import dayjs, { Dayjs } from 'dayjs';
-import { filter, forEach, includes, isEmpty, keys, map } from 'lodash';
+import { filter, forEach, isEmpty, keys, map } from 'lodash';
 import { useEffect, useState } from 'react';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
+import { getBookingPassengersByTripId } from '@/services/booking-passenger.service';
 
 const { RangePicker } = DatePicker;
 dayjs.extend(isSameOrBefore);
@@ -49,10 +46,7 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    // const bookingPassengers = getBookingPassengersByTripId(tripId); // still waiting for Carlos to update
-    // console.log(bookingPassengers);
-
-    // might want to create a function in .service.tsx, cuz ginagamit din to ni tripList.tsx
+    // TO DO: might want to create a function in .service.tsx, cuz ginagamit din to ni tripList.tsx
     const trips = filter(getAllTrips(), (trip) => {
       return (
         startMonth.isSameOrBefore(trip.departureDateIso) &&
@@ -70,20 +64,13 @@ export default function Dashboard() {
 
     const tripIds = keys(tripIdAndName);
 
-    // Gets all bookings given trip Ids
-    const bookingsTemp = mockBookings.filter((booking) =>
-      includes(tripIds, String(booking.tripId))
-    );
-
     let bookingPassengersToTripMap: TripToBookingPassenger = {};
     let tripNameKey: string[] = [];
     let checkedInCountPerTrip: CheckedInToTrip = {};
     // Maps trip name (src-dest) to bookingPassengers
-    forEach(bookingsTemp, (booking) => {
-      const key = tripIdAndName[String(booking.tripId)];
-      const bookingPassengers = filter(mockBookingPassengers, {
-        bookingId: booking.id,
-      });
+    forEach(tripIds, (tripId) => {
+      const key = tripIdAndName[tripId];
+      const bookingPassengers = getBookingPassengersByTripId(Number(tripId));
 
       if (bookingPassengersToTripMap.hasOwnProperty(key)) {
         bookingPassengersToTripMap = {
