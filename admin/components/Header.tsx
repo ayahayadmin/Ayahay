@@ -3,11 +3,31 @@ import Image from 'next/image';
 import styles from './Header.module.scss';
 import AyahayLogo from '/public/assets/ayahay-logo.png';
 import Link from 'next/link';
-import { Avatar, Button, Input, Modal, Space, notification } from 'antd';
+import {
+  Avatar,
+  Button,
+  DatePicker,
+  Input,
+  Modal,
+  Select,
+  Space,
+  notification,
+} from 'antd';
 import { BellOutlined, UserOutlined } from '@ant-design/icons';
 import { useSearchParams } from 'next/navigation';
+import dayjs, { Dayjs } from 'dayjs';
+import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
+import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
+import { ITrip } from '@ayahay/models';
+import { RangePickerProps } from 'antd/es/date-picker';
+import { filter, map } from 'lodash';
+import { getAllTrips } from '@/services/trip.service';
 
 const { Search } = Input;
+const { RangePicker } = DatePicker;
+const { TextArea } = Input;
+dayjs.extend(isSameOrBefore);
+dayjs.extend(isSameOrAfter);
 
 export default function Header() {
   const searchParams = useSearchParams();
@@ -15,6 +35,11 @@ export default function Header() {
   const [api, contextHolder] = notification.useNotification();
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const dateToday = dayjs();
+  const [tripsData, setTripsData] = useState([] as ITrip[]);
+  const [startDate, setStartDate] = useState(dateToday.startOf('day') as Dayjs);
+  const [endDate, setEndDate] = useState(dateToday.endOf('day') as Dayjs);
+  const [emailBody, setEmailBody] = useState('');
 
   const onPageLoad = () => {
     const params = Object.fromEntries(searchParams.entries());
@@ -23,6 +48,17 @@ export default function Header() {
   };
 
   useEffect(onPageLoad, []);
+
+  useEffect(() => {
+    const trips = filter(getAllTrips(), (trip) => {
+      return (
+        startDate.isSameOrBefore(trip.departureDateIso) &&
+        endDate.isSameOrAfter(trip.departureDateIso)
+      );
+    });
+
+    setTripsData(trips);
+  }, [startDate, endDate]);
 
   const onSearch = (value: string) =>
     window.location.assign(`/search?query=${value}`);
@@ -59,6 +95,15 @@ export default function Header() {
       btn,
       duration: 0,
     });
+  };
+
+  const disabledDate: RangePickerProps['disabledDate'] = (current) => {
+    return current && current < dayjs().startOf('day');
+  };
+
+  const onChange: RangePickerProps['onChange'] = (date, dateString) => {
+    setStartDate(dayjs(dateString[0]).startOf('day'));
+    setEndDate(dayjs(dateString[1]).endOf('day'));
   };
 
   return (
@@ -99,7 +144,7 @@ export default function Header() {
           <BellOutlined />
         </Button>
         <Modal
-          title='Basic Modal'
+          title='Send an Announcement'
           open={isModalOpen}
           onOk={onClickSend}
           onCancel={onClickCancel}
@@ -117,11 +162,51 @@ export default function Header() {
             </Button>,
           ]}
         >
-          <p>Pick trip to send an email</p>
-          <p>Email message body</p>
+          <div className={styles['input-outer']}>
+            Date Range:{' '}
+            <RangePicker
+              defaultValue={[startDate, endDate]}
+              disabledDate={disabledDate}
+              onChange={onChange}
+              className={styles['input-inner']}
+            />
+          </div>
+          <div className={styles['input-outer']}>
+            Trips:{' '}
+            <Select
+              options={map(tripsData, (trip) => {
+                return {
+                  value: `${trip.srcPort?.name}-${trip.destPort?.name}`,
+                  label: `${trip.srcPort?.name} - ${trip.destPort?.name}`,
+                };
+              })}
+              className={styles['input-inner']}
+            />
+          </div>
+          <div className={styles['input-outer']}>
+            Subject:{' '}
+            <Input
+              placeholder='Input Email Subject'
+              className={styles['input-inner']}
+            />
+          </div>
+          <div className={styles['input-outer']}>
+            Message:
+            <TextArea
+              value={emailBody}
+              onChange={(e) => setEmailBody(e.target.value)}
+              placeholder='Controlled autosize'
+              autoSize={{ minRows: 3, maxRows: 5 }}
+              className={styles['input-inner']}
+            />
+          </div>
         </Modal>
         <Avatar icon={<UserOutlined />} />
       </div>
     </nav>
   );
 }
+
+// TO DO:
+// - Get the values of trips, subject email, email body
+// - Send button function
