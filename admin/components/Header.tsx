@@ -195,7 +195,7 @@ export default function Header() {
             <TextArea
               value={emailBody}
               onChange={(e) => setEmailBody(e.target.value)}
-              placeholder='Controlled autosize'
+              placeholder='Email body...'
               autoSize={{ minRows: 3, maxRows: 5 }}
               className={styles['input-inner']}
             />
