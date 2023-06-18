@@ -7,6 +7,7 @@ import {
   Avatar,
   Button,
   DatePicker,
+  Form,
   Input,
   Modal,
   Select,
@@ -70,18 +71,6 @@ export default function Header() {
     setIsModalOpen(true);
   };
 
-  const onClickSend = () => {
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      setIsModalOpen(false);
-      messageApi.open({
-        type: 'success',
-        content: 'Announcement Posted!',
-      });
-    }, 3000);
-  };
-
   const onClickCancel = () => {
     setIsModalOpen(false);
   };
@@ -110,6 +99,19 @@ export default function Header() {
   const onChange: RangePickerProps['onChange'] = (date, dateString) => {
     setStartDate(dayjs(dateString[0]).startOf('day'));
     setEndDate(dayjs(dateString[1]).endOf('day'));
+  };
+
+  const onFinish = (values: any) => {
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      setIsModalOpen(false);
+      messageApi.open({
+        type: 'success',
+        content: 'Announcement Posted!',
+      });
+      console.log('Success:', values);
+    }, 3000);
   };
 
   return (
@@ -150,62 +152,74 @@ export default function Header() {
           <BellOutlined />
         </Button>
         {msgContextHolder}
-        <Modal
-          title='Send an Announcement'
-          open={isModalOpen}
-          onOk={onClickSend}
-          onCancel={onClickCancel}
-          footer={[
-            <Button key='back' onClick={onClickCancel}>
-              Cancel
-            </Button>,
-            <Button
-              key='submit'
-              type='primary'
-              loading={loading}
-              onClick={onClickSend}
+        <Modal title='Send an Announcement' open={isModalOpen} footer={null}>
+          <div>
+            <Form
+              name='announcement_form'
+              // {...formItemLayoutWithOutLabel}
+              onFinish={onFinish}
+              style={{ maxWidth: 600 }}
             >
-              Send
-            </Button>,
-          ]}
-        >
-          <div className={styles['input-outer']}>
-            Date Range:{' '}
-            <RangePicker
-              defaultValue={[startDate, endDate]}
-              disabledDate={disabledDate}
-              onChange={onChange}
-              className={styles['input-inner']}
-            />
-          </div>
-          <div className={styles['input-outer']}>
-            Trips:{' '}
-            <Select
-              options={map(tripsData, (trip) => {
-                return {
-                  value: `${trip.srcPort?.name}-${trip.destPort?.name}`,
-                  label: `${trip.srcPort?.name} - ${trip.destPort?.name}`,
-                };
-              })}
-              className={styles['input-inner']}
-            />
-          </div>
-          <div className={styles['input-outer']}>
-            Subject:{' '}
-            <Input
-              placeholder='Input Email Subject'
-              className={styles['input-inner']}
-            />
-          </div>
-          <div className={styles['input-outer']}>
-            Message:
-            <TextArea
-              value={emailBody}
-              onChange={(e) => setEmailBody(e.target.value)}
-              placeholder='Email body...'
-              autoSize={{ minRows: 3, maxRows: 5 }}
-              className={styles['input-inner']}
-            />
+              <Form.Item
+                label='Date Range'
+                name='dateRange'
+                rules={[
+                  { required: true, message: 'Please choose date range' },
+                ]}
+              >
+                <RangePicker
+                  defaultValue={[startDate, endDate]}
+                  disabledDate={disabledDate}
+                  onChange={onChange}
+                  className={styles['calendar']}
+                />
+              </Form.Item>
+              <Form.Item
+                label='Trips'
+                name='trips'
+                rules={[{ required: true, message: 'Please choose a trip' }]}
+              >
+                <Select
+                  options={map(tripsData, (trip) => {
+                    return {
+                      value: `${trip.srcPort?.name}-${trip.destPort?.name}`,
+                      label: `${trip.srcPort?.name} - ${trip.destPort?.name}`,
+                    };
+                  })}
+                />
+              </Form.Item>
+              <Form.Item
+                label='Subject'
+                name='subject'
+                rules={[
+                  { required: true, message: 'Please input an email subject' },
+                ]}
+              >
+                <Input placeholder='Input Email Subject' />
+              </Form.Item>
+              <Form.Item
+                label='Message'
+                name='message'
+                rules={[
+                  { required: true, message: 'Please input an email message' },
+                ]}
+              >
+                <TextArea
+                  value={emailBody}
+                  onChange={(e) => setEmailBody(e.target.value)}
+                  placeholder='Email body...'
+                  autoSize={{ minRows: 3, maxRows: 5 }}
+                />
+              </Form.Item>
+              <Form.Item className={styles['modal-buttons']}>
+                <Button key='back' onClick={onClickCancel}>
+                  Cancel
+                </Button>
+                <Button type='primary' htmlType='submit' loading={loading}>
+                  Send
+                </Button>
+              </Form.Item>
+            </Form>
           </div>
         </Modal>
         <Avatar icon={<UserOutlined />} />
@@ -213,7 +227,3 @@ export default function Header() {
     </nav>
   );
 }
-
-// TO DO:
-// - Get the values of trips, subject email, email body
-// - Send button function
