@@ -11,6 +11,7 @@ import {
   Modal,
   Select,
   Space,
+  message,
   notification,
 } from 'antd';
 import { BellOutlined, UserOutlined } from '@ant-design/icons';
@@ -32,7 +33,7 @@ dayjs.extend(isSameOrAfter);
 export default function Header() {
   const searchParams = useSearchParams();
   const [query, setQuery] = useState('');
-  const [api, contextHolder] = notification.useNotification();
+  const [api, notifContextHolder] = notification.useNotification();
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const dateToday = dayjs();
@@ -40,6 +41,7 @@ export default function Header() {
   const [startDate, setStartDate] = useState(dateToday.startOf('day') as Dayjs);
   const [endDate, setEndDate] = useState(dateToday.endOf('day') as Dayjs);
   const [emailBody, setEmailBody] = useState('');
+  const [messageApi, msgContextHolder] = message.useMessage();
 
   const onPageLoad = () => {
     const params = Object.fromEntries(searchParams.entries());
@@ -73,6 +75,10 @@ export default function Header() {
     setTimeout(() => {
       setLoading(false);
       setIsModalOpen(false);
+      messageApi.open({
+        type: 'success',
+        content: 'Announcement Posted!',
+      });
     }, 3000);
   };
 
@@ -139,10 +145,11 @@ export default function Header() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
-        {contextHolder}
+        {notifContextHolder}
         <Button type='text' onClick={openNotification}>
           <BellOutlined />
         </Button>
+        {msgContextHolder}
         <Modal
           title='Send an Announcement'
           open={isModalOpen}
