@@ -7,35 +7,42 @@
   justify-content: space-between;
   align-items: center;
 
-  .nav-main, .nav-buttons {
+  .nav-main {
     display: flex;
     gap: 20px;
     align-items: center;
   }
 
-  ul {
+  .nav-buttons {
     display: flex;
-    gap: 30px;
-    list-style: none;
-
-    li {
-      display: inline;
-    }
+    align-items: center;
   }
-  
+
   a {
     font-size: 15px;
     text-decoration: none;
   }
 
   .nav-links {
-    a {
-      color: #000;
-      transition: 0.2s;
+    display: none;
+    gap: 30px;
+    list-style: none;
 
-      &:hover {
-        color: #3554D1;
+    li {
+      display: inline;
+
+      a {
+        color: #000;
+        transition: 0.2s;
+
+        &:hover {
+          color: #3554d1;
+        }
       }
+    }
+
+    @media(min-width: 768px) {
+      display: flex;
     }
   }
 

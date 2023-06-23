@@ -6,7 +6,7 @@ export interface BasicProfile {
   email: string;
   password: string;
   confirmPassword: string;
-  role: ROLE;
+  role: keyof typeof ROLE;
 }
 
 export interface IProfile extends BasicProfile {

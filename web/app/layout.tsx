@@ -1,10 +1,13 @@
 'use client';
 import './globals.css';
-import Footer from '@/components/Footer';
-import Header from '@/components/Header';
+import Footer from '@/components/WebFooter';
+import WebHeader from '@/components/WebHeader';
 import { Jost } from 'next/font/google';
-import { App, ConfigProvider } from 'antd';
-
+import { App, ConfigProvider, Layout, Menu } from 'antd';
+import React from 'react';
+import { Content } from 'antd/es/layout/layout';
+import WebFooter from '@/components/WebFooter';
+import WebSider from '@/components/WebSider';
 const jost = Jost({ subsets: ['latin'], display: 'swap' });
 
 export default function RootLayout({
@@ -15,19 +18,22 @@ export default function RootLayout({
   return (
     <html lang='en' className={jost.className}>
       <body>
-        <Header />
-        <main>
-          <ConfigProvider
-            theme={{
-              token: {
-                fontFamily: jost.style.fontFamily,
-              },
-            }}
-          >
-            <App>{children}</App>
-          </ConfigProvider>
-        </main>
-        <Footer />
+        <ConfigProvider
+          theme={{
+            token: {
+              fontFamily: jost.style.fontFamily,
+            },
+          }}
+        >
+          <Layout>
+            <Layout>
+              <WebHeader />
+              <Content>{children}</Content>
+              <WebFooter />
+            </Layout>
+            <WebSider />
+          </Layout>
+        </ConfigProvider>
       </body>
     </html>
   );
