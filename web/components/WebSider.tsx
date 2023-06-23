@@ -17,19 +17,20 @@ export default function WebSider() {
       reverseArrow
       id={styles['web-sider']}
     >
-      <Menu
-        theme='dark'
-        mode='inline'
-        defaultSelectedKeys={webLinks
-          .filter((link) => pathName === link.url)
-          .map((link) => link.url)}
-        items={webLinks.map((link) => ({
-          key: link.url,
-          label: link.label,
-        }))}
-        onClick={({ key }) => router.push(key)}
-        style={{ padding: '16px 8px' }}
-      />
+      <nav id={styles['web-sider-nav']}>
+        <Menu
+          theme='dark'
+          mode='inline'
+          defaultSelectedKeys={webLinks
+            .filter((link) => pathName === link.url)
+            .map((link) => link.url)}
+          items={webLinks.map((link) => ({
+            key: link.url,
+            label: link.label,
+          }))}
+          onClick={({ key }) => router.push(key)}
+        />
+      </nav>
     </Sider>
   );
 }

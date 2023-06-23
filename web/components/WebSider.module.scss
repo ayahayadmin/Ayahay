@@ -1,11 +1,14 @@
 #web-sider {
   display: block;
   position: fixed;
-  top: 90px;
   right: 0;
-  height: calc(100vh - 90px);
+  height: 100vh;
 
   @media(min-width: 768px) {
     display: none;
+  }
+
+  #web-sider-nav {
+    padding: 16px 8px;
   }
 }
