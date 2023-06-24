@@ -1,11 +1,12 @@
 import styles from './searchResults.module.scss';
 import React, { useEffect, useState } from 'react';
 import { Button, Pagination, Skeleton, Space, Table } from 'antd';
-import { ITrip, IPort, IShippingLine, SearchQuery } from '@ayahay/models';
+import { ITrip, IShippingLine, SearchQuery } from '@ayahay/models';
 import { find, get, split, toNumber } from 'lodash';
 import { getPorts } from '@/services/port.service';
 import { getTrips } from '@/services/trip.service';
 import { getTime } from '@/services/search.service';
+import { ArrowRightOutlined } from '@ant-design/icons';
 
 const columns = [
   {
@@ -16,38 +17,53 @@ const columns = [
         src='/assets/logo-placeholder.png'
         alt={`${text.name} Logo`}
         height={80}
+        className={styles['logo']}
       />
     ),
   },
+  // {
+  //   key: 'shippingLine',
+  //   dataIndex: 'shippingLine',
+  //   render: (text: IShippingLine) => <span>{text.name}</span>,
+  // },
+  // {
+  //   key: 'srcPort',
+  //   dataIndex: 'srcPort',
+  //   render: (text: IPort) => <span>{text.name}</span>,
+  // },
+  // {
+  //   key: 'destPort',
+  //   dataIndex: 'destPort',
+  //   render: (text: IPort) => <span>{text.name}</span>,
+  // },
   {
-    key: 'shippingLine',
-    dataIndex: 'shippingLine',
-    render: (text: IShippingLine) => <span>{text.name}</span>,
+    key: 'srcDestPort',
+    render: (text: string, record: ITrip) => (
+      <span className={styles['port']}>
+        {record.srcPort!.name} <ArrowRightOutlined /> {record.destPort!.name}
+      </span>
+    ),
   },
   {
-    key: 'srcPort',
-    dataIndex: 'srcPort',
-    render: (text: IPort) => <span>{text.name}</span>,
-  },
-  {
-    key: 'destPort',
-    dataIndex: 'destPort',
-    render: (text: IPort) => <span>{text.name}</span>,
-  },
-  {
-    key: 'departureDate',
+    key: 'departureDateTime',
     dataIndex: 'departureDateIso',
-    render: (text: string) => <span>{split(text, 'T')[0]}</span>,
+    render: (text: string) => (
+      <span className={styles['departureDateTime']}>
+        {split(text, 'T')[0]} at {getTime(text)}
+      </span>
+    ),
   },
-  {
-    key: 'departureTime',
-    dataIndex: 'departureDateIso',
-    render: (text: string) => <span>{getTime(text)}</span>,
-  },
+  // {
+  //   key: 'departureTime',
+  //   dataIndex: 'departureDateIso',
+  //   render: (text: string) => <span>{getTime(text)}</span>,
+  // },
   {
     key: 'slots',
     dataIndex: 'slots',
-    render: (text: string) => <span>{`${text} slot/s`}</span>,
+    render: (text: string) => (
+      <span className={styles['slots']}>{`${text} slot/s`}</span>
+    ),
   },
   {
     key: 'baseFare',
@@ -65,6 +81,7 @@ const columns = [
           size='large'
           href='https://ayahay-booking-platform-web.vercel.app/bookings/create?tripId=1'
           target='_blank'
+          className={styles['book-button']}
         >
           Book Now!
         </Button>
