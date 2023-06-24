@@ -1,45 +1,47 @@
 .main-container {
-    background-color: #F5F5F5;
+  background-color: #f5f5f5;
+  display: flex;
+  flex-wrap: wrap;
+  padding: 50px;
+  justify-content: space-between;
+  gap: 50px;
+
+  .left-container {
+    flex-direction: column;
+
+    .left-card {
+      padding: 25px 25px 1px 25px;
+      background-color: #fff;
+      border-radius: 4px;
+
+      .cabin-card {
+        border-bottom: 1px solid #dddddd;
+      }
+
+      .shipping-card {
+        padding-top: 25px;
+      }
+    }
+  }
+
+  .right-container {
     display: flex;
-    flex-wrap: wrap;
-    padding: 50px;
-    justify-content: space-between;
-    gap: 50px;
+    flex-direction: column;
+    flex: 1 0 auto;
 
-    .left-container {
-        flex-direction: column;
-
-        .left-card {
-            padding: 25px 25px 1px 25px;
-            background-color: #fff;
-            border-radius: 4px;
-
-            .cabin-card {
-                border-bottom: 1px solid #DDDDDD;
-            }
-
-            .shipping-card {
-                padding-top: 25px;
-            }
-        }
+    .sort-container {
+      display: flex;
+      justify-content: flex-end;
     }
-    
-    .right-container {
-        display: flex;
-        flex-direction: column;
-        flex: 1 0 auto;
+  }
 
-        .sort-container {
-            display: flex;
-            justify-content: flex-end;
-
-        }
-    }
+  @media (max-width: 768px) {
+    padding: 10px;
+  }
 }
 
 .query-container {
- 
-    .search-main {
-        border: 1px solid #DDD;
-    }
+  .search-main {
+    border: 1px solid #ddd;
+  }
 }
