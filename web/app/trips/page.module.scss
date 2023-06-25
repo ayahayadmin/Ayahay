@@ -16,10 +16,18 @@
 
       .cabin-card {
         border-bottom: 1px solid #dddddd;
+
+        @media (max-width: 506px) {
+          width: 85vw;
+        }
       }
 
       .shipping-card {
         padding-top: 25px;
+      }
+
+      @media (max-width: 506px) {
+        padding: 10px 10px 1px 10px;
       }
     }
   }
