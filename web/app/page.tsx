@@ -23,7 +23,7 @@ export default function Home() {
   };
 
   return (
-    <div>
+    <div id={styles['home-page']}>
       <Form
         form={form}
         initialValues={{
