@@ -35,13 +35,19 @@
     }
   }
 
-  @media (max-width: 768px) {
-    padding: 10px;
+  @media (max-width: 886px) {
+    padding-left: 5%;
   }
 }
 
 .query-container {
   .search-main {
     border: 1px solid #ddd;
+  }
+}
+
+.results-card {
+  @media (max-width: 886px) {
+    width: 90vw;
   }
 }
