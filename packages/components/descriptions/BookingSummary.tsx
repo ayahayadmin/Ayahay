@@ -1,9 +1,10 @@
-import { Descriptions, Skeleton, Typography } from 'antd';
+import { Descriptions, Skeleton, Typography, Grid } from 'antd';
 import { IBooking } from '@ayahay/models/booking.model';
 import React from 'react';
 import PassengerSummary from './PassengerSummary';
 import { CABIN_TYPE, SEAT_TYPE, VEHICLE_BODY } from '@ayahay/constants/enum';
 
+const {useBreakpoint} = Grid;
 const { Title } = Typography;
 
 interface BookingSummaryProps {
@@ -11,6 +12,8 @@ interface BookingSummaryProps {
 }
 
 export default function BookingSummary({ booking }: BookingSummaryProps) {
+  const screens = useBreakpoint();
+
   return (
     <Skeleton loading={booking === undefined} active>
       {booking &&
@@ -29,7 +32,7 @@ export default function BookingSummary({ booking }: BookingSummaryProps) {
                 <Skeleton loading={seat === undefined} active>
                   {seat && seat.cabin && (
                     <Descriptions
-                      bordered
+                      bordered={screens.sm}
                       column={{ xxl: 4, xl: 3, lg: 3, md: 3, sm: 2, xs: 1 }}
                     >
                       <Descriptions.Item label='Seat'>

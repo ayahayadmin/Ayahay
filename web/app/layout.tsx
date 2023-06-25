@@ -28,7 +28,7 @@ export default function RootLayout({
           <Layout>
             <Layout>
               <WebHeader />
-              <Content>{children}</Content>
+              <Content style={{backgroundColor: 'white'}}>{children}</Content>
               <WebFooter />
             </Layout>
             <WebSider />

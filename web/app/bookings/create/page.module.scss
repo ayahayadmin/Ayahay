@@ -1,5 +1,9 @@
-.main-title {
-    margin: 25px 50px 0px 50px;
+#create-booking-page {
+    padding: 16px 32px;
+
+    @media(min-width: 568px) {
+        padding: 24px 48px;
+    }
 }
 
 .main-container {
@@ -8,16 +12,15 @@
     flex-wrap: wrap;
     justify-content: space-between;
     gap: 50px;
-    padding: 0 50px 50px 50px;
 
     .passenger-info {
         border: 1px solid #DDD;
         border-radius: 4px;
         flex: 1 0 auto;
+        max-width: 100%;
     }
 
     .trip-summary {
-        max-width: 425px;
         padding: 25px;
         border: 1px solid #DDD;
         border-radius: 4px;

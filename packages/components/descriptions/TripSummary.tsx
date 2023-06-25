@@ -1,21 +1,21 @@
-import { Descriptions, Skeleton, Typography } from 'antd';
+import { Descriptions, Skeleton, Typography, Grid } from 'antd';
 import { ITrip } from '@ayahay/models';
 import dayjs from 'dayjs';
-import { TRIP_TYPE } from '@ayahay/constants/enum';
-
-const { Title } = Typography;
 
 interface TripSummaryProps {
   trip?: ITrip;
 }
 
+const { useBreakpoint } = Grid;
+
 export default function TripSummary({ trip }: TripSummaryProps) {
+  const screens = useBreakpoint();
   return (
     <Skeleton loading={trip === undefined} active>
       {trip && (
         <Descriptions
-          bordered
-          column={{ xxl: 1, xl: 1, lg: 2, md: 2, sm: 2, xs: 1 }}
+          bordered={screens.sm}
+          column={{ xxl: 1, xl: 1, lg: 2, md: 2, sm: 1, xs: 1 }}
         >
           <Descriptions.Item label='Origin Port'>
             {trip.srcPort.name}

@@ -38,7 +38,7 @@ export default function CreateBooking() {
   };
 
   return (
-    <div>
+    <div id={styles['create-booking-page']}>
       <Title level={1} className={styles['main-title']}>
         Create Booking
       </Title>

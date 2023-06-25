@@ -1,4 +1,4 @@
-import { Form, Spin, Steps, Typography } from 'antd';
+import { Form, Spin, Steps, Grid } from 'antd';
 import styles from './createBookingForm.module.scss';
 import { ITrip, IBooking, IPassenger } from '@ayahay/models';
 import { DEFAULT_PASSENGER } from '@ayahay/constants/default';
@@ -8,6 +8,7 @@ import PassengerPreferencesForm from '@/components/booking/PassengerPreferencesF
 import { createTentativeBookingFromPassengerPreferences } from '@/services/booking.service';
 import BookingConfirmation from '@/components/booking/BookingConfirmation';
 
+const { useBreakpoint } = Grid;
 interface CreateBookingFormProps {
   trip?: ITrip;
   onComplete: (booking: IBooking) => void;
@@ -23,6 +24,7 @@ export default function CreateBookingForm({
   trip,
   onComplete,
 }: CreateBookingFormProps) {
+  const screens = useBreakpoint();
   const [form] = Form.useForm();
   const passengers = Form.useWatch('passengers', form);
   const vehicles = Form.useWatch('vehicles', form);
@@ -78,6 +80,7 @@ export default function CreateBookingForm({
   };
 
   const items = steps.map(({ title }) => ({ key: title, title: title }));
+  const stepDirection = screens.md ? 'horizontal' : 'vertical';
 
   return (
     <Form
@@ -90,7 +93,7 @@ export default function CreateBookingForm({
       onValuesChange={(changesValues, values) => console.log(values)}
       onFinish={(values) => console.log(values)}
     >
-      <Steps current={currentStep} items={items} />
+      <Steps current={currentStep} items={items} direction={stepDirection} labelPlacement={stepDirection}/>
       <Spin spinning={loadingMessage?.length > 0} tip={loadingMessage}>
         <div style={{ display: currentStep === 0 ? 'block' : 'none' }}>
           <PassengerInformationForm
