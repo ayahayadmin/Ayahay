@@ -49,8 +49,14 @@
 }
 
 .query-container {
+  max-width: 100%;
+  padding: 0 32px;
   .search-main {
     border: 1px solid #ddd;
+  }
+
+  @media (min-width: 576px) {
+    padding: 0 50px;
   }
 }
 

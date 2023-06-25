@@ -103,7 +103,11 @@ export default function PassengerInformationForm({
   return (
     <>
       <Title level={2}>Passenger Information</Title>
-      <Button type='link' onClick={() => onLogin()}>
+      <Button
+        type='link'
+        onClick={() => onLogin()}
+        style={{ whiteSpace: 'normal' }}
+      >
         Have an account? Log in to book faster.
       </Button>
       <Form.List name='passengers'>

@@ -11,9 +11,9 @@ import { usePathname } from 'next/navigation';
 const { Title } = Typography;
 
 export default function GetBooking({ params }) {
-  const pathName = usePathname();
   const [booking, setBooking] = useState<IBooking | undefined>();
   const [qrCodeValue, setQrCodeValue] = useState<string>('');
+
   const onPageLoad = () => {
     const bookingId = parseInt(params.id);
     setBooking(getBookingById(bookingId));

@@ -8,20 +8,24 @@ import dayjs from 'dayjs';
 import EnumRadio from '@/components/form/EnumRadio';
 import { TRIP_TYPE } from '@ayahay/constants/enum';
 
-export default function TripSearchQuery() {
+export default function TripSearchQuery({
+  ...htmlAttributes
+}: React.HTMLAttributes<HTMLElement>) {
   const form = Form.useFormInstance();
   const tripType = Form.useWatch('tripType', form);
   const srcPortId = Form.useWatch('srcPortId', form);
   const destPortId = Form.useWatch('destPortId', form);
 
   return (
-    <article className={styles['trip-search-query']}>
+    <article
+      className={`${styles['trip-search-query']} ${htmlAttributes.className}`}
+    >
       <div className={styles['search-container']}>
         <div className={styles['search-type']}>
           <EnumRadio _enum={TRIP_TYPE} name='tripType' disabled={false} />
         </div>
 
-        <div className={styles['search-main']}>
+        <article className={styles['search-main']}>
           <div className={styles['search-input-wrapper']}>
             <label>Origin Port</label>
             <PortAutoComplete
@@ -83,12 +87,12 @@ export default function TripSearchQuery() {
           >
             <PassengerCount />
           </div>
-          <Form.Item style={{ marginBottom: 0 }}>
-            <Button type='primary' htmlType='submit'>
+          <Form.Item style={{ marginBottom: 0, padding: '10px 20px' }}>
+            <Button type='primary' htmlType='submit' block>
               Submit
             </Button>
           </Form.Item>
-        </div>
+        </article>
       </div>
     </article>
   );

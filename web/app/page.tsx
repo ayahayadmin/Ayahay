@@ -35,14 +35,11 @@ export default function Home() {
           returnDate: dayjs(),
         }}
         onFinish={redirectToSearchResults}
+        className={styles['landing']}
       >
-        <div className={styles['heading']}>
-            <div className={styles['h1']}>Where Do You Want to Go?</div>
-            <div className={styles['h2']}>Travel around the Philippines</div>
-            <TripSearchQuery />
-        </div>
-
-        
+        <h1>Where Do You Want to Go?</h1>
+        <p>Travel around the Philippines</p>
+        <TripSearchQuery className={styles['trip-search-query']} />
       </Form>
       <AboutUsCard />
     </div>

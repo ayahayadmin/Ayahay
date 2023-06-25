@@ -3,15 +3,24 @@
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 0;
-}
+  padding: 0 32px 128px;
 
-.title {
-  padding-bottom: 15px;
-}
+  h2 {
+    padding-bottom: 15px;
+    font-size: clamp(20px, 5vw, 30px);
+    line-height: 1.15;
+    font-weight: 600;
+  }
 
-.subTitle {
-  padding-bottom: 50px;
+  h3 {
+    font-size: clamp(16px, 3vw, 18px);
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+
+  p {
+    margin-bottom: 64px;
+  }
 }
 
 .icon {
@@ -20,10 +29,6 @@
 }
 
 .rowCard {
+  width: 100%;
   text-align: center;
-  width: 80%;
-}
-
-.card {
-  padding: 0 20px;
 }

@@ -25,14 +25,18 @@ export default function RootLayout({
             },
           }}
         >
-          <Layout>
+          <App>
             <Layout>
-              <WebHeader />
-              <Content style={{backgroundColor: 'white'}}>{children}</Content>
-              <WebFooter />
+              <Layout>
+                <WebHeader />
+                <Content style={{ backgroundColor: 'white' }}>
+                  {children}
+                </Content>
+                <WebFooter />
+              </Layout>
+              <WebSider />
             </Layout>
-            <WebSider />
-          </Layout>
+          </App>
         </ConfigProvider>
       </body>
     </html>

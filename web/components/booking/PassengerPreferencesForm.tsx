@@ -1,18 +1,8 @@
-import {
-  Button,
-  Divider,
-  Form,
-  Radio,
-  Select,
-  Typography,
-} from 'antd';
+import { Button, Divider, Form, Radio, Select, Typography } from 'antd';
 import React from 'react';
 
 import { ITrip } from '@ayahay/models';
-import {
-  CABIN_TYPE,
-  SEAT_TYPE
-} from '@ayahay/constants/enum';
+import { CABIN_TYPE, SEAT_TYPE } from '@ayahay/constants/enum';
 
 const { Title } = Typography;
 
@@ -59,6 +49,7 @@ export default function PassengerPreferencesForm({
                     <Button
                       type='link'
                       onClick={() => copyPreferences(0, index)}
+                      style={{ whiteSpace: 'normal' }}
                     >
                       {passengers[index].firstName} has the same preferences as
                       me
@@ -114,6 +105,7 @@ export default function PassengerPreferencesForm({
                     <Button
                       type='link'
                       onClick={() => copyToCompanionPreferences()}
+                      style={{ whiteSpace: 'normal' }}
                     >
                       My companions all have the same seat preferences
                     </Button>

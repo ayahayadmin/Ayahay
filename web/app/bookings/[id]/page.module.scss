@@ -1,18 +1,27 @@
 .main-container {
-    padding: 25px 100px 50px 100px;
-    
-    .top-container {
-        display: flex;
-        flex: wrap;
-        justify-content: space-between;
-        padding: 25px 0px;
+  padding: 25px 32px 50px;
 
-        .verification-card {
-            flex: 1;
-        }
+  @media (min-width: 576px) {
+    padding: 25px 100px 50px;
+  }
 
-        .trip-card {
-            flex: 1;
-        }
+  .top-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 25px 0px;
+    gap: 32px;
+
+    .verification-card {
+      flex: 1;
     }
+
+    .trip-card {
+      flex: 1;
+    }
+
+    @media (min-width: 1200px) {
+      flex-direction: row;
+    }
+  }
 }
