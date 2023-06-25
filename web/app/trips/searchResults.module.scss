@@ -1,21 +1,26 @@
 .search-result {
   flex-grow: 1;
+}
 
-  @media (max-width: 886px) {
-    width: 90vw;
+.port-date,
+.slot-price-action {
+  @media (min-width: 768px) {
+    display: none;
   }
 
-  @media (max-width: 768px) {
-    // display: none;
+  @media (max-width: 500px) {
+    display: none;
+  }
+}
+
+.all-columns {
+  @media (min-width: 500px) {
+    display: none;
   }
 }
 
 .price {
   font-weight: 600;
-
-  @media (max-width: 768px) {
-    display: none;
-  }
 }
 
 .results-container {

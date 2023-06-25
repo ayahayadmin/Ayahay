@@ -7,8 +7,9 @@ import { getPorts } from '@/services/port.service';
 import { getTrips } from '@/services/trip.service';
 import { getTime } from '@/services/search.service';
 import { ArrowRightOutlined } from '@ant-design/icons';
+import type { ColumnsType } from 'antd/es/table';
 
-const columns = [
+const columns: ColumnsType<ITrip> = [
   {
     key: 'logo',
     dataIndex: 'shippingLine',
@@ -20,22 +21,8 @@ const columns = [
         className={styles['logo']}
       />
     ),
+    align: 'left',
   },
-  // {
-  //   key: 'shippingLine',
-  //   dataIndex: 'shippingLine',
-  //   render: (text: IShippingLine) => <span>{text.name}</span>,
-  // },
-  // {
-  //   key: 'srcPort',
-  //   dataIndex: 'srcPort',
-  //   render: (text: IPort) => <span>{text.name}</span>,
-  // },
-  // {
-  //   key: 'destPort',
-  //   dataIndex: 'destPort',
-  //   render: (text: IPort) => <span>{text.name}</span>,
-  // },
   {
     key: 'srcDestPort',
     render: (text: string, record: ITrip) => (
@@ -43,6 +30,7 @@ const columns = [
         {record.srcPort!.name} <ArrowRightOutlined /> {record.destPort!.name}
       </span>
     ),
+    responsive: ['md'],
   },
   {
     key: 'departureDateTime',
@@ -52,18 +40,30 @@ const columns = [
         {split(text, 'T')[0]} at {getTime(text)}
       </span>
     ),
+    responsive: ['md'],
   },
-  // {
-  //   key: 'departureTime',
-  //   dataIndex: 'departureDateIso',
-  //   render: (text: string) => <span>{getTime(text)}</span>,
-  // },
+  {
+    key: 'srcDestPortAndDepartureDateTime',
+    render: (text: string, record: ITrip) => (
+      <span className={styles['port-date']}>
+        <div>
+          {record.srcPort!.name} <ArrowRightOutlined /> {record.destPort!.name}
+        </div>
+        <div>
+          {split(record.departureDateIso, 'T')[0]} at{' '}
+          {getTime(record.departureDateIso)}
+        </div>
+      </span>
+    ),
+    align: 'center',
+  },
   {
     key: 'slots',
     dataIndex: 'slots',
     render: (text: string) => (
       <span className={styles['slots']}>{`${text} slot/s`}</span>
     ),
+    responsive: ['md'],
   },
   {
     key: 'baseFare',
@@ -71,6 +71,7 @@ const columns = [
     render: (text: string) => (
       <span className={styles['price']}>{`PHP ${text}`}</span>
     ),
+    responsive: ['md'],
   },
   {
     key: 'action',
@@ -87,6 +88,59 @@ const columns = [
         </Button>
       </Space>
     ),
+    responsive: ['md'],
+    align: 'right',
+  },
+  {
+    key: 'slotsAndPriceAndAction',
+    dataIndex: 'slots',
+    render: (text: string, record: ITrip) => (
+      <span className={styles['slot-price-action']}>
+        <div className={styles['price']}>{`PHP ${record.baseFare}`}</div>
+        <div>{`${text} slot/s`}</div>
+        <Space size='middle'>
+          <Button
+            type='primary'
+            size='large'
+            href='https://ayahay-booking-platform-web.vercel.app/bookings/create?tripId=1'
+            target='_blank'
+            className={styles['book-button']}
+          >
+            Book Now!
+          </Button>
+        </Space>
+      </span>
+    ),
+    align: 'right',
+  },
+  {
+    key: 'allColumns',
+    dataIndex: 'slots',
+    render: (text: string, record: ITrip) => (
+      <span className={styles['all-columns']}>
+        <div>
+          {record.srcPort!.name} <ArrowRightOutlined /> {record.destPort!.name}
+        </div>
+        <div>
+          {split(record.departureDateIso, 'T')[0]} at{' '}
+          {getTime(record.departureDateIso)}
+        </div>
+        <div className={styles['price']}>{`PHP ${record.baseFare}`}</div>
+        <div>{`${text} slot/s`}</div>
+        <Space size='middle'>
+          <Button
+            type='primary'
+            size='large'
+            href='https://ayahay-booking-platform-web.vercel.app/bookings/create?tripId=1'
+            target='_blank'
+            className={styles['book-button']}
+          >
+            Book Now!
+          </Button>
+        </Space>
+      </span>
+    ),
+    align: 'right',
   },
 ];
 const PAGE_SIZE = 10;
