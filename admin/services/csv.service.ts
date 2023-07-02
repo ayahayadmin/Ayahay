@@ -187,7 +187,6 @@ function processBookingRow(rowValues: string[]): IBooking {
     tripId: trip.id,
     trip,
     totalPrice: rowObject.totalPrice,
-    numOfCars: 0,
     referenceNo: generateReferenceNo(randomId),
     paymentReference: rowObject.paymentReference,
     bookingPassengers: [

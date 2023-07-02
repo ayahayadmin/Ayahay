@@ -47,16 +47,16 @@ model Trip {
   id Int @default(autoincrement()) @id
   shipId Int
   ship Ship @relation(fields: [shipId], references: [id])
-  bookings Booking[]
   shippingLineId Int
   shippingLine ShippingLine @relation(fields: [shippingLineId], references: [id])
   srcPortId Int
   srcPort Port @relation("srcPort", fields: [srcPortId], references: [id])
   destPortId Int
   destPort Port @relation("destPort", fields: [destPortId], references: [id])
-  type String
   departureDate DateTime
   baseFare Float
+  referenceNo String
+  bookings Booking[]
 }
 
 model ShippingLine {
@@ -78,8 +78,9 @@ model Booking {
   trip Trip @relation(fields: [tripId], references: [id])
   totalPrice Float
   paymentReference String
-  checkInDate DateTime
+  referenceNo String
   passengers BookingPassenger[]
+  vehicles BookingVehicle[]
 }
 
 model Passenger {
@@ -96,6 +97,7 @@ model Passenger {
   buddy Passenger? @relation("PassengerBuddies", fields: [buddyId], references: [id])
   buddies Passenger[] @relation("PassengerBuddies")
   bookings BookingPassenger[]
+  vehicles PassengerVehicle[]
 }
 
 model BookingPassenger {
@@ -108,4 +110,28 @@ model BookingPassenger {
   seat Seat @relation(fields: [seatId], references: [id])
   meal String
   totalPrice Float
+  referenceNo String
+  checkInDate DateTime?
+}
+
+model BookingVehicle {
+  id Int @default(autoincrement()) @id
+  bookingId Int
+  booking Booking @relation(fields: [bookingId], references: [id])
+  vehicleId Int
+  vehicle PassengerVehicle @relation(fields: [vehicleId], references: [id])
+  totalPrice Float
+}
+
+model PassengerVehicle {
+  id Int @default(autoincrement()) @id
+  passengerId Int
+  passenger Passenger @relation(fields: [passengerId], references: [id])
+  plateNo String
+  modelName String
+  modelYear Int
+  modelBody String
+  officialReceiptUrl String
+  certificateOfRegistrationUrl String
+  bookings BookingVehicle[]
 }

@@ -74,7 +74,6 @@ export function createTentativeBookingFromPassengerPreferences(
     tripId,
     trip,
     totalPrice: passengersTotalPrice + vehiclesTotalPrice,
-    numOfCars: 1,
     paymentReference: 'ABCDEFG',
     bookingPassengers,
     bookingVehicles,

@@ -31,7 +31,7 @@ export class BookingController {
       throw new NotFoundException('Booking not found');
     }
 
-    const { passengers, trip, checkInDate, ...bookingProperties } = booking;
+    const { passengers, trip, ...bookingProperties } = booking;
     const { srcPort, destPort, departureDate, ...tripProperties } = trip;
 
     return {
@@ -48,6 +48,7 @@ export class BookingController {
         const {
           seat,
           passenger: passengerInformation,
+          checkInDate,
           ...bookingPassengerProperties
         } = passenger;
         const { birthday, ...passengerProperties } = passengerInformation;
@@ -57,10 +58,10 @@ export class BookingController {
             birthdayIso: birthday.toISOString(),
             ...passengerProperties,
           },
+          checkInDate: checkInDate.toISOString(),
           ...bookingPassengerProperties,
         };
       }),
-      numOfCars: 0,
       ...bookingProperties,
     } as IBooking;
   }
