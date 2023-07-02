@@ -20,7 +20,7 @@ export default function BookingSummary({ booking }: BookingSummaryProps) {
         booking.bookingPassengers &&
         booking.bookingPassengers.map(
           ({ passenger, seat, meal, totalPrice }, index) => (
-            <article key={index}>
+            <article key={index} style={{margin: '16px 0'}}>
               {index === 0 && <Title level={3}>You</Title>}
               {index > 0 && <Title level={3}>Companion {index}</Title>}
               <div>
@@ -34,6 +34,7 @@ export default function BookingSummary({ booking }: BookingSummaryProps) {
                     <Descriptions
                       bordered={screens.sm}
                       column={{ xxl: 4, xl: 3, lg: 3, md: 3, sm: 2, xs: 1 }}
+                      style={{margin: '16px 0'}}
                     >
                       <Descriptions.Item label='Seat'>
                         {seat.name}

@@ -22,6 +22,7 @@ export default function PassengerSummary({ passenger }: TripSummaryProps) {
         <Descriptions
           bordered={screens.sm}
           column={{ xxl: 4, xl: 3, lg: 3, md: 3, sm: 2, xs: 1 }}
+          style={{margin: '16px 0'}}
         >
           <Descriptions.Item label='First Name'>
             {passenger?.firstName}
