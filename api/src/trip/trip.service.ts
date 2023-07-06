@@ -6,7 +6,15 @@ import { PrismaService } from 'src/prisma.service';
 export class TripService {
   constructor(private prisma: PrismaService) {}
 
-  async trips(params: {
+  async getTrip(
+    tripWhereUniqueInput: Prisma.TripWhereUniqueInput | {} //{} is only temp, TripWhereUniqueInput is not part of referenceNo
+  ): Promise<Trip> {
+    return this.prisma.trip.findUnique({
+      where: tripWhereUniqueInput,
+    });
+  }
+
+  async getTrips(params: {
     skip?: number;
     take?: number;
     cursor?: Prisma.TripWhereUniqueInput;
@@ -20,6 +28,12 @@ export class TripService {
       cursor,
       where,
       orderBy,
+    });
+  }
+
+  async createTrip(data: Prisma.TripCreateInput): Promise<Trip> {
+    return this.prisma.trip.create({
+      data,
     });
   }
 }
