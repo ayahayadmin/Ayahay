@@ -7,20 +7,14 @@ import { IBookingVehicle } from './booking-vehicle.model';
 
 export interface IBooking {
   id: number;
-  tripId: number;
-  trip?: ITrip;
   totalPrice: number;
   paymentReference: string;
-  referenceNo: string;
   bookingPassengers?: IBookingPassenger[];
   bookingVehicles?: IBookingVehicle[];
 }
 
 export const mockBooking: IBooking = {
   id: 1,
-  referenceNo: 'ABCD1',
-  tripId: mockTrip.id,
-  trip: mockTrip,
   totalPrice: 1000,
   paymentReference: '28b27d88-4e60-4812-9afe-789611e5e9e6',
   bookingPassengers: [
@@ -37,34 +31,22 @@ export const mockBookings: IBooking[] = [
   mockBooking,
   {
     id: 2,
-    referenceNo: 'ABCD2',
-    tripId: mockTrip.id,
-    trip: mockTrip,
     totalPrice: 1000,
     paymentReference: 'a3b11f19-08d2-4d72-addb-4e0e51e736b6',
   },
   {
     id: 3,
-    referenceNo: 'ABCD3',
-    tripId: mockTrip.id,
-    trip: mockTrip,
     totalPrice: 1000,
     paymentReference: '44606c81-c366-428b-8e24-68de9fff3759',
   },
   {
     id: 4,
-    referenceNo: 'ABCD4',
-    tripId: mockTrips[1].id,
-    trip: mockTrips[1],
     totalPrice: 1000,
     paymentReference: 'f7c128b9-ad49-45fa-a166-031165d4dbcb',
     bookingPassengers: [mockBookingPassengers[6]],
   },
   {
     id: 5,
-    referenceNo: 'ABCD5',
-    tripId: mockTrips[2].id,
-    trip: mockTrips[2],
     totalPrice: 1000,
     paymentReference: 'd1df8010-0be1-4875-b596-5f42b74c2b7d',
     bookingPassengers: [
@@ -75,25 +57,16 @@ export const mockBookings: IBooking[] = [
   },
   {
     id: 6,
-    referenceNo: 'ABCD6',
-    tripId: mockTrips[2].id,
-    trip: mockTrips[2],
     totalPrice: 1000,
     paymentReference: '9d5da2c0-b4c1-47a5-9a7b-ae1ebca961e7',
   },
   // {
   //   id: 7,
-  //   referenceNo: 'ABCD7',
-  //   tripId: mockTrips[2].id,
-  //   trip: mockTrips[2],
   //   totalPrice: 1000,
   //   //   paymentReference: '941d1d5a-1f22-4d4d-95b6-f7e1a25a144e',
   // },
   // {
   //   id: 8,
-  //   referenceNo: 'ABCD8',
-  //   tripId: mockTrips[2].id,
-  //   trip: mockTrips[2],
   //   totalPrice: 1000,
   //   //   paymentReference: '941d1d5a-1f22-4d4d-95b6-f7e1a25a144e',
   // },

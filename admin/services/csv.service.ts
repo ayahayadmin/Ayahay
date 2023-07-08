@@ -231,7 +231,6 @@ export function generateBookingCsv(bookings: IBooking[]): Blob {
         booking.bookingPassengers
           .map((bookingPassenger) => {
             return [
-              booking.referenceNo,
               booking?.trip?.referenceNo ?? '',
               booking?.trip?.srcPort?.name ?? '',
               booking?.trip?.destPort?.name ?? '',
