@@ -11,58 +11,67 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Seat {
+model Trip {
   id Int @default(autoincrement()) @id
-  cabinId Int
-  cabin Cabin @relation(fields: [cabinId], references: [id])
-  name String
-  rowNumber Int
-  columnNumber Int
-  type String
-  bookingPassengers BookingPassenger[]
-}
-
-model Cabin {
-  id Int @default(autoincrement()) @id
-  shipId Int
+  shipId Int @map("ship_id")
   ship Ship @relation(fields: [shipId], references: [id])
-  type String
-  name String
-  passengerCapacity Int
-  numOfRows Int
-  numOfColumns Int
-  seats Seat[]
+  shippingLineId Int @map("shipping_line_id")
+  shippingLine ShippingLine @relation(fields: [shippingLineId], references: [id])
+  srcPortId Int @map("src_port_id")
+  srcPort Port @relation("srcPort", fields: [srcPortId], references: [id])
+  destPortId Int @map("dest_port_id")
+  destPort Port @relation("destPort", fields: [destPortId], references: [id])
+  departureDate DateTime @map("departure_date")
+  baseFare Float @map("base_fare")
+  referenceNo String @map("reference_number")
+  passengers BookingPassenger[]
+  vehicles BookingVehicle[]
+
+  @@map("trip")
 }
 
 model Ship {
   id Int @default(autoincrement()) @id
   name String
-  passengerCapacity Int
-  vehicleCapacity Int
+  vehicleCapacity Int @map("vehicle_capacity")
   cabins Cabin[]
   trips Trip[]
+
+  @@map("ship")
 }
 
-model Trip {
+model Cabin {
   id Int @default(autoincrement()) @id
-  shipId Int
+  shipId Int @map("ship_id")
   ship Ship @relation(fields: [shipId], references: [id])
-  shippingLineId Int
-  shippingLine ShippingLine @relation(fields: [shippingLineId], references: [id])
-  srcPortId Int
-  srcPort Port @relation("srcPort", fields: [srcPortId], references: [id])
-  destPortId Int
-  destPort Port @relation("destPort", fields: [destPortId], references: [id])
-  departureDate DateTime
-  baseFare Float
-  referenceNo String
-  bookings Booking[]
+  type String
+  name String
+  numOfRows Int @map("number_of_rows")
+  numOfColumns Int @map("number_of_columns")
+  seats Seat[]
+
+  @@map("cabin")
+}
+
+model Seat {
+  id Int @default(autoincrement()) @id
+  cabinId Int @map("cabin_id")
+  cabin Cabin @relation(fields: [cabinId], references: [id])
+  name String
+  row Int
+  column Int
+  type String
+  bookingPassengers BookingPassenger[]
+
+  @@map("seat")
 }
 
 model ShippingLine {
   id Int @default(autoincrement()) @id
   name String
   trips Trip[]
+
+  @@map("shipping_line")
 }
 
 model Port {
@@ -70,68 +79,84 @@ model Port {
   tripsSrc Trip[] @relation("srcPort")
   tripsDest Trip[] @relation("destPort")
   name String
+
+  @@map("port")
 }
 
 model Booking {
   id Int @default(autoincrement()) @id
-  tripId Int
-  trip Trip @relation(fields: [tripId], references: [id])
-  totalPrice Float
-  paymentReference String
-  referenceNo String
+  totalPrice Float @map("total_price")
+  paymentReference String @map("payment_reference")
+  referenceNo String @map("reference_number")
   passengers BookingPassenger[]
   vehicles BookingVehicle[]
-}
 
-model Passenger {
-  id Int @default(autoincrement()) @id
-  firstName String
-  lastName String
-  occupation String
-  sex String
-  civilStatus String
-  birthday DateTime
-  address String
-  nationality String
-  buddyId Int?
-  buddy Passenger? @relation("PassengerBuddies", fields: [buddyId], references: [id])
-  buddies Passenger[] @relation("PassengerBuddies")
-  bookings BookingPassenger[]
-  vehicles PassengerVehicle[]
+  @@map("booking")
 }
 
 model BookingPassenger {
   id Int @default(autoincrement()) @id
-  bookingId Int
+  bookingId Int @map("booking_id")
   booking Booking @relation(fields: [bookingId], references: [id])
-  passengerId Int
+  tripId Int @map("trip_id")
+  trip Trip @relation(fields: [tripId], references: [id])
+  passengerId Int @map("passenger_id")
   passenger Passenger @relation(fields: [passengerId], references: [id])
-  seatId Int
+  seatId Int @map("seat_id")
   seat Seat @relation(fields: [seatId], references: [id])
   meal String
-  totalPrice Float
-  referenceNo String
-  checkInDate DateTime?
+  totalPrice Float @map("total_price")
+  referenceNo String @map("reference_no")
+  checkInDate DateTime? @map("check_in_date")
+
+  @@map("booking_passenger")
+}
+
+model Passenger {
+  id Int @default(autoincrement()) @id
+  firstName String @map("first_name")
+  lastName String @map("last_name")
+  occupation String
+  sex String
+  civilStatus String @map("civil_status")
+  birthday DateTime
+  address String
+  nationality String
+  buddyId Int? @map("buddy_id")
+  buddy Passenger? @relation("PassengerBuddies", fields: [buddyId], references: [id])
+  buddies Passenger[] @relation("PassengerBuddies")
+  bookings BookingPassenger[]
+  vehicles PassengerVehicle[]
+
+  @@map("passenger")
 }
 
 model BookingVehicle {
   id Int @default(autoincrement()) @id
-  bookingId Int
+  bookingId Int @map("booking_id")
   booking Booking @relation(fields: [bookingId], references: [id])
-  vehicleId Int
+  tripId Int @map("trip_id")
+  trip Trip @relation(fields: [tripId], references: [id])
+  vehicleId Int @map("vehicle_id")
   vehicle PassengerVehicle @relation(fields: [vehicleId], references: [id])
-  totalPrice Float
+  totalPrice Float @map("total_price")
+
+  @@map("booking_vehicle")
 }
 
 model PassengerVehicle {
   id Int @default(autoincrement()) @id
-  passengerId Int
+  passengerId Int @map("passenger_id")
   passenger Passenger @relation(fields: [passengerId], references: [id])
-  plateNo String
-  modelName String
-  modelYear Int
-  modelBody String
-  officialReceiptUrl String
-  certificateOfRegistrationUrl String
+  plateNo String @map("plate_number")
+  modelName String @map("model_name")
+  modelYear Int @map("model_year")
+  modelBody String @map("model_body")
+  officialReceiptUrl String @map("official_receipt_url")
+  certificateOfRegistrationUrl String @map("certificate_of_registration_url")
   bookings BookingVehicle[]
+
+  @@map("passenger_vehicle")
 }
+
+// add booking trip passenger
