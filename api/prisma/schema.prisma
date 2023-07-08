@@ -89,8 +89,7 @@ model Port {
 model Booking {
   id Int @default(autoincrement()) @id
   totalPrice Float @map("total_price")
-  paymentReference String @map("payment_reference")
-  referenceNo String @map("reference_number")
+  paymentReference String? @map("payment_reference")
   passengers BookingPassenger[]
   vehicles BookingVehicle[]
 

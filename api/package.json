@@ -22,6 +22,7 @@
   "dependencies": {
     "@ayahay/constants": "^0.1.0",
     "@ayahay/models": "^0.1.0",
+    "@ayahay/services": "^0.1.0",
     "@nestjs/common": "^9.0.0",
     "@nestjs/config": "^2.3.1",
     "@nestjs/core": "^9.0.0",
