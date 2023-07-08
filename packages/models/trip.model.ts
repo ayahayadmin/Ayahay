@@ -15,7 +15,7 @@ export interface ITrip {
   srcPort?: IPort;
   destPortId: number;
   destPort?: IPort;
-  departureDateIso: string;
+  departureDate: string;
   baseFare: number;
   availableSeatTypes: (keyof typeof SEAT_TYPE)[];
   availableCabins: (keyof typeof CABIN_TYPE)[];
@@ -37,7 +37,7 @@ export const mockTrip: ITrip = {
   srcPort: mockPort,
   destPortId: mockPort2.id,
   destPort: mockPort2,
-  departureDateIso: today,
+  departureDate: today,
   baseFare: 20,
   availableSeatTypes: [
     'Aisle',
@@ -63,7 +63,7 @@ export const mockTrips: ITrip[] = [
     srcPort: mockPort2,
     destPortId: mockPort2.id,
     destPort: mockPort2,
-    departureDateIso: fiveDaysLater,
+    departureDate: fiveDaysLater,
     baseFare: 20,
     availableSeatTypes: [
       'Aisle',
@@ -86,7 +86,7 @@ export const mockTrips: ITrip[] = [
     srcPort: mockPort3,
     destPortId: mockPort.id,
     destPort: mockPort,
-    departureDateIso: tenDaysLater,
+    departureDate: tenDaysLater,
     baseFare: 20,
     availableSeatTypes: [
       'Aisle',
@@ -109,4 +109,15 @@ export interface TripPaxes {
   numAdults: number;
   numChildren: number;
   numInfants: number;
+}
+
+export interface TripSearchDto {
+  tripType: string;
+  srcPortId: string;
+  destPortId: string;
+  departureDate: string;
+  numAdults: string;
+  numChildren: string;
+  numInfants: string;
+  sort: string;
 }
