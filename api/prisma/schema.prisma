@@ -26,7 +26,10 @@ model Trip {
   referenceNo String @map("reference_number")
   passengers BookingPassenger[]
   vehicles BookingVehicle[]
-
+  availableSeatTypes String[] @map("available_seat_types")
+  availableCabins String[] @map("available_cabins")
+  meals String[]
+  
   @@map("trip")
 }
 
