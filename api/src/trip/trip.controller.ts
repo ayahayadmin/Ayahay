@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  NotFoundException,
+  Param,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { TripService } from './trip.service';
 import { ITrip, TripSearchDto } from '@ayahay/models';
 import { Prisma } from '@prisma/client';
@@ -11,12 +20,12 @@ export class TripController {
   @Get()
   async getAllTrips(
     @Query()
-    query: Omit<
-      TripSearchDto,
-      'tripType' | 'numAdults' | 'numChildren' | 'numInfants'
-    >
+    query: Omit<TripSearchDto, 'numAdults' | 'numChildren' | 'numInfants'>
   ): Promise<any[]> {
+    // TO DO:
+    // - add data for passengers who booked for a specific trip, so that I'll know how many capacity left in the ship
     const orderBy = {
+      //if orderBy baseFare? currently FE passes 'basePrice'. Should we change FE to pass 'baseFare' instead?
       [query.sort]: 'asc', //ascending by default
     };
     const queryWithoutSort = omit(query, 'sort');
@@ -27,29 +36,40 @@ export class TripController {
       destPortId: Number(queryWithoutSort.destPortId),
     };
 
-    const trips = await this.tripService.getTrips({ where, orderBy });
-
-    return trips;
+    try {
+      return await this.tripService.getTrips({ where, orderBy });
+    } catch {
+      throw new BadRequestException('srcPortId and destPortId cannot be empty');
+    }
   }
 
-  // @Get()
-  // async getTripById(@Query() tripId: string): Promise<any> {
-  //   // TO DO:
-  //   // - missing properties in tripService.trips: departureDateIso, availableSeatTypes, availableCabins, meals
-  //   return await this.tripService.getTrip({ id: Number(tripId) });
-  // }
+  @Get('id/:tripId')
+  async getTripById(@Param('tripId') tripId: string): Promise<any> {
+    const trip = await this.tripService.getTrip({ id: Number(tripId) });
+    if (!trip) {
+      throw new NotFoundException('Trip Not Found');
+    }
+
+    return trip;
+  }
 
   @Get(':referenceNo')
-  async getTripByReferenceNo(
+  async getTripsByReferenceNo(
     @Param('referenceNo') referenceNo: string
   ): Promise<any> {
-    // TO DO:
-    // - referenceNo is not part of TripWhereUniqueInput
-    return await this.tripService.getTrip({ referenceNo });
+    return await this.tripService.getTrips({
+      where: { referenceNo },
+    });
   }
 
   @Post()
   async createTrip(@Body() data: Prisma.TripCreateInput) {
-    return await this.tripService.createTrip(data);
+    try {
+      return await this.tripService.createTrip(data);
+    } catch {
+      throw new BadRequestException(
+        'id, shipIp, destPortId, srcPortId, baseFare, departureDate, shippingLineId, & referenceNo are required'
+      );
+    }
   }
 }
