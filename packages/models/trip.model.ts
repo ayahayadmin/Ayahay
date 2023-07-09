@@ -112,7 +112,7 @@ export interface TripPaxes {
 }
 
 export interface TripSearchDto {
-  tripType: string;
+  // tripType: string;
   srcPortId: string;
   destPortId: string;
   departureDate: string;
