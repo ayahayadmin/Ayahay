@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma, Trip } from '@prisma/client';
 import { PrismaService } from 'src/prisma.service';
+import { ITrip } from '@ayahay/models';
 
 @Injectable()
 export class TripService {
@@ -28,6 +29,16 @@ export class TripService {
       cursor,
       where,
       orderBy,
+    });
+  }
+
+  async getTripsByIds(tripIds: number[]): Promise<Trip[]> {
+    return this.prisma.trip.findMany({
+      where: {
+        id: {
+          in: tripIds,
+        },
+      },
     });
   }
 

@@ -8,7 +8,7 @@ import { IBookingVehicle } from './booking-vehicle.model';
 export interface IBooking {
   id: number;
   totalPrice: number;
-  paymentReference: string;
+  paymentReference?: string;
   bookingPassengers?: IBookingPassenger[];
   bookingVehicles?: IBookingVehicle[];
 }

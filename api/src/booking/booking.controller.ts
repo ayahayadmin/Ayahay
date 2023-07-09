@@ -3,14 +3,17 @@ import {
   Controller,
   Delete,
   Get,
-  NotFoundException,
   Param,
   Post,
   Put,
-  Query,
 } from '@nestjs/common';
 import { BookingService } from './booking.service';
-import { IBooking } from '@ayahay/models';
+import {
+  IBooking,
+  IPassenger,
+  IPassengerVehicle,
+  PassengerPreferences,
+} from '@ayahay/models';
 
 @Controller('bookings')
 export class BookingController {
@@ -68,11 +71,33 @@ export class BookingController {
   }
 
   @Post()
-  async createBooking() {}
+  async createTemporaryBooking(
+    @Body()
+    {
+      tripIds,
+      passengers,
+      passengerPreferences,
+      vehicles,
+    }: CreateTempBookingRequest
+  ): Promise<IBooking> {
+    return this.bookingService.createTentativeBooking(
+      tripIds,
+      passengers,
+      passengerPreferences,
+      vehicles
+    );
+  }
 
   @Put(':id')
   async updateBooking(@Param('id') id: string) {}
 
   @Delete(':id')
   async deleteBooking(@Param('id') id: string) {}
+}
+
+interface CreateTempBookingRequest {
+  tripIds: number[];
+  passengers: IPassenger[];
+  passengerPreferences: PassengerPreferences[];
+  vehicles: IPassengerVehicle[];
 }

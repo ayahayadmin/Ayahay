@@ -1,14 +1,16 @@
-import { Injectable } from '@nestjs/common';
-import { Booking, BookingPassenger, Prisma, Seat } from '@prisma/client';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { Booking, Prisma, TempBooking, Trip } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
 import {
   IBooking,
   IBookingPassenger,
   IBookingVehicle,
-  ISeat,
+  IPassenger,
+  IPassengerVehicle,
   PassengerPreferences,
 } from '@ayahay/models';
 import { UtilityService } from '../utility.service';
+import { TripService } from '../trip/trip.service';
 
 @Injectable()
 export class BookingService {
@@ -49,6 +51,7 @@ export class BookingService {
 
   constructor(
     private readonly prisma: PrismaService,
+    private readonly tripService: TripService,
     private readonly utilityService: UtilityService
   ) {}
 
@@ -117,16 +120,18 @@ export class BookingService {
 
   async createTentativeBooking(
     tripIds: number[],
+    passengers: IPassenger[],
     passengerPreferences: PassengerPreferences[],
-    vehicles: any[]
+    vehicles: IPassengerVehicle[]
   ): Promise<IBooking | undefined> {
-    const errorMessages = this.validateCreateTentativeBookingRequest(
+    this.validateCreateTentativeBookingRequest(
       tripIds,
-      passengerPreferences
+      passengers,
+      passengerPreferences,
+      vehicles
     );
-    if (errorMessages.length > 0) {
-      return undefined;
-    }
+
+    const trips = await this.tripService.getTripsByIds(tripIds);
 
     const availableSeatsInTripsThatMatchPreferences =
       await this.getAvailableSeatsInTripsThatMatchPreferences(
@@ -134,22 +139,46 @@ export class BookingService {
         passengerPreferences
       );
 
-    const passengers = this.createTentativeBookingPassengers(
-      tripIds,
+    const bookingPassengers = this.createTentativeBookingPassengers(
+      trips,
+      passengers,
       passengerPreferences,
       availableSeatsInTripsThatMatchPreferences
     );
 
-    if (passengers === undefined) {
-      return undefined;
+    if (bookingPassengers === undefined) {
+      throw new Error('Could not find seats for the ');
     }
 
-    return this.saveTentativeBooking(passengers, vehicles);
+    const bookingVehicles = this.createTentativeBookingVehicles(
+      trips,
+      vehicles
+    );
+
+    const passengersTotalPrice = bookingPassengers
+      .map((passenger) => passenger.totalPrice)
+      .reduce((priceA, priceB) => priceA + priceB, 0);
+
+    const vehiclesTotalPrice = bookingVehicles
+      .map((vehicle) => vehicle.totalPrice)
+      .reduce((priceA, priceB) => priceA + priceB, 0);
+
+    const tempBooking: IBooking = {
+      id: -1,
+      totalPrice: passengersTotalPrice + vehiclesTotalPrice,
+      paymentReference: null,
+      bookingPassengers,
+      bookingVehicles,
+    };
+
+    return await this.saveTempBooking(tempBooking);
   }
 
   private validateCreateTentativeBookingRequest(
     tripIds: number[],
-    passengerPreferences: PassengerPreferences[]
+    passengers: IPassenger[],
+    passengerPreferences: PassengerPreferences[],
+    vehicles: IPassengerVehicle[]
   ): string[] {
     const errorMessages: string[] = [];
     if (tripIds.length > this.MAX_TRIPS_PER_BOOKING) {
@@ -163,15 +192,20 @@ export class BookingService {
         `Number of passengers for one booking exceeded the maximum of ${this.MAX_PASSENGERS_PER_BOOKING}`
       );
     }
-    // TODO: check if all passengers are existing records
-    if (
-      passengerPreferences.find(
-        (preference) => preference.passengerId === undefined
-      )
-    ) {
-      errorMessages.push(`All passengers must be registered in the system.`);
+
+    if (vehicles.length > this.MAX_VEHICLES_PER_BOOKING) {
+      errorMessages.push(
+        `Number of vehicles for one booking exceeded the maximum of ${this.MAX_VEHICLES_PER_BOOKING}`
+      );
     }
-    return errorMessages;
+
+    if (passengers.length !== passengerPreferences.length) {
+      errorMessages.push(
+        'The number of passengers should match the number of passenger preferences'
+      );
+    }
+
+    throw new BadRequestException(errorMessages);
   }
 
   private async getAvailableSeatsInTripsThatMatchPreferences(
@@ -193,12 +227,16 @@ export class BookingService {
     }
 
     return this.prisma.$queryRaw<AvailableSeat[]>`
-SELECT * 
+SELECT tripId, cabinId, cabinName, cabinType, seatId, seatName, seatType
 FROM (
   SELECT 
-    trip.*,
-    cabin.*,
-    seat.*,
+    trip.id AS tripId,
+    cabin.id AS cabinId,
+    cabin."name" AS cabinName,
+    cabin."type" AS cabinType,
+    seat.id AS seatId,
+    seat."name" AS seatName,
+    seat."type" AS seatType,
     ROW_NUMBER() OVER (
       PARTITION BY trip.id, cabin."type", seat."type" 
     ) AS row
@@ -224,21 +262,25 @@ WHERE row <= ${passengerPreferences.length}
   }
 
   private createTentativeBookingPassengers(
-    tripIds: number[],
+    trips: Trip[],
+    passengers: IPassenger[],
     passengerPreferences: PassengerPreferences[],
     availableSeatsInTripsThatMatchPreferences: AvailableSeat[]
   ): IBookingPassenger[] | undefined {
     const bookingPassengers: IBookingPassenger[] = [];
 
-    for (const tripId of tripIds) {
+    for (const trip of trips) {
       let availableSeatsInTrip =
         availableSeatsInTripsThatMatchPreferences.filter(
-          (seat) => seat.tripId === tripId
+          (seat) => seat.tripId === trip.id
         );
 
-      for (const preferences of passengerPreferences) {
+      for (let i = 0; i < passengers.length; i++) {
+        const passenger = passengers[i];
+        const preferences = passengerPreferences[i];
         const bookingPassengerForTrip = this.createTentativeBookingPassenger(
-          tripId,
+          trip,
+          passenger,
           preferences,
           availableSeatsInTrip
         );
@@ -247,7 +289,6 @@ WHERE row <= ${passengerPreferences.length}
         if (bookingPassengerForTrip === undefined) {
           return undefined;
         }
-
         bookingPassengers.push(bookingPassengerForTrip);
 
         // remove booked seat in available seats for next iterations
@@ -261,7 +302,8 @@ WHERE row <= ${passengerPreferences.length}
   }
 
   private createTentativeBookingPassenger(
-    tripId: number,
+    trip: Trip,
+    passenger: IPassenger,
     preferences: PassengerPreferences,
     availableSeatsInTrip: AvailableSeat[]
   ): IBookingPassenger | undefined {
@@ -271,21 +313,41 @@ WHERE row <= ${passengerPreferences.length}
       return undefined;
     }
 
-    const totalPrice = this.calculateTotalPrice(
-      matchedSeat.tripBaseFare,
+    const totalPrice = this.calculateTotalPriceForOneBooking(
+      trip.baseFare,
       matchedSeat.cabinType,
       matchedSeat.seatType
     );
 
     return {
-      tripId: tripId,
-      passengerId: preferences.passengerId,
+      tripId: trip.id,
       seatId: matchedSeat.seatId,
-      referenceNo: this.utilityService.generateReferenceNo(tripId),
+      seat: {
+        id: matchedSeat.seatId,
+        cabinId: matchedSeat.cabinId,
+        cabin: {
+          id: matchedSeat.cabinId,
+          type: matchedSeat.cabinType,
+          name: matchedSeat.cabinName,
+          shipId: -1,
+          passengerCapacity: -1,
+          numOfRows: -1,
+          numOfCols: -1,
+          seats: [],
+        },
+        name: matchedSeat.seatName,
+        type: matchedSeat.seatType,
+        rowNumber: -1,
+        columnNumber: -1,
+      },
+      passengerId: passenger.id,
+      passenger,
+      referenceNo: this.utilityService.generateReferenceNo(trip.id),
       meal: preferences.meal !== 'Any' ? preferences.meal : 'Bacsilog',
       totalPrice,
       checkInDate: null,
-      // ID and booking ID are set after saving in DB
+      // since these entities aren't created for temp booking,
+      // we set their IDs to null for now
       id: -1,
       bookingId: -1,
     };
@@ -344,7 +406,7 @@ WHERE row <= ${passengerPreferences.length}
     return bestSeat;
   }
 
-  private calculateTotalPrice(
+  private calculateTotalPriceForOneBooking(
     tripBaseFare: number,
     cabinType: string,
     seatType: string
@@ -358,39 +420,127 @@ WHERE row <= ${passengerPreferences.length}
     return tripBaseFare + cabinTypeFee + seatTypeFee;
   }
 
-  private saveTentativeBooking(
-    passengers: IBookingPassenger[],
-    vehicles: IBookingVehicle[]
-  ): IBooking | undefined {
-    const passengersTotalPrice = passengers
-      .map((passenger) => passenger.totalPrice)
-      .reduce((priceA, priceB) => priceA + priceB, 0);
+  private createTentativeBookingVehicles(
+    trips: Trip[],
+    vehicles: IPassengerVehicle[]
+  ): IBookingVehicle[] | undefined {
+    const bookingVehicles: IBookingVehicle[] = [];
 
-    const vehiclesTotalPrice = vehicles
-      .map((vehicle) => vehicle.totalPrice)
-      .reduce((priceA, priceB) => priceA + priceB, 0);
+    for (const trip of trips) {
+      vehicles.forEach((vehicle) => {
+        bookingVehicles.push({
+          id: -1,
+          bookingId: -1,
+          vehicleId: vehicle.id,
+          tripId: trip.id,
+          totalPrice: this.calculateTotalPriceForOneVehicle(),
+        } as IBookingVehicle);
+      });
+    }
 
-    const hash = Math.floor(Math.random() * 1000);
-    const booking: Prisma.BookingCreateInput = {
-      totalPrice: passengersTotalPrice + vehiclesTotalPrice,
-      passengers: {
-        createMany: {
-          data: [],
+    return bookingVehicles;
+  }
+
+  private calculateTotalPriceForOneVehicle(): number {
+    // TODO: figure out how to calculate price per vehicle
+    return 500;
+  }
+
+  private async saveTempBooking(booking: IBooking): Promise<IBooking> {
+    const { totalPrice, bookingPassengers, bookingVehicles } = booking;
+    const passengersJson = bookingPassengers as any[] as Prisma.JsonArray;
+    const vehiclesJson = bookingVehicles as any[] as Prisma.JsonArray;
+
+    const tempBooking = await this.prisma.tempBooking.create({
+      data: {
+        totalPrice,
+        paymentReference: null,
+        passengersJson,
+        vehiclesJson,
+      },
+    });
+
+    return {
+      id: tempBooking.id,
+      ...booking,
+    } as IBooking;
+  }
+
+  async createBookingFromTempBooking(tempBooking: TempBooking): Promise<void> {
+    if (tempBooking.paymentReference === null) {
+      throw new Error('The booking has no payment reference.');
+    }
+
+    // TODO: check if seats are available
+    const bookingPassengers = (tempBooking.passengersJson as unknown[]).map(
+      (bookingPassenger) => bookingPassenger as IBookingPassenger
+    );
+    const bookingVehicles = (tempBooking.vehiclesJson as unknown[]).map(
+      (bookingVehicle) => bookingVehicle as IBookingVehicle
+    );
+
+    const bookingToCreate: IBooking = {
+      id: -1,
+      totalPrice: tempBooking.totalPrice,
+      paymentReference: tempBooking.paymentReference,
+      bookingPassengers,
+      bookingVehicles,
+    };
+
+    return this.saveBooking(bookingToCreate);
+  }
+
+  // saves actual booking data; called after payment
+  private async saveBooking(booking: IBooking): Promise<void> {
+    const bookingPassengerData = booking.bookingPassengers.map(
+      (passenger) =>
+        ({
+          meal: passenger.meal,
+          totalPrice: passenger.totalPrice,
+          referenceNo: passenger.referenceNo,
+          checkInDate: null,
+          tripId: passenger.tripId,
+          passengerId: passenger.passengerId,
+          seatId: passenger.seatId,
+        } as Prisma.BookingPassengerCreateManyInput)
+    );
+
+    const bookingVehicleData = booking.bookingVehicles.map(
+      (vehicle) =>
+        ({
+          tripId: vehicle.tripId,
+          vehicleId: vehicle.vehicleId,
+          totalPrice: vehicle.totalPrice,
+        } as Prisma.BookingVehicleCreateManyInput)
+    );
+
+    await this.prisma.booking.create({
+      data: {
+        totalPrice: booking.totalPrice,
+        paymentReference: booking.paymentReference,
+        passengers: {
+          createMany: {
+            data: bookingPassengerData,
+          },
+        },
+        vehicles: {
+          createMany: {
+            data: bookingVehicleData,
+          },
         },
       },
-    };
-    this.prisma.booking.create({ data: booking });
-    return undefined;
+    });
   }
 }
 
 interface AvailableSeat {
   tripId: number;
-  tripBaseFare: number;
 
   cabinId: number;
-  cabinType: string;
+  cabinType: 'Economy' | 'Business' | 'First';
+  cabinName: string;
 
   seatId: number;
-  seatType: string;
+  seatName: string;
+  seatType: 'Window' | 'Aisle' | 'SingleBed' | 'LowerBunkBed' | 'UpperBunkBed';
 }

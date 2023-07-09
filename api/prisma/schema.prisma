@@ -161,4 +161,12 @@ model PassengerVehicle {
   @@map("passenger_vehicle")
 }
 
-// add booking trip passenger
+model TempBooking {
+  id Int @default(autoincrement()) @id
+  totalPrice Float @map("total_price")
+  paymentReference String? @map("payment_reference")
+  passengersJson Json @map("passengers_json")
+  vehiclesJson Json @map("vehicles_json")
+
+  @@map("temp_booking")
+}
