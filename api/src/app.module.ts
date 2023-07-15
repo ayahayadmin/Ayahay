@@ -2,8 +2,9 @@ import { Module } from '@nestjs/common';
 import { BookingModule } from './booking/booking.module';
 import { ConfigModule } from '@nestjs/config';
 import { TripModule } from './trip/trip.module';
+import { SearchModule } from './search/search.module';
 
 @Module({
-  imports: [ConfigModule.forRoot(), BookingModule, TripModule],
+  imports: [ConfigModule.forRoot(), BookingModule, SearchModule, TripModule],
 })
 export class AppModule {}
