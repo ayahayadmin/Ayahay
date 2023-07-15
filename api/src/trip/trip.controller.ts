@@ -43,7 +43,7 @@ export class TripController {
     }
   }
 
-  @Get('id/:tripId')
+  @Get(':tripId')
   async getTripById(@Param('tripId') tripId: string): Promise<any> {
     const trip = await this.tripService.getTrip({ id: Number(tripId) });
     if (!trip) {
@@ -51,15 +51,6 @@ export class TripController {
     }
 
     return trip;
-  }
-
-  @Get(':referenceNo')
-  async getTripsByReferenceNo(
-    @Param('referenceNo') referenceNo: string
-  ): Promise<any> {
-    return await this.tripService.getTrips({
-      where: { referenceNo },
-    });
   }
 
   @Post()
