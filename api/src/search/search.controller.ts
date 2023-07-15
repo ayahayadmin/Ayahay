@@ -16,6 +16,10 @@ export class SearchController {
   async getBookingsByReferenceNo(
     @Query('referenceNo') referenceNo: string
   ): Promise<Booking[]> {
+    if (!referenceNo) {
+      throw new BadRequestException('Reference Number Cannot Be Empty');
+    }
+
     const bookings = await this.searchService.getBookingsByReferenceNo({
       where: { referenceNo },
     });
