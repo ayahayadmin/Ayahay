@@ -3,6 +3,8 @@ import React, { useState } from 'react';
 import { Button, Form, Input } from 'antd';
 import { LoginForm } from '@ayahay/models/profile.model';
 import { onLogin } from '@/services/profile.service';
+import { initFirebase } from '@/app/auth/app';
+import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 
 const formItemLayout = {
   labelCol: {
@@ -16,17 +18,31 @@ const formItemLayout = {
 };
 
 export default function SignInForm() {
+  initFirebase();
+  const auth = getAuth();
   const [error, setError] = useState('');
 
   const onFinish = (values: LoginForm) => {
     console.log('Received values of form: ', values);
-    try {
-      const profile = onLogin(values);
-      console.log(profile);
-    } catch (e) {
-      console.log(e);
-      setError('Invalid E-mail or Password');
-    }
+    const { email, password } = values;
+    signInWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        // Signed in
+        const user = userCredential.user;
+        console.log(`success sign in: ${user}`);
+      })
+      .catch((error) => {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        console.log(`sign in error: ${errorCode}: ${errorMessage}`);
+      });
+    // try {
+    //   const profile = onLogin(values);
+    //   console.log(profile);
+    // } catch (e) {
+    //   console.log(e);
+    //   setError('Invalid E-mail or Password');
+    // }
   };
 
   return (
