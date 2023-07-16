@@ -13,8 +13,8 @@ datasource db {
 
 model Trip {
   id Int @default(autoincrement()) @id
-  shipId Int @map("ship_id")
-  ship Ship @relation(fields: [shipId], references: [id])
+  shipId Int? @map("ship_id")
+  ship Ship? @relation(fields: [shipId], references: [id])
   shippingLineId Int @map("shipping_line_id")
   shippingLine ShippingLine @relation(fields: [shippingLineId], references: [id])
   srcPortId Int @map("src_port_id")
@@ -26,16 +26,14 @@ model Trip {
   referenceNo String @map("reference_number")
   passengers BookingPassenger[]
   vehicles BookingVehicle[]
-  availableSeatTypes String[] @map("available_seat_types")
-  availableCabins String[] @map("available_cabins")
-  meals String[]
-  
+
   @@map("trip")
 }
 
 model Ship {
   id Int @default(autoincrement()) @id
   name String
+  passengerCapacity Int @map("passenger_capacity")
   vehicleCapacity Int @map("vehicle_capacity")
   cabins Cabin[]
   trips Trip[]
@@ -104,8 +102,8 @@ model BookingPassenger {
   trip Trip @relation(fields: [tripId], references: [id])
   passengerId Int @map("passenger_id")
   passenger Passenger @relation(fields: [passengerId], references: [id])
-  seatId Int @map("seat_id")
-  seat Seat @relation(fields: [seatId], references: [id])
+  seatId Int? @map("seat_id")
+  seat Seat? @relation(fields: [seatId], references: [id])
   meal String
   totalPrice Float @map("total_price")
   referenceNo String @map("reference_no")
