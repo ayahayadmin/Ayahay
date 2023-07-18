@@ -3,39 +3,34 @@ import React, { useState } from 'react';
 import { Button, Form, Input } from 'antd';
 import { LoginForm } from '@ayahay/models/profile.model';
 import { onLogin } from '@/services/profile.service';
-import { initFirebase } from '@/app/auth/app';
-import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/app/contexts/AuthContext';
 
-const formItemLayout = {
-  labelCol: {
-    xs: { span: 24 },
-    sm: { span: 8 },
-  },
-  wrapperCol: {
-    xs: { span: 24 },
-    sm: { span: 16 },
-  },
-};
+// const formItemLayout = {
+//   labelCol: {
+//     xs: { span: 24 },
+//     sm: { span: 8 },
+//   },
+//   wrapperCol: {
+//     xs: { span: 24 },
+//     sm: { span: 16 },
+//   },
+// };
 
 export default function SignInForm() {
-  initFirebase();
-  const auth = getAuth();
+  const { currentUser, signIn } = useAuth();
   const [error, setError] = useState('');
+  const router = useRouter();
+
+  if (currentUser) {
+    console.log(`currentUser: ${JSON.stringify(currentUser, null, 2)}`);
+    router.push('/'); //altho if magmomodal, iclclose na lang yung modal instead of redirection
+  }
 
   const onFinish = (values: LoginForm) => {
     console.log('Received values of form: ', values);
     const { email, password } = values;
-    signInWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
-        // Signed in
-        const user = userCredential.user;
-        console.log(`success sign in: ${user}`);
-      })
-      .catch((error) => {
-        const errorCode = error.code;
-        const errorMessage = error.message;
-        console.log(`sign in error: ${errorCode}: ${errorMessage}`);
-      });
+    signIn(email, password);
     // try {
     //   const profile = onLogin(values);
     //   console.log(profile);
@@ -45,9 +40,13 @@ export default function SignInForm() {
     // }
   };
 
+  // const onReset = () => {
+
+  // }
+
   return (
     <Form
-      {...formItemLayout}
+      // {...formItemLayout}
       name='normal_login'
       className='login-form'
       onFinish={onFinish}
@@ -80,7 +79,7 @@ export default function SignInForm() {
         />
       </Form.Item>
       <Form.Item>
-        <a className='login-form-forgot' href=''>
+        <a className='login-form-forgot' onClick={() => {}} href=''>
           Forgot password?
         </a>
       </Form.Item>

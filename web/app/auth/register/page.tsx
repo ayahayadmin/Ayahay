@@ -3,8 +3,7 @@ import { BasicProfile } from '@ayahay/models/profile.model';
 import { saveProfile } from '@/services/profile.service';
 import { Button, Checkbox, Form, Input } from 'antd';
 import React, { useState } from 'react';
-import { createUserWithEmailAndPassword, getAuth } from 'firebase/auth';
-import { initFirebase } from '../app';
+import { useAuth } from '@/app/contexts/AuthContext';
 
 const formItemLayout = {
   labelCol: {
@@ -31,24 +30,13 @@ const tailFormItemLayout = {
 };
 
 export default function Register() {
-  initFirebase();
-  const auth = getAuth();
+  const { currentUser, register } = useAuth();
   const [form] = Form.useForm();
 
   const onFinish = (values: BasicProfile) => {
     console.log('Received values of form: ', values);
     const { email, password } = values;
-    createUserWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
-        // Signed in
-        const user = userCredential.user;
-        console.log(`success register: ${JSON.stringify(user, null, 2)}`);
-      })
-      .catch((error) => {
-        const errorCode = error.code;
-        const errorMessage = error.message;
-        console.log(`register in error: ${errorCode}: ${errorMessage}`);
-      });
+    register(email, password);
     // saveProfile(values);
   };
 

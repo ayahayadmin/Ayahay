@@ -4,8 +4,10 @@ import { Avatar, Button, Dropdown, MenuProps } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 import { IProfile } from '@ayahay/models';
 import Link from 'next/link';
+import { useAuth } from '@/app/contexts/AuthContext';
 
 export default function MeControl() {
+  const { currentUser, logout } = useAuth();
   const [loggedInUser, setLoggedInUser] = useState<IProfile | undefined>(
     undefined
   );
@@ -32,6 +34,7 @@ export default function MeControl() {
   };
 
   const logOut = () => {
+    logout();
     setLoggedInUser(undefined);
     setDropdownOpen(false);
   };
@@ -46,7 +49,7 @@ export default function MeControl() {
       label: (
         <button
           style={{ all: 'unset', width: '100%' }}
-          onClick={() => logOut()}
+          onClick={() => logOut()} //we can use auth.signOut() directly
         >
           Log Out
         </button>
