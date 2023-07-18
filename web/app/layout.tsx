@@ -8,6 +8,7 @@ import React from 'react';
 import { Content } from 'antd/es/layout/layout';
 import WebFooter from '@/components/WebFooter';
 import WebSider from '@/components/WebSider';
+import AuthContextProvider from './contexts/AuthContext';
 const jost = Jost({ subsets: ['latin'], display: 'swap' });
 
 export default function RootLayout({
@@ -18,26 +19,28 @@ export default function RootLayout({
   return (
     <html lang='en' className={jost.className}>
       <body>
-        <ConfigProvider
-          theme={{
-            token: {
-              fontFamily: jost.style.fontFamily,
-            },
-          }}
-        >
-          <App>
-            <Layout>
+        <AuthContextProvider>
+          <ConfigProvider
+            theme={{
+              token: {
+                fontFamily: jost.style.fontFamily,
+              },
+            }}
+          >
+            <App>
               <Layout>
-                <WebHeader />
-                <Content style={{ backgroundColor: 'white' }}>
-                  {children}
-                </Content>
-                <WebFooter />
+                <Layout>
+                  <WebHeader />
+                  <Content style={{ backgroundColor: 'white' }}>
+                    {children}
+                  </Content>
+                  <WebFooter />
+                </Layout>
+                <WebSider />
               </Layout>
-              <WebSider />
-            </Layout>
-          </App>
-        </ConfigProvider>
+            </App>
+          </ConfigProvider>
+        </AuthContextProvider>
       </body>
     </html>
   );
