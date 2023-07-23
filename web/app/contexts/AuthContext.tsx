@@ -2,6 +2,7 @@ import {
   GoogleAuthProvider,
   createUserWithEmailAndPassword,
   getAuth,
+  sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut,
@@ -18,6 +19,7 @@ const AuthContext = createContext({
   signIn: (email: string, password: string) => Promise,
   signInWithGoogle: () => Promise,
   logout: () => Promise,
+  resetPassword: (email: string) => Promise,
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -46,6 +48,7 @@ export default function AuthContextProvider({ children }: any) {
         // Signed in
         const user = userCredential.user;
         console.log(`success sign in: ${JSON.stringify(user, null, 2)}`);
+        return true;
       })
       .catch((error) => {
         const errorCode = error.code;
@@ -57,6 +60,19 @@ export default function AuthContextProvider({ children }: any) {
   function signInWithGoogle() {
     const provider = new GoogleAuthProvider();
     return signInWithPopup(auth, provider);
+  }
+
+  function resetPassword(email: string) {
+    return sendPasswordResetEmail(auth, email, { url: 'http://localhost:3000' }) //TO DO: localhost would be changed ofc
+      .then((res) => {
+        // Reset successful.
+        console.log(`reset success: ${JSON.stringify(res, null, 2)}`);
+        return true;
+      })
+      .catch((error) => {
+        // An error happened.
+        console.log(`reset error: ${error.message}`);
+      });
   }
 
   function logout() {
@@ -77,6 +93,7 @@ export default function AuthContextProvider({ children }: any) {
     signIn,
     logout,
     signInWithGoogle,
+    resetPassword,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

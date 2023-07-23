@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { Button, notification } from 'antd';
 import { BellOutlined } from '@ant-design/icons';
 import { webLinks } from '@/services/nav.service';
-import MeControl from '@/components/auth/MeControl';
+import SignInForm from '@/components/auth/SignInForm';
 
 export default function WebHeader() {
   const [api, contextHolder] = notification.useNotification();
@@ -39,7 +39,7 @@ export default function WebHeader() {
         <Button type='text' onClick={openNotification} size='large'>
           <BellOutlined style={{ fontSize: '18px' }} />
         </Button>
-        <MeControl />
+        <SignInForm />
       </div>
     </nav>
   );
