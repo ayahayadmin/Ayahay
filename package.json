@@ -15,8 +15,10 @@
     "jsxSingleQuote": true
   },
   "scripts": {
-    "start:api": "yarn --cwd api start:dev",
-    "start:web": "yarn --cwd web dev",
-    "start:admin": "yarn --cwd admin dev -p 3001"
+    "api:start": "yarn --cwd api start:dev",
+    "api:init-db": "yarn --cwd api db:init-dev",
+    "api:reset-db": "yarn --cwd api db:reset-dev",
+    "web:start": "yarn --cwd web dev",
+    "admin:start": "yarn --cwd admin dev -p 3001"
   }
 }
