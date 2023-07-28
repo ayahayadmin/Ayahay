@@ -34,11 +34,12 @@ export default function AuthContextProvider({ children }: any) {
         // Signed in
         const user = userCredential.user;
         console.log(`success register: ${JSON.stringify(user, null, 2)}`);
+        return true;
       })
       .catch((error) => {
         const errorCode = error.code;
         const errorMessage = error.message;
-        console.log(`register in error: ${errorCode}: ${errorMessage}`);
+        console.log(`register in error: ${errorCode}: ${errorMessage}`); //maybe throw an error
       });
   }
 
@@ -53,7 +54,7 @@ export default function AuthContextProvider({ children }: any) {
       .catch((error) => {
         const errorCode = error.code;
         const errorMessage = error.message;
-        console.log(`sign in error: ${errorCode}: ${errorMessage}`);
+        console.log(`sign in error: ${errorCode}: ${errorMessage}`); //maybe throw an error
       });
   }
 
@@ -71,7 +72,7 @@ export default function AuthContextProvider({ children }: any) {
       })
       .catch((error) => {
         // An error happened.
-        console.log(`reset error: ${error.message}`);
+        console.log(`reset error: ${error.message}`); //maybe throw an error
       });
   }
 
@@ -83,7 +84,7 @@ export default function AuthContextProvider({ children }: any) {
       })
       .catch((error) => {
         // An error happened.
-        console.log('sign out error');
+        console.log('sign out error'); //maybe throw an error
       });
   }
 
