@@ -15,7 +15,7 @@ import { LoginForm } from '@ayahay/models';
 import Link from 'next/link';
 import { useAuth } from '@/app/contexts/AuthContext';
 
-export default function SignInForm() {
+export default function AuthForm() {
   const { currentUser, logout, register, resetPassword, signIn } = useAuth();
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
