@@ -13,4 +13,10 @@ export class PassengerService {
       where,
     });
   }
+
+  async createPassenger(data: Prisma.PassengerCreateInput): Promise<Passenger> {
+    return this.prisma.passenger.create({
+      data,
+    });
+  }
 }

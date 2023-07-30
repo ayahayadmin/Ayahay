@@ -1,6 +1,14 @@
-import { Controller, Get, NotFoundException, Param } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  NotFoundException,
+  Param,
+  Post,
+} from '@nestjs/common';
 import { PassengerService } from './passenger.service';
-import { Passenger } from '@prisma/client';
+import { Passenger, Prisma } from '@prisma/client';
 
 @Controller('passenger')
 export class PassengerController {
@@ -18,5 +26,14 @@ export class PassengerController {
     }
 
     return passenger;
+  }
+
+  @Post()
+  async createPassenger(@Body() data: Prisma.PassengerCreateInput) {
+    try {
+      return await this.passengerService.createPassenger(data);
+    } catch {
+      throw new BadRequestException();
+    }
   }
 }
