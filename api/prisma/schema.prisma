@@ -123,6 +123,7 @@ model Passenger {
   address String
   nationality String
   buddyId Int? @map("buddy_id")
+  userId String
   buddy Passenger? @relation("PassengerBuddies", fields: [buddyId], references: [id])
   buddies Passenger[] @relation("PassengerBuddies")
   bookings BookingPassenger[]
