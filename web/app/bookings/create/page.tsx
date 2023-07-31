@@ -8,30 +8,14 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { ITrip, IBooking } from '@ayahay/models';
 import { getTrip } from '@/services/trip.service';
 import CreateBookingForm from '@/app/bookings/create/createBookingForm';
+import useSWR from 'swr';
+import { useTripFromSearchParams } from '@/hooks/trip';
 
 const { Title } = Typography;
 
 export default function CreateBooking() {
-  const searchParams = useSearchParams();
   const router = useRouter();
-  const [trip, setTrip] = useState<ITrip>();
-
-  const onPageLoad = () => {
-    const params = Object.fromEntries(searchParams.entries());
-
-    const tripId = params?.tripId;
-
-    if (tripId === undefined) {
-      router.push(`/trips`);
-      return;
-    }
-
-    setTimeout(() => {
-      setTrip(getTrip(+tripId));
-    }, 1000);
-  };
-
-  useEffect(onPageLoad, []);
+  const { trip, error, isLoading } = useTripFromSearchParams();
 
   const onComplete = (booking: IBooking) => {
     router.push(`/bookings/${booking.id}`);

@@ -2,7 +2,7 @@ import { IBooking } from '@ayahay/models/booking.model';
 import React from 'react';
 import BookingSummary from '@ayahay/components/descriptions/BookingSummary';
 import { Button, Typography } from 'antd';
-import { createBooking } from '@/services/booking.service';
+import { startPayment } from '@/services/booking.service';
 
 const { Title } = Typography;
 
@@ -22,8 +22,8 @@ export default function BookingConfirmation({
       return;
     }
     payBooking();
-    const createdBooking = createBooking(booking);
-    onSuccessfulPayment && onSuccessfulPayment(createdBooking);
+    // const createdBooking = startPayment(booking);
+    // onSuccessfulPayment && onSuccessfulPayment(createdBooking);
   };
 
   // TODO: Payment logic

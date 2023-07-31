@@ -1,9 +1,4 @@
-import {
-  ITrip,
-  mockTrip,
-  TripData,
-  TripPaxes,
-} from '@ayahay/models';
+import { ITrip, mockTrip, TripData, TripPaxes } from '@ayahay/models';
 import dayjs from 'dayjs';
 import {
   ceil,
@@ -16,10 +11,33 @@ import {
   sum,
   values,
 } from 'lodash';
-import { SEAT_TYPE } from '@ayahay/constants/enum';
+import { CABIN_TYPE, SEAT_TYPE } from '@ayahay/constants/enum';
+import axios from 'axios';
+import { API_URL } from '@/util/constants';
 
-export function getTrip(tripId: number): ITrip {
-  return mockTrip;
+export async function getTrip(tripId: number): Promise<ITrip | undefined> {
+  if (tripId === undefined) {
+    return undefined;
+  }
+
+  try {
+    const { data: trip } = await axios.get<ITrip>(`${API_URL}/trips/${tripId}`);
+
+    // TODO: calculate available cabin and seat types in backend
+    trip.availableCabins = Object.keys(
+      CABIN_TYPE
+    ) as (keyof typeof CABIN_TYPE)[];
+    trip.availableSeatTypes = Object.keys(
+      SEAT_TYPE
+    ) as (keyof typeof SEAT_TYPE)[];
+
+    // TODO: create table for 'Meal Menu'
+    trip.meals = ['Bacsilog'];
+    return trip;
+  } catch (e) {
+    console.error(e);
+  }
+  return undefined;
 }
 
 export function getTrips(

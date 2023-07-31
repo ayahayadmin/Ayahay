@@ -20,6 +20,7 @@
     "@types/react-dom": "18.0.11",
     "@types/react-router-dom": "^5.3.3",
     "antd": "^5.2.3",
+    "axios": "^1.4.0",
     "chart.js": "^4.2.1",
     "dayjs": "^1.11.7",
     "encoding": "^0.1.13",
@@ -34,6 +35,7 @@
     "react-firebase-hooks": "^5.1.1",
     "react-qr-code": "^2.0.11",
     "sass": "^1.58.3",
+    "swr": "^2.2.0",
     "typescript": "4.9.5"
   }
 }

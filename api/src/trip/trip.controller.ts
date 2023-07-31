@@ -12,10 +12,14 @@ import { TripService } from './trip.service';
 import { ITrip, TripSearchDto } from '@ayahay/models';
 import { Prisma } from '@prisma/client';
 import { omit } from 'lodash';
+import { TripMapper } from './trip.mapper';
 
-@Controller('trip')
+@Controller('trips')
 export class TripController {
-  constructor(private tripService: TripService) {}
+  constructor(
+    private readonly tripService: TripService,
+    private readonly tripMapper: TripMapper
+  ) {}
 
   @Get()
   async getAllTrips(
@@ -44,13 +48,20 @@ export class TripController {
   }
 
   @Get(':tripId')
-  async getTripById(@Param('tripId') tripId: string): Promise<any> {
-    const trip = await this.tripService.getTrip({ id: Number(tripId) });
+  async getTripById(@Param('tripId') tripId: string): Promise<ITrip> {
+    const trip = await this.tripService.getTrip(
+      { id: Number(tripId) },
+      {
+        srcPort: true,
+        destPort: true,
+        shippingLine: true,
+      }
+    );
     if (!trip) {
       throw new NotFoundException('Trip Not Found');
     }
 
-    return trip;
+    return this.tripMapper.convertTripToDto(trip);
   }
 
   @Post()

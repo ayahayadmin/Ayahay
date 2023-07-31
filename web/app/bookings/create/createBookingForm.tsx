@@ -5,7 +5,7 @@ import { DEFAULT_PASSENGER } from '@ayahay/constants/default';
 import PassengerInformationForm from '@/components/booking/PassengerInformationForm';
 import React, { useState } from 'react';
 import PassengerPreferencesForm from '@/components/booking/PassengerPreferencesForm';
-import { createTentativeBookingFromPassengerPreferences } from '@/services/booking.service';
+import { createTentativeBooking } from '@/services/booking.service';
 import BookingConfirmation from '@/components/booking/BookingConfirmation';
 
 const { useBreakpoint } = Grid;
@@ -49,15 +49,12 @@ export default function CreateBookingForm({
       if (trip === undefined) {
         return;
       }
-      const tentativeBooking = createTentativeBookingFromPassengerPreferences(
-        trip?.id,
+      const tentativeBooking = createTentativeBooking(
+        [trip?.id],
+        passengers,
         passengers.map((passenger: IPassenger, index: number) => {
           // TODO: remove following 4 lines after back-end has been setup
           passenger.id = index;
-          if (passenger.preferences) {
-            passenger.preferences.passengerId = index;
-          }
-
           return passenger.preferences;
         }),
         vehicles
@@ -93,7 +90,12 @@ export default function CreateBookingForm({
       onValuesChange={(changesValues, values) => console.log(values)}
       onFinish={(values) => console.log(values)}
     >
-      <Steps current={currentStep} items={items} direction={stepDirection} labelPlacement={stepDirection}/>
+      <Steps
+        current={currentStep}
+        items={items}
+        direction={stepDirection}
+        labelPlacement={stepDirection}
+      />
       <Spin spinning={loadingMessage?.length > 0} tip={loadingMessage}>
         <div style={{ display: currentStep === 0 ? 'block' : 'none' }}>
           <PassengerInformationForm
