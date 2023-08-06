@@ -7,6 +7,7 @@ import { PaymentModule } from './payment/payment.module';
 import { PassengerModule } from './passenger/passenger.module';
 import { MapperModule } from './mapper.module';
 import { GlobalModule } from './global.module';
+import { AccountModule } from './account/account.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { GlobalModule } from './global.module';
     PassengerModule,
     MapperModule,
     GlobalModule,
+    AccountModule,
   ],
 })
 export class AppModule {}
