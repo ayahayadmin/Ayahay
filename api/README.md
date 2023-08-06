@@ -13,6 +13,7 @@ $ yarn install
 4. Define environment variables in the `.env` file
 ```
 DATABASE_URL=postgresql://username:password@localhost:5432/ayahay?schema=ayahay
+WEB_URL=http://localhost:3000
 ```
 5. Initialize the database
 ```bash

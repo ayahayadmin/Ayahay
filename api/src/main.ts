@@ -16,7 +16,7 @@ async function bootstrap() {
   await prismaService.enableShutdownHooks(app);
 
   app.enableCors({
-    origin: ['http://localhost:3000'],
+    origin: [process.env.WEB_URL],
   });
   await app.listen(3001);
 }
