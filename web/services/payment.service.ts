@@ -1,4 +1,4 @@
-import { API_URL } from '@/util/constants';
+import { PAYMENT_API } from '@ayahay/constants/api';
 import { IBooking } from '@ayahay/models';
 import axios, { AxiosResponse } from 'axios';
 
@@ -6,5 +6,5 @@ import axios, { AxiosResponse } from 'axios';
 export function startPaymentForBooking(
   tentativeBookingId: number
 ): Promise<AxiosResponse<IBooking>> {
-  return axios.post<IBooking>(`${API_URL}/pay/booking/${tentativeBookingId}`);
+  return axios.post<IBooking>(`${PAYMENT_API}/booking/${tentativeBookingId}`);
 }

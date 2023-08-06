@@ -13,7 +13,7 @@ import {
 } from 'lodash';
 import { CABIN_TYPE, SEAT_TYPE } from '@ayahay/constants/enum';
 import axios from 'axios';
-import { API_URL } from '@/util/constants';
+import { TRIP_API } from '@ayahay/constants/api';
 
 export async function getTrip(tripId: number): Promise<ITrip | undefined> {
   if (tripId === undefined) {
@@ -21,7 +21,7 @@ export async function getTrip(tripId: number): Promise<ITrip | undefined> {
   }
 
   try {
-    const { data: trip } = await axios.get<ITrip>(`${API_URL}/trips/${tripId}`);
+    const { data: trip } = await axios.get<ITrip>(`${TRIP_API}/${tripId}`);
 
     // TODO: calculate available cabin and seat types in backend
     trip.availableCabins = Object.keys(
