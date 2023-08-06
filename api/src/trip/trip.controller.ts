@@ -1,13 +1,4 @@
-import {
-  BadRequestException,
-  Body,
-  Controller,
-  Get,
-  NotFoundException,
-  Param,
-  Post,
-  Query,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { TripService } from './trip.service';
 import { ITrip, TripSearchDto } from '@ayahay/models';
 import { Prisma } from '@prisma/client';
@@ -30,21 +21,16 @@ export class TripController {
     // - add data for passengers who booked for a specific trip, so that I'll know how many capacity left in the ship
     const orderBy = {
       //if orderBy baseFare? currently FE passes 'basePrice'. Should we change FE to pass 'baseFare' instead?
-      [query.sort]: 'asc', //ascending by default
+      [query.sort ? query.sort : 'departureDate']: 'asc', //ascending by default
     };
     const queryWithoutSort = omit(query, 'sort');
-
     const where = {
       ...queryWithoutSort,
       srcPortId: Number(queryWithoutSort.srcPortId),
       destPortId: Number(queryWithoutSort.destPortId),
     };
 
-    try {
-      return await this.tripService.getTrips({ where, orderBy });
-    } catch {
-      throw new BadRequestException('srcPortId and destPortId cannot be empty');
-    }
+    return await this.tripService.getTrips({ where, orderBy });
   }
 
   @Get(':tripId')
@@ -57,21 +43,12 @@ export class TripController {
         shippingLine: true,
       }
     );
-    if (!trip) {
-      throw new NotFoundException('Trip Not Found');
-    }
 
     return this.tripMapper.convertTripToDto(trip);
   }
 
   @Post()
   async createTrip(@Body() data: Prisma.TripCreateInput) {
-    try {
-      return await this.tripService.createTrip(data);
-    } catch {
-      throw new BadRequestException(
-        'id, shipIp, destPortId, srcPortId, baseFare, departureDate, shippingLineId, & referenceNo are required'
-      );
-    }
+    return await this.tripService.createTrip(data);
   }
 }
