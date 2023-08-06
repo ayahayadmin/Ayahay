@@ -16,8 +16,6 @@ export class AccountController {
 
   @Get(':accountId')
   async getAccount(@Param('accountId') accountId: string) {
-    console.log(accountId);
-
     return await this.accountService.getAccountById(accountId);
   }
 }
