@@ -7,10 +7,12 @@ import {
   mockInnova,
   mockPickup,
 } from './passenger-vehicle.model';
+import { IAccount } from './account.model';
 
 export interface IPassenger {
   id: number;
-  profile?: IProfile;
+  accountId?: string;
+  account?: IAccount;
   firstName: string;
   lastName: string;
   occupation: keyof typeof OCCUPATION;
@@ -20,12 +22,13 @@ export interface IPassenger {
   address: string;
   nationality: string;
   preferences?: PassengerPreferences;
+  buddyId?: number;
   companions?: IPassenger[];
   vehicles?: IPassengerVehicle[];
 }
 
 export const mockPassenger: IPassenger = {
-  id: 4,
+  id: -4,
   firstName: 'John',
   lastName: 'Doe',
   occupation: 'Student',
@@ -38,7 +41,7 @@ export const mockPassenger: IPassenger = {
 };
 
 export const mockSon: IPassenger = {
-  id: 3,
+  id: -3,
   firstName: 'Son',
   lastName: 'Santos',
   occupation: 'Student',
@@ -51,7 +54,7 @@ export const mockSon: IPassenger = {
 };
 
 export const mockWife: IPassenger = {
-  id: 2,
+  id: -2,
   firstName: 'Wife',
   lastName: 'Santos',
   occupation: 'Unemployed',
@@ -64,7 +67,7 @@ export const mockWife: IPassenger = {
 };
 
 export const mockFather: IPassenger = {
-  id: 1,
+  id: -1,
   firstName: 'Father',
   lastName: 'Santos',
   occupation: 'Employed',

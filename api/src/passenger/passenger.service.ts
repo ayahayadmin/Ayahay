@@ -1,32 +1,26 @@
-import {
-  Injectable,
-  InternalServerErrorException,
-  NotFoundException,
-} from '@nestjs/common';
-import { Passenger, Prisma } from '@prisma/client';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
+import { IPassenger } from '@ayahay/models';
+import { PassengerMapper } from './passenger.mapper';
 
 @Injectable()
 export class PassengerService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private passengerMapper: PassengerMapper
+  ) {}
 
-  async getPassengerByUserId(
-    where: Prisma.PassengerWhereInput
-  ): Promise<Passenger> {
-    const passenger = await this.prisma.passenger.findFirst({ where });
+  async createPassenger(passenger: IPassenger): Promise<IPassenger> {
+    const passengerEntity =
+      this.passengerMapper.convertPassengerToEntityForCreation(passenger);
 
-    if (!passenger) {
-      throw new NotFoundException('Passenger Not Found');
-    }
+    const createdPassengerEntity = await this.prisma.passenger.create({
+      data: passengerEntity,
+    });
 
-    return passenger;
-  }
-
-  async createPassenger(data: Prisma.PassengerCreateInput): Promise<Passenger> {
-    try {
-      return await this.prisma.passenger.create({ data });
-    } catch {
-      throw new InternalServerErrorException();
-    }
+    return {
+      ...passenger,
+      id: createdPassengerEntity.id,
+    };
   }
 }

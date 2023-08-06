@@ -1,3 +1,5 @@
+ALTER TABLE ayahay.passenger ADD CONSTRAINT "passenger_account_id_fkey" FOREIGN KEY ("account_id") REFERENCES ayahay.account (id) ON DELETE SET NULL ON UPDATE CASCADE;
+
 INSERT INTO ayahay.port
     ("name")
     VALUES
@@ -120,3 +122,8 @@ INSERT INTO ayahay.trip
         (SELECT id FROM ayahay.port WHERE "name" = 'Bacolod')
     )
 ;
+
+INSERT INTO ayahay.account
+    (id, email)
+    VALUES
+    ('SYSTEM', 'system@ayahay.com')

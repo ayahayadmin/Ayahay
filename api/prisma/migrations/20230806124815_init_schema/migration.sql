@@ -89,6 +89,8 @@ CREATE TABLE "booking_passenger" (
 -- CreateTable
 CREATE TABLE "passenger" (
     "id" SERIAL NOT NULL,
+    "buddy_id" INTEGER,
+    "account_id" TEXT,
     "first_name" TEXT NOT NULL,
     "last_name" TEXT NOT NULL,
     "occupation" TEXT NOT NULL,
@@ -97,7 +99,6 @@ CREATE TABLE "passenger" (
     "birthday" TIMESTAMP(3) NOT NULL,
     "address" TEXT NOT NULL,
     "nationality" TEXT NOT NULL,
-    "buddy_id" INTEGER,
 
     CONSTRAINT "passenger_pkey" PRIMARY KEY ("id")
 );
@@ -137,6 +138,18 @@ CREATE TABLE "temp_booking" (
 
     CONSTRAINT "temp_booking_pkey" PRIMARY KEY ("id")
 );
+
+-- CreateTable
+CREATE TABLE "account" (
+    "id" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "passenger_id" INTEGER,
+
+    CONSTRAINT "account_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "account_passenger_id_key" ON "account"("passenger_id");
 
 -- AddForeignKey
 ALTER TABLE "trip" ADD CONSTRAINT "trip_ship_id_fkey" FOREIGN KEY ("ship_id") REFERENCES "ship"("id") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -182,3 +195,6 @@ ALTER TABLE "booking_vehicle" ADD CONSTRAINT "booking_vehicle_vehicle_id_fkey" F
 
 -- AddForeignKey
 ALTER TABLE "passenger_vehicle" ADD CONSTRAINT "passenger_vehicle_passenger_id_fkey" FOREIGN KEY ("passenger_id") REFERENCES "passenger"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "account" ADD CONSTRAINT "account_passenger_id_fkey" FOREIGN KEY ("passenger_id") REFERENCES "passenger"("id") ON DELETE SET NULL ON UPDATE CASCADE;

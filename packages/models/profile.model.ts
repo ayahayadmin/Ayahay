@@ -1,6 +1,7 @@
 import { CIVIL_STATUS, ROLE, SEX } from '@ayahay/constants/enum';
 
 export interface BasicProfile {
+  id: string;
   firstName: string;
   lastName: string;
   email: string;

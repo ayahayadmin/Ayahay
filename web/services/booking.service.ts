@@ -9,7 +9,7 @@ import {
   IPassenger,
   IPassengerVehicle,
 } from '@ayahay/models';
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import { API_URL } from '@/util/constants';
 
 export async function createTentativeBooking(
@@ -17,16 +17,14 @@ export async function createTentativeBooking(
   passengers: IPassenger[],
   passengerPreferences: PassengerPreferences[],
   vehicles: IPassengerVehicle[]
-): Promise<IBooking> {
-  return axios.post(`${API_URL}/bookings`, {
+): Promise<AxiosResponse<IBooking>> {
+  return axios.post<IBooking>(`${API_URL}/bookings`, {
     tripIds,
     passengers,
     passengerPreferences,
     vehicles,
   });
 }
-
-export function startPayment(tentativeBookingId: number) {}
 
 export function getBookingById(bookingId: number): IBooking | undefined {
   return undefined;

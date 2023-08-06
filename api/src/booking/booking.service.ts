@@ -11,6 +11,10 @@ import {
 } from '@ayahay/models';
 import { UtilityService } from '../utility.service';
 import { TripService } from '../trip/trip.service';
+import { BookingMapper } from './booking.mapper';
+import { PassengerService } from '../passenger/passenger.service';
+import { BookingValidator } from './booking.validator';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class BookingService {
@@ -18,9 +22,6 @@ export class BookingService {
   // we want to prioritize cabin preference
   private readonly CABIN_WEIGHT = 10;
   private readonly SEAT_TYPE_WEIGHT = 1;
-  private readonly MAX_PASSENGERS_PER_BOOKING = 10;
-  private readonly MAX_TRIPS_PER_BOOKING = 10;
-  private readonly MAX_VEHICLES_PER_BOOKING = 5;
 
   private readonly CABIN_TYPE_MARKUP_FLAT: { [cabinType: string]: number } = {
     First: 0,
@@ -52,7 +53,10 @@ export class BookingService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly tripService: TripService,
-    private readonly utilityService: UtilityService
+    private readonly utilityService: UtilityService,
+    private readonly bookingMapper: BookingMapper,
+    private readonly bookingValidator: BookingValidator,
+    private readonly passengerService: PassengerService
   ) {}
 
   async booking(
@@ -124,12 +128,23 @@ export class BookingService {
     passengerPreferences: PassengerPreferences[],
     vehicles: IPassengerVehicle[]
   ): Promise<IBooking | undefined> {
-    this.validateCreateTentativeBookingRequest(
-      tripIds,
-      passengers,
-      passengerPreferences,
-      vehicles
-    );
+    // TODO: Get Logged In User Account ID
+    const loggedInAccountId = 'SYSTEM';
+    // TODO: for testing; accounts are set automatically
+    passengers[0].accountId = loggedInAccountId;
+
+    const errorMessages =
+      this.bookingValidator.validateCreateTentativeBookingRequest(
+        loggedInAccountId,
+        tripIds,
+        passengers,
+        passengerPreferences,
+        vehicles
+      );
+
+    if (errorMessages.length > 0) {
+      throw new BadRequestException(errorMessages);
+    }
 
     const trips = await this.tripService.getTripsByIds(tripIds);
 
@@ -147,7 +162,7 @@ export class BookingService {
     );
 
     if (bookingPassengers === undefined) {
-      throw new Error('Could not find seats for the ');
+      throw new BadRequestException('Could not find seats for the ');
     }
 
     const bookingVehicles = this.createTentativeBookingVehicles(
@@ -174,40 +189,6 @@ export class BookingService {
     return await this.saveTempBooking(tempBooking);
   }
 
-  private validateCreateTentativeBookingRequest(
-    tripIds: number[],
-    passengers: IPassenger[],
-    passengerPreferences: PassengerPreferences[],
-    vehicles: IPassengerVehicle[]
-  ): string[] {
-    const errorMessages: string[] = [];
-    if (tripIds.length > this.MAX_TRIPS_PER_BOOKING) {
-      errorMessages.push(
-        `Number of trips for one booking exceeded the maximum of ${this.MAX_TRIPS_PER_BOOKING}`
-      );
-    }
-    // TODO: check if all trip are existing records
-    if (passengerPreferences.length > this.MAX_PASSENGERS_PER_BOOKING) {
-      errorMessages.push(
-        `Number of passengers for one booking exceeded the maximum of ${this.MAX_PASSENGERS_PER_BOOKING}`
-      );
-    }
-
-    if (vehicles.length > this.MAX_VEHICLES_PER_BOOKING) {
-      errorMessages.push(
-        `Number of vehicles for one booking exceeded the maximum of ${this.MAX_VEHICLES_PER_BOOKING}`
-      );
-    }
-
-    if (passengers.length !== passengerPreferences.length) {
-      errorMessages.push(
-        'The number of passengers should match the number of passenger preferences'
-      );
-    }
-
-    throw new BadRequestException(errorMessages);
-  }
-
   private async getAvailableSeatsInTripsThatMatchPreferences(
     tripIds: number[],
     passengerPreferences: PassengerPreferences[]
@@ -227,16 +208,16 @@ export class BookingService {
     }
 
     return this.prisma.$queryRaw<AvailableSeat[]>`
-SELECT tripId, cabinId, cabinName, cabinType, seatId, seatName, seatType
+SELECT "tripId", "cabinId", "cabinName", "cabinType", "seatId", "seatName", "seatType"
 FROM (
   SELECT 
-    trip.id AS tripId,
-    cabin.id AS cabinId,
-    cabin."name" AS cabinName,
-    cabin."type" AS cabinType,
-    seat.id AS seatId,
-    seat."name" AS seatName,
-    seat."type" AS seatType,
+    trip.id AS "tripId",
+    cabin.id AS "cabinId",
+    cabin."name" AS "cabinName",
+    cabin."type" AS "cabinType",
+    seat.id AS "seatId",
+    seat."name" AS "seatName",
+    seat."type" AS "seatType",
     ROW_NUMBER() OVER (
       PARTITION BY trip.id, cabin."type", seat."type" 
     ) AS row
@@ -244,9 +225,9 @@ FROM (
   INNER JOIN ayahay.cabin cabin ON cabin.ship_id = trip.ship_id
   INNER JOIN ayahay.seat seat ON seat.cabin_id = cabin.id
   WHERE ( 
-    trip.id IN ${Prisma.join(tripIds)}
-    AND cabin."type" IN ${Prisma.join(preferredCabinTypes)}
-    AND seat."type" IN ${Prisma.join(preferredSeatTypes)}
+    trip.id IN (${Prisma.join(tripIds)})
+    AND cabin."type" IN (${Prisma.join(preferredCabinTypes)})
+    AND seat."type" IN (${Prisma.join(preferredSeatTypes)})
     AND NOT EXISTS (
       SELECT 1 
       FROM ayahay.booking_passenger bookingPassenger
@@ -255,7 +236,7 @@ FROM (
         AND bookingPassenger.seat_id = seat.id
     )
   ) 
-)
+) partitioned_results
 WHERE row <= ${passengerPreferences.length}
 ;
 `;
@@ -461,14 +442,16 @@ WHERE row <= ${passengerPreferences.length}
     });
 
     return {
-      id: tempBooking.id,
       ...booking,
+      id: tempBooking.id,
     } as IBooking;
   }
 
-  async createBookingFromTempBooking(tempBooking: TempBooking): Promise<void> {
+  async createBookingFromTempBooking(
+    tempBooking: TempBooking
+  ): Promise<IBooking> {
     if (tempBooking.paymentReference === null) {
-      throw new Error('The booking has no payment reference.');
+      throw new BadRequestException('The booking has no payment reference.');
     }
 
     // TODO: check if seats are available
@@ -491,17 +474,19 @@ WHERE row <= ${passengerPreferences.length}
   }
 
   // saves actual booking data; called after payment
-  private async saveBooking(booking: IBooking): Promise<void> {
+  private async saveBooking(booking: IBooking): Promise<IBooking> {
+    await this.saveNewPassengersInBooking(booking);
+
     const bookingPassengerData = booking.bookingPassengers.map(
-      (passenger) =>
+      (bookingPassenger) =>
         ({
-          meal: passenger.meal,
-          totalPrice: passenger.totalPrice,
-          referenceNo: passenger.referenceNo,
+          meal: bookingPassenger.meal,
+          totalPrice: bookingPassenger.totalPrice,
+          referenceNo: bookingPassenger.referenceNo,
           checkInDate: null,
-          tripId: passenger.tripId,
-          passengerId: passenger.passengerId,
-          seatId: passenger.seatId,
+          tripId: bookingPassenger.tripId,
+          passengerId: bookingPassenger.passenger.id,
+          seatId: bookingPassenger.seatId,
         } as Prisma.BookingPassengerCreateManyInput)
     );
 
@@ -514,7 +499,7 @@ WHERE row <= ${passengerPreferences.length}
         } as Prisma.BookingVehicleCreateManyInput)
     );
 
-    await this.prisma.booking.create({
+    const bookingEntity = await this.prisma.booking.create({
       data: {
         totalPrice: booking.totalPrice,
         paymentReference: booking.paymentReference,
@@ -530,6 +515,37 @@ WHERE row <= ${passengerPreferences.length}
         },
       },
     });
+
+    return this.bookingMapper.convertBookingToDto(bookingEntity);
+  }
+
+  // creates the passengers in booking with ID -1
+  // returns the created passengers' ID with the same order as BookingPassengers in booking
+  private async saveNewPassengersInBooking(booking: IBooking): Promise<void> {
+    const passengerOfLoggedInUser = booking.bookingPassengers[0].passenger;
+    // if user passenger profile not created yet, we create it here
+    if (passengerOfLoggedInUser.id <= 0) {
+      // TODO: Get Logged In User Account ID
+      passengerOfLoggedInUser.accountId = 'SYSTEM';
+      const createdPassenger = await this.passengerService.createPassenger(
+        passengerOfLoggedInUser
+      );
+      passengerOfLoggedInUser.id = createdPassenger.id;
+    }
+
+    await Promise.all(
+      booking.bookingPassengers.map(async ({ passenger }) => {
+        // if passenger already has an ID, do nothing
+        if (passenger.id > 0) {
+          return;
+        }
+        passenger.buddyId = passengerOfLoggedInUser.id;
+        const createdPassenger = await this.passengerService.createPassenger(
+          passenger
+        );
+        passenger.id = createdPassenger.id;
+      })
+    );
   }
 }
 

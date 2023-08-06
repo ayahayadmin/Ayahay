@@ -3,20 +3,20 @@ import React from 'react';
 
 import { ITrip } from '@ayahay/models';
 import { CABIN_TYPE, SEAT_TYPE } from '@ayahay/constants/enum';
+import { useTripFromSearchParams } from '@/hooks/trip';
 
 const { Title } = Typography;
 
 interface PassengerPreferencesFormProps {
-  trip?: ITrip;
   onNextStep?: () => void;
   onPreviousStep?: () => void;
 }
 
 export default function PassengerPreferencesForm({
-  trip,
   onNextStep,
   onPreviousStep,
 }: PassengerPreferencesFormProps) {
+  const { trip } = useTripFromSearchParams();
   const form = Form.useFormInstance();
   const passengers = Form.useWatch('passengers', form);
 

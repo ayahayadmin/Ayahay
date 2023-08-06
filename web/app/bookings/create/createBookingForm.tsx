@@ -1,4 +1,4 @@
-import { Form, Spin, Steps, Grid } from 'antd';
+import { Form, Spin, Steps, Grid, notification } from 'antd';
 import styles from './createBookingForm.module.scss';
 import { ITrip, IBooking, IPassenger } from '@ayahay/models';
 import { DEFAULT_PASSENGER } from '@ayahay/constants/default';
@@ -7,10 +7,10 @@ import React, { useState } from 'react';
 import PassengerPreferencesForm from '@/components/booking/PassengerPreferencesForm';
 import { createTentativeBooking } from '@/services/booking.service';
 import BookingConfirmation from '@/components/booking/BookingConfirmation';
+import { useTripFromSearchParams } from '@/hooks/trip';
 
 const { useBreakpoint } = Grid;
 interface CreateBookingFormProps {
-  trip?: ITrip;
   onComplete: (booking: IBooking) => void;
 }
 
@@ -21,9 +21,9 @@ const steps = [
 ];
 
 export default function CreateBookingForm({
-  trip,
   onComplete,
 }: CreateBookingFormProps) {
+  const { trip } = useTripFromSearchParams();
   const screens = useBreakpoint();
   const [form] = Form.useForm();
   const passengers = Form.useWatch('passengers', form);
@@ -41,15 +41,18 @@ export default function CreateBookingForm({
     setCurrentStep(currentStep - 1);
   };
 
-  const findSeats = () => {
+  const findSeats = async () => {
     setLoadingMessage(
       'Looking for available seats that match your preferences...'
     );
-    setTimeout(() => {
-      if (trip === undefined) {
-        return;
-      }
-      const tentativeBooking = createTentativeBooking(
+
+    if (trip === undefined) {
+      onBookError(new Error('Trip is not defined'));
+      return;
+    }
+
+    try {
+      const { data: tentativeBooking } = await createTentativeBooking(
         [trip?.id],
         passengers,
         passengers.map((passenger: IPassenger, index: number) => {
@@ -59,21 +62,21 @@ export default function CreateBookingForm({
         }),
         vehicles
       );
-      if (tentativeBooking === undefined) {
-        return;
-      }
-
-      // TODO: remove this after back-end has been set up
-      tentativeBooking.bookingPassengers?.forEach(
-        (booking) =>
-          (booking.passenger = passengers.find(
-            (passenger: IPassenger) => passenger.id === booking.passengerId
-          ))
-      );
       setBookingPreview(tentativeBooking);
-      setLoadingMessage('');
       nextStep();
-    }, 1000);
+    } catch (e) {
+      onBookError(e);
+    }
+    setLoadingMessage('');
+  };
+
+  const onBookError = (e: any) => {
+    notification.error({
+      message: 'Could not find a booking',
+      description:
+        'There seems to be an issue with finding a booking. Please try again in a few minutes or contact us at help@ayahay.com for assistance.',
+    });
+    console.error(e);
   };
 
   const items = steps.map(({ title }) => ({ key: title, title: title }));
@@ -105,14 +108,13 @@ export default function CreateBookingForm({
         </div>
         <div style={{ display: currentStep === 1 ? 'block' : 'none' }}>
           <PassengerPreferencesForm
-            trip={trip}
             onNextStep={findSeats}
             onPreviousStep={previousStep}
           />
         </div>
         <div style={{ display: currentStep === 2 ? 'block' : 'none' }}>
           <BookingConfirmation
-            booking={bookingPreview}
+            tentativeBooking={bookingPreview}
             onPreviousStep={previousStep}
             onSuccessfulPayment={onComplete}
           />

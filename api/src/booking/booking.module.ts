@@ -5,11 +5,13 @@ import { PrismaService } from '../prisma.service';
 import { TripService } from '../trip/trip.service';
 import { UtilityService } from '../utility.service';
 import { TripModule } from '../trip/trip.module';
+import { PassengerModule } from '../passenger/passenger.module';
+import { BookingValidator } from './booking.validator';
 
 @Module({
-  imports: [TripModule],
+  imports: [TripModule, PassengerModule],
   controllers: [BookingController],
-  providers: [PrismaService, BookingService, UtilityService],
+  providers: [BookingValidator, BookingService],
   exports: [BookingService],
 })
 export class BookingModule {}

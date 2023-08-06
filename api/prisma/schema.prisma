@@ -114,6 +114,8 @@ model BookingPassenger {
 
 model Passenger {
   id Int @default(autoincrement()) @id
+  buddyId Int? @map("buddy_id")
+  accountId String? @map("account_id")
   firstName String @map("first_name")
   lastName String @map("last_name")
   occupation String
@@ -122,10 +124,9 @@ model Passenger {
   birthday DateTime
   address String
   nationality String
-  buddyId Int? @map("buddy_id")
-  userId String @map("user_id")
   buddy Passenger? @relation("PassengerBuddies", fields: [buddyId], references: [id])
   buddies Passenger[] @relation("PassengerBuddies")
+  account Account?
   bookings BookingPassenger[]
   vehicles PassengerVehicle[]
 
@@ -168,4 +169,13 @@ model TempBooking {
   vehiclesJson Json @map("vehicles_json")
 
   @@map("temp_booking")
+}
+
+model Account {
+  id String @id
+  email String
+  passengerId Int? @map("passenger_id") @unique
+  passenger Passenger? @relation(fields: [passengerId], references: [id])
+
+  @@map("account")
 }

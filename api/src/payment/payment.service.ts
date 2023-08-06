@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { v4 as uuidv4 } from 'uuid';
 import { BookingService } from '../booking/booking.service';
+import { IBooking } from '@ayahay/models';
 
 @Injectable()
 export class PaymentService {
@@ -10,7 +11,8 @@ export class PaymentService {
     private bookingService: BookingService
   ) {}
 
-  async startPaymentFlow(tempBookingId: number): Promise<void> {
+  // TODO: should return void when payment flow is finalized
+  async startPaymentFlow(tempBookingId: number): Promise<IBooking> {
     const tempBooking = await this.prisma.tempBooking.findUnique({
       where: {
         id: tempBookingId,
@@ -33,8 +35,8 @@ export class PaymentService {
       },
     });
 
-    // for testing only;
-    await this.finishPaymentFlow(paymentReference);
+    // TODO: for testing only; remove after payment flow is finalized
+    return await this.finishPaymentFlow(paymentReference);
   }
 
   // returns a payment reference
@@ -44,7 +46,8 @@ export class PaymentService {
 
   // should be called in the callback function called by the payment gateway
   // when the user has finished the transaction
-  async finishPaymentFlow(paymentReference: string): Promise<void> {
+  // TODO: should return void when payment flow is finalized
+  async finishPaymentFlow(paymentReference: string): Promise<IBooking> {
     // TODO: assign a proper value
     const isPaymentSuccessful = true;
 

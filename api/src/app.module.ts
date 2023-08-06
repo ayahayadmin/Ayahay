@@ -6,6 +6,7 @@ import { SearchModule } from './search/search.module';
 import { PaymentModule } from './payment/payment.module';
 import { PassengerModule } from './passenger/passenger.module';
 import { MapperModule } from './mapper.module';
+import { GlobalModule } from './global.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { MapperModule } from './mapper.module';
     PaymentModule,
     PassengerModule,
     MapperModule,
+    GlobalModule,
   ],
 })
 export class AppModule {}

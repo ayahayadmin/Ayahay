@@ -7,7 +7,7 @@ import { BookingModule } from '../booking/booking.module';
 @Module({
   imports: [BookingModule],
   controllers: [PaymentController],
-  providers: [PrismaService, PaymentService],
+  providers: [PaymentService],
   exports: [PaymentService],
 })
 export class PaymentModule {}
