@@ -14,6 +14,8 @@ import { UserOutlined } from '@ant-design/icons';
 import { LoginForm } from '@ayahay/models';
 import Link from 'next/link';
 import { useAuth } from '@/app/contexts/AuthContext';
+import axios from 'axios';
+import { ACCOUNT_API } from '@ayahay/constants';
 
 export default function AuthForm() {
   const { currentUser, logout, register, resetPassword, signIn } = useAuth();
@@ -22,6 +24,7 @@ export default function AuthForm() {
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
   const [error, setError] = useState('');
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [dropdownLabel, setDropdownLabel] = useState('');
 
   const onClick = () => {
     if (!currentUser) {
@@ -37,24 +40,27 @@ export default function AuthForm() {
 
   const logOut = () => {
     logout();
-    // setLoggedInUser(undefined);
     setDropdownOpen(false);
+    setDropdownLabel('');
   };
 
   const onFinishLogin = async (values: LoginForm) => {
     console.log('Received values of form: ', values);
     const { email, password } = values;
-    const result = await signIn(email, password);
-    if (result) {
+    try {
+      const userId = await signIn(email, password);
+      axios
+        .get(`${ACCOUNT_API}/${userId}`)
+        .then(({ data }) => {
+          setDropdownLabel(data.email.split('@')[0]);
+        })
+        .catch((error) => {
+          console.error('Axios Error', error.message);
+        });
       setIsLoginModalOpen(false);
+    } catch (error) {
+      console.error(error);
     }
-    // try {
-    //   const profile = onLogin(values);
-    //   console.log(profile);
-    // } catch (e) {
-    //   console.log(e);
-    //   setError('Invalid E-mail or Password');
-    // }
   };
 
   const onFinishReset = async (values: LoginForm) => {
@@ -71,6 +77,7 @@ export default function AuthForm() {
     const { email, password } = values;
     const result = await register(email, password);
     if (result) {
+      //TO DO: save account deets in Account table
       setIsRegisterModalOpen(false);
     }
   };
@@ -115,7 +122,7 @@ export default function AuthForm() {
     },
   ];
 
-  const label = currentUser ? 'Welcome' : 'Log In';
+  const label = currentUser ? `Welcome, ${dropdownLabel}` : 'Log In';
   return (
     <div>
       <Dropdown menu={{ items }} open={!!currentUser && dropdownOpen}>
