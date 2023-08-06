@@ -1,7 +1,5 @@
 import useSWR from 'swr';
 import { getTrip } from '@/services/trip.service';
-import axios from 'axios';
-import { API_URL } from '@/util/constants';
 import { useSearchParams } from 'next/navigation';
 
 export function useTripFromSearchParams() {

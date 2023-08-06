@@ -10,7 +10,7 @@ import {
   IPassengerVehicle,
 } from '@ayahay/models';
 import axios, { AxiosResponse } from 'axios';
-import { API_URL } from '@/util/constants';
+import { API_URL } from '@ayahay/constants/api';
 
 export async function createTentativeBooking(
   tripIds: number[],

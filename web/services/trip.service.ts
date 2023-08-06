@@ -13,7 +13,7 @@ import {
 } from 'lodash';
 import { CABIN_TYPE, SEAT_TYPE } from '@ayahay/constants/enum';
 import axios from 'axios';
-import { API_URL } from '@/util/constants';
+import { API_URL } from '@ayahay/constants/api';
 
 export async function getTrip(tripId: number): Promise<ITrip | undefined> {
   if (tripId === undefined) {

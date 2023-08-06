@@ -1,4 +1,4 @@
-import { API_URL } from '@/util/constants';
+import { API_URL } from '@ayahay/constants/api';
 import { IBooking } from '@ayahay/models';
 import axios, { AxiosResponse } from 'axios';
 
