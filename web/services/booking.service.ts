@@ -8,13 +8,39 @@ export async function createTentativeBooking(
   passengers: IPassenger[],
   passengerPreferences: PassengerPreferences[],
   vehicles: IPassengerVehicle[]
-): Promise<AxiosResponse<IBooking>> {
-  return axios.post<IBooking>(`${BOOKING_API}`, {
-    tripIds,
-    passengers,
-    passengerPreferences,
-    vehicles,
-  });
+): Promise<IBooking | undefined> {
+  try {
+    const { data: booking } = await axios.post<IBooking>(`${BOOKING_API}`, {
+      tripIds,
+      passengers,
+      passengerPreferences,
+      vehicles,
+    });
+
+    return booking;
+  } catch (e) {
+    console.error(e);
+    return undefined;
+  }
+}
+
+export async function getBookingByPaymentReference(
+  paymentReference: string
+): Promise<IBooking | undefined> {
+  try {
+    const { data: bookings } = await axios.get<IBooking[]>(
+      `${BOOKING_API}?paymentReference=${paymentReference}`
+    );
+
+    if (bookings.length !== 1) {
+      return undefined;
+    }
+
+    return bookings[0];
+  } catch (e) {
+    console.error(e);
+    return undefined;
+  }
 }
 
 export function getBookingById(bookingId: number): IBooking | undefined {

@@ -1,6 +1,10 @@
 import { CABIN_TYPE, SEAT_TYPE } from '@ayahay/constants';
 import { IPassenger, IPassengerVehicle } from '@ayahay/models';
 
+export interface BookingSearchQuery {
+  paymentReference: string;
+}
+
 export interface CreateTentativeBookingRequest {
   tripIds: number[];
   passengers: IPassenger[];

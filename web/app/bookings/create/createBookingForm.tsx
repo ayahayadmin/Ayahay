@@ -5,9 +5,13 @@ import { DEFAULT_PASSENGER } from '@ayahay/constants/default';
 import PassengerInformationForm from '@/components/booking/PassengerInformationForm';
 import React, { useState } from 'react';
 import PassengerPreferencesForm from '@/components/booking/PassengerPreferencesForm';
-import { createTentativeBooking } from '@/services/booking.service';
+import {
+  createTentativeBooking,
+  getBookingByPaymentReference,
+} from '@/services/booking.service';
 import BookingConfirmation from '@/components/booking/BookingConfirmation';
 import { useTripFromSearchParams } from '@/hooks/trip';
+import { startPaymentForBooking } from '@/services/payment.service';
 
 const { useBreakpoint } = Grid;
 interface CreateBookingFormProps {
@@ -30,7 +34,6 @@ export default function CreateBookingForm({
   const vehicles = Form.useWatch('vehicles', form);
   const [loadingMessage, setLoadingMessage] = useState<string>('');
   const [bookingPreview, setBookingPreview] = useState<IBooking>();
-
   const [currentStep, setCurrentStep] = useState(0);
 
   const nextStep = () => {
@@ -47,36 +50,80 @@ export default function CreateBookingForm({
     );
 
     if (trip === undefined) {
-      onBookError(new Error('Trip is not defined'));
+      console.error('Trip is not defined');
+      onBookError();
       return;
     }
 
-    try {
-      const { data: tentativeBooking } = await createTentativeBooking(
-        [trip?.id],
-        passengers,
-        passengers.map((passenger: IPassenger, index: number) => {
-          // TODO: remove following 4 lines after back-end has been setup
-          passenger.id = index;
-          return passenger.preferences;
-        }),
-        vehicles
-      );
-      setBookingPreview(tentativeBooking);
-      nextStep();
-    } catch (e) {
-      onBookError(e);
+    const tentativeBooking = await createTentativeBooking(
+      [trip?.id],
+      passengers,
+      passengers.map((passenger: IPassenger, index: number) => {
+        // TODO: remove following 4 lines after back-end has been setup
+        passenger.id = index;
+        return passenger.preferences;
+      }),
+      vehicles
+    );
+
+    if (tentativeBooking === undefined) {
+      onBookError();
     }
+
+    setBookingPreview(tentativeBooking);
+    nextStep();
     setLoadingMessage('');
   };
 
-  const onBookError = (e: any) => {
+  const onBookError = () => {
     notification.error({
       message: 'Could not find a booking',
       description:
         'There seems to be an issue with finding a booking. Please try again in a few minutes or contact us at help@ayahay.com for assistance.',
     });
-    console.error(e);
+  };
+
+  const payBooking = async (tentativeBookingId: number): Promise<void> => {
+    setLoadingMessage('Waiting for successful payment...');
+
+    const response = await startPaymentForBooking(tentativeBookingId);
+
+    if (response === undefined) {
+      onStartPaymentError();
+      setLoadingMessage('');
+      return;
+    }
+
+    window.open(response.paymentGatewayUrl);
+
+    // check payment status every 5 seconds
+    const paymentTimer: NodeJS.Timer = setInterval(
+      () => checkPaymentStatus(response.paymentReference, paymentTimer),
+      5000
+    );
+  };
+
+  const onStartPaymentError = () => {
+    notification.error({
+      message: 'Something went wrong.',
+      description:
+        'There seems to be an issue with the payment. Please try again in a few minutes or contact us at help@ayahay.com for assistance.',
+    });
+  };
+
+  const checkPaymentStatus = async (
+    paymentReference: string,
+    paymentTimer: NodeJS.Timer
+  ): Promise<void> => {
+    const booking = await getBookingByPaymentReference(paymentReference);
+
+    if (booking === undefined) {
+      console.log('Payment still not finished');
+      return;
+    }
+
+    clearInterval(paymentTimer);
+    onComplete && onComplete(booking);
   };
 
   const items = steps.map(({ title }) => ({ key: title, title: title }));
@@ -116,7 +163,7 @@ export default function CreateBookingForm({
           <BookingConfirmation
             tentativeBooking={bookingPreview}
             onPreviousStep={previousStep}
-            onSuccessfulPayment={onComplete}
+            onStartPayment={payBooking}
           />
         </div>
       </Spin>

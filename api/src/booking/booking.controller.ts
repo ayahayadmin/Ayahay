@@ -6,17 +6,23 @@ import {
   Param,
   Post,
   Put,
+  Query,
 } from '@nestjs/common';
 import { BookingService } from './booking.service';
 import { IBooking, IPassenger, IPassengerVehicle } from '@ayahay/models';
 import { PassengerPreferences } from '@ayahay/http';
+import { BookingSearchQuery } from '@ayahay/http';
 
 @Controller('bookings')
 export class BookingController {
   constructor(private bookingService: BookingService) {}
 
   @Get()
-  async getAllBookings() {}
+  async getAllBookings(
+    @Query() bookingSearchQuery: BookingSearchQuery
+  ): Promise<IBooking[]> {
+    return this.bookingService.getAllBookings(bookingSearchQuery);
+  }
 
   @Get(':id')
   async getBookingSummaryById(

@@ -8,40 +8,20 @@ const { Title } = Typography;
 
 interface BookingConfirmationProps {
   tentativeBooking?: IBooking;
-  onSuccessfulPayment?: (booking: IBooking) => void;
+  onStartPayment?: (tentativeBookingId: number) => void;
   onPreviousStep?: () => void;
 }
 
 export default function BookingConfirmation({
   tentativeBooking,
   onPreviousStep,
-  onSuccessfulPayment,
+  onStartPayment,
 }: BookingConfirmationProps) {
   const onClickPay = async () => {
     if (tentativeBooking === undefined) {
       return;
     }
-    await payBooking(tentativeBooking.id);
-  };
-
-  const payBooking = async (tentativeBookingId: number) => {
-    try {
-      const { data: createdBooking } = await startPaymentForBooking(
-        tentativeBookingId
-      );
-      onSuccessfulPayment && onSuccessfulPayment(createdBooking);
-    } catch (e) {
-      onBookPaymentError(e);
-    }
-  };
-
-  const onBookPaymentError = (e: any) => {
-    notification.error({
-      message: 'Something went wrong.',
-      description:
-        'There seems to be an issue with the payment. Please try again in a few minutes or contact us at help@ayahay.com for assistance.',
-    });
-    console.error(e);
+    onStartPayment && onStartPayment(tentativeBooking.id);
   };
 
   return (

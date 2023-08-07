@@ -8,7 +8,7 @@ import {
   IPassenger,
   IPassengerVehicle,
 } from '@ayahay/models';
-import { PassengerPreferences } from '@ayahay/http';
+import { BookingSearchQuery, PassengerPreferences } from '@ayahay/http';
 import { UtilityService } from '../utility.service';
 import { TripService } from '../trip/trip.service';
 import { BookingMapper } from './booking.mapper';
@@ -57,6 +57,18 @@ export class BookingService {
     private readonly bookingValidator: BookingValidator,
     private readonly passengerService: PassengerService
   ) {}
+
+  async getAllBookings(query: BookingSearchQuery): Promise<IBooking[]> {
+    const bookingEntities = await this.prisma.booking.findMany({
+      where: {
+        paymentReference: query.paymentReference,
+      },
+    });
+
+    return bookingEntities.map((bookingEntity) =>
+      this.bookingMapper.convertBookingToBasicDto(bookingEntity)
+    );
+  }
 
   async booking(
     bookingWhereUniqueInput: Prisma.BookingWhereUniqueInput
@@ -446,9 +458,7 @@ WHERE row <= ${passengerPreferences.length}
     } as IBooking;
   }
 
-  async createBookingFromTempBooking(
-    tempBooking: TempBooking
-  ): Promise<IBooking> {
+  async createBookingFromTempBooking(tempBooking: TempBooking): Promise<void> {
     if (tempBooking.paymentReference === null) {
       throw new BadRequestException('The booking has no payment reference.');
     }
@@ -469,7 +479,7 @@ WHERE row <= ${passengerPreferences.length}
       bookingVehicles,
     };
 
-    return this.saveBooking(bookingToCreate);
+    await this.saveBooking(bookingToCreate);
   }
 
   // saves actual booking data; called after payment
@@ -515,7 +525,7 @@ WHERE row <= ${passengerPreferences.length}
       },
     });
 
-    return this.bookingMapper.convertBookingToDto(bookingEntity);
+    return this.bookingMapper.convertBookingToBasicDto(bookingEntity);
   }
 
   // creates the passengers in booking with ID -1

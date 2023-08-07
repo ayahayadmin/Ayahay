@@ -3,13 +3,16 @@ import { ITrip } from '@ayahay/models';
 import dayjs from 'dayjs';
 import { useTripFromSearchParams } from '@ayahay/web/hooks/trip';
 
+interface TripSummaryProps {
+  trip?: ITrip;
+}
+
 const { useBreakpoint } = Grid;
 
-export default function TripSummary() {
-  const { trip, error, isLoading } = useTripFromSearchParams();
+export default function TripSummary({ trip }: TripSummaryProps) {
   const screens = useBreakpoint();
   return (
-    <Skeleton loading={isLoading} active>
+    <Skeleton loading={trip === undefined} active>
       {trip && (
         <Descriptions
           bordered={screens.sm}

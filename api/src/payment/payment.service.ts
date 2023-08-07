@@ -30,10 +30,10 @@ export class PaymentService {
 
     const paymentReference = uuidv4();
     const paymentGatewayResponse =
-      await this.initiateTransactionWithPaymentGateway({
-        transactionId: paymentReference,
+      await this.initiateTransactionWithPaymentGateway(paymentReference, {
         Amount: tempBooking.totalPrice,
         Currency: 'PHP',
+        Description: 'Test Transaction',
         Email: 'it@ayahay.com',
       } as DragonpayPaymentInitiationRequest);
 
@@ -49,10 +49,9 @@ export class PaymentService {
   }
 
   async initiateTransactionWithPaymentGateway(
+    transactionId: string,
     request: DragonpayPaymentInitiationRequest
   ): Promise<DragonpayPaymentInitiationResponse> {
-    const { transactionId } = request;
-
     const dragonpayInitiationBaseUrl =
       process.env.PAYMENT_GATEWAY_INITIATION_BASE_URL;
     const dragonpayInitiationUrl = `${dragonpayInitiationBaseUrl}/${transactionId}/post`;
@@ -60,18 +59,21 @@ export class PaymentService {
     const merchantId = process.env.PAYMENT_GATEWAY_MERCHANT_ID;
     const password = process.env.PAYMENT_GATEWAY_PASSWORD;
 
-    const { data } = await axios.post<DragonpayPaymentInitiationResponse>(
-      dragonpayInitiationUrl,
-      request,
-      {
-        auth: {
-          username: merchantId,
-          password: password,
-        },
-      }
-    );
-
-    return data;
+    try {
+      const { data } = await axios.post<DragonpayPaymentInitiationResponse>(
+        dragonpayInitiationUrl,
+        request,
+        {
+          auth: {
+            username: merchantId,
+            password: password,
+          },
+        }
+      );
+      return data;
+    } catch (e) {
+      console.error(e);
+    }
   }
 
   async onSuccessfulPaymentInitiation(
@@ -88,15 +90,16 @@ export class PaymentService {
       },
     });
 
+    setTimeout(() => this.finishPaymentFlow(paymentReference), 15000);
     return {
       paymentGatewayUrl: paymentGatewayResponse.Url,
+      paymentReference,
     };
   }
 
   // should be called in the callback function called by the payment gateway
   // when the user has finished the transaction
-  // TODO: should return void when payment flow is finalized
-  async finishPaymentFlow(paymentReference: string): Promise<IBooking> {
+  async finishPaymentFlow(paymentReference: string): Promise<void> {
     // TODO: assign a proper value
     const isPaymentSuccessful = true;
 
@@ -120,13 +123,7 @@ export class PaymentService {
   }
 }
 
-interface PaymentInitiationRequest {
-  // we generate the transaction ID
-  // we set booking.paymentReference to this as well
-  transactionId: string;
-}
-
-interface DragonpayPaymentInitiationRequest extends PaymentInitiationRequest {
+interface DragonpayPaymentInitiationRequest {
   Amount: number;
   Currency: string;
   Description: string;
