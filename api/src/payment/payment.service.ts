@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { v4 as uuidv4 } from 'uuid';
 import { BookingService } from '../booking/booking.service';
 import { IBooking } from '@ayahay/models';
+import { PaymentInitiationResponse } from '@ayahay/http';
 import axios from 'axios';
 
 @Injectable()
@@ -13,7 +14,9 @@ export class PaymentService {
   ) {}
 
   // TODO: should return void when payment flow is finalized
-  async startPaymentFlow(tempBookingId: number): Promise<IBooking> {
+  async startPaymentFlow(
+    tempBookingId: number
+  ): Promise<PaymentInitiationResponse> {
     const tempBooking = await this.prisma.tempBooking.findUnique({
       where: {
         id: tempBookingId,
@@ -34,9 +37,48 @@ export class PaymentService {
         Email: 'it@ayahay.com',
       } as DragonpayPaymentInitiationRequest);
 
-    if (paymentGatewayResponse.Status === 'S') {
-      return;
+    if (paymentGatewayResponse.Status === 'F') {
+      throw new InternalServerErrorException('Could not initiate payment.');
     }
+
+    return this.onSuccessfulPaymentInitiation(
+      tempBookingId,
+      paymentReference,
+      paymentGatewayResponse
+    );
+  }
+
+  async initiateTransactionWithPaymentGateway(
+    request: DragonpayPaymentInitiationRequest
+  ): Promise<DragonpayPaymentInitiationResponse> {
+    const { transactionId } = request;
+
+    const dragonpayInitiationBaseUrl =
+      process.env.PAYMENT_GATEWAY_INITIATION_BASE_URL;
+    const dragonpayInitiationUrl = `${dragonpayInitiationBaseUrl}/${transactionId}/post`;
+
+    const merchantId = process.env.PAYMENT_GATEWAY_MERCHANT_ID;
+    const password = process.env.PAYMENT_GATEWAY_PASSWORD;
+
+    const { data } = await axios.post<DragonpayPaymentInitiationResponse>(
+      dragonpayInitiationUrl,
+      request,
+      {
+        auth: {
+          username: merchantId,
+          password: password,
+        },
+      }
+    );
+
+    return data;
+  }
+
+  async onSuccessfulPaymentInitiation(
+    tempBookingId: number,
+    paymentReference: string,
+    paymentGatewayResponse: DragonpayPaymentInitiationResponse
+  ): Promise<PaymentInitiationResponse> {
     await this.prisma.tempBooking.update({
       where: {
         id: tempBookingId,
@@ -46,18 +88,11 @@ export class PaymentService {
       },
     });
 
-    // TODO: for testing only; remove after payment flow is finalized
-    return await this.finishPaymentFlow(paymentReference);
+    return {
+      paymentGatewayUrl: paymentGatewayResponse.Url,
+    };
   }
 
-  // returns a payment reference
-  async initiateTransactionWithPaymentGateway(
-    request: DragonpayPaymentInitiationRequest
-  ): Promise<DragonpayPaymentInitiationResponse> {
-    return await axios.post();
-  }
-
-  async onSuccessfulPaymentInitiation(): Promise<PaymentInitiationResponse> {}
   // should be called in the callback function called by the payment gateway
   // when the user has finished the transaction
   // TODO: should return void when payment flow is finalized
