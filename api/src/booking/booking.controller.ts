@@ -8,12 +8,8 @@ import {
   Put,
 } from '@nestjs/common';
 import { BookingService } from './booking.service';
-import {
-  IBooking,
-  IPassenger,
-  IPassengerVehicle,
-  PassengerPreferences,
-} from '@ayahay/models';
+import { IBooking, IPassenger, IPassengerVehicle } from '@ayahay/models';
+import { PassengerPreferences } from '@ayahay/http';
 
 @Controller('bookings')
 export class BookingController {

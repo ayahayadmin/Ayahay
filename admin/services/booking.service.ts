@@ -1,12 +1,11 @@
 import {
   IBookingPassenger,
-  PassengerPreferences,
   ISeat,
   ITrip,
   IBooking,
   mockBookings,
 } from '@ayahay/models';
-import { getTrip } from './trip.service';
+import { PassengerPreferences } from '@ayahay/http';
 
 export function getAvailableSeatsInTrip(trip: ITrip): ISeat[] {
   const allBookingPassengers = getAllBookingPassengersOfTrip(trip.id);

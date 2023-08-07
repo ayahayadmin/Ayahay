@@ -8,7 +8,7 @@ import { Form } from 'antd';
 import { debounce } from 'lodash';
 import { useCallback, useEffect, useState } from 'react';
 import BookingList from './[id]/page';
-import { AdminSearchQuery } from '@ayahay/models/admin-search-query';
+import { AdminSearchQuery } from '@ayahay/http';
 import TripList from './tripList';
 import { useSearchParams } from 'next/navigation';
 

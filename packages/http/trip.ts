@@ -1,4 +1,4 @@
-export interface SearchQuery {
+export interface TripsSearchQuery {
   tripType: 'single' | 'round';
   srcPortId: number;
   destPortId: number;
@@ -10,4 +10,8 @@ export interface SearchQuery {
   shippingLineIds?: number[];
   cabinTypes?: string[];
   sort: string;
+}
+
+export interface AdminSearchQuery {
+  cabinTypes?: string[];
 }

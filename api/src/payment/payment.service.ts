@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma.service';
 import { v4 as uuidv4 } from 'uuid';
 import { BookingService } from '../booking/booking.service';
 import { IBooking } from '@ayahay/models';
+import axios from 'axios';
 
 @Injectable()
 export class PaymentService {
@@ -24,8 +25,18 @@ export class PaymentService {
       );
     }
 
-    const paymentReference = await this.callPaymentGateway();
+    const paymentReference = uuidv4();
+    const paymentGatewayResponse =
+      await this.initiateTransactionWithPaymentGateway({
+        transactionId: paymentReference,
+        Amount: tempBooking.totalPrice,
+        Currency: 'PHP',
+        Email: 'it@ayahay.com',
+      } as DragonpayPaymentInitiationRequest);
 
+    if (paymentGatewayResponse.Status === 'S') {
+      return;
+    }
     await this.prisma.tempBooking.update({
       where: {
         id: tempBookingId,
@@ -40,10 +51,13 @@ export class PaymentService {
   }
 
   // returns a payment reference
-  async callPaymentGateway(): Promise<string> {
-    return uuidv4();
+  async initiateTransactionWithPaymentGateway(
+    request: DragonpayPaymentInitiationRequest
+  ): Promise<DragonpayPaymentInitiationResponse> {
+    return await axios.post();
   }
 
+  async onSuccessfulPaymentInitiation(): Promise<PaymentInitiationResponse> {}
   // should be called in the callback function called by the payment gateway
   // when the user has finished the transaction
   // TODO: should return void when payment flow is finalized
@@ -69,4 +83,24 @@ export class PaymentService {
 
     return this.bookingService.createBookingFromTempBooking(tempBooking);
   }
+}
+
+interface PaymentInitiationRequest {
+  // we generate the transaction ID
+  // we set booking.paymentReference to this as well
+  transactionId: string;
+}
+
+interface DragonpayPaymentInitiationRequest extends PaymentInitiationRequest {
+  Amount: number;
+  Currency: string;
+  Description: string;
+  Email: string;
+}
+
+interface DragonpayPaymentInitiationResponse {
+  RefNo: string;
+  Status: string;
+  Message: string;
+  Url: string;
 }

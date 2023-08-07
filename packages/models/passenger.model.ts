@@ -1,6 +1,6 @@
 import { CIVIL_STATUS, OCCUPATION, SEX } from '@ayahay/constants/enum';
 import { IProfile } from './profile.model';
-import { PassengerPreferences, mockPreferences } from './passenger-preferences';
+import { PassengerPreferences, mockPreferences } from '@ayahay/http';
 import dayjs from 'dayjs';
 import {
   IPassengerVehicle,

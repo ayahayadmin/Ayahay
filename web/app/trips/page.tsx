@@ -14,7 +14,7 @@ import TripSortOptions from '@/components/form/TripSortOptions';
 import SearchResult from '@/app/trips/searchResults';
 import CabinFilter from '@/components/form/CabinFilter';
 import ShippingLineFilter from '@/components/form/ShippingLineFilter';
-import { SearchQuery } from '@ayahay/models';
+import { TripsSearchQuery } from '@ayahay/http';
 import { useSearchParams } from 'next/navigation';
 
 export default function Trips() {
@@ -25,7 +25,7 @@ export default function Trips() {
   const numChildren = Form.useWatch('numChildren', form);
   const numInfants = Form.useWatch('numInfants', form);
 
-  const [searchQuery, setSearchQuery] = useState({} as SearchQuery);
+  const [searchQuery, setSearchQuery] = useState({} as TripsSearchQuery);
 
   const onPageLoad = () => {
     const params = Object.fromEntries(searchParams.entries());

@@ -7,14 +7,13 @@ import {
   IBookingVehicle,
   IPassenger,
   IPassengerVehicle,
-  PassengerPreferences,
 } from '@ayahay/models';
+import { PassengerPreferences } from '@ayahay/http';
 import { UtilityService } from '../utility.service';
 import { TripService } from '../trip/trip.service';
 import { BookingMapper } from './booking.mapper';
 import { PassengerService } from '../passenger/passenger.service';
 import { BookingValidator } from './booking.validator';
-import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class BookingService {

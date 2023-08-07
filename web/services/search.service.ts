@@ -1,5 +1,5 @@
 import { FormInstance } from 'antd';
-import { SearchQuery, AdminSearchQuery } from '@ayahay/models';
+import { TripsSearchQuery, AdminSearchQuery } from '@ayahay/http';
 import dayjs from 'dayjs';
 import {
   DEFAULT_NUM_ADULTS,
@@ -33,15 +33,6 @@ export function initializeSearchFormFromQueryParams(
   });
 }
 
-export function initializeAdminSearchFormFromQueryParams(
-  form: FormInstance,
-  params: { [p: string]: string }
-) {
-  form.setFieldsValue({
-    cabinTypes: params.cabinTypes?.split(','),
-  });
-}
-
 export function buildUrlQueryParamsFromSearchForm(form: FormInstance): string {
   const searchQuery: Record<string, string> = {
     tripType: form.getFieldValue('tripType'),
@@ -71,26 +62,10 @@ export function buildUrlQueryParamsFromSearchForm(form: FormInstance): string {
   return new URLSearchParams(searchQuery).toString();
 }
 
-export function buildUrlQueryParamsFromAdminSearchForm(
-  form: FormInstance
-): string {
-  const searchQuery: Record<string, string> = {
-    cabinTypes: form.getFieldValue('cabinTypes')?.toString(),
-  };
-
-  Object.keys(searchQuery).forEach((key) => {
-    if (searchQuery[key] === undefined) {
-      delete searchQuery[key];
-    }
-  });
-
-  return new URLSearchParams(searchQuery).toString();
-}
-
 export function buildSearchQueryFromSearchForm(
   form: FormInstance
-): SearchQuery {
-  const searchQuery: SearchQuery = {
+): TripsSearchQuery {
+  const searchQuery: TripsSearchQuery = {
     tripType: form.getFieldValue('tripType'),
     srcPortId: form.getFieldValue('srcPortId'),
     destPortId: form.getFieldValue('destPortId'),
@@ -108,16 +83,6 @@ export function buildSearchQueryFromSearchForm(
       .getFieldValue('departureDate')
       .toISOString();
   }
-
-  return searchQuery;
-}
-
-export function buildAdminSearchQueryFromSearchForm(
-  form: FormInstance
-): AdminSearchQuery {
-  const searchQuery: AdminSearchQuery = {
-    cabinTypes: form.getFieldValue('cabinTypes'),
-  };
 
   return searchQuery;
 }

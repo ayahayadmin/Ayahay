@@ -1,7 +1,8 @@
 import styles from './searchResults.module.scss';
 import React, { useEffect, useState } from 'react';
 import { Button, Pagination, Skeleton, Space, Table } from 'antd';
-import { ITrip, IShippingLine, SearchQuery } from '@ayahay/models';
+import { ITrip, IShippingLine } from '@ayahay/models';
+import { TripsSearchQuery } from '@ayahay/http';
 import { find, get, split, toNumber } from 'lodash';
 import { getPorts } from '@/services/port.service';
 import { getTrips } from '@/services/trip.service';
@@ -146,7 +147,7 @@ const columns: ColumnsType<ITrip> = [
 const PAGE_SIZE = 10;
 
 interface SearchResultsProps {
-  searchQuery: SearchQuery;
+  searchQuery: TripsSearchQuery;
 }
 
 export default function SearchResult({ searchQuery }: SearchResultsProps) {

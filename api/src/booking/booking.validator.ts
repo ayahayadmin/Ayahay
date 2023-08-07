@@ -1,9 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import {
-  IPassenger,
-  IPassengerVehicle,
-  PassengerPreferences,
-} from '@ayahay/models';
+import { IPassenger, IPassengerVehicle } from '@ayahay/models';
+import { PassengerPreferences } from '@ayahay/http';
 
 @Injectable()
 export class BookingValidator {

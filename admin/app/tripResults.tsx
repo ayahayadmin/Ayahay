@@ -1,4 +1,4 @@
-import { AdminSearchQuery } from '@ayahay/models/admin-search-query';
+import { AdminSearchQuery } from '@ayahay/http';
 import { mockBookingPassengers } from '@ayahay/models/booking-passenger.model';
 import { IBooking, mockBookings } from '@ayahay/models/booking.model';
 import { mockSeats } from '@ayahay/models/seat.model';

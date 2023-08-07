@@ -1,14 +1,5 @@
-import {
-  IBookingPassenger,
-  PassengerPreferences,
-  ISeat,
-  ITrip,
-  IBooking,
-  mockBookings,
-  IBookingVehicle,
-  IPassenger,
-  IPassengerVehicle,
-} from '@ayahay/models';
+import { IBooking, IPassenger, IPassengerVehicle } from '@ayahay/models';
+import { PassengerPreferences } from '@ayahay/http';
 import axios, { AxiosResponse } from 'axios';
 import { BOOKING_API } from '@ayahay/constants/api';
 
