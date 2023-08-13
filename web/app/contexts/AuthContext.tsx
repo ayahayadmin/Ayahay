@@ -36,7 +36,7 @@ export default function AuthContextProvider({ children }: any) {
         console.log(`success register: ${JSON.stringify(user, null, 2)}`);
 
         const token = await user.getIdToken();
-        return fetch(`${AUTH_API}`, {
+        const uid = fetch(`${AUTH_API}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -45,7 +45,9 @@ export default function AuthContextProvider({ children }: any) {
           body: JSON.stringify({
             token,
           }),
-        });
+        }); // might not be needed?
+
+        return uid;
       })
       .catch((error) => {
         const errorCode = error.code;
