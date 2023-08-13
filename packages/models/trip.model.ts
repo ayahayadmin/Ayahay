@@ -1,8 +1,8 @@
 import { IShippingLine, mockShippingLine } from './shipping-line.model';
 import { IPort, mockPort, mockPort2, mockPort3 } from './port.model';
-import { CABIN_TYPE, SEAT_TYPE, TRIP_TYPE } from '@ayahay/constants/enum';
 import { IShip, mockShip } from './ship.model';
-import dayjs from 'dayjs';
+import { ITripCabin } from './trip-cabin.model';
+import { ITripShip } from './trip-ship.model';
 
 export interface ITrip {
   id: number;
@@ -15,16 +15,24 @@ export interface ITrip {
   srcPort?: IPort;
   destPortId: number;
   destPort?: IPort;
+
   departureDateIso: string;
   baseFare: number;
-  availableSeatTypes: (keyof typeof SEAT_TYPE)[];
-  availableCabins: (keyof typeof CABIN_TYPE)[];
+  seatSelection: boolean;
+  availableSeatTypes: string[];
+
+  tripSpecificShipInfo: ITripShip[];
+  tripSpecificCabinInfo: ITripCabin[];
+
   meals: string[];
 }
 
-const today = dayjs().toISOString();
-const fiveDaysLater = dayjs().add(5, 'day').toISOString();
-const tenDaysLater = dayjs().add(10, 'day').toISOString();
+const todayDate = new Date();
+const today = todayDate.toISOString();
+todayDate.setDate(todayDate.getDate() + 5);
+const fiveDaysLater = todayDate.toISOString();
+todayDate.setDate(todayDate.getDate() + 5);
+const tenDaysLater = todayDate.toISOString();
 
 export const mockTrip: ITrip = {
   id: 1,
@@ -46,7 +54,9 @@ export const mockTrip: ITrip = {
     'LowerBunkBed',
     'UpperBunkBed',
   ],
-  availableCabins: ['Business', 'Economy', 'First'],
+  seatSelection: false,
+  tripSpecificShipInfo: [],
+  tripSpecificCabinInfo: [],
   meals: ['Tapsilog', 'Bacsilog', 'Longsilog'],
 };
 
@@ -72,7 +82,9 @@ export const mockTrips: ITrip[] = [
       'LowerBunkBed',
       'UpperBunkBed',
     ],
-    availableCabins: ['Business', 'Economy', 'First'],
+    seatSelection: false,
+    tripSpecificShipInfo: [],
+    tripSpecificCabinInfo: [],
     meals: ['Tapsilog', 'Bacsilog', 'Longsilog'],
   },
   {
@@ -95,7 +107,9 @@ export const mockTrips: ITrip[] = [
       'LowerBunkBed',
       'UpperBunkBed',
     ],
-    availableCabins: ['Business', 'Economy', 'First'],
+    seatSelection: false,
+    tripSpecificShipInfo: [],
+    tripSpecificCabinInfo: [],
     meals: ['Tapsilog', 'Bacsilog', 'Longsilog'],
   },
 ];

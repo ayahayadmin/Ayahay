@@ -218,6 +218,7 @@ export class BookingService {
       preferredSeatTypes = Object.keys(this.SEAT_TYPE_MARKUP_FLAT);
     }
 
+    // TODO: update seat check after schema update
     return this.prisma.$queryRaw<AvailableSeat[]>`
 SELECT "tripId", "cabinId", "cabinName", "cabinType", "seatId", "seatName", "seatType"
 FROM (
@@ -234,17 +235,22 @@ FROM (
     ) AS row
   FROM ayahay.trip trip
   INNER JOIN ayahay.cabin cabin ON cabin.ship_id = trip.ship_id
-  INNER JOIN ayahay.seat seat ON seat.cabin_id = cabin.id
+  LEFT JOIN ayahay.seat seat ON trip.seat_selection = TRUE AND seat.cabin_id = cabin.id
   WHERE ( 
     trip.id IN (${Prisma.join(tripIds)})
     AND cabin."type" IN (${Prisma.join(preferredCabinTypes)})
-    AND seat."type" IN (${Prisma.join(preferredSeatTypes)})
-    AND NOT EXISTS (
-      SELECT 1 
-      FROM ayahay.booking_passenger bookingPassenger
-      WHERE 
-        bookingPassenger.trip_id = trip.id
-        AND bookingPassenger.seat_id = seat.id
+    AND (
+      trip.seat_selection = FALSE 
+      OR seat."type" IN (${Prisma.join(preferredSeatTypes)})
+    ) AND (
+      trip.seat_selection = FALSE 
+      OR NOT EXISTS (
+        SELECT 1 
+        FROM ayahay.booking_passenger bookingPassenger
+        WHERE 
+          bookingPassenger.trip_id = trip.id
+          AND bookingPassenger.seat_id = seat.id
+      )
     )
   ) 
 ) partitioned_results
@@ -262,7 +268,7 @@ WHERE row <= ${passengerPreferences.length}
     const bookingPassengers: IBookingPassenger[] = [];
 
     for (const trip of trips) {
-      let availableSeatsInTrip =
+      const availableSeatsInTrip =
         availableSeatsInTripsThatMatchPreferences.filter(
           (seat) => seat.tripId === trip.id
         );
@@ -322,7 +328,7 @@ WHERE row <= ${passengerPreferences.length}
           type: matchedSeat.cabinType,
           name: matchedSeat.cabinName,
           shipId: -1,
-          passengerCapacity: -1,
+          recommendedPassengerCapacity: -1,
           numOfRows: -1,
           numOfCols: -1,
           seats: [],
@@ -565,7 +571,7 @@ interface AvailableSeat {
   cabinType: 'Economy' | 'Business' | 'First';
   cabinName: string;
 
-  seatId: number;
-  seatName: string;
-  seatType: 'Window' | 'Aisle' | 'SingleBed' | 'LowerBunkBed' | 'UpperBunkBed';
+  seatId?: number;
+  seatName?: string;
+  seatType?: 'Window' | 'Aisle' | 'SingleBed' | 'LowerBunkBed' | 'UpperBunkBed';
 }

@@ -15,20 +15,6 @@ export enum CIVIL_STATUS {
   Widowed = 'Widowed',
 }
 
-export enum CABIN_TYPE {
-  Economy = 'Economy Class',
-  Business = 'Business Class',
-  First = 'First Class',
-}
-
-export enum SEAT_TYPE {
-  Window = 'Window Seat',
-  Aisle = 'Aisle Seat',
-  SingleBed = 'Single Bed',
-  LowerBunkBed = 'Lower Bunk Bed',
-  UpperBunkBed = 'Upper Bunk Bed',
-}
-
 export enum TRIP_TYPE {
   Single = 'Single Trip',
   Round = 'Round Trip',
@@ -59,4 +45,10 @@ export enum VEHICLE_BODY {
   SUV = 'SUV',
   Tricycle = 'Tricycle',
   VAN = 'VAN',
+}
+
+export enum ACCOUNT_ROLE {
+  Passenger = 'Passenger',
+  Staff = 'Staff',
+  Admin = 'Admin',
 }

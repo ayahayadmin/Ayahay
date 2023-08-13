@@ -1,20 +1,15 @@
-import { CABIN_TYPE } from '@ayahay/constants/enum';
-import {
-  ISeat,
-  mockBusinessClassSeats,
-  mockEconomyClassSeats,
-  mockFirstClassSeats,
-  mockSeats,
-} from './seat.model';
+import { ISeat } from './seat.model';
 import { IShip } from './ship.model';
+import { AZNAR_AIRCON_CABIN, ICabinType } from './cabin-type.model';
 
 export interface ICabin {
   id: number;
   shipId: number;
   ship?: IShip;
-  type: keyof typeof CABIN_TYPE;
+  cabinTypeId: number;
+  cabinType: ICabinType;
   name: string;
-  passengerCapacity: number;
+  recommendedPassengerCapacity: number;
   numOfRows: number;
   numOfCols: number;
   seats: ISeat[];
@@ -23,45 +18,49 @@ export interface ICabin {
 export const mockCabinEconomy: ICabin = {
   id: 1,
   shipId: 1,
-  type: 'Economy',
+  cabinTypeId: AZNAR_AIRCON_CABIN.id,
+  cabinType: AZNAR_AIRCON_CABIN,
   name: 'first floor',
-  passengerCapacity: 30,
+  recommendedPassengerCapacity: 30,
   numOfRows: 5,
   numOfCols: 6,
-  seats: mockEconomyClassSeats,
+  seats: [],
 };
 
 export const mockCabinEconomy2: ICabin = {
   id: 2,
   shipId: 1,
-  type: 'Economy',
+  cabinTypeId: AZNAR_AIRCON_CABIN.id,
+  cabinType: AZNAR_AIRCON_CABIN,
   name: 'second floor',
-  passengerCapacity: 30,
+  recommendedPassengerCapacity: 30,
   numOfRows: 5,
   numOfCols: 6,
-  seats: mockSeats,
+  seats: [],
 };
 
 export const mockCabinBusiness: ICabin = {
   id: 3,
   shipId: 1,
-  type: 'Business',
+  cabinTypeId: AZNAR_AIRCON_CABIN.id,
+  cabinType: AZNAR_AIRCON_CABIN,
   name: 'first floor',
-  passengerCapacity: 30,
+  recommendedPassengerCapacity: 30,
   numOfRows: 5,
   numOfCols: 6,
-  seats: mockBusinessClassSeats,
+  seats: [],
 };
 
 export const mockCabinFirst: ICabin = {
   id: 4,
   shipId: 1,
-  type: 'First',
+  cabinTypeId: AZNAR_AIRCON_CABIN.id,
+  cabinType: AZNAR_AIRCON_CABIN,
   name: 'first floor',
-  passengerCapacity: 30,
+  recommendedPassengerCapacity: 30,
   numOfRows: 5,
   numOfCols: 6,
-  seats: mockFirstClassSeats,
+  seats: [],
 };
 
 export const mockCabins: ICabin[] = [

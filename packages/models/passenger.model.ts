@@ -1,7 +1,5 @@
 import { CIVIL_STATUS, OCCUPATION, SEX } from '@ayahay/constants/enum';
-import { IProfile } from './profile.model';
 import { PassengerPreferences, mockPreferences } from '@ayahay/http';
-import dayjs from 'dayjs';
 import {
   IPassengerVehicle,
   mockInnova,
@@ -80,15 +78,6 @@ export const mockFather: IPassenger = {
   companions: [mockWife, mockSon],
   vehicles: [mockInnova, mockPickup],
 };
-
-// antd form doesn't accept ISO date strings as valid dates, so we have to manually set it
-export function toFormValue(passenger: IPassenger) {
-  const { birthdayIso, ...otherPassengerProperties } = passenger;
-  return {
-    birthdayIso: dayjs(birthdayIso),
-    ...otherPassengerProperties,
-  };
-}
 
 export const mockPassengers: IPassenger[] = [
   mockPassenger,
