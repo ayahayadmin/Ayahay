@@ -1,5 +1,17 @@
 import { IShippingLine } from './shipping-line.model';
 
+/**
+ * We create a separate table instead of an enum for Cabin Type because
+ * there is no "standard" list of cabin types that is used by all shipping liners
+ * e.g. Aznar has Aircon, Non-Aircon cabin types, but other shipping lines probably
+ * have Economy, First Class, or some other combinations.
+ * This separation will enable each shipping line to have their own Cabin Type
+ *
+ * So in Trip Search, filtering by Cabin Type is disabled until the search is
+ * filtered by Shipping Line
+ * e.g. For Aznar's Aircon, Non-Aircon cabin types to be "selectable" or "filterable",
+ * Aznar should be selected in the Shipping Line filter first.
+ */
 export interface ICabinType {
   id: number;
   shippingLineId: number;
