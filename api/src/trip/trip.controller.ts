@@ -4,8 +4,10 @@ import { ITrip, TripSearchDto } from '@ayahay/models';
 import { Prisma } from '@prisma/client';
 import { omit } from 'lodash';
 import { TripMapper } from './trip.mapper';
+import { Roles } from 'src/decorators/roles.decorators';
 
 @Controller('trips')
+@Roles('passenger', 'staff', 'admin', 'superadmin')
 export class TripController {
   constructor(
     private readonly tripService: TripService,
