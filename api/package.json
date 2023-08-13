@@ -24,9 +24,9 @@
   },
   "dependencies": {
     "@ayahay/constants": "^0.1.0",
+    "@ayahay/http": "^0.1.0",
     "@ayahay/models": "^0.1.0",
     "@ayahay/services": "^0.1.0",
-    "@ayahay/http": "^0.1.0",
     "@nestjs/common": "^9.0.0",
     "@nestjs/config": "^2.3.1",
     "@nestjs/core": "^9.0.0",
@@ -36,6 +36,7 @@
     "@types/lodash": "^4.14.195",
     "axios": "^1.4.0",
     "dotenv": "^16.0.3",
+    "firebase-admin": "^11.10.1",
     "lodash": "^4.17.21",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.2.0",
