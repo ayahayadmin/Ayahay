@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { Account, Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { IAccount } from '@ayahay/models';
+import { ACCOUNT_ROLE } from '@ayahay/constants';
 
 @Injectable()
 export class AccountMapper {
@@ -8,7 +9,7 @@ export class AccountMapper {
     account: Prisma.AccountGetPayload<{ include: { passenger: true } }>
   ): IAccount {
     return {
-      accountId: account.id,
+      id: account.id,
       email: account.email,
       passengerId: account.passengerId,
       passenger: {
@@ -24,6 +25,7 @@ export class AccountMapper {
         nationality: account.passenger.nationality,
         buddyId: account.passenger.buddyId,
       },
+      role: account.role as ACCOUNT_ROLE,
     };
   }
 }

@@ -4,7 +4,7 @@ import { initFirebase } from 'src/utils/initFirebase';
 
 @Injectable()
 export class AuthService {
-  public async decryptToken({ token }): Promise<any> {
+  public decryptToken({ token }): Promise<string> {
     initFirebase();
     return admin
       .auth()
@@ -16,6 +16,7 @@ export class AuthService {
       })
       .catch((error) => {
         console.log(`error: ${error}`);
+        throw new Error(error);
       });
   }
 }

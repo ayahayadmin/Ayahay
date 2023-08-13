@@ -6,7 +6,7 @@ export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Post()
-  async decryptToken(@Body() body: { token: string }) {
-    return await this.authService.decryptToken(body);
+  decryptToken(@Body() body: { token: string }) {
+    return this.authService.decryptToken(body);
   }
 }
