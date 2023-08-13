@@ -8,6 +8,7 @@ import { PassengerModule } from './passenger/passenger.module';
 import { MapperModule } from './mapper.module';
 import { GlobalModule } from './global.module';
 import { AccountModule } from './account/account.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { AccountModule } from './account/account.module';
     MapperModule,
     GlobalModule,
     AccountModule,
+    AuthModule,
   ],
 })
 export class AppModule {}
