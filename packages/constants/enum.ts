@@ -51,4 +51,5 @@ export enum ACCOUNT_ROLE {
   Passenger = 'Passenger',
   Staff = 'Staff',
   Admin = 'Admin',
+  SuperAdmin = 'SuperAdmin',
 }
