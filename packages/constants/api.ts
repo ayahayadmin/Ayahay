@@ -1,6 +1,7 @@
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export const ACCOUNT_API = `${BASE_URL}/accounts`;
+export const AUTH_API = `${BASE_URL}/auth`;
 export const BOOKING_API = `${BASE_URL}/bookings`;
 export const PASSENGER_API = `${BASE_URL}/passenger`;
 export const PAYMENT_API = `${BASE_URL}/pay`;
