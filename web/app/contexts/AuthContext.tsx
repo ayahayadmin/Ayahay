@@ -10,6 +10,7 @@ import {
 import { createContext, useContext, useState } from 'react';
 import { initFirebase } from '../utils/initFirebase';
 import { useAuthState } from 'react-firebase-hooks/auth';
+import { AUTH_API } from '@ayahay/constants';
 
 initFirebase();
 const auth = getAuth();
@@ -26,15 +27,25 @@ export const useAuth = () => useContext(AuthContext);
 
 export default function AuthContextProvider({ children }: any) {
   const [currentUser, loading] = useAuthState(auth);
-  // const [currentUser, setCurrentUser] = useState(null);
 
   function register(email: string, password: string) {
     return createUserWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
+      .then(async (userCredential) => {
         // Signed in
         const user = userCredential.user;
         console.log(`success register: ${JSON.stringify(user, null, 2)}`);
-        return true;
+
+        const token = await user.getIdToken();
+        return fetch(`${AUTH_API}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: token,
+          },
+          body: JSON.stringify({
+            token,
+          }),
+        });
       })
       .catch((error) => {
         const errorCode = error.code;
@@ -43,18 +54,18 @@ export default function AuthContextProvider({ children }: any) {
       });
   }
 
-  function signIn(email: string, password: string) {
+  function signIn(email: string, password: string): Promise<string> {
     return signInWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
         // Signed in
         const user = userCredential.user;
         console.log(`success sign in: ${JSON.stringify(user, null, 2)}`);
-        return true;
+        return user.uid;
       })
       .catch((error) => {
         const errorCode = error.code;
         const errorMessage = error.message;
-        console.log(`sign in error: ${errorCode}: ${errorMessage}`); //maybe throw an error
+        throw new Error(`sign in error: ${errorCode}: ${errorMessage}`);
       });
   }
 
