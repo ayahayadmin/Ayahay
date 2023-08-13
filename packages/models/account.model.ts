@@ -10,3 +10,8 @@ export interface IAccount {
   email: string;
   role: keyof typeof ACCOUNT_ROLE;
 }
+
+export interface LoginForm {
+  email: string;
+  password: string;
+}
