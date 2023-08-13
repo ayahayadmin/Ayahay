@@ -75,8 +75,8 @@ export default function AuthForm() {
   const onFinishRegister = async (values: any) => {
     console.log('Received values of register: ', values);
     const { email, password } = values;
-    const result = await register(email, password);
-    if (result) {
+    const uid = await register(email, password);
+    if (uid) {
       //TO DO: save account deets in Account table
       setIsRegisterModalOpen(false);
     }
