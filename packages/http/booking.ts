@@ -1,4 +1,3 @@
-import { CABIN_TYPE, SEAT_TYPE } from '@ayahay/constants';
 import { IPassenger, IPassengerVehicle } from '@ayahay/models';
 
 export interface BookingSearchQuery {
@@ -13,13 +12,7 @@ export interface CreateTentativeBookingRequest {
 }
 
 export interface PassengerPreferences {
-  seat: keyof typeof SEAT_TYPE | 'Any';
-  cabin: keyof typeof CABIN_TYPE | 'Any';
-  meal: string | 'Any';
+  seatTypeId?: number;
+  cabinTypeId?: number;
+  meal?: string;
 }
-
-export const mockPreferences: PassengerPreferences = {
-  seat: 'Any',
-  cabin: 'Any',
-  meal: 'Any',
-};

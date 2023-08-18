@@ -7,6 +7,7 @@ import {
   IBookingVehicle,
   IPassenger,
   IPassengerVehicle,
+  ITrip,
 } from '@ayahay/models';
 import { BookingSearchQuery, PassengerPreferences } from '@ayahay/http';
 import { UtilityService } from '../utility.service';
@@ -159,8 +160,8 @@ export class BookingService {
 
     const trips = await this.tripService.getTripsByIds(tripIds);
 
-    const availableSeatsInTripsThatMatchPreferences =
-      await this.getAvailableSeatsInTripsThatMatchPreferences(
+    const availableBookingsInTripsThatMatchPreferences =
+      await this.getavailableBookingsInTripsThatMatchPreferences(
         tripIds,
         passengerPreferences
       );
@@ -169,7 +170,7 @@ export class BookingService {
       trips,
       passengers,
       passengerPreferences,
-      availableSeatsInTripsThatMatchPreferences
+      availableBookingsInTripsThatMatchPreferences
     );
 
     if (bookingPassengers === undefined) {
@@ -200,26 +201,19 @@ export class BookingService {
     return await this.saveTempBooking(tempBooking);
   }
 
-  private async getAvailableSeatsInTripsThatMatchPreferences(
+  private async getavailableBookingsInTripsThatMatchPreferences(
     tripIds: number[],
     passengerPreferences: PassengerPreferences[]
-  ): Promise<AvailableSeat[]> {
-    let preferredCabinTypes = passengerPreferences.map(
-      (preferences) => preferences.cabin as string
+  ): Promise<AvailableBooking[]> {
+    const preferredCabinTypes = passengerPreferences.map(
+      (preferences) => preferences.cabinTypeId
     );
-    if (preferredCabinTypes.includes('Any')) {
-      preferredCabinTypes = Object.keys(this.CABIN_TYPE_MARKUP_FLAT);
-    }
-
-    let preferredSeatTypes = passengerPreferences.map(
-      (preferences) => preferences.seat as string
+    const preferredSeatTypes = passengerPreferences.map(
+      (preferences) => preferences.seatTypeId
     );
-    if (preferredSeatTypes.includes('Any')) {
-      preferredSeatTypes = Object.keys(this.SEAT_TYPE_MARKUP_FLAT);
-    }
 
     // TODO: update seat check after schema update
-    return this.prisma.$queryRaw<AvailableSeat[]>`
+    return this.prisma.$queryRaw<AvailableBooking[]>`
 SELECT "tripId", "cabinId", "cabinName", "cabinType", "seatId", "seatName", "seatType"
 FROM (
   SELECT 
@@ -260,18 +254,17 @@ WHERE row <= ${passengerPreferences.length}
   }
 
   private createTentativeBookingPassengers(
-    trips: Trip[],
+    trips: ITrip[],
     passengers: IPassenger[],
     passengerPreferences: PassengerPreferences[],
-    availableSeatsInTripsThatMatchPreferences: AvailableSeat[]
+    availableBookings: AvailableBooking[]
   ): IBookingPassenger[] | undefined {
     const bookingPassengers: IBookingPassenger[] = [];
 
     for (const trip of trips) {
-      const availableSeatsInTrip =
-        availableSeatsInTripsThatMatchPreferences.filter(
-          (seat) => seat.tripId === trip.id
-        );
+      let availableBookingsInTrip = availableBookings.filter(
+        (seat) => seat.tripId === trip.id
+      );
 
       for (let i = 0; i < passengers.length; i++) {
         const passenger = passengers[i];
@@ -280,7 +273,7 @@ WHERE row <= ${passengerPreferences.length}
           trip,
           passenger,
           preferences,
-          availableSeatsInTrip
+          availableBookingsInTrip
         );
 
         // if no available slot for any passenger in any trip, don't push through
@@ -290,7 +283,7 @@ WHERE row <= ${passengerPreferences.length}
         bookingPassengers.push(bookingPassengerForTrip);
 
         // remove booked seat in available seats for next iterations
-        availableSeatsInTrip = availableSeatsInTrip.filter(
+        availableBookingsInTrip = availableBookingsInTrip.filter(
           (seat) => seat.seatId !== bookingPassengerForTrip.seatId
         );
       }
@@ -300,41 +293,41 @@ WHERE row <= ${passengerPreferences.length}
   }
 
   private createTentativeBookingPassenger(
-    trip: Trip,
+    trip: ITrip,
     passenger: IPassenger,
     preferences: PassengerPreferences,
-    availableSeatsInTrip: AvailableSeat[]
+    availableBookings: AvailableBooking[]
   ): IBookingPassenger | undefined {
-    const matchedSeat = this.getBestSeat(availableSeatsInTrip, preferences);
+    const bestBooking = this.getBestBooking(availableBookings, preferences);
 
-    if (matchedSeat === undefined) {
+    if (bestBooking === undefined) {
       return undefined;
     }
 
     const totalPrice = this.calculateTotalPriceForOneBooking(
-      trip.baseFare,
-      matchedSeat.cabinType,
-      matchedSeat.seatType
+      trip,
+      passenger,
+      bestBooking
     );
 
     return {
       tripId: trip.id,
-      seatId: matchedSeat.seatId,
+      seatId: bestBooking.seatId,
       seat: {
-        id: matchedSeat.seatId,
-        cabinId: matchedSeat.cabinId,
+        id: bestBooking.seatId,
+        cabinId: bestBooking.cabinId,
         cabin: {
-          id: matchedSeat.cabinId,
-          type: matchedSeat.cabinType,
-          name: matchedSeat.cabinName,
+          id: bestBooking.cabinId,
+          cabinTypeId: bestBooking.cabinTypeId,
+          name: bestBooking.cabinName,
           shipId: -1,
           recommendedPassengerCapacity: -1,
           numOfRows: -1,
           numOfCols: -1,
           seats: [],
         },
-        name: matchedSeat.seatName,
-        type: matchedSeat.seatType,
+        name: bestBooking.seatName,
+        seatTypeId: bestBooking.seatTypeId,
         rowNumber: -1,
         columnNumber: -1,
       },
@@ -351,34 +344,37 @@ WHERE row <= ${passengerPreferences.length}
     };
   }
 
-  private getBestSeat(
-    availableSeatsInTrip: AvailableSeat[],
+  private getBestBooking(
+    availableBookings: AvailableBooking[],
     passengerPreferences: PassengerPreferences
-  ): AvailableSeat | undefined {
-    if (availableSeatsInTrip.length === 0) {
+  ): AvailableBooking | undefined {
+    if (availableBookings.length === 0) {
       return undefined;
     }
 
-    const { cabin: preferredCabin, seat: preferredSeatType } =
+    const { cabinTypeId: preferredCabin, seatTypeId: preferredSeatType } =
       passengerPreferences;
-    let seatsInPreferredCabin = availableSeatsInTrip;
-    let seatsWithPreferredSeatType = availableSeatsInTrip;
+    let seatsInPreferredCabin = availableBookings;
+    let seatsWithPreferredSeatType = availableBookings;
 
-    if (preferredCabin !== 'Any') {
+    if (preferredCabin !== undefined) {
       seatsInPreferredCabin = seatsInPreferredCabin.filter(
-        (seat) => seat.cabinType === preferredCabin
+        (seat) =>
+          preferredCabin === undefined || seat.cabinTypeId === preferredCabin
       );
     }
 
-    if (preferredSeatType !== 'Any') {
+    if (preferredSeatType !== undefined) {
       seatsWithPreferredSeatType = seatsWithPreferredSeatType.filter(
-        (seat) => seat.seatType === preferredSeatType
+        (seat) =>
+          preferredSeatType === undefined ||
+          seat.seatTypeId === preferredSeatType
       );
     }
 
     // score that determines how "preferred" a seat is; the higher, the more preferred
     let bestScore = -1;
-    let bestSeat = availableSeatsInTrip[0];
+    let bestSeat = availableBookings[0];
 
     const idsOfSeatsInPreferredCabin = new Set<number>();
     const idsOfSeatsWithPreferredSeatType = new Set<number>();
@@ -388,7 +384,7 @@ WHERE row <= ${passengerPreferences.length}
     seatsWithPreferredSeatType
       .map((seat) => seat.seatId)
       .forEach((id) => idsOfSeatsWithPreferredSeatType.add(id));
-    availableSeatsInTrip.forEach((seat) => {
+    availableBookings.forEach((seat) => {
       let currentSeatScore = 0;
       if (idsOfSeatsInPreferredCabin.has(seat.seatId)) {
         currentSeatScore += this.CABIN_WEIGHT;
@@ -405,21 +401,28 @@ WHERE row <= ${passengerPreferences.length}
   }
 
   private calculateTotalPriceForOneBooking(
-    tripBaseFare: number,
-    cabinType: string,
-    seatType: string
+    trip: ITrip,
+    passenger: IPassenger,
+    matchedSeat: AvailableBooking
   ): number {
-    const cabinTypeFee =
-      tripBaseFare * this.CABIN_TYPE_MARKUP_PERCENT[cabinType] +
-      this.CABIN_TYPE_MARKUP_FLAT[cabinType];
-    const seatTypeFee =
-      tripBaseFare * this.SEAT_TYPE_MARKUP_PERCENT[seatType] +
-      this.SEAT_TYPE_MARKUP_FLAT[seatType];
-    return tripBaseFare + cabinTypeFee + seatTypeFee;
+    const cabinFee = trip.availableCabins.find(
+      (tripCabin) => tripCabin.cabin.cabinTypeId === matchedSeat.cabinTypeId
+    ).adultFare;
+
+    switch (passenger.discountType) {
+      case 'Student':
+      case 'Senior':
+      case 'Pwd':
+        return cabinFee - cabinFee * 0.2;
+      case 'Child':
+        return cabinFee * 0.5;
+      case undefined:
+        return cabinFee;
+    }
   }
 
   private createTentativeBookingVehicles(
-    trips: Trip[],
+    trips: ITrip[],
     vehicles: IPassengerVehicle[]
   ): IBookingVehicle[] | undefined {
     const bookingVehicles: IBookingVehicle[] = [];
@@ -564,14 +567,14 @@ WHERE row <= ${passengerPreferences.length}
   }
 }
 
-interface AvailableSeat {
+interface AvailableBooking {
   tripId: number;
 
   cabinId: number;
-  cabinType: 'Economy' | 'Business' | 'First';
+  cabinTypeId: number;
   cabinName: string;
 
   seatId?: number;
   seatName?: string;
-  seatType?: 'Window' | 'Aisle' | 'SingleBed' | 'LowerBunkBed' | 'UpperBunkBed';
+  seatTypeId?: number;
 }

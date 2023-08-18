@@ -6,20 +6,20 @@ CREATE TABLE "trip" (
     "src_port_id" INTEGER NOT NULL,
     "dest_port_id" INTEGER NOT NULL,
     "departure_date" TIMESTAMP(3) NOT NULL,
-    "base_fare" DOUBLE PRECISION NOT NULL,
     "reference_number" TEXT NOT NULL,
     "seat_selection" BOOLEAN NOT NULL DEFAULT false,
+    "vehicle_capacity" INTEGER NOT NULL,
 
     CONSTRAINT "trip_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "trip_ship" (
+CREATE TABLE "trip_vehicle_type" (
     "trip_id" INTEGER NOT NULL,
-    "ship_id" INTEGER NOT NULL,
-    "vehicle_capacity" INTEGER NOT NULL,
+    "vehicle_type_id" INTEGER NOT NULL,
+    "fare" DOUBLE PRECISION NOT NULL,
 
-    CONSTRAINT "trip_ship_pkey" PRIMARY KEY ("trip_id","ship_id")
+    CONSTRAINT "trip_vehicle_type_pkey" PRIMARY KEY ("trip_id","vehicle_type_id")
 );
 
 -- CreateTable
@@ -27,6 +27,7 @@ CREATE TABLE "trip_cabin" (
     "trip_id" INTEGER NOT NULL,
     "cabin_id" INTEGER NOT NULL,
     "passenger_capacity" INTEGER NOT NULL,
+    "adult_fare" DOUBLE PRECISION NOT NULL,
 
     CONSTRAINT "trip_cabin_pkey" PRIMARY KEY ("trip_id","cabin_id")
 );
@@ -72,6 +73,31 @@ CREATE TABLE "shipping_line" (
     "name" TEXT NOT NULL,
 
     CONSTRAINT "shipping_line_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "shipping_line_schedule" (
+    "id" SERIAL NOT NULL,
+    "shipping_line_id" INTEGER NOT NULL,
+    "src_port_id" INTEGER NOT NULL,
+    "dest_port_id" INTEGER NOT NULL,
+    "ship_id" INTEGER NOT NULL,
+    "name" TEXT NOT NULL,
+    "departure_hour" INTEGER NOT NULL,
+    "departure_minute" INTEGER NOT NULL,
+
+    CONSTRAINT "shipping_line_schedule_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "shipping_line_schedule_rate" (
+    "id" SERIAL NOT NULL,
+    "schedule_id" INTEGER NOT NULL,
+    "cabin_id" INTEGER,
+    "vehicle_type_id" INTEGER,
+    "fare" DOUBLE PRECISION NOT NULL,
+
+    CONSTRAINT "shipping_line_schedule_rate_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -192,10 +218,10 @@ CREATE TABLE "seat_type" (
 -- CreateTable
 CREATE TABLE "notification" (
     "id" SERIAL NOT NULL,
-    "tripId" INTEGER,
-    "date_created" TIMESTAMP(3) NOT NULL,
+    "trip_id" INTEGER,
     "subject" TEXT NOT NULL,
     "body" TEXT NOT NULL,
+    "date_created" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "notification_pkey" PRIMARY KEY ("id")
 );
@@ -207,6 +233,15 @@ CREATE TABLE "account_notification" (
     "is_read" BOOLEAN NOT NULL,
 
     CONSTRAINT "account_notification_pkey" PRIMARY KEY ("account_id","notification_id")
+);
+
+-- CreateTable
+CREATE TABLE "vehicle_type" (
+    "id" SERIAL NOT NULL,
+    "name" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
+
+    CONSTRAINT "vehicle_type_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -225,10 +260,10 @@ ALTER TABLE "trip" ADD CONSTRAINT "trip_src_port_id_fkey" FOREIGN KEY ("src_port
 ALTER TABLE "trip" ADD CONSTRAINT "trip_dest_port_id_fkey" FOREIGN KEY ("dest_port_id") REFERENCES "port"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "trip_ship" ADD CONSTRAINT "trip_ship_trip_id_fkey" FOREIGN KEY ("trip_id") REFERENCES "trip"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "trip_vehicle_type" ADD CONSTRAINT "trip_vehicle_type_trip_id_fkey" FOREIGN KEY ("trip_id") REFERENCES "trip"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "trip_ship" ADD CONSTRAINT "trip_ship_ship_id_fkey" FOREIGN KEY ("ship_id") REFERENCES "ship"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "trip_vehicle_type" ADD CONSTRAINT "trip_vehicle_type_vehicle_type_id_fkey" FOREIGN KEY ("vehicle_type_id") REFERENCES "vehicle_type"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "trip_cabin" ADD CONSTRAINT "trip_cabin_trip_id_fkey" FOREIGN KEY ("trip_id") REFERENCES "trip"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -250,6 +285,27 @@ ALTER TABLE "seat" ADD CONSTRAINT "seat_cabin_id_fkey" FOREIGN KEY ("cabin_id") 
 
 -- AddForeignKey
 ALTER TABLE "seat" ADD CONSTRAINT "seat_seat_type_id_fkey" FOREIGN KEY ("seat_type_id") REFERENCES "seat_type"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "shipping_line_schedule" ADD CONSTRAINT "shipping_line_schedule_shipping_line_id_fkey" FOREIGN KEY ("shipping_line_id") REFERENCES "shipping_line"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "shipping_line_schedule" ADD CONSTRAINT "shipping_line_schedule_src_port_id_fkey" FOREIGN KEY ("src_port_id") REFERENCES "port"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "shipping_line_schedule" ADD CONSTRAINT "shipping_line_schedule_dest_port_id_fkey" FOREIGN KEY ("dest_port_id") REFERENCES "port"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "shipping_line_schedule" ADD CONSTRAINT "shipping_line_schedule_ship_id_fkey" FOREIGN KEY ("ship_id") REFERENCES "ship"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "shipping_line_schedule_rate" ADD CONSTRAINT "shipping_line_schedule_rate_schedule_id_fkey" FOREIGN KEY ("schedule_id") REFERENCES "shipping_line_schedule"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "shipping_line_schedule_rate" ADD CONSTRAINT "shipping_line_schedule_rate_cabin_id_fkey" FOREIGN KEY ("cabin_id") REFERENCES "cabin"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "shipping_line_schedule_rate" ADD CONSTRAINT "shipping_line_schedule_rate_vehicle_type_id_fkey" FOREIGN KEY ("vehicle_type_id") REFERENCES "vehicle_type"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "booking_passenger" ADD CONSTRAINT "booking_passenger_booking_id_fkey" FOREIGN KEY ("booking_id") REFERENCES "booking"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -288,7 +344,7 @@ ALTER TABLE "cabin_type" ADD CONSTRAINT "cabin_type_shipping_line_id_fkey" FOREI
 ALTER TABLE "seat_type" ADD CONSTRAINT "seat_type_shipping_line_id_fkey" FOREIGN KEY ("shipping_line_id") REFERENCES "shipping_line"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "notification" ADD CONSTRAINT "notification_tripId_fkey" FOREIGN KEY ("tripId") REFERENCES "trip"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "notification" ADD CONSTRAINT "notification_trip_id_fkey" FOREIGN KEY ("trip_id") REFERENCES "trip"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "account_notification" ADD CONSTRAINT "account_notification_account_id_fkey" FOREIGN KEY ("account_id") REFERENCES "account"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

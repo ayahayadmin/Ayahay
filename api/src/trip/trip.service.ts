@@ -50,14 +50,16 @@ export class TripService {
     }
   }
 
-  async getTripsByIds(tripIds: number[]): Promise<Trip[]> {
-    return await this.prisma.trip.findMany({
+  async getTripsByIds(tripIds: number[]): Promise<ITrip[]> {
+    const trips = await this.prisma.trip.findMany({
       where: {
         id: {
           in: tripIds,
         },
       },
     });
+
+    return [];
   }
 
   async createTrip(data: Prisma.TripCreateInput): Promise<Trip> {

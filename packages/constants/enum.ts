@@ -1,8 +1,3 @@
-export enum ROLE {
-  Client = 'Client',
-  Admin = 'Admin',
-}
-
 export enum SEX {
   Male = 'Male',
   Female = 'Female',
@@ -28,28 +23,17 @@ export enum OCCUPATION {
   Unemployed = 'Unemployed',
 }
 
-export enum VEHICLE_BODY {
-  TenWheeler = '10-Wheeler / Empty',
-  EightWheeler = '8-Wheeler / Empty',
-  SixWheeler = '6-Wheeler / Empty',
-  AUV = 'AUV',
-  Hatchback = 'Hatchback',
-  Motorcycle100To200Cc = 'Motorcycle 100cc to 200cc',
-  MotorcycleAbove250Cc = 'Motorcycle 250cc &amp; above',
-  MotorcycleBelow250Cc = 'Motorcycle below 250cc',
-  Multicab = 'Multicab',
-  LightCar = 'Owner / Light Cars',
-  Jeep = 'Owner Jeep',
-  Pickup = 'Pick-up',
-  Sedan = 'Sedan',
-  SUV = 'SUV',
-  Tricycle = 'Tricycle',
-  VAN = 'VAN',
-}
-
 export enum ACCOUNT_ROLE {
   Passenger = 'Passenger',
   Staff = 'Staff',
   Admin = 'Admin',
   SuperAdmin = 'SuperAdmin',
+}
+
+export enum DISCOUNT_TYPE {
+  Student = 'Student',
+  Senior = 'Senior',
+  Pwd = 'PWD',
+  Child = 'Child',
+  Infant = 'Infant',
 }

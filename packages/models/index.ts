@@ -10,3 +10,8 @@ export * from './trip.model';
 export * from './booking-vehicle.model';
 export * from './passenger-vehicle.model';
 export * from './account.model';
+export * from './seat-type.model';
+export * from './cabin-type.model';
+export * from './trip-cabin.model';
+export * from './trip-vehicle-type.model';
+export * from './vehicle-type.model';

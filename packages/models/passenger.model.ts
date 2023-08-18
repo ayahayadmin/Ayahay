@@ -1,5 +1,10 @@
-import { CIVIL_STATUS, OCCUPATION, SEX } from '@ayahay/constants/enum';
-import { PassengerPreferences, mockPreferences } from '@ayahay/http';
+import {
+  CIVIL_STATUS,
+  DISCOUNT_TYPE,
+  OCCUPATION,
+  SEX,
+} from '@ayahay/constants/enum';
+import { PassengerPreferences } from '@ayahay/http';
 import {
   IPassengerVehicle,
   mockInnova,
@@ -19,6 +24,7 @@ export interface IPassenger {
   birthdayIso: string;
   address: string;
   nationality: string;
+  discountType?: keyof typeof DISCOUNT_TYPE;
   preferences?: PassengerPreferences;
   buddyId?: number;
   companions?: IPassenger[];
@@ -35,7 +41,7 @@ export const mockPassenger: IPassenger = {
   birthdayIso: '1999/09/09',
   address: 'Quezon City',
   nationality: 'Filipino',
-  preferences: mockPreferences,
+  preferences: {},
 };
 
 export const mockSon: IPassenger = {
@@ -48,7 +54,7 @@ export const mockSon: IPassenger = {
   birthdayIso: '2018-05-05',
   address: 'Mandaluyong City',
   nationality: 'Filipino',
-  preferences: mockPreferences,
+  preferences: {},
 };
 
 export const mockWife: IPassenger = {
@@ -61,7 +67,7 @@ export const mockWife: IPassenger = {
   birthdayIso: '1999-05-05',
   address: 'Mandaluyong City',
   nationality: 'Filipino',
-  preferences: mockPreferences,
+  preferences: {},
 };
 
 export const mockFather: IPassenger = {
@@ -74,7 +80,7 @@ export const mockFather: IPassenger = {
   birthdayIso: '1999-10-20',
   address: 'Mandaluyong City',
   nationality: 'Filipino',
-  preferences: mockPreferences,
+  preferences: {},
   companions: [mockWife, mockSon],
   vehicles: [mockInnova, mockPickup],
 };

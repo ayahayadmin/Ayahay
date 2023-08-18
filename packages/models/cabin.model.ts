@@ -7,7 +7,7 @@ export interface ICabin {
   shipId: number;
   ship?: IShip;
   cabinTypeId: number;
-  cabinType: ICabinType;
+  cabinType?: ICabinType;
   name: string;
   recommendedPassengerCapacity: number;
   numOfRows: number;

@@ -1,15 +1,17 @@
-import { VEHICLE_BODY } from '@ayahay/constants/enum';
 import { IPassenger } from './passenger.model';
+import { IVehicleType, sedanVehicleType } from './vehicle-type.model';
 
 export interface IPassengerVehicle {
   id: number;
   passengerId: number;
   passenger?: IPassenger;
+  vehicleTypeId: number;
+  vehicleType?: IVehicleType;
+
   plateNo: string;
   modelName: string;
   modelYear: number;
 
-  modelBody: keyof typeof VEHICLE_BODY;
   officialReceiptUrl: string;
   certificateOfRegistrationUrl: string;
 }
@@ -17,10 +19,11 @@ export interface IPassengerVehicle {
 export const mockInnova: IPassengerVehicle = {
   id: 1,
   passengerId: 1,
+  vehicleTypeId: sedanVehicleType.id,
+  vehicleType: sedanVehicleType,
   plateNo: 'ABC123',
   modelName: 'Toyota Innova',
   modelYear: 2019,
-  modelBody: 'SUV',
   officialReceiptUrl: '',
   certificateOfRegistrationUrl: '',
 };
@@ -28,10 +31,11 @@ export const mockInnova: IPassengerVehicle = {
 export const mockPickup: IPassengerVehicle = {
   id: 2,
   passengerId: 1,
+  vehicleTypeId: sedanVehicleType.id,
+  vehicleType: sedanVehicleType,
   plateNo: 'DEF456',
   modelName: 'Ford F-150',
   modelYear: 2016,
-  modelBody: 'Pickup',
   officialReceiptUrl: '',
   certificateOfRegistrationUrl: '',
 };

@@ -23,29 +23,29 @@ model Trip {
   destPort Port @relation("destPort", fields: [destPortId], references: [id])
 
   departureDate DateTime @map("departure_date")
-  baseFare Float @map("base_fare")
   referenceNo String @map("reference_number")
   seatSelection Boolean @map("seat_selection") @default(false)
+  vehicleCapacity Int @map("vehicle_capacity")
 
   passengers BookingPassenger[]
   vehicles BookingVehicle[]
   notifications Notification[]
-  tripSpecificShipInfo TripShip[]
-  tripSpecificCabinInfo TripCabin[]
+  availableCabins TripCabin[]
+  availableVehicleTypes TripVehicleType[]
 
   @@map("trip")
 }
 
-model TripShip {
+model TripVehicleType {
   tripId Int @map("trip_id")
   trip Trip @relation(fields: [tripId], references: [id])
-  shipId Int @map("ship_id")
-  ship Ship @relation(fields: [shipId], references: [id])
+  vehicleTypeId Int @map("vehicle_type_id")
+  vehicleType VehicleType @relation(fields: [vehicleTypeId], references: [id])
 
-  vehicle_capacity Int
+  fare Float
 
-  @@map("trip_ship")
-  @@id([tripId, shipId])
+  @@map("trip_vehicle_type")
+  @@id([tripId, vehicleTypeId])
 }
 
 model TripCabin {
@@ -54,7 +54,8 @@ model TripCabin {
   cabinId Int @map("cabin_id")
   cabin Cabin @relation(fields: [cabinId], references: [id])
 
-  passenger_capacity Int
+  passengerCapacity Int @map("passenger_capacity")
+  adultFare Float @map("adult_fare")
 
   @@map("trip_cabin")
   @@id([tripId, cabinId])
@@ -70,7 +71,7 @@ model Ship {
 
   cabins Cabin[]
   trips Trip[]
-  tripSpecificInfo TripShip[]
+  schedules ShippingLineSchedule[]
 
   @@map("ship")
 }
@@ -89,6 +90,7 @@ model Cabin {
 
   seats Seat[]
   tripSpecificInfo TripCabin[]
+  schedules ShippingLineScheduleRate[]
 
   @@map("cabin")
 }
@@ -116,18 +118,57 @@ model ShippingLine {
 
   trips Trip[]
   ships Ship[]
+  schedules ShippingLineSchedule[]
   cabinTypes CabinType[]
   seatTypes SeatType[]
 
   @@map("shipping_line")
 }
 
-model Port {
+model ShippingLineSchedule {
   id Int @default(autoincrement()) @id
-  tripsSrc Trip[] @relation("srcPort")
-  tripsDest Trip[] @relation("destPort")
+  shippingLineId Int @map("shipping_line_id")
+  shippingLine ShippingLine @relation(fields: [shippingLineId], references: [id])
+  srcPortId Int @map("src_port_id")
+  srcPort Port @relation("srcPort", fields: [srcPortId], references: [id])
+  destPortId Int @map("dest_port_id")
+  destPort Port @relation("destPort", fields: [destPortId], references: [id])
+  shipId Int @map("ship_id")
+  ship Ship @relation(fields: [shipId], references: [id])
 
   name String
+  departureHour Int @map("departure_hour")
+  departureMinute Int @map("departure_minute")
+
+  rates ShippingLineScheduleRate[]
+
+  @@map("shipping_line_schedule")
+}
+
+model ShippingLineScheduleRate {
+  id Int @default(autoincrement()) @id
+  scheduleId Int @map("schedule_id")
+  schedule ShippingLineSchedule @relation(fields: [scheduleId], references: [id])
+  cabinId Int? @map("cabin_id")
+  cabin Cabin? @relation(fields: [cabinId], references: [id])
+  vehicleTypeId Int? @map("vehicle_type_id")
+  vehicleType VehicleType? @relation(fields: [vehicleTypeId], references: [id])
+
+  fare Float
+
+  @@map("shipping_line_schedule_rate")
+}
+
+
+model Port {
+  id Int @default(autoincrement()) @id
+
+  name String
+
+  tripsSrc Trip[] @relation("srcPort")
+  tripsDest Trip[] @relation("destPort")
+  schedulesSrc ShippingLineSchedule[] @relation("srcPort")
+  schedulesDest ShippingLineSchedule[] @relation("destPort")
 
   @@map("port")
 }
@@ -178,6 +219,7 @@ model Passenger {
   birthday DateTime
   address String
   nationality String
+  discountType String @map("discount_type")
 
   buddies Passenger[] @relation("PassengerBuddies")
   bookings BookingPassenger[]
@@ -269,7 +311,7 @@ model SeatType {
 
 model Notification {
   id Int @default(autoincrement()) @id
-  tripId Int?
+  tripId Int? @map("trip_id")
   trip Trip? @relation(fields: [tripId], references: [id])
 
   subject String
@@ -291,4 +333,16 @@ model AccountNotification {
 
   @@map("account_notification")
   @@id([accountId, notificationId])
+}
+
+model VehicleType {
+  id Int @default(autoincrement()) @id
+
+  name String
+  description String
+
+  trips TripVehicleType[]
+  schedules ShippingLineScheduleRate[]
+
+  @@map("vehicle_type")
 }

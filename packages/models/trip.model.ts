@@ -2,7 +2,7 @@ import { IShippingLine, mockShippingLine } from './shipping-line.model';
 import { IPort, mockPort, mockPort2, mockPort3 } from './port.model';
 import { IShip, mockShip } from './ship.model';
 import { ITripCabin } from './trip-cabin.model';
-import { ITripShip } from './trip-ship.model';
+import { ITripVehicleType } from './trip-vehicle-type.model';
 
 export interface ITrip {
   id: number;
@@ -17,12 +17,12 @@ export interface ITrip {
   destPort?: IPort;
 
   departureDateIso: string;
-  baseFare: number;
   seatSelection: boolean;
-  availableSeatTypes: string[];
+  vehicleCapacity: number;
+  availableCabins: ITripCabin[];
+  availableVehicleTypes: ITripVehicleType[];
 
-  tripSpecificShipInfo: ITripShip[];
-  tripSpecificCabinInfo: ITripCabin[];
+  availableSeatTypes: string[];
 
   meals: string[];
 }
@@ -46,7 +46,6 @@ export const mockTrip: ITrip = {
   destPortId: mockPort2.id,
   destPort: mockPort2,
   departureDateIso: today,
-  baseFare: 20,
   availableSeatTypes: [
     'Aisle',
     'SingleBed',
@@ -55,8 +54,9 @@ export const mockTrip: ITrip = {
     'UpperBunkBed',
   ],
   seatSelection: false,
-  tripSpecificShipInfo: [],
-  tripSpecificCabinInfo: [],
+  vehicleCapacity: 10,
+  availableCabins: [],
+  availableVehicleTypes: [],
   meals: ['Tapsilog', 'Bacsilog', 'Longsilog'],
 };
 
@@ -74,7 +74,6 @@ export const mockTrips: ITrip[] = [
     destPortId: mockPort2.id,
     destPort: mockPort2,
     departureDateIso: fiveDaysLater,
-    baseFare: 20,
     availableSeatTypes: [
       'Aisle',
       'SingleBed',
@@ -83,8 +82,9 @@ export const mockTrips: ITrip[] = [
       'UpperBunkBed',
     ],
     seatSelection: false,
-    tripSpecificShipInfo: [],
-    tripSpecificCabinInfo: [],
+    vehicleCapacity: 10,
+    availableCabins: [],
+    availableVehicleTypes: [],
     meals: ['Tapsilog', 'Bacsilog', 'Longsilog'],
   },
   {
@@ -99,7 +99,6 @@ export const mockTrips: ITrip[] = [
     destPortId: mockPort.id,
     destPort: mockPort,
     departureDateIso: tenDaysLater,
-    baseFare: 20,
     availableSeatTypes: [
       'Aisle',
       'SingleBed',
@@ -108,8 +107,9 @@ export const mockTrips: ITrip[] = [
       'UpperBunkBed',
     ],
     seatSelection: false,
-    tripSpecificShipInfo: [],
-    tripSpecificCabinInfo: [],
+    vehicleCapacity: 10,
+    availableCabins: [],
+    availableVehicleTypes: [],
     meals: ['Tapsilog', 'Bacsilog', 'Longsilog'],
   },
 ];
