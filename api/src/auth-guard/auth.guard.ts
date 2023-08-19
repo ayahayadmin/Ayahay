@@ -67,8 +67,7 @@ export class AuthGuard implements CanActivate {
     return includes(requiredRoles, role);
   }
 
-  async canActivate(context: ExecutionContext) {
-    //boolean | Promise<boolean> | Observable<boolean>
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const token = this.extractTokenFromHeader(request);
 
