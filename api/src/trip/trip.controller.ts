@@ -1,13 +1,23 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { TripService } from './trip.service';
 import { ITrip, TripSearchDto } from '@ayahay/models';
 import { Prisma } from '@prisma/client';
 import { omit } from 'lodash';
 import { TripMapper } from './trip.mapper';
 import { Roles } from 'src/decorators/roles.decorators';
+import { AuthGuard } from '../auth-guard/auth.guard';
 
 @Controller('trips')
-@Roles('passenger', 'staff', 'admin', 'superadmin')
+@UseGuards(AuthGuard)
+@Roles('Admin', 'Passenger')
 export class TripController {
   constructor(
     private readonly tripService: TripService,

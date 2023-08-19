@@ -1,5 +1,5 @@
-import { Injectable } from '@nestjs/common';
-import { Account, Prisma } from '@prisma/client';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
 import { IAccount } from '@ayahay/models';
 import { AccountMapper } from './account.mapper';
@@ -21,6 +21,20 @@ export class AccountService {
       },
     });
 
-    return this.accountMapper.convertAccountToDto(accountEntity);
+    return accountEntity
+      ? this.accountMapper.convertAccountToDto(accountEntity)
+      : null;
+  }
+
+  public async createAccount(
+    data: Prisma.AccountCreateInput
+  ): Promise<IAccount> {
+    try {
+      return (await this.prisma.account.create({
+        data,
+      })) as IAccount;
+    } catch {
+      throw new InternalServerErrorException();
+    }
   }
 }
