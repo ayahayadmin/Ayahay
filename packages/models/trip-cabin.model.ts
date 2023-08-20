@@ -1,5 +1,6 @@
 import { ITrip } from './trip.model';
 import { ICabin } from './cabin.model';
+import { ISeatPlan } from './seat-plan.model';
 
 /**
  * Trip-specific information (e.g. passenger capacity) for Cabin
@@ -22,7 +23,10 @@ export interface ITripCabin {
   trip: ITrip;
   cabinId: number;
   cabin: ICabin;
+  seatPlanId?: number;
+  seatPlan?: ISeatPlan;
 
+  availablePassengerCapacity: number;
   passengerCapacity: number;
   adultFare: number;
 }

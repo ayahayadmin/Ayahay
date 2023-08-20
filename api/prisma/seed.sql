@@ -3,109 +3,148 @@ ALTER TABLE ayahay.passenger ADD CONSTRAINT "passenger_account_id_fkey" FOREIGN 
 INSERT INTO ayahay.port
     ("name")
     VALUES
-    ('Bacolod'),
-    ('Batangas'),
-    ('Baybay, Leyte'),
-    ('Bogo, Cebu'),
-    ('Bato, Leyte'),
-    ('Butuan'),
-    ('Cagayan de Oro'),
-    ('Calapan'),
-    ('Calbayog City'),
-    ('Caticlan'),
-    ('Cebu'),
-    ('Consuelo, Camotes'),
+--     ('Bacolod'),
+--     ('Batangas'),
+--     ('Bato'),
+--     ('Baybay'),
+    ('Bogo'),
+--     ('Butuan'),
+--     ('Cagayan de Oro'),
+--     ('Calapan'),
+--     ('Calbayog City'),
+    ('Camotes'),
+--     ('Cataingan'),
+--     ('Caticlan'),
+--     ('Cebu'),
+--     ('Consuelo'),
     ('Danao'),
-    ('Dapitan'),
-    ('Dapdap'),
-    ('Dumaguete'),
-    ('Dipolog'),
-    ('Dapa, Siargao'),
-    ('EB MagaIona, Negros Occidental'),
-    ('Estancia'),
-    ('Getafe'),
-    ('Guimaras'),
-    ('Hagnaya'),
-    ('Iligan'),
-    ('Iloilo'),
-    ('Isabel, Leyte'),
-    ('Jagna, Bohol'),
-    ('Medellin, Cebu'),
-    ('Larena, Siquijor'),
-    ('Cataingan, Masbate'),
-    ('Masbate'),
-    ('Matnog'),
-    ('Manila'),
-    ('Nasipit'),
-    ('Odiongan, Romblon'),
-    ('Ormoc'),
-    ('Ozamiz'),
-    ('Ozamiz'),
+--     ('Dapa'),
+--     ('Dapdap'),
+--     ('Dapitan'),
+--     ('Dipolog'),
+--     ('Dumaguete'),
+--     ('EB MagaIona'),
+    ('Escalante'),
+--     ('Estancia'),
+--     ('Getafe'),
+--     ('Guimaras'),
+--     ('Hagnaya'),
+--     ('Iligan'),
+--     ('Iloilo'),
+    ('Isabel'),
+--     ('Jagna'),
+--     ('Larena'),
+    ('Liloan'),
+--     ('Manila'),
+--     ('Masbate'),
+--     ('Matnog'),
+--     ('Medellin'),
+--     ('Nasipit'),
+--     ('Odiongan'),
+--     ('Ormoc'),
+--     ('Ozamiz'),
     ('Palompon'),
-    ('Plaridel'),
-    ('Puerto Princesa, Palawan'),
-    ('Puerto Galera'),
-    ('Romblon, Romblon'),
-    ('Roxas City, Capiz'),
-    ('Roxas, Mindoro'),
-    ('San Carlos, Negros'),
-    ('Sibuyan, Romblon'),
-    ('Siquijor'),
-    ('Santa Fe, Bantayan Island'),
-    ('Surigao'),
-    ('Tagbilaran City, Bohol'),
-    ('Talibon'),
-    ('Toledo'),
-    ('Tubigon'),
-    ('Ubay, Bohol'),
-    ('Zamboanqa')
-;
-
-INSERT INTO ayahay.ship
-    ("name", passenger_capacity, vehicle_capacity)
-    VALUES
-    ('Royal Seal', 150, 10)
-;
-
-INSERT INTO ayahay.cabin
-    ("name", "type", number_of_rows, number_of_columns, ship_id)
-    VALUES
-    ('Economy 1F', 'Economy', 5, 6, (SELECT id FROM ayahay.ship WHERE "name" = 'Royal Seal')),
-    ('Economy 2F', 'Economy', 5, 6, (SELECT id FROM ayahay.ship WHERE "name" = 'Royal Seal')),
-    ('Business 1F', 'Business', 5, 6, (SELECT id FROM ayahay.ship WHERE "name" = 'Royal Seal')),
-    ('First Class 2F', 'First', 5, 6, (SELECT id FROM ayahay.ship WHERE "name" = 'Royal Seal'))
-;
-
-INSERT INTO ayahay.seat
-    ("name", "type", "row", "column", cabin_id)
-    SELECT
-        CONCAT(
-            -- map row to letter: 0 -> A, 1 -> B, etc.
-            CHR(r + ASCII('A')),
-            (c + 1)::TEXT
-        ) AS "name",
-        -- seats in first column are window seats, second column aisle, etc.
-        (ARRAY['Window', 'Aisle', 'SingleBed', 'LowerBunkBed', 'UpperBunkBed', 'Window'])
-            [c + 1] AS "type",
-        r AS "row",
-        c AS "column",
-        cabin.id AS cabin_id
-    FROM ayahay.cabin cabin
-    CROSS JOIN generate_series(0, 4) r
-    CROSS JOIN generate_series(0, 5) c
+--     ('Plaridel'),
+--     ('Puerto Galera'),
+--     ('Puerto Princesa'),
+--     ('Romblon'),
+--     ('Roxas City'),
+--     ('Roxas'),
+    ('San Carlos'),
+--     ('Santa Fe Island'),
+--     ('Sibuyan'),
+--     ('Siquijor'),
+--     ('Surigao'),
+    ('Tabuelan'),
+--     ('Tagbilaran City'),
+--     ('Talibon'),
+    ('Toledo')
+--     ('Tubigon'),
+--     ('Ubay'),
+--     ('Zamboanqa')
 ;
 
 INSERT INTO ayahay.shipping_line
     ("name")
     VALUES
-    ('Cokaliong')
+    ('Aznar Shipping')
 ;
+
+INSERT INTO cabin_type
+    ("name", "description", shipping_line_id)
+    VALUES
+    ('Aircon', 'Aircon', (SELECT id FROM ayahay.shipping_line WHERE "name" = 'Aznar Shipping')),
+    ('Non-Aircon', 'Non-Aircon', (SELECT id FROM ayahay.shipping_line WHERE "name" = 'Aznar Shipping'))
+;
+
+INSERT INTO vehicle_type
+    ("name", "description")
+    VALUES
+    ('Bicycle', 'Bicycle'),
+    ('Motorcycle', 'Motorcycle'),
+    ('Tricycle', 'Tricycle'),
+    ('Big Bus', 'Bus with 60 pax capacity'),
+    ('Mini Bus', 'Bus with 30 pax capacity'),
+    ('4-Wheeler Automobile', '4-Wheeler Automobile'),
+    ('4-Wheeler SUV', '4-Wheeler SUV'),
+    ('Multicab', 'Multicab'),
+    ('Pickup', 'Pickup'),
+    ('4-Wheeler Van', '4-Wheeler Van'),
+    ('4-Wheeler Light Van', '4-Wheeler Light Van'),
+    ('6-Wheeler Light Van', '6-Wheeler Light Van'),
+    ('6-Wheeler Chassis', '6-Wheeler Chassis'),
+    ('6-Wheeler Dump Truck', '6-Wheeler Dump Truck'),
+    ('8-Wheeler Oil Tanker', '8-Wheeler Oil Tanker'),
+    ('8-Wheeler Chassis', '8-Wheeler Chassis'),
+    ('10-Wheeler Chassis', '10-Wheeler Chassis')
+;
+
+INSERT INTO ayahay.ship
+    ("name", shipping_line_id, recommended_vehicle_capacity)
+    VALUES
+    ('Melrivic 2', (SELECT id FROM ayahay.shipping_line WHERE "name" = 'Aznar Shipping'), 5)
+;
+
+INSERT INTO ayahay.cabin
+    ("name", recommended_passenger_capacity, ship_id, cabin_type_id)
+    VALUES
+    ('Aircon', 150, (SELECT id FROM ayahay.ship WHERE "name" = 'Melrivic 2'), (SELECT id from ayahay.cabin_type WHERE "name" = 'Aircon')),
+    ('Non-Aircon', 100, (SELECT id FROM ayahay.ship WHERE "name" = 'Melrivic 2'), (SELECT id from ayahay.cabin_type WHERE "name" = 'Non-Aircon'))
+;
+
+-- INSERT INTO ayahay.seat_plan
+--     ("name", row_count, column_count, shipping_line_id)
+--     VALUES
+--     ("Seat Plan", 5, 6, (SELECT id FROM ayahay.shipping_line WHERE "name" = 'Aznar Shipping'))
+-- ;
+--
+-- INSERT INTO ayahay.seat
+--     ("name", "type", "row", "column", seat_plan_id)
+--     SELECT
+--         CONCAT(
+--             -- map row to letter: 0 -> A, 1 -> B, etc.
+--             CHR(r + ASCII('A')),
+--             (c + 1)::TEXT
+--         ) AS "name",
+--         -- seats in first column are window seats, second column aisle, etc.
+--         (ARRAY['Window', 'Aisle', 'SingleBed', 'LowerBunkBed', 'UpperBunkBed', 'Window'])
+--             [c + 1] AS "type",
+--         r AS "row",
+--         c AS "column",
+--         seat_plan.id AS seat_plan_id
+--     FROM ayahay.seat_plan seat_plan
+--     CROSS JOIN generate_series(0, 4) r
+--     CROSS JOIN generate_series(0, 5) c
+-- ;
 
 INSERT INTO ayahay.trip
     (
         departure_date,
-        base_fare,
+        booking_start_date,
+        booking_cut_off_date,
         reference_number,
+        available_vehicle_capacity,
+        vehicle_capacity,
         ship_id,
         shipping_line_id,
         src_port_id,
@@ -113,17 +152,69 @@ INSERT INTO ayahay.trip
     )
     VALUES
     (
-        TIMESTAMP '2023-12-15 06:15:00',
-        500,
+        TIMESTAMP '2023-12-15 10:30:00',
+        TIMESTAMP '2023-06-15 10:30:00',
+        TIMESTAMP '2023-12-08 10:30:00',
         'SEED1',
-        (SELECT id FROM ayahay.ship WHERE "name" = 'Royal Seal'),
-        (SELECT id FROM ayahay.shipping_line WHERE "name" = 'Cokaliong'),
-        (SELECT id FROM ayahay.port WHERE "name" = 'Cebu'),
-        (SELECT id FROM ayahay.port WHERE "name" = 'Bacolod')
+        5,
+        5,
+        (SELECT id FROM ayahay.ship WHERE "name" = 'Melrivic 2'),
+        (SELECT id FROM ayahay.shipping_line WHERE "name" = 'Aznar Shipping'),
+        (SELECT id FROM ayahay.port WHERE "name" = 'Danao'),
+        (SELECT id FROM ayahay.port WHERE "name" = 'Isabel')
+    )
+;
+
+INSERT INTO ayahay.trip_cabin
+    (trip_id, cabin_id, available_passenger_capacity, passenger_capacity, adult_fare)
+    VALUES
+    (
+        (SELECT id FROM ayahay.trip WHERE reference_number = 'SEED1'),
+        (SELECT id FROM ayahay.cabin WHERE "name" = 'Aircon'),
+        107,
+        107,
+        450
+    ),
+    (
+        (SELECT id FROM ayahay.trip WHERE reference_number = 'SEED1'),
+        (SELECT id FROM ayahay.cabin WHERE "name" = 'Non-Aircon'),
+        168,
+        168,
+        400
+    )
+;
+
+INSERT INTO ayahay.trip_vehicle_type
+    (trip_id, vehicle_type_id, fare)
+    VALUES
+    (
+        (SELECT id FROM ayahay.trip WHERE reference_number = 'SEED1'),
+        (SELECT id FROM ayahay.vehicle_type WHERE "name" = 'Bicycle'),
+        644
+    ),
+    (
+        (SELECT id FROM ayahay.trip WHERE reference_number = 'SEED1'),
+        (SELECT id FROM ayahay.vehicle_type WHERE "name" = 'Motorcycle'),
+        1725
+    ),
+    (
+        (SELECT id FROM ayahay.trip WHERE reference_number = 'SEED1'),
+        (SELECT id FROM ayahay.vehicle_type WHERE "name" = 'Tricycle'),
+        1740
+    ),
+    (
+        (SELECT id FROM ayahay.trip WHERE reference_number = 'SEED1'),
+        (SELECT id FROM ayahay.vehicle_type WHERE "name" = 'Pickup'),
+        3795
+    ),
+    (
+        (SELECT id FROM ayahay.trip WHERE reference_number = 'SEED1'),
+        (SELECT id FROM ayahay.vehicle_type WHERE "name" = '4-Wheeler SUV'),
+        3795
     )
 ;
 
 INSERT INTO ayahay.account
-    (id, email)
+    (id, email, "role")
     VALUES
-    ('SYSTEM', 'system@ayahay.com')
+    ('SYSTEM', 'system@ayahay.com', 'SuperAdmin')

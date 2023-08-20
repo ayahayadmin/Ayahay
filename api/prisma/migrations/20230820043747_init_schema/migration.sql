@@ -8,7 +8,10 @@ CREATE TABLE "trip" (
     "departure_date" TIMESTAMP(3) NOT NULL,
     "reference_number" TEXT NOT NULL,
     "seat_selection" BOOLEAN NOT NULL DEFAULT false,
+    "available_vehicle_capacity" INTEGER NOT NULL,
     "vehicle_capacity" INTEGER NOT NULL,
+    "booking_start_date" TIMESTAMP(3) NOT NULL,
+    "booking_cut_off_date" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "trip_pkey" PRIMARY KEY ("id")
 );
@@ -26,6 +29,8 @@ CREATE TABLE "trip_vehicle_type" (
 CREATE TABLE "trip_cabin" (
     "trip_id" INTEGER NOT NULL,
     "cabin_id" INTEGER NOT NULL,
+    "seat_plan_id" INTEGER,
+    "available_passenger_capacity" INTEGER NOT NULL,
     "passenger_capacity" INTEGER NOT NULL,
     "adult_fare" DOUBLE PRECISION NOT NULL,
 
@@ -47,18 +52,28 @@ CREATE TABLE "cabin" (
     "id" SERIAL NOT NULL,
     "ship_id" INTEGER NOT NULL,
     "cabin_type_id" INTEGER NOT NULL,
+    "default_seat_plan_id" INTEGER,
     "name" TEXT NOT NULL,
-    "number_of_rows" INTEGER NOT NULL,
-    "number_of_columns" INTEGER NOT NULL,
     "recommended_passenger_capacity" INTEGER NOT NULL,
 
     CONSTRAINT "cabin_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
+CREATE TABLE "seat_plan" (
+    "id" SERIAL NOT NULL,
+    "shipping_line_id" INTEGER NOT NULL,
+    "name" TEXT NOT NULL,
+    "row_count" INTEGER NOT NULL,
+    "column_count" INTEGER NOT NULL,
+
+    CONSTRAINT "seat_plan_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "seat" (
     "id" SERIAL NOT NULL,
-    "cabin_id" INTEGER NOT NULL,
+    "seat_plan_id" INTEGER NOT NULL,
     "seat_type_id" INTEGER NOT NULL,
     "name" TEXT NOT NULL,
     "row" INTEGER NOT NULL,
@@ -85,6 +100,8 @@ CREATE TABLE "shipping_line_schedule" (
     "name" TEXT NOT NULL,
     "departure_hour" INTEGER NOT NULL,
     "departure_minute" INTEGER NOT NULL,
+    "days_before_booking_start" INTEGER NOT NULL,
+    "days_before_booking_cut_off" INTEGER NOT NULL,
 
     CONSTRAINT "shipping_line_schedule_pkey" PRIMARY KEY ("id")
 );
@@ -145,6 +162,7 @@ CREATE TABLE "passenger" (
     "birthday" TIMESTAMP(3) NOT NULL,
     "address" TEXT NOT NULL,
     "nationality" TEXT NOT NULL,
+    "discount_type" TEXT,
 
     CONSTRAINT "passenger_pkey" PRIMARY KEY ("id")
 );
@@ -164,6 +182,7 @@ CREATE TABLE "booking_vehicle" (
 CREATE TABLE "passenger_vehicle" (
     "id" SERIAL NOT NULL,
     "passenger_id" INTEGER NOT NULL,
+    "vehicle_type_id" INTEGER NOT NULL,
     "plate_number" TEXT NOT NULL,
     "model_name" TEXT NOT NULL,
     "model_year" INTEGER NOT NULL,
@@ -272,6 +291,9 @@ ALTER TABLE "trip_cabin" ADD CONSTRAINT "trip_cabin_trip_id_fkey" FOREIGN KEY ("
 ALTER TABLE "trip_cabin" ADD CONSTRAINT "trip_cabin_cabin_id_fkey" FOREIGN KEY ("cabin_id") REFERENCES "cabin"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "trip_cabin" ADD CONSTRAINT "trip_cabin_seat_plan_id_fkey" FOREIGN KEY ("seat_plan_id") REFERENCES "seat_plan"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "ship" ADD CONSTRAINT "ship_shipping_line_id_fkey" FOREIGN KEY ("shipping_line_id") REFERENCES "shipping_line"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -281,7 +303,13 @@ ALTER TABLE "cabin" ADD CONSTRAINT "cabin_ship_id_fkey" FOREIGN KEY ("ship_id") 
 ALTER TABLE "cabin" ADD CONSTRAINT "cabin_cabin_type_id_fkey" FOREIGN KEY ("cabin_type_id") REFERENCES "cabin_type"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "seat" ADD CONSTRAINT "seat_cabin_id_fkey" FOREIGN KEY ("cabin_id") REFERENCES "cabin"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "cabin" ADD CONSTRAINT "cabin_default_seat_plan_id_fkey" FOREIGN KEY ("default_seat_plan_id") REFERENCES "seat_plan"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "seat_plan" ADD CONSTRAINT "seat_plan_shipping_line_id_fkey" FOREIGN KEY ("shipping_line_id") REFERENCES "shipping_line"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "seat" ADD CONSTRAINT "seat_seat_plan_id_fkey" FOREIGN KEY ("seat_plan_id") REFERENCES "seat_plan"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "seat" ADD CONSTRAINT "seat_seat_type_id_fkey" FOREIGN KEY ("seat_type_id") REFERENCES "seat_type"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -333,6 +361,9 @@ ALTER TABLE "booking_vehicle" ADD CONSTRAINT "booking_vehicle_vehicle_id_fkey" F
 
 -- AddForeignKey
 ALTER TABLE "passenger_vehicle" ADD CONSTRAINT "passenger_vehicle_passenger_id_fkey" FOREIGN KEY ("passenger_id") REFERENCES "passenger"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "passenger_vehicle" ADD CONSTRAINT "passenger_vehicle_vehicle_type_id_fkey" FOREIGN KEY ("vehicle_type_id") REFERENCES "vehicle_type"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "account" ADD CONSTRAINT "account_passenger_id_fkey" FOREIGN KEY ("passenger_id") REFERENCES "passenger"("id") ON DELETE SET NULL ON UPDATE CASCADE;

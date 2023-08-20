@@ -18,12 +18,15 @@ export interface ITrip {
 
   departureDateIso: string;
   seatSelection: boolean;
+  availableVehicleCapacity: number;
   vehicleCapacity: number;
+  bookingStartDateIso: string;
+  bookingCutOffDateIso: string;
+
   availableCabins: ITripCabin[];
   availableVehicleTypes: ITripVehicleType[];
 
   availableSeatTypes: string[];
-
   meals: string[];
 }
 
@@ -54,7 +57,10 @@ export const mockTrip: ITrip = {
     'UpperBunkBed',
   ],
   seatSelection: false,
+  availableVehicleCapacity: 10,
   vehicleCapacity: 10,
+  bookingStartDateIso: today,
+  bookingCutOffDateIso: today,
   availableCabins: [],
   availableVehicleTypes: [],
   meals: ['Tapsilog', 'Bacsilog', 'Longsilog'],
@@ -82,7 +88,10 @@ export const mockTrips: ITrip[] = [
       'UpperBunkBed',
     ],
     seatSelection: false,
+    availableVehicleCapacity: 10,
     vehicleCapacity: 10,
+    bookingStartDateIso: today,
+    bookingCutOffDateIso: today,
     availableCabins: [],
     availableVehicleTypes: [],
     meals: ['Tapsilog', 'Bacsilog', 'Longsilog'],
@@ -107,7 +116,10 @@ export const mockTrips: ITrip[] = [
       'UpperBunkBed',
     ],
     seatSelection: false,
+    availableVehicleCapacity: 10,
     vehicleCapacity: 10,
+    bookingStartDateIso: today,
+    bookingCutOffDateIso: today,
     availableCabins: [],
     availableVehicleTypes: [],
     meals: ['Tapsilog', 'Bacsilog', 'Longsilog'],

@@ -25,7 +25,10 @@ model Trip {
   departureDate DateTime @map("departure_date")
   referenceNo String @map("reference_number")
   seatSelection Boolean @map("seat_selection") @default(false)
+  availableVehicleCapacity Int @map("available_vehicle_capacity")
   vehicleCapacity Int @map("vehicle_capacity")
+  bookingStartDate DateTime @map("booking_start_date")
+  bookingCutOffDate DateTime @map("booking_cut_off_date")
 
   passengers BookingPassenger[]
   vehicles BookingVehicle[]
@@ -53,7 +56,10 @@ model TripCabin {
   trip Trip @relation(fields: [tripId], references: [id])
   cabinId Int @map("cabin_id")
   cabin Cabin @relation(fields: [cabinId], references: [id])
+  seatPlanId Int? @map("seat_plan_id")
+  seatPlan SeatPlan? @relation(fields: [seatPlanId], references: [id])
 
+  availablePassengerCapacity Int @map("available_passenger_capacity")
   passengerCapacity Int @map("passenger_capacity")
   adultFare Float @map("adult_fare")
 
@@ -82,23 +88,38 @@ model Cabin {
   ship Ship @relation(fields: [shipId], references: [id])
   cabinTypeId Int @map("cabin_type_id")
   cabinType CabinType @relation(fields: [cabinTypeId], references: [id])
+  defaultSeatPlanId Int? @map("default_seat_plan_id")
+  defaultSeatPlan SeatPlan? @relation(fields: [defaultSeatPlanId], references: [id])
 
   name String
-  numOfRows Int @map("number_of_rows")
-  numOfColumns Int @map("number_of_columns")
   recommendedPassengerCapacity Int @map("recommended_passenger_capacity")
 
-  seats Seat[]
   tripSpecificInfo TripCabin[]
   schedules ShippingLineScheduleRate[]
 
   @@map("cabin")
 }
 
+model SeatPlan {
+  id Int @default(autoincrement()) @id
+  shippingLineId Int @map("shipping_line_id")
+  shippingLine ShippingLine @relation(fields: [shippingLineId], references: [id])
+
+  name String
+  rowCount Int @map("row_count")
+  columnCount Int @map("column_count")
+
+  seats Seat[]
+  trips TripCabin[]
+  cabins Cabin[]
+
+  @@map("seat_plan")
+}
+
 model Seat {
   id Int @default(autoincrement()) @id
-  cabinId Int @map("cabin_id")
-  cabin Cabin @relation(fields: [cabinId], references: [id])
+  seatPlanId Int @map("seat_plan_id")
+  seatPlan SeatPlan @relation(fields: [seatPlanId], references: [id])
   seatTypeId Int @map("seat_type_id")
   seatType SeatType @relation(fields: [seatTypeId], references: [id])
 
@@ -121,6 +142,7 @@ model ShippingLine {
   schedules ShippingLineSchedule[]
   cabinTypes CabinType[]
   seatTypes SeatType[]
+  seatPlans SeatPlan[]
 
   @@map("shipping_line")
 }
@@ -139,6 +161,8 @@ model ShippingLineSchedule {
   name String
   departureHour Int @map("departure_hour")
   departureMinute Int @map("departure_minute")
+  daysBeforeBookingStart Int @map("days_before_booking_start")
+  daysBeforeBookingCutOff Int @map("days_before_booking_cut_off")
 
   rates ShippingLineScheduleRate[]
 
@@ -219,7 +243,7 @@ model Passenger {
   birthday DateTime
   address String
   nationality String
-  discountType String @map("discount_type")
+  discountType String? @map("discount_type")
 
   buddies Passenger[] @relation("PassengerBuddies")
   bookings BookingPassenger[]
@@ -246,6 +270,8 @@ model PassengerVehicle {
   id Int @default(autoincrement()) @id
   passengerId Int @map("passenger_id")
   passenger Passenger @relation(fields: [passengerId], references: [id])
+  vehicleTypeId Int @map("vehicle_type_id")
+  vehicleType VehicleType @relation(fields: [vehicleTypeId], references: [id])
 
   plateNo String @map("plate_number")
   modelName String @map("model_name")
@@ -343,6 +369,7 @@ model VehicleType {
 
   trips TripVehicleType[]
   schedules ShippingLineScheduleRate[]
+  vehicles PassengerVehicle[]
 
   @@map("vehicle_type")
 }

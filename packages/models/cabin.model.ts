@@ -1,6 +1,6 @@
-import { ISeat } from './seat.model';
 import { IShip } from './ship.model';
 import { AZNAR_AIRCON_CABIN, ICabinType } from './cabin-type.model';
+import { ISeatPlan } from './seat-plan.model';
 
 export interface ICabin {
   id: number;
@@ -8,11 +8,11 @@ export interface ICabin {
   ship?: IShip;
   cabinTypeId: number;
   cabinType?: ICabinType;
+  defaultSeatPlanId?: number;
+  defaultSeatPlan?: ISeatPlan;
+
   name: string;
   recommendedPassengerCapacity: number;
-  numOfRows: number;
-  numOfCols: number;
-  seats: ISeat[];
 }
 
 export const mockCabinEconomy: ICabin = {
@@ -22,9 +22,6 @@ export const mockCabinEconomy: ICabin = {
   cabinType: AZNAR_AIRCON_CABIN,
   name: 'first floor',
   recommendedPassengerCapacity: 30,
-  numOfRows: 5,
-  numOfCols: 6,
-  seats: [],
 };
 
 export const mockCabinEconomy2: ICabin = {
@@ -34,9 +31,6 @@ export const mockCabinEconomy2: ICabin = {
   cabinType: AZNAR_AIRCON_CABIN,
   name: 'second floor',
   recommendedPassengerCapacity: 30,
-  numOfRows: 5,
-  numOfCols: 6,
-  seats: [],
 };
 
 export const mockCabinBusiness: ICabin = {
@@ -46,9 +40,6 @@ export const mockCabinBusiness: ICabin = {
   cabinType: AZNAR_AIRCON_CABIN,
   name: 'first floor',
   recommendedPassengerCapacity: 30,
-  numOfRows: 5,
-  numOfCols: 6,
-  seats: [],
 };
 
 export const mockCabinFirst: ICabin = {
@@ -58,9 +49,6 @@ export const mockCabinFirst: ICabin = {
   cabinType: AZNAR_AIRCON_CABIN,
   name: 'first floor',
   recommendedPassengerCapacity: 30,
-  numOfRows: 5,
-  numOfCols: 6,
-  seats: [],
 };
 
 export const mockCabins: ICabin[] = [
