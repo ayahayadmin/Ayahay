@@ -2,6 +2,7 @@ import {
   CanActivate,
   ExecutionContext,
   Injectable,
+  InternalServerErrorException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
@@ -10,13 +11,13 @@ import admin from 'firebase-admin';
 import { IAccount } from '@ayahay/models';
 import { includes } from 'lodash';
 import { Request } from 'express';
-import axios from 'axios';
 import { ACCOUNT_ROLE } from '@ayahay/constants';
 import { ROLES_KEY } from 'src/decorators/roles.decorators';
+import { PrismaService } from 'src/prisma.service';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-  constructor(private reflector: Reflector) {}
+  constructor(private reflector: Reflector, private prisma: PrismaService) {}
 
   private decryptToken(token: string): Promise<any> {
     initFirebase();
@@ -32,35 +33,28 @@ export class AuthGuard implements CanActivate {
       });
   }
 
-  private async getAccount(token: string, uid: string): Promise<IAccount> {
-    const config = { headers: { Authorization: `Bearer ${token}` } };
-
-    return await axios
-      .get(`http://localhost:3001/accounts/${uid}`, config)
-      .then(({ data }) => {
-        return data;
-      })
-      .catch((error) => {
-        console.error('Axios Error getAccount', error.message);
-      });
+  private async getAccount(uid: string): Promise<IAccount> {
+    return (await this.prisma.account.findUnique({
+      where: {
+        id: uid,
+      },
+    })) as IAccount;
   }
 
-  private async createAccount(token: string, uid: string, email: string) {
-    const config = { headers: { Authorization: `Bearer ${token}` } };
+  private async createAccount(uid: string, email: string) {
     const requestBody = {
       id: uid,
       email,
       role: 'Passenger',
     };
 
-    return await axios
-      .post(`http://localhost:3001/accounts`, requestBody, config)
-      .then(({ data }) => {
-        return data;
-      })
-      .catch((error) => {
-        console.error('Axios Error createAccount', error.message);
-      });
+    try {
+      return (await this.prisma.account.create({
+        data: requestBody,
+      })) as IAccount;
+    } catch {
+      throw new InternalServerErrorException();
+    }
   }
 
   private matchRoles(requiredRoles: string[], role: string) {
@@ -79,10 +73,10 @@ export class AuthGuard implements CanActivate {
         throw new UnauthorizedException();
       });
 
-    let account = await this.getAccount(token, uid);
+    let account = await this.getAccount(uid);
 
     if (!account) {
-      account = await this.createAccount(token, uid, email);
+      account = await this.createAccount(uid, email);
     }
 
     const requiredRoles = this.reflector.getAllAndOverride<ACCOUNT_ROLE[]>(
