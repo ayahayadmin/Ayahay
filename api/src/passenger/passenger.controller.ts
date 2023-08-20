@@ -1,8 +1,12 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { PassengerService } from './passenger.service';
 import { IPassenger } from '@ayahay/models';
+import { AuthGuard } from 'src/auth-guard/auth.guard';
+import { Roles } from 'src/decorators/roles.decorators';
 
 @Controller('passenger')
+@UseGuards(AuthGuard)
+@Roles('Passenger')
 export class PassengerController {
   constructor(private passengerService: PassengerService) {}
 
