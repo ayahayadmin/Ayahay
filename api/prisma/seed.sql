@@ -71,32 +71,32 @@ INSERT INTO ayahay.shipping_line
 ;
 
 INSERT INTO cabin_type
-    ("name", "description", shipping_line_id)
+    (id, "name", "description", shipping_line_id)
     VALUES
-    ('Aircon', 'Aircon', (SELECT id FROM ayahay.shipping_line WHERE "name" = 'Aznar Shipping')),
-    ('Non-Aircon', 'Non-Aircon', (SELECT id FROM ayahay.shipping_line WHERE "name" = 'Aznar Shipping'))
+    (1, 'Aircon', 'Aircon', (SELECT id FROM ayahay.shipping_line WHERE "name" = 'Aznar Shipping')),
+    (2, 'Non-Aircon', 'Non-Aircon', (SELECT id FROM ayahay.shipping_line WHERE "name" = 'Aznar Shipping'))
 ;
 
 INSERT INTO vehicle_type
-    ("name", "description")
+    (id, "name", "description")
     VALUES
-    ('Bicycle', 'Bicycle'),
-    ('Motorcycle', 'Motorcycle'),
-    ('Tricycle', 'Tricycle'),
-    ('Big Bus', 'Bus with 60 pax capacity'),
-    ('Mini Bus', 'Bus with 30 pax capacity'),
-    ('Sedan', 'Sedan'),
-    ('SUV', 'SUV'),
-    ('Multicab', 'Multicab'),
-    ('Pickup', 'Pickup'),
-    ('4-Wheeler Van', '4-Wheeler Van'),
-    ('4-Wheeler Light Van', '4-Wheeler Light Van'),
-    ('6-Wheeler Light Van', '6-Wheeler Light Van'),
-    ('6-Wheeler Chassis', '6-Wheeler Chassis'),
-    ('6-Wheeler Dump Truck', '6-Wheeler Dump Truck'),
-    ('8-Wheeler Oil Tanker', '8-Wheeler Oil Tanker'),
-    ('8-Wheeler Chassis', '8-Wheeler Chassis'),
-    ('10-Wheeler Chassis', '10-Wheeler Chassis')
+    (1, 'Bicycle', 'Bicycle'),
+    (2, 'Motorcycle', 'Motorcycle'),
+    (3, 'Tricycle', 'Tricycle'),
+    (4, 'Big Bus', 'Bus with 60 pax capacity'),
+    (5, 'Mini Bus', 'Bus with 30 pax capacity'),
+    (6, 'Sedan', 'Sedan'),
+    (7, 'SUV', 'SUV'),
+    (8, 'Multicab', 'Multicab'),
+    (9, 'Pickup', 'Pickup'),
+    (10, '4-Wheeler Van', '4-Wheeler Van'),
+    (11, '4-Wheeler Light Van', '4-Wheeler Light Van'),
+    (12, '6-Wheeler Light Van', '6-Wheeler Light Van'),
+    (13, '6-Wheeler Chassis', '6-Wheeler Chassis'),
+    (14, '6-Wheeler Dump Truck', '6-Wheeler Dump Truck'),
+    (15, '8-Wheeler Oil Tanker', '8-Wheeler Oil Tanker'),
+    (16, '8-Wheeler Chassis', '8-Wheeler Chassis'),
+    (17, '10-Wheeler Chassis', '10-Wheeler Chassis')
 ;
 
 INSERT INTO ayahay.ship

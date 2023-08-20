@@ -23,14 +23,14 @@ export interface ICabinType {
 
 export const AZNAR_AIRCON_CABIN: ICabinType = {
   id: 1,
-  shippingLineId: 1,
+  shippingLineId: -1,
   name: 'Aircon',
   description: '',
 };
 
 export const AZNAR_NON_AIRCON_CABIN: ICabinType = {
   id: 2,
-  shippingLineId: 1,
+  shippingLineId: -1,
   name: 'Non-Aircon',
   description: '',
 };
