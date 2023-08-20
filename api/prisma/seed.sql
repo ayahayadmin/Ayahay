@@ -85,8 +85,8 @@ INSERT INTO vehicle_type
     ('Tricycle', 'Tricycle'),
     ('Big Bus', 'Bus with 60 pax capacity'),
     ('Mini Bus', 'Bus with 30 pax capacity'),
-    ('4-Wheeler Automobile', '4-Wheeler Automobile'),
-    ('4-Wheeler SUV', '4-Wheeler SUV'),
+    ('Sedan', 'Sedan'),
+    ('SUV', 'SUV'),
     ('Multicab', 'Multicab'),
     ('Pickup', 'Pickup'),
     ('4-Wheeler Van', '4-Wheeler Van'),
@@ -209,7 +209,7 @@ INSERT INTO ayahay.trip_vehicle_type
     ),
     (
         (SELECT id FROM ayahay.trip WHERE reference_number = 'SEED1'),
-        (SELECT id FROM ayahay.vehicle_type WHERE "name" = '4-Wheeler SUV'),
+        (SELECT id FROM ayahay.vehicle_type WHERE "name" = 'SUV'),
         3795
     )
 ;
