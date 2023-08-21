@@ -10,7 +10,8 @@ import {
 import { createContext, useContext, useState } from 'react';
 import { initFirebase } from '../utils/initFirebase';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { AUTH_API } from '@ayahay/constants';
+import { verifyToken } from '@/services/auth.service';
+import { createAccount } from '@/services/account.service';
 
 initFirebase();
 const auth = getAuth();
@@ -36,16 +37,9 @@ export default function AuthContextProvider({ children }: any) {
         console.log(`success register: ${JSON.stringify(user, null, 2)}`);
 
         const token = await user.getIdToken();
-        const uid = fetch(`${AUTH_API}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: token,
-          },
-          body: JSON.stringify({
-            token,
-          }),
-        }); // might not be needed?
+        const data = await verifyToken(token);
+        const { uid, email } = data;
+        const account = await createAccount(token, uid, email);
 
         return uid;
       })

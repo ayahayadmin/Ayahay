@@ -3,9 +3,10 @@ import { AccountService } from './account.service';
 import { IAccount } from '@ayahay/models';
 import { AuthGuard } from 'src/auth-guard/auth.guard';
 import { Prisma } from '@prisma/client';
+import { Roles } from 'src/decorators/roles.decorators';
 
 @Controller('accounts')
-// @UseGuards(AuthGuard)
+@UseGuards(AuthGuard)
 export class AccountController {
   constructor(private accountService: AccountService) {}
 
@@ -15,6 +16,7 @@ export class AccountController {
   }
 
   @Post()
+  @Roles('Passenger', 'SuperAdmin')
   async createAccount(
     @Body() data: Prisma.AccountCreateInput
   ): Promise<IAccount> {

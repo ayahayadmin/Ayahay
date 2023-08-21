@@ -30,6 +30,11 @@ export class AccountService {
     data: Prisma.AccountCreateInput
   ): Promise<IAccount> {
     try {
+      const loggedInAccount: IAccount = await this.getAccountById(data.id);
+      if (loggedInAccount.role === 'Passenger') {
+        return loggedInAccount;
+      }
+
       return (await this.prisma.account.create({
         data,
       })) as IAccount;
