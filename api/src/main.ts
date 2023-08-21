@@ -16,7 +16,7 @@ async function bootstrap() {
   await prismaService.enableShutdownHooks(app);
 
   app.enableCors({
-    origin: [process.env.WEB_URL],
+    origin: [process.env.WEB_URL, process.env.ADMIN_URL],
   });
   await app.listen(3001);
 }
