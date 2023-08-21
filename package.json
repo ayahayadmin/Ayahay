@@ -19,6 +19,6 @@
     "api:init-db": "yarn --cwd api db:init-dev",
     "api:reset-db": "yarn --cwd api db:reset-dev",
     "web:start": "yarn --cwd web start:dev",
-    "admin:start": "yarn --cwd admin dev -p 3001"
+    "admin:start": "yarn --cwd admin dev -p 3002"
   }
 }
