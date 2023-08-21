@@ -6,7 +6,6 @@ import { Prisma } from '@prisma/client';
 import { Roles } from 'src/decorators/roles.decorators';
 
 @Controller('accounts')
-@UseGuards(AuthGuard)
 export class AccountController {
   constructor(private accountService: AccountService) {}
 
@@ -16,6 +15,7 @@ export class AccountController {
   }
 
   @Post()
+  @UseGuards(AuthGuard)
   @Roles('Passenger', 'SuperAdmin')
   async createAccount(
     @Body() data: Prisma.AccountCreateInput
