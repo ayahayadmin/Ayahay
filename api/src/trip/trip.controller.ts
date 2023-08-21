@@ -16,8 +16,6 @@ import { Roles } from 'src/decorators/roles.decorators';
 import { AuthGuard } from '../auth-guard/auth.guard';
 
 @Controller('trips')
-@UseGuards(AuthGuard)
-@Roles('Admin', 'Passenger')
 export class TripController {
   constructor(
     private readonly tripService: TripService,
@@ -60,6 +58,8 @@ export class TripController {
   }
 
   @Post()
+  @UseGuards(AuthGuard)
+  @Roles('Admin', 'SuperAdmin')
   async createTrip(@Body() data: Prisma.TripCreateInput) {
     return await this.tripService.createTrip(data);
   }

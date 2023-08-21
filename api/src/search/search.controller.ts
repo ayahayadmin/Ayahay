@@ -1,12 +1,16 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { SearchService } from './search.service';
 import { Booking, Trip } from '@prisma/client';
+import { AuthGuard } from 'src/auth-guard/auth.guard';
+import { Roles } from 'src/decorators/roles.decorators';
 
 @Controller('search')
+@UseGuards(AuthGuard)
 export class SearchController {
   constructor(private searchService: SearchService) {}
 
   @Get('bookings')
+  @Roles('Staff', 'Admin')
   async getBookingsByReferenceNo(
     @Query('referenceNo') referenceNo: string
   ): Promise<Booking[]> {
@@ -18,6 +22,7 @@ export class SearchController {
   }
 
   @Get('trips')
+  @Roles('Passenger', 'Staff', 'Admin')
   async getTripsByReferenceNo(
     @Query('referenceNo') referenceNo: string
   ): Promise<Trip[]> {

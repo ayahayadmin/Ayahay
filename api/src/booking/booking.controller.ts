@@ -7,17 +7,22 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { BookingService } from './booking.service';
 import { IBooking, IPassenger, IPassengerVehicle } from '@ayahay/models';
 import { PassengerPreferences } from '@ayahay/http';
 import { BookingSearchQuery } from '@ayahay/http';
+import { AuthGuard } from 'src/auth-guard/auth.guard';
+import { Roles } from 'src/decorators/roles.decorators';
 
 @Controller('bookings')
+@UseGuards(AuthGuard)
 export class BookingController {
   constructor(private bookingService: BookingService) {}
 
   @Get()
+  @Roles('Staff', 'Admin')
   async getAllBookings(
     @Query() bookingSearchQuery: BookingSearchQuery
   ): Promise<IBooking[]> {
@@ -25,6 +30,7 @@ export class BookingController {
   }
 
   @Get(':id')
+  @Roles('Staff', 'Admin')
   async getBookingSummaryById(
     @Param('id') id: string
   ): Promise<IBooking | undefined> {
@@ -73,6 +79,7 @@ export class BookingController {
   }
 
   @Post()
+  @Roles('Passenger', 'Staff', 'Admin')
   async createTemporaryBooking(
     @Body()
     {
@@ -91,9 +98,11 @@ export class BookingController {
   }
 
   @Put(':id')
+  @Roles('Passenger', 'Staff', 'Admin')
   async updateBooking(@Param('id') id: string) {}
 
   @Delete(':id')
+  @Roles('Passenger', 'Staff', 'Admin')
   async deleteBooking(@Param('id') id: string) {}
 }
 
