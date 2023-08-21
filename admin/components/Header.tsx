@@ -4,7 +4,6 @@ import styles from './Header.module.scss';
 import AyahayLogo from '/public/assets/ayahay-logo.png';
 import Link from 'next/link';
 import {
-  Avatar,
   Button,
   DatePicker,
   Form,
@@ -15,7 +14,7 @@ import {
   message,
   notification,
 } from 'antd';
-import { BellOutlined, UserOutlined } from '@ant-design/icons';
+import { BellOutlined } from '@ant-design/icons';
 import { useSearchParams } from 'next/navigation';
 import dayjs, { Dayjs } from 'dayjs';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
@@ -24,6 +23,7 @@ import { ITrip } from '@ayahay/models';
 import { RangePickerProps } from 'antd/es/date-picker';
 import { filter, map } from 'lodash';
 import { getAllTrips } from '@/services/trip.service';
+import AuthForm from './auth/AuthForm';
 
 const { Search } = Input;
 const { RangePicker } = DatePicker;
@@ -222,7 +222,7 @@ export default function Header() {
             </Form>
           </div>
         </Modal>
-        <Avatar icon={<UserOutlined />} />
+        <AuthForm />
       </div>
     </nav>
   );
