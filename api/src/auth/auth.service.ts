@@ -10,9 +10,7 @@ export class AuthService {
     return admin
       .auth()
       .verifyIdToken(token)
-      .then((decodedToken) => {
-        return decodedToken;
-      })
+      .then((decodedToken) => decodedToken)
       .catch((error) => {
         console.log(`error: ${error}`);
         throw new Error(error);
