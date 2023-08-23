@@ -6,16 +6,17 @@ import { Prisma } from '@prisma/client';
 import { Roles } from 'src/decorators/roles.decorators';
 
 @Controller('accounts')
+@UseGuards(AuthGuard)
 export class AccountController {
   constructor(private accountService: AccountService) {}
 
   @Get(':accountId')
+  @Roles('Passenger', 'Staff', 'Admin', 'SuperAdmin')
   async getAccount(@Param('accountId') accountId: string): Promise<IAccount> {
     return await this.accountService.getAccountById(accountId);
   }
 
   @Post()
-  @UseGuards(AuthGuard)
   @Roles('Passenger', 'SuperAdmin')
   async createAccount(
     @Body() data: Prisma.AccountCreateInput
