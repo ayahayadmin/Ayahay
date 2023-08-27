@@ -20,5 +20,6 @@
     "api:reset-db": "yarn --cwd api db:reset-dev",
     "web:start": "yarn --cwd web start:dev",
     "admin:start": "yarn --cwd admin dev -p 3002"
-  }
+  },
+  "packageManager": "yarn@3.6.3"
 }

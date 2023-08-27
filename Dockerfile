@@ -1,19 +1,26 @@
-FROM node:18-alpine AS multistage
+FROM node:18-alpine AS build
 
 WORKDIR /usr/src/app
 
-ENV DATABASE_URL postgres
-
-# COPY api/package.json ./
-# COPY api/yarn.lock ./
-# COPY packages ./
-
 COPY . .
 
-RUN yarn install \
-    && cd api \
-    && yarn run build
+RUN yarn set version berry \
+    && yarn plugin import @yarnpkg/plugin-workspace-tools \
 
+    # install dev dependencies to generate prisma files and run nest build
+    && yarn workspaces focus @ayahay/api \
+    && cd api \
+    && yarn prisma generate \
+    && yarn run build \
+    && cd ../ \
+
+    # remove dev dependencies, but keep prisma files
+    && cp -r node_modules/.prisma . \
+    && rm -rf node_modules \
+    && yarn workspaces focus @ayahay/api --production \
+    && cp -r ./.prisma node_modules \
+    && rm -rf ./.prisma
+ 
 ######################
 ##### PRODUCTION #####
 ######################
@@ -22,12 +29,10 @@ FROM node:18-alpine
 
 WORKDIR /usr/src/app
 
-COPY /api/package.json ./
-
-RUN yarn install
-
-COPY --from=multistage /usr/src/app/api/dist ./dist
+COPY --from=build /usr/src/app/packages /usr/src/app/packages
+COPY --from=build /usr/src/app/node_modules /usr/src/app/node_modules
+COPY --from=build /usr/src/app/api/dist /usr/src/app/api
 
 EXPOSE 3001
 
-CMD ["node", "dist/main.js"]
+CMD ["node", "api/main.js"]
