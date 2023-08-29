@@ -217,4 +217,4 @@ INSERT INTO ayahay.trip_vehicle_type
 INSERT INTO ayahay.account
     (id, email, "role")
     VALUES
-    ('SYSTEM', 'system@ayahay.com', 'SuperAdmin')
+    ('5qI9igARB9ZD1JdE2PODBpLRyAU2', 'system@ayahay.com', 'SuperAdmin')

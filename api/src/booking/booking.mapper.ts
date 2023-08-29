@@ -5,12 +5,14 @@ import { Prisma } from '@prisma/client';
 @Injectable()
 export class BookingMapper {
   convertBookingToBasicDto(booking: Prisma.BookingGetPayload<any>): IBooking {
-    const { id, totalPrice, paymentReference } = booking;
+    const { id, status, totalPrice, paymentReference, createdAt } = booking;
 
     return {
       id,
+      status: status as any,
       totalPrice,
       paymentReference,
+      createdAtIso: createdAt.toISOString(),
     };
   }
 

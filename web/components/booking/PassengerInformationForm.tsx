@@ -8,23 +8,19 @@ import {
   Typography,
 } from 'antd';
 import React, { useState } from 'react';
-import {
-  CIVIL_STATUS,
-  OCCUPATION,
-  SEX,
-  VEHICLE_BODY,
-} from '@ayahay/constants/enum';
+import { CIVIL_STATUS, OCCUPATION, SEX } from '@ayahay/constants/enum';
 import { DEFAULT_PASSENGER } from '@ayahay/constants/default';
 import {
   IPassenger,
   IPassengerVehicle,
   mockFather,
-  toFormValue,
+  mockVehicleTypes,
 } from '@ayahay/models';
 import EnumRadio from '@/components/form/EnumRadio';
 import AddCompanionsModal from '@/components/booking/AddCompanionsModal';
 import EnumSelect from '@/components/form/EnumSelect';
 import AddVehiclesModal from '@/components/booking/AddVehiclesModal';
+import { toPassengerFormValue } from '@ayahay/services/form.service';
 
 const { Title } = Typography;
 
@@ -50,7 +46,10 @@ export default function PassengerInformationForm({
     setCompanionModalOpen(false);
     let nextIndex = passengers.length;
     companions.forEach((companion) => {
-      form.setFieldValue(['passengers', nextIndex], toFormValue(companion));
+      form.setFieldValue(
+        ['passengers', nextIndex],
+        toPassengerFormValue(companion)
+      );
       nextIndex++;
     });
   };
@@ -97,7 +96,7 @@ export default function PassengerInformationForm({
 
   const onLogin = () => {
     setLoggedInPassenger(mockFather);
-    form.setFieldValue(['passengers', 0], toFormValue(mockFather));
+    form.setFieldValue(['passengers', 0], toPassengerFormValue(mockFather));
   };
 
   return (
@@ -288,15 +287,27 @@ export default function PassengerInformationForm({
                     }))}
                   />
                 </Form.Item>
-                <EnumSelect
-                  _enum={VEHICLE_BODY}
-                  disabled={vehicles?.[index]?.id !== undefined}
+                <Form.Item
                   {...restField}
-                  name={[name, 'modelBody']}
+                  name={[name, 'vehicleTypeId']}
                   label='Model Body'
                   colon={false}
-                  rules={[{ required: true, message: 'Missing model body' }]}
-                />
+                  rules={[
+                    {
+                      required: true,
+                      message: 'Missing model body',
+                    },
+                  ]}
+                >
+                  <Select
+                    disabled={vehicles?.[index]?.id !== undefined}
+                    placeholder='Select an option...'
+                    options={mockVehicleTypes.map((vehicleType) => ({
+                      label: vehicleType.name,
+                      value: vehicleType.id,
+                    }))}
+                  />
+                </Form.Item>
                 <Button onClick={() => remove(name)}>Remove Vehicle</Button>
               </div>
             ))}

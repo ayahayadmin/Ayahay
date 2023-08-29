@@ -1,6 +1,6 @@
 import { Form, Spin, Steps, Grid, notification } from 'antd';
 import styles from './createBookingForm.module.scss';
-import { ITrip, IBooking, IPassenger } from '@ayahay/models';
+import { IBooking, IPassenger } from '@ayahay/models';
 import { DEFAULT_PASSENGER } from '@ayahay/constants/default';
 import PassengerInformationForm from '@/components/booking/PassengerInformationForm';
 import React, { useState } from 'react';

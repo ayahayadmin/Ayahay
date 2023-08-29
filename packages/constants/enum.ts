@@ -37,3 +37,10 @@ export enum DISCOUNT_TYPE {
   Child = 'Child',
   Infant = 'Infant',
 }
+
+export enum PAYMENT_STATUS {
+  Pending = 'Waiting For Payment',
+  Failed = 'Payment Failed',
+  TimedOut = 'Payment Timed Out',
+  Success = 'Payment Success',
+}

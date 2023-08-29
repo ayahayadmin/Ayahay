@@ -10,5 +10,5 @@ export interface IBookingVehicle {
   trip?: ITrip;
   vehicleId: number;
   vehicle: IPassengerVehicle;
-  totalPrice: number;
+  totalPrice?: number;
 }

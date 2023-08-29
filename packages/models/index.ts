@@ -15,3 +15,4 @@ export * from './cabin-type.model';
 export * from './trip-cabin.model';
 export * from './trip-vehicle-type.model';
 export * from './vehicle-type.model';
+export * from './payment-item.model';

@@ -1,8 +1,5 @@
 import { Button, Divider, Form, Radio, Select, Typography } from 'antd';
 import React from 'react';
-
-import { ITrip } from '@ayahay/models';
-import { CABIN_TYPE, SEAT_TYPE } from '@ayahay/constants/enum';
 import { useTripFromSearchParams } from '@/hooks/trip';
 
 const { Title } = Typography;
@@ -55,36 +52,50 @@ export default function PassengerPreferencesForm({
                       me
                     </Button>
                   )}
-                  <Form.Item
-                    {...restField}
-                    name={[name, 'preferences', 'seat']}
-                    label='Seat Preference'
-                    colon={false}
-                  >
-                    <Radio.Group>
-                      <Radio value='Any'>Any</Radio>
-                      {trip.availableSeatTypes.map((seatType, index) => (
-                        <Radio value={seatType} key={index}>
-                          {SEAT_TYPE[seatType]}
-                        </Radio>
-                      ))}
-                    </Radio.Group>
-                  </Form.Item>
-                  <Form.Item
-                    {...restField}
-                    name={[name, 'preferences', 'cabin']}
-                    label='Cabin Preference'
-                    colon={false}
-                  >
-                    <Radio.Group>
-                      <Radio value='Any'>Any</Radio>
-                      {trip.availableCabins.map((cabin, index) => (
-                        <Radio value={cabin} key={index}>
-                          {CABIN_TYPE[cabin]}
-                        </Radio>
-                      ))}
-                    </Radio.Group>
-                  </Form.Item>
+                  {trip.availableSeatTypes.length > 0 && (
+                    <Form.Item
+                      {...restField}
+                      name={[name, 'preferences', 'seatTypeId']}
+                      label='Seat Preference'
+                      colon={false}
+                    >
+                      <Radio.Group>
+                        <Radio value='Any'>Any</Radio>
+                        {trip.availableSeatTypes.map((seatType, index) => (
+                          <Radio value={seatType} key={index}>
+                            {seatType}
+                          </Radio>
+                        ))}
+                      </Radio.Group>
+                    </Form.Item>
+                  )}
+                  {trip.availableCabins.filter(
+                    (tripCabin) => tripCabin.availablePassengerCapacity > 0
+                  ).length > 0 && (
+                    <Form.Item
+                      {...restField}
+                      name={[name, 'preferences', 'cabinTypeId']}
+                      label='Cabin Preference'
+                      colon={false}
+                    >
+                      <Radio.Group>
+                        <Radio>Any</Radio>
+                        {trip.availableCabins
+                          .filter(
+                            (tripCabin) =>
+                              tripCabin.availablePassengerCapacity > 0
+                          )
+                          .map((tripCabin, index) => (
+                            <Radio
+                              value={tripCabin.cabin?.cabinTypeId}
+                              key={index}
+                            >
+                              {tripCabin.cabin?.cabinType?.name}
+                            </Radio>
+                          ))}
+                      </Radio.Group>
+                    </Form.Item>
+                  )}
                   <Form.Item
                     {...restField}
                     name={[name, 'preferences', 'meal']}
@@ -92,8 +103,8 @@ export default function PassengerPreferencesForm({
                     colon={false}
                   >
                     <Select
+                      placeholder={'None'}
                       options={[
-                        { value: 'Any', label: 'Any' },
                         ...trip.meals.map((meal) => ({
                           value: meal,
                           label: meal,

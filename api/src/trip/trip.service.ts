@@ -7,10 +7,11 @@ import {
 import { Prisma, Trip } from '@prisma/client';
 import { PrismaService } from 'src/prisma.service';
 import { ITrip } from '@ayahay/models';
+import { TripMapper } from './trip.mapper';
 
 @Injectable()
 export class TripService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService, private tripMapper: TripMapper) {}
 
   async getTrip(
     tripWhereUniqueInput: Prisma.TripWhereUniqueInput | {}, //{} is only temp, TripWhereUniqueInput is not part of referenceNo
@@ -57,9 +58,28 @@ export class TripService {
           in: tripIds,
         },
       },
+      include: {
+        srcPort: true,
+        destPort: true,
+        shippingLine: true,
+        availableCabins: {
+          include: {
+            cabin: {
+              include: {
+                cabinType: true,
+              },
+            },
+          },
+        },
+        availableVehicleTypes: {
+          include: {
+            vehicleType: true,
+          },
+        },
+      },
     });
 
-    return [];
+    return trips.map((trip) => this.tripMapper.convertTripToDto(trip));
   }
 
   async createTrip(data: Prisma.TripCreateInput): Promise<Trip> {

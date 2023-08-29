@@ -1,4 +1,10 @@
-import { ITrip, mockTrip, TripData, TripPaxes } from '@ayahay/models';
+import {
+  AZNAR_CABIN_TYPES,
+  ITrip,
+  mockTrip,
+  TripData,
+  TripPaxes,
+} from '@ayahay/models';
 import dayjs from 'dayjs';
 import {
   ceil,
@@ -11,7 +17,6 @@ import {
   sum,
   values,
 } from 'lodash';
-import { CABIN_TYPE, SEAT_TYPE } from '@ayahay/constants/enum';
 import axios from 'axios';
 import { TRIP_API } from '@ayahay/constants/api';
 
@@ -21,15 +26,13 @@ export async function getTrip(tripId: number): Promise<ITrip | undefined> {
   }
 
   try {
-    const { data: trip } = await axios.get<ITrip>(`${TRIP_API}/${tripId}`);
+    const { data: trips } = await axios.get<ITrip[]>(
+      `${TRIP_API}?tripIds=${tripId}`
+    );
 
-    // TODO: calculate available cabin and seat types in backend
-    trip.availableCabins = Object.keys(
-      CABIN_TYPE
-    ) as (keyof typeof CABIN_TYPE)[];
-    trip.availableSeatTypes = Object.keys(
-      SEAT_TYPE
-    ) as (keyof typeof SEAT_TYPE)[];
+    const trip = trips[0];
+    // TODO: calculate seat types in backend
+    trip.availableSeatTypes = [];
 
     // TODO: create table for 'Meal Menu'
     trip.meals = ['Bacsilog'];
@@ -450,7 +453,7 @@ export function getTrips(
     availableTrips.push({
       ...trip,
       id: 1,
-      availableSeatTypes: getAvailableSeats(),
+      availableSeatTypes: [],
       meals: ['Tapsilog', 'Bacsilog', 'Longsilog'],
       shipId: 1,
     });
@@ -473,8 +476,4 @@ export function getTrips(
 
 export const getBaseFare = () => {
   return random(1000, 9999);
-};
-
-export const getAvailableSeats = (): (keyof typeof SEAT_TYPE)[] => {
-  return ['Window', 'SingleBed'];
 };

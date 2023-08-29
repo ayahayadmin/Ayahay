@@ -1,5 +1,9 @@
 import { IPassenger } from './passenger.model';
-import { IVehicleType, sedanVehicleType } from './vehicle-type.model';
+import {
+  IVehicleType,
+  sedanVehicleType,
+  suvVehicleType,
+} from './vehicle-type.model';
 
 export interface IPassengerVehicle {
   id: number;
@@ -19,8 +23,8 @@ export interface IPassengerVehicle {
 export const mockInnova: IPassengerVehicle = {
   id: 1,
   passengerId: 1,
-  vehicleTypeId: sedanVehicleType.id,
-  vehicleType: sedanVehicleType,
+  vehicleTypeId: suvVehicleType.id,
+  vehicleType: suvVehicleType,
   plateNo: 'ABC123',
   modelName: 'Toyota Innova',
   modelYear: 2019,

@@ -27,6 +27,10 @@ export class TripController {
     @Query()
     query: Omit<TripSearchDto, 'numAdults' | 'numChildren' | 'numInfants'>
   ): Promise<any[]> {
+    if (query.tripIds?.length > 0) {
+      const idStrSplit = query.tripIds.split(',');
+      return this.tripService.getTripsByIds(idStrSplit.map((id) => Number(id)));
+    }
     // TO DO:
     // - add data for passengers who booked for a specific trip, so that I'll know how many capacity left in the ship
     const orderBy = {

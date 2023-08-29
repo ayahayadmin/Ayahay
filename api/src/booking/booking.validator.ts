@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { IPassenger, IPassengerVehicle } from '@ayahay/models';
+import { IPassenger, IPassengerVehicle, ITrip } from '@ayahay/models';
 import { PassengerPreferences } from '@ayahay/http';
 
 @Injectable()
@@ -10,13 +10,13 @@ export class BookingValidator {
 
   public validateCreateTentativeBookingRequest(
     loggedInAccountId: string,
-    tripIds: number[],
+    trips: ITrip[],
     passengers: IPassenger[],
     passengerPreferences: PassengerPreferences[],
     vehicles: IPassengerVehicle[]
   ): string[] {
     const errorMessages: string[] = [];
-    if (tripIds.length > this.MAX_TRIPS_PER_BOOKING) {
+    if (trips.length > this.MAX_TRIPS_PER_BOOKING) {
       errorMessages.push(
         `Number of trips for one booking exceeded the maximum of ${this.MAX_TRIPS_PER_BOOKING}`
       );
@@ -44,6 +44,8 @@ export class BookingValidator {
       );
     }
 
+    // TODO: check if num of passengers still < availableCabins & with vehicles too
+    // TODO: check if vehicle types are supported by all trips
     errorMessages.push(
       ...this.validateBookingPassengers(loggedInAccountId, passengers)
     );

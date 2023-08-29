@@ -8,6 +8,7 @@ import {
 } from './passenger.model';
 import { ISeat } from './seat.model';
 import { ITrip } from './trip.model';
+import { ICabin } from './cabin.model';
 
 export interface IBookingPassenger {
   id: number;
@@ -17,10 +18,13 @@ export interface IBookingPassenger {
   trip?: ITrip;
   passengerId: number;
   passenger?: IPassenger;
+  cabinId: number;
+  cabin?: ICabin;
   seatId?: number;
   seat?: ISeat;
+
   meal: string;
-  totalPrice: number;
+  totalPrice?: number;
   referenceNo: string;
   checkInDate?: string;
 }
@@ -33,8 +37,8 @@ export const mockBookingPassenger: IBookingPassenger = {
   tripId: 1,
   passengerId: mockPassenger.id,
   passenger: mockPassenger,
+  cabinId: -1,
   meal: 'Tapsilog',
-  totalPrice: 1000,
   referenceNo: 'ABCD',
 };
 
@@ -46,8 +50,8 @@ export const mockBookingPassengers: IBookingPassenger[] = [
     tripId: 1,
     passengerId: mockFather.id,
     passenger: mockFather,
+    cabinId: -1,
     meal: 'Tapsilog',
-    totalPrice: 1000,
     referenceNo: 'ABCD',
     checkInDate: today,
   },
@@ -57,8 +61,8 @@ export const mockBookingPassengers: IBookingPassenger[] = [
     tripId: 1,
     passengerId: mockWife.id,
     passenger: mockWife,
+    cabinId: -1,
     meal: 'Tapsilog',
-    totalPrice: 1000,
     referenceNo: 'ABCD',
   },
   {
@@ -67,8 +71,8 @@ export const mockBookingPassengers: IBookingPassenger[] = [
     tripId: 1,
     passengerId: mockSon.id,
     passenger: mockSon,
+    cabinId: -1,
     meal: 'Tapsilog',
-    totalPrice: 1000,
     referenceNo: 'ABCD',
     checkInDate: today,
   },
@@ -78,8 +82,8 @@ export const mockBookingPassengers: IBookingPassenger[] = [
     tripId: 1,
     passengerId: mockFather.id,
     passenger: mockFather,
+    cabinId: -1,
     meal: 'Tapsilog',
-    totalPrice: 1000,
     referenceNo: 'ABCD',
     checkInDate: today,
   },
@@ -89,8 +93,8 @@ export const mockBookingPassengers: IBookingPassenger[] = [
     tripId: 1,
     passengerId: mockWife.id,
     passenger: mockWife,
+    cabinId: -1,
     meal: 'Tapsilog',
-    totalPrice: 1000,
     referenceNo: 'ABCD',
   },
   {
@@ -99,8 +103,8 @@ export const mockBookingPassengers: IBookingPassenger[] = [
     tripId: 1,
     passengerId: mockSon.id,
     passenger: mockSon,
+    cabinId: -1,
     meal: 'Tapsilog',
-    totalPrice: 1000,
     referenceNo: 'ABCD',
     checkInDate: today,
   },
@@ -110,8 +114,8 @@ export const mockBookingPassengers: IBookingPassenger[] = [
     tripId: 1,
     passengerId: mockWife.id,
     passenger: mockWife,
+    cabinId: -1,
     meal: 'Tapsilog',
-    totalPrice: 1000,
     referenceNo: 'ABCD',
   },
   {
@@ -120,8 +124,8 @@ export const mockBookingPassengers: IBookingPassenger[] = [
     tripId: 1,
     passengerId: mockSon.id,
     passenger: mockSon,
+    cabinId: -1,
     meal: 'Tapsilog',
-    totalPrice: 1000,
     referenceNo: 'ABCD',
     checkInDate: today,
   },
@@ -131,8 +135,8 @@ export const mockBookingPassengers: IBookingPassenger[] = [
     tripId: 1,
     passengerId: mockFather.id,
     passenger: mockFather,
+    cabinId: -1,
     meal: 'Tapsilog',
-    totalPrice: 1000,
     referenceNo: 'ABCD',
     checkInDate: today,
   },

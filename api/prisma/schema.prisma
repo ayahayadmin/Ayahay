@@ -96,6 +96,7 @@ model Cabin {
 
   tripSpecificInfo TripCabin[]
   schedules ShippingLineScheduleRate[]
+  bookings BookingPassenger[]
 
   @@map("cabin")
 }
@@ -200,11 +201,14 @@ model Port {
 model Booking {
   id Int @default(autoincrement()) @id
 
+  status String
   totalPrice Float @map("total_price")
-  paymentReference String? @map("payment_reference")
+  paymentReference String @map("payment_reference") @unique
+  createdAt DateTime @map("created_at")
 
   passengers BookingPassenger[]
   vehicles BookingVehicle[]
+  paymentItems PaymentItem[]
 
   @@map("booking")
 }
@@ -217,11 +221,12 @@ model BookingPassenger {
   trip Trip @relation(fields: [tripId], references: [id])
   passengerId Int @map("passenger_id")
   passenger Passenger @relation(fields: [passengerId], references: [id])
+  cabinId Int @map("cabin_id")
+  cabin Cabin @relation(fields: [cabinId], references: [id])
   seatId Int? @map("seat_id")
   seat Seat? @relation(fields: [seatId], references: [id])
 
   meal String
-  totalPrice Float @map("total_price")
   referenceNo String @map("reference_no")
   checkInDate DateTime? @map("check_in_date")
 
@@ -261,8 +266,6 @@ model BookingVehicle {
   vehicleId Int @map("vehicle_id")
   vehicle PassengerVehicle @relation(fields: [vehicleId], references: [id])
 
-  totalPrice Float @map("total_price")
-
   @@map("booking_vehicle")
 }
 
@@ -290,8 +293,11 @@ model TempBooking {
 
   totalPrice Float @map("total_price")
   paymentReference String? @map("payment_reference")
+  createdAt DateTime @map("created_at")
+
   passengersJson Json @map("passengers_json")
   vehiclesJson Json @map("vehicles_json")
+  paymentItemsJson Json @map("payment_items_json")
 
   @@map("temp_booking")
 }
@@ -372,4 +378,13 @@ model VehicleType {
   vehicles PassengerVehicle[]
 
   @@map("vehicle_type")
+}
+
+model PaymentItem {
+  id Int @default(autoincrement()) @id
+  bookingId Int @map("booking_id")
+  booking Booking @relation(fields: [bookingId], references: [id])
+
+  price Float
+  description String
 }

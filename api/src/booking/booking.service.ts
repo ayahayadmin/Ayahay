@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { Booking, Prisma, TempBooking, Trip } from '@prisma/client';
+import { Booking, Prisma, TempBooking } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
 import {
   IBooking,
@@ -7,6 +7,7 @@ import {
   IBookingVehicle,
   IPassenger,
   IPassengerVehicle,
+  IPaymentItem,
   ITrip,
 } from '@ayahay/models';
 import { BookingSearchQuery, PassengerPreferences } from '@ayahay/http';
@@ -22,33 +23,8 @@ export class BookingService {
   // we want to prioritize cabin preference
   private readonly CABIN_WEIGHT = 10;
   private readonly SEAT_TYPE_WEIGHT = 1;
-
-  private readonly CABIN_TYPE_MARKUP_FLAT: { [cabinType: string]: number } = {
-    First: 0,
-    Business: 0,
-    Economy: 0,
-  };
-  private readonly CABIN_TYPE_MARKUP_PERCENT: { [cabinType: string]: number } =
-    {
-      First: 2,
-      Business: 1,
-      Economy: 0,
-    };
-
-  private readonly SEAT_TYPE_MARKUP_FLAT: { [seatType: string]: number } = {
-    Window: 0,
-    Aisle: 0,
-    SingleBed: 0,
-    LowerBunkBed: 0,
-    UpperBunkBed: 0,
-  };
-  private readonly SEAT_TYPE_MARKUP_PERCENT: { [seatType: string]: number } = {
-    Window: 0,
-    Aisle: 0,
-    SingleBed: 0.5,
-    LowerBunkBed: 0.5,
-    UpperBunkBed: 0.5,
-  };
+  private readonly AYAHAY_MARKUP_FLAT = 50;
+  private readonly AYAHAY_MARKUP_PERCENT = 0.05;
 
   constructor(
     private readonly prisma: PrismaService,
@@ -141,14 +117,16 @@ export class BookingService {
     vehicles: IPassengerVehicle[]
   ): Promise<IBooking | undefined> {
     // TODO: Get Logged In User Account ID
-    const loggedInAccountId = 'SYSTEM';
+    const loggedInAccountId = '5qI9igARB9ZD1JdE2PODBpLRyAU2';
     // TODO: for testing; accounts are set automatically
     passengers[0].accountId = loggedInAccountId;
+
+    const trips = await this.tripService.getTripsByIds(tripIds);
 
     const errorMessages =
       this.bookingValidator.validateCreateTentativeBookingRequest(
         loggedInAccountId,
-        tripIds,
+        trips,
         passengers,
         passengerPreferences,
         vehicles
@@ -158,13 +136,27 @@ export class BookingService {
       throw new BadRequestException(errorMessages);
     }
 
-    const trips = await this.tripService.getTripsByIds(tripIds);
+    const tripsWithSeatSelection = trips.filter(
+      (trip) => trip.seatSelection === true
+    );
+    const tripsWithoutSeatSelection = trips.filter(
+      (trip) => trip.seatSelection === false
+    );
 
-    const availableBookingsInTripsThatMatchPreferences =
-      await this.getavailableBookingsInTripsThatMatchPreferences(
-        tripIds,
+    const availableBookingsInTripsThatMatchPreferences = [
+      ...(await this.getAvailableBookingsInTripsWithSeatSelection(
+        tripsWithSeatSelection,
         passengerPreferences
-      );
+      )),
+      ...this.getAvailableBookingsInTripsWithoutSeatSelection(
+        tripsWithoutSeatSelection,
+        passengerPreferences
+      ),
+    ];
+
+    availableBookingsInTripsThatMatchPreferences.sort(
+      (booking) => booking.cabinAdultFare
+    );
 
     const bookingPassengers = this.createTentativeBookingPassengers(
       trips,
@@ -174,7 +166,9 @@ export class BookingService {
     );
 
     if (bookingPassengers === undefined) {
-      throw new BadRequestException('Could not find seats for the ');
+      throw new BadRequestException(
+        'Could not find available bookings for the passengers.'
+      );
     }
 
     const bookingVehicles = this.createTentativeBookingVehicles(
@@ -194,6 +188,8 @@ export class BookingService {
       id: -1,
       totalPrice: passengersTotalPrice + vehiclesTotalPrice,
       paymentReference: null,
+      createdAtIso: '',
+      status: undefined,
       bookingPassengers,
       bookingVehicles,
     };
@@ -201,10 +197,57 @@ export class BookingService {
     return await this.saveTempBooking(tempBooking);
   }
 
-  private async getavailableBookingsInTripsThatMatchPreferences(
-    tripIds: number[],
+  private getAvailableBookingsInTripsWithoutSeatSelection(
+    tripsWithoutSeatSelection: ITrip[],
+    passengerPreferences: PassengerPreferences[]
+  ): AvailableBooking[] {
+    const availableBookings: AvailableBooking[] = [];
+
+    for (const trip of tripsWithoutSeatSelection) {
+      const availableCabins = trip.availableCabins
+        .filter((cabin) => cabin.availablePassengerCapacity > 0)
+        .sort((cabinA, cabinB) => cabinA.adultFare - cabinB.adultFare);
+      if (availableCabins.length === 0) {
+        continue;
+      }
+
+      for (const preferences of passengerPreferences) {
+        // by default, get the cheapest cabin
+        let availableCabin = availableCabins[0];
+
+        if (preferences.cabinTypeId !== undefined) {
+          const availableCabinWithPreference = availableCabins.find(
+            (tripCabin) =>
+              tripCabin.cabin.cabinTypeId === preferences.cabinTypeId
+          );
+
+          if (availableCabinWithPreference !== undefined) {
+            availableCabin = availableCabinWithPreference;
+          }
+        }
+
+        availableBookings.push({
+          cabinId: availableCabin.cabinId,
+          cabinName: availableCabin.cabin.name,
+          cabinTypeId: availableCabin.cabin.cabinTypeId,
+          cabinAdultFare: availableCabin.adultFare,
+          tripId: trip.id,
+        });
+      }
+    }
+
+    return availableBookings;
+  }
+
+  private async getAvailableBookingsInTripsWithSeatSelection(
+    tripsWithSeatSelection: ITrip[],
     passengerPreferences: PassengerPreferences[]
   ): Promise<AvailableBooking[]> {
+    if (tripsWithSeatSelection.length === 0) {
+      return [];
+    }
+
+    const tripIds = tripsWithSeatSelection.map((trip) => trip.id);
     const preferredCabinTypes = passengerPreferences.map(
       (preferences) => preferences.cabinTypeId
     );
@@ -233,18 +276,13 @@ FROM (
   WHERE ( 
     trip.id IN (${Prisma.join(tripIds)})
     AND cabin."type" IN (${Prisma.join(preferredCabinTypes)})
-    AND (
-      trip.seat_selection = FALSE 
-      OR seat."type" IN (${Prisma.join(preferredSeatTypes)})
-    ) AND (
-      trip.seat_selection = FALSE 
-      OR NOT EXISTS (
-        SELECT 1 
-        FROM ayahay.booking_passenger bookingPassenger
-        WHERE 
-          bookingPassenger.trip_id = trip.id
-          AND bookingPassenger.seat_id = seat.id
-      )
+    AND seat."type" IN (${Prisma.join(preferredSeatTypes)})
+    AND NOT EXISTS (
+      SELECT 1 
+      FROM ayahay.booking_passenger bookingPassenger
+      WHERE 
+        bookingPassenger.trip_id = trip.id
+        AND bookingPassenger.seat_id = seat.id
     )
   ) 
 ) partitioned_results
@@ -262,30 +300,34 @@ WHERE row <= ${passengerPreferences.length}
     const bookingPassengers: IBookingPassenger[] = [];
 
     for (const trip of trips) {
-      let availableBookingsInTrip = availableBookings.filter(
+      const availableBookingsInTrip = availableBookings.filter(
         (seat) => seat.tripId === trip.id
       );
 
       for (let i = 0; i < passengers.length; i++) {
         const passenger = passengers[i];
         const preferences = passengerPreferences[i];
+        const bestBooking = this.getBestBooking(
+          availableBookings,
+          preferences,
+          trip.seatSelection
+        );
+        // if no available slot for any passenger in any trip, don't push through
+        if (bestBooking === undefined) {
+          return undefined;
+        }
+
         const bookingPassengerForTrip = this.createTentativeBookingPassenger(
           trip,
           passenger,
           preferences,
-          availableBookingsInTrip
+          bestBooking
         );
-
-        // if no available slot for any passenger in any trip, don't push through
-        if (bookingPassengerForTrip === undefined) {
-          return undefined;
-        }
         bookingPassengers.push(bookingPassengerForTrip);
 
-        // remove booked seat in available seats for next iterations
-        availableBookingsInTrip = availableBookingsInTrip.filter(
-          (seat) => seat.seatId !== bookingPassengerForTrip.seatId
-        );
+        // remove booking from available bookings for next iterations
+        const index = availableBookingsInTrip.indexOf(bestBooking);
+        availableBookingsInTrip.splice(index, 1);
       }
     }
 
@@ -296,45 +338,39 @@ WHERE row <= ${passengerPreferences.length}
     trip: ITrip,
     passenger: IPassenger,
     preferences: PassengerPreferences,
-    availableBookings: AvailableBooking[]
+    bestBooking: AvailableBooking
   ): IBookingPassenger | undefined {
-    const bestBooking = this.getBestBooking(availableBookings, preferences);
-
-    if (bestBooking === undefined) {
-      return undefined;
-    }
-
-    const totalPrice = this.calculateTotalPriceForOneBooking(
-      trip,
+    const totalPrice = this.calculateTotalPriceForOnePassenger(
       passenger,
       bestBooking
     );
 
     return {
       tripId: trip.id,
-      seatId: bestBooking.seatId,
-      seat: {
-        id: bestBooking.seatId,
-        cabinId: bestBooking.cabinId,
-        cabin: {
-          id: bestBooking.cabinId,
-          cabinTypeId: bestBooking.cabinTypeId,
-          name: bestBooking.cabinName,
-          shipId: -1,
-          recommendedPassengerCapacity: -1,
-          numOfRows: -1,
-          numOfCols: -1,
-          seats: [],
-        },
-        name: bestBooking.seatName,
-        seatTypeId: bestBooking.seatTypeId,
-        rowNumber: -1,
-        columnNumber: -1,
+      cabinId: bestBooking.cabinId,
+      cabin: {
+        id: bestBooking.cabinId,
+        cabinTypeId: bestBooking.cabinTypeId,
+        shipId: -1,
+        name: bestBooking.cabinName,
+        recommendedPassengerCapacity: -1,
       },
+      seatId: bestBooking.seatId,
+      seat:
+        trip.seatSelection === true
+          ? {
+              id: bestBooking.seatId,
+              cabinId: bestBooking.cabinId,
+              seatTypeId: bestBooking.seatTypeId,
+              name: bestBooking.seatName,
+              rowNumber: -1,
+              columnNumber: -1,
+            }
+          : undefined,
       passengerId: passenger.id,
       passenger,
       referenceNo: this.utilityService.generateReferenceNo(trip.id),
-      meal: preferences.meal !== 'Any' ? preferences.meal : 'Bacsilog',
+      meal: preferences.meal,
       totalPrice,
       checkInDate: null,
       // since these entities aren't created for temp booking,
@@ -346,7 +382,8 @@ WHERE row <= ${passengerPreferences.length}
 
   private getBestBooking(
     availableBookings: AvailableBooking[],
-    passengerPreferences: PassengerPreferences
+    passengerPreferences: PassengerPreferences,
+    seatSelection: boolean
   ): AvailableBooking | undefined {
     if (availableBookings.length === 0) {
       return undefined;
@@ -354,21 +391,22 @@ WHERE row <= ${passengerPreferences.length}
 
     const { cabinTypeId: preferredCabin, seatTypeId: preferredSeatType } =
       passengerPreferences;
-    let seatsInPreferredCabin = availableBookings;
-    let seatsWithPreferredSeatType = availableBookings;
 
-    if (preferredCabin !== undefined) {
-      seatsInPreferredCabin = seatsInPreferredCabin.filter(
-        (seat) =>
-          preferredCabin === undefined || seat.cabinTypeId === preferredCabin
+    if (seatSelection === false) {
+      return availableBookings.find(
+        (booking) =>
+          preferredCabin === undefined || preferredCabin === booking.cabinTypeId
       );
     }
 
+    let seatsInPreferredCabin = availableBookings;
+    let seatsWithPreferredSeatType = availableBookings;
+    seatsInPreferredCabin = seatsInPreferredCabin.filter(
+      (seat) => seat.cabinTypeId === preferredCabin
+    );
     if (preferredSeatType !== undefined) {
       seatsWithPreferredSeatType = seatsWithPreferredSeatType.filter(
-        (seat) =>
-          preferredSeatType === undefined ||
-          seat.seatTypeId === preferredSeatType
+        (seat) => seat.seatTypeId === preferredSeatType
       );
     }
 
@@ -400,24 +438,26 @@ WHERE row <= ${passengerPreferences.length}
     return bestSeat;
   }
 
-  private calculateTotalPriceForOneBooking(
-    trip: ITrip,
+  private calculateTotalPriceForOnePassenger(
     passenger: IPassenger,
     matchedSeat: AvailableBooking
   ): number {
-    const cabinFee = trip.availableCabins.find(
-      (tripCabin) => tripCabin.cabin.cabinTypeId === matchedSeat.cabinTypeId
-    ).adultFare;
+    const cabinFeeWithVat = matchedSeat.cabinAdultFare;
 
     switch (passenger.discountType) {
+      case 'Infant':
+        return 0;
       case 'Student':
+        return cabinFeeWithVat - cabinFeeWithVat * 0.2;
       case 'Senior':
       case 'Pwd':
-        return cabinFee - cabinFee * 0.2;
+        const cabinFeeWithoutVat = cabinFeeWithVat / 1.12;
+        const vatAmount = cabinFeeWithoutVat * 0.12;
+        return cabinFeeWithVat - cabinFeeWithVat * 0.2 - vatAmount;
       case 'Child':
-        return cabinFee * 0.5;
+        return cabinFeeWithVat * 0.5;
       case undefined:
-        return cabinFee;
+        return cabinFeeWithVat;
     }
   }
 
@@ -433,8 +473,9 @@ WHERE row <= ${passengerPreferences.length}
           id: -1,
           bookingId: -1,
           vehicleId: vehicle.id,
+          vehicle: vehicle,
           tripId: trip.id,
-          totalPrice: this.calculateTotalPriceForOneVehicle(),
+          totalPrice: this.calculateTotalPriceForOneVehicle(trip, vehicle),
         } as IBookingVehicle);
       });
     }
@@ -442,13 +483,69 @@ WHERE row <= ${passengerPreferences.length}
     return bookingVehicles;
   }
 
-  private calculateTotalPriceForOneVehicle(): number {
-    // TODO: figure out how to calculate price per vehicle
-    return 500;
+  private calculateTotalPriceForOneVehicle(
+    trip: ITrip,
+    vehicle: IPassengerVehicle
+  ): number {
+    const { vehicleTypeId } = vehicle;
+
+    const availableVehicleType = trip.availableVehicleTypes.find(
+      (tripVehicleType) => tripVehicleType.vehicleTypeId === vehicleTypeId
+    );
+
+    const vehicleFare = availableVehicleType.fare;
+    return vehicleFare + vehicleFare * this.AYAHAY_MARKUP_PERCENT;
+  }
+
+  private createPaymentItemsForBooking(booking: IBooking): IPaymentItem[] {
+    const paymentItems: IPaymentItem[] = [];
+
+    booking.bookingPassengers?.forEach((bookingPassenger) =>
+      paymentItems.push({
+        id: -1,
+        bookingId: booking.id,
+        price: bookingPassenger.totalPrice,
+        description: `Adult Fare (${bookingPassenger.cabin.cabinType.name})`,
+      })
+    );
+
+    booking.bookingVehicles?.forEach((bookingVehicle) =>
+      paymentItems.push({
+        id: -1,
+        bookingId: booking.id,
+        price: bookingVehicle.totalPrice,
+        description: `Vehicle Fare (${bookingVehicle.vehicle.vehicleType.name})`,
+      })
+    );
+
+    paymentItems.push({
+      id: -1,
+      bookingId: booking.id,
+      price: this.calculateServiceCharge(booking),
+      description: 'Administrative Fee',
+    });
+
+    return paymentItems;
+  }
+
+  private calculateServiceCharge(booking: IBooking): number {
+    const passengersServiceCharge =
+      booking.bookingPassengers?.length * this.AYAHAY_MARKUP_FLAT;
+    const vehiclesTotalPrice = booking.bookingVehicles
+      .map((bookingVehicle) => bookingVehicle.totalPrice)
+      .reduce(
+        (vehicleAPrice, vehicleBPrice) => vehicleAPrice + vehicleBPrice,
+        0
+      );
+    const vehiclesServiceCharge =
+      vehiclesTotalPrice + vehiclesTotalPrice * this.AYAHAY_MARKUP_PERCENT;
+    return passengersServiceCharge + vehiclesServiceCharge;
   }
 
   private async saveTempBooking(booking: IBooking): Promise<IBooking> {
-    const { totalPrice, bookingPassengers, bookingVehicles } = booking;
+    const { totalPrice, bookingPassengers, bookingVehicles, paymentItems } =
+      booking;
+    const paymentItemsJson = paymentItems as any as Prisma.JsonValue;
     const passengersJson = bookingPassengers as any[] as Prisma.JsonArray;
     const vehiclesJson = bookingVehicles as any[] as Prisma.JsonArray;
 
@@ -456,8 +553,10 @@ WHERE row <= ${passengerPreferences.length}
       data: {
         totalPrice,
         paymentReference: null,
+        createdAt: new Date(),
         passengersJson,
         vehiclesJson,
+        paymentItemsJson,
       },
     });
 
@@ -482,8 +581,12 @@ WHERE row <= ${passengerPreferences.length}
 
     const bookingToCreate: IBooking = {
       id: -1,
+
+      status: 'Pending',
       totalPrice: tempBooking.totalPrice,
       paymentReference: tempBooking.paymentReference,
+      createdAtIso: new Date().toISOString(),
+
       bookingPassengers,
       bookingVehicles,
     };
@@ -499,12 +602,12 @@ WHERE row <= ${passengerPreferences.length}
       (bookingPassenger) =>
         ({
           meal: bookingPassenger.meal,
-          totalPrice: bookingPassenger.totalPrice,
           referenceNo: bookingPassenger.referenceNo,
           checkInDate: null,
           tripId: bookingPassenger.tripId,
           passengerId: bookingPassenger.passenger.id,
           seatId: bookingPassenger.seatId,
+          cabinId: bookingPassenger.cabinId,
         } as Prisma.BookingPassengerCreateManyInput)
     );
 
@@ -513,14 +616,15 @@ WHERE row <= ${passengerPreferences.length}
         ({
           tripId: vehicle.tripId,
           vehicleId: vehicle.vehicleId,
-          totalPrice: vehicle.totalPrice,
         } as Prisma.BookingVehicleCreateManyInput)
     );
 
     const bookingEntity = await this.prisma.booking.create({
       data: {
+        status: booking.status as any,
         totalPrice: booking.totalPrice,
         paymentReference: booking.paymentReference,
+        createdAt: new Date(booking.createdAtIso),
         passengers: {
           createMany: {
             data: bookingPassengerData,
@@ -544,7 +648,7 @@ WHERE row <= ${passengerPreferences.length}
     // if user passenger profile not created yet, we create it here
     if (passengerOfLoggedInUser.id <= 0) {
       // TODO: Get Logged In User Account ID
-      passengerOfLoggedInUser.accountId = 'SYSTEM';
+      passengerOfLoggedInUser.accountId = '5qI9igARB9ZD1JdE2PODBpLRyAU2';
       const createdPassenger = await this.passengerService.createPassenger(
         passengerOfLoggedInUser
       );
@@ -573,8 +677,10 @@ interface AvailableBooking {
   cabinId: number;
   cabinTypeId: number;
   cabinName: string;
+  cabinAdultFare: number;
 
   seatId?: number;
   seatName?: string;
   seatTypeId?: number;
+  seatAdditionalCharge?: number;
 }
