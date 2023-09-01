@@ -1,10 +1,9 @@
 import { FormInstance } from 'antd';
-import { TripsSearchQuery, AdminSearchQuery } from '@ayahay/http';
+import { TripsSearchQuery } from '@ayahay/http';
 import dayjs from 'dayjs';
 import {
-  DEFAULT_NUM_ADULTS,
-  DEFAULT_NUM_CHILDREN,
-  DEFAULT_NUM_INFANTS,
+  DEFAULT_NUM_PASSENGERS,
+  DEFAULT_NUM_VEHICLES,
   DEFAULT_TRIP_TYPE,
 } from '@ayahay/constants/default';
 
@@ -16,11 +15,12 @@ export function initializeSearchFormFromQueryParams(
     tripType: params.tripType ?? DEFAULT_TRIP_TYPE,
     srcPortId: params.srcPortId ? +params.srcPortId : undefined,
     destPortId: params.destPortId ? +params.destPortId : undefined,
-    numAdults: params.numAdults ? +params.numAdults : DEFAULT_NUM_ADULTS,
-    numChildren: params.numChildren
-      ? +params.numChildren
-      : DEFAULT_NUM_CHILDREN,
-    numInfants: params.numInfants ? +params.numInfants : DEFAULT_NUM_INFANTS,
+    numPassengers: params.numPassengers
+      ? +params.numPassengers
+      : DEFAULT_NUM_PASSENGERS,
+    numVehicles: params.numVehicles
+      ? +params.numVehicles
+      : DEFAULT_NUM_VEHICLES,
     departureDate: dayjs(params.departureDate),
     returnDate: params.returnDate
       ? dayjs(params.returnDate)
@@ -39,9 +39,8 @@ export function buildUrlQueryParamsFromSearchForm(form: FormInstance): string {
     srcPortId: form.getFieldValue('srcPortId')?.toString(),
     destPortId: form.getFieldValue('destPortId')?.toString(),
     departureDate: form.getFieldValue('departureDate')?.toISOString(),
-    numAdults: form.getFieldValue('numAdults')?.toString(),
-    numChildren: form.getFieldValue('numChildren')?.toString(),
-    numInfants: form.getFieldValue('numInfants')?.toString(),
+    numPassengers: form.getFieldValue('numPassengers')?.toString(),
+    numVehicles: form.getFieldValue('numVehicles')?.toString(),
     shippingLineIds: form.getFieldValue('shippingLineIds')?.toString(),
     cabinTypes: form.getFieldValue('cabinTypes')?.toString(),
     sort: form.getFieldValue('sort'),
@@ -70,9 +69,8 @@ export function buildSearchQueryFromSearchForm(
     srcPortId: form.getFieldValue('srcPortId'),
     destPortId: form.getFieldValue('destPortId'),
     departureDateIso: form.getFieldValue('departureDate').toISOString(),
-    numAdults: form.getFieldValue('numAdults'),
-    numChildren: form.getFieldValue('numChildren'),
-    numInfants: form.getFieldValue('numInfants'),
+    numPassengers: form.getFieldValue('numPassengers'),
+    numVehicles: form.getFieldValue('numVehicles'),
     shippingLineIds: form.getFieldValue('shippingLineIds'),
     cabinTypes: form.getFieldValue('cabinTypes'),
     sort: form.getFieldValue('sort'),

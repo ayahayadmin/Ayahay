@@ -2,9 +2,8 @@
 import AboutUsCard from '@/components/AboutUsCard';
 import TripSearchQuery from '@/components/search/TripSearchQuery';
 import {
-  DEFAULT_NUM_ADULTS,
-  DEFAULT_NUM_CHILDREN,
-  DEFAULT_NUM_INFANTS,
+  DEFAULT_NUM_PASSENGERS,
+  DEFAULT_NUM_VEHICLES,
   DEFAULT_TRIP_TYPE,
 } from '@ayahay/constants/default';
 import { Form } from 'antd';
@@ -28,9 +27,8 @@ export default function Home() {
         form={form}
         initialValues={{
           tripType: DEFAULT_TRIP_TYPE,
-          numAdults: DEFAULT_NUM_ADULTS,
-          numChildren: DEFAULT_NUM_CHILDREN,
-          numInfants: DEFAULT_NUM_INFANTS,
+          numPassengers: DEFAULT_NUM_PASSENGERS,
+          numVehicles: DEFAULT_NUM_VEHICLES,
           departureDate: dayjs(),
           returnDate: dayjs(),
         }}

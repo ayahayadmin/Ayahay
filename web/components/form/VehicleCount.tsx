@@ -1,48 +1,45 @@
 import { Button, Form, InputNumber, Popover } from 'antd';
 import React from 'react';
-import { DEFAULT_NUM_PASSENGERS } from '@ayahay/constants/default';
+import { DEFAULT_NUM_VEHICLES } from '@ayahay/constants/default';
 
-export default function PassengerCount() {
+export default function VehicleCount() {
   const form = Form.useFormInstance();
 
-  const numPassengers = Form.useWatch('numPassengers', form);
+  const numVehicles = Form.useWatch('numVehicles', form);
 
-  const passengerCountPopoverContent = (
+  const vehicleCountPopoverContent = (
     <div>
-      <PassengerCountPopover
-        label='Passenger Count'
-        inputName='numPassengers'
-      />
+      <VehicleCountPopover label='Vehicle Count' inputName='numVehicles' />
     </div>
   );
 
   return (
     <Popover
       placement='bottomLeft'
-      title='Passenger Count'
-      content={passengerCountPopoverContent}
+      title='Vehicle Count'
+      content={vehicleCountPopoverContent}
       trigger='click'
     >
-      <label>Passengers</label>
+      <label>Vehicles</label>
       <div style={{ padding: '6.5px 11px' }}>
-        <span>{numPassengers ?? DEFAULT_NUM_PASSENGERS} Passenger Count </span>
+        <span>{numVehicles ?? DEFAULT_NUM_VEHICLES} Vehicle Count </span>
       </div>
-      <Form.Item name='numPassengers' hidden={true}>
+      <Form.Item name='numVehicles' hidden={true}>
         <InputNumber />
       </Form.Item>
     </Popover>
   );
 }
 
-interface PassengerCountPopoverProps {
+interface VehicleCountPopoverProps {
   label: string;
   inputName: string;
 }
 
-function PassengerCountPopover({ inputName }: PassengerCountPopoverProps) {
+function VehicleCountPopover({ inputName }: VehicleCountPopoverProps) {
   const form = Form.useFormInstance();
 
-  const numPassenger = Form.useWatch(inputName, form);
+  const numVehicle = Form.useWatch(inputName, form);
 
   const onDecrement = () => {
     form.setFieldValue(inputName, form.getFieldValue(inputName) - 1);
@@ -57,15 +54,12 @@ function PassengerCountPopover({ inputName }: PassengerCountPopoverProps) {
       <div>
         <Button
           shape='circle'
-          disabled={
-            numPassenger === 0 ||
-            (inputName === 'numPassengers' && numPassenger === 1)
-          }
+          disabled={numVehicle === 0}
           onClick={() => onDecrement()}
         >
           -
         </Button>
-        <span>{numPassenger}</span>
+        <span>{numVehicle}</span>
         <Button shape='circle' onClick={() => onIncrement()}>
           +
         </Button>

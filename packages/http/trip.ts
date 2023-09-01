@@ -4,9 +4,8 @@ export interface TripsSearchQuery {
   destPortId: number;
   departureDateIso: string;
   returnDateIso?: string;
-  numAdults: number;
-  numChildren: number;
-  numInfants: number;
+  numPassengers: number;
+  numVehicles: number;
   shippingLineIds?: number[];
   cabinTypes?: string[];
   sort: string;

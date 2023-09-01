@@ -131,12 +131,6 @@ export interface TripData {
   page: number;
 }
 
-export interface TripPaxes {
-  numAdults: number;
-  numChildren: number;
-  numInfants: number;
-}
-
 export interface TripSearchDto {
   // tripType: string;
   tripIds: string;

@@ -7,6 +7,7 @@ import styles from './TripSearchQuery.module.scss';
 import dayjs from 'dayjs';
 import EnumRadio from '@/components/form/EnumRadio';
 import { TRIP_TYPE } from '@ayahay/constants/enum';
+import VehicleCount from '../form/VehicleCount';
 
 export default function TripSearchQuery({
   ...htmlAttributes
@@ -81,11 +82,14 @@ export default function TripSearchQuery({
               </Form.Item>
             )}
           </div>
+          <div className={styles['search-input-wrapper']}>
+            <PassengerCount />
+          </div>
           <div
             className={styles['search-input-wrapper']}
             style={{ borderRight: 0, fontSize: '16px' }}
           >
-            <PassengerCount />
+            <VehicleCount />
           </div>
           <Form.Item style={{ marginBottom: 0, padding: '10px 20px' }}>
             <Button type='primary' htmlType='submit' block>
