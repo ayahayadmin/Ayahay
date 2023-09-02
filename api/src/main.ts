@@ -12,8 +12,7 @@ async function bootstrap() {
     new FastifyAdapter()
   );
 
-  const prismaService = app.get(PrismaService);
-  await prismaService.enableShutdownHooks(app);
+  await app.enableShutdownHooks();
 
   app.enableCors({
     origin: [process.env.WEB_URL, process.env.ADMIN_URL],
