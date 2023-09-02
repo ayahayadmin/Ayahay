@@ -50,9 +50,6 @@ export default function BookingSummary({ booking }: BookingSummaryProps) {
                     <Descriptions.Item label='Meal'>
                       {meal ?? 'None'}
                     </Descriptions.Item>
-                    <Descriptions.Item label='Price'>
-                      ₱{totalPrice}
-                    </Descriptions.Item>
                   </Descriptions>
                 )}
               </div>
@@ -80,10 +77,25 @@ export default function BookingSummary({ booking }: BookingSummaryProps) {
               <Descriptions.Item label='Model Body'>
                 {vehicle.vehicleType?.name}
               </Descriptions.Item>
-              <Descriptions.Item label='Price'>₱{totalPrice}</Descriptions.Item>
             </Descriptions>
           </article>
         ))}
+      {booking && booking.paymentItems && (
+        <article id='payment-summary' style={{ maxWidth: '512px' }}>
+          <Title level={3}>Payment Summary</Title>
+
+          <Descriptions bordered column={{ xxl: 1 }}>
+            {booking.paymentItems.map((paymentItem) => (
+              <Descriptions.Item label={paymentItem.description}>
+                ₱{paymentItem.price}
+              </Descriptions.Item>
+            ))}
+            <Descriptions.Item label='Total' style={{ fontWeight: 600 }}>
+              ₱{booking.totalPrice}
+            </Descriptions.Item>
+          </Descriptions>
+        </article>
+      )}
     </Skeleton>
   );
 }

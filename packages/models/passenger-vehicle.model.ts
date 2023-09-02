@@ -1,7 +1,7 @@
 import { IPassenger } from './passenger.model';
 import {
   IVehicleType,
-  sedanVehicleType,
+  pickupVehicleType,
   suvVehicleType,
 } from './vehicle-type.model';
 
@@ -35,8 +35,8 @@ export const mockInnova: IPassengerVehicle = {
 export const mockPickup: IPassengerVehicle = {
   id: 2,
   passengerId: 1,
-  vehicleTypeId: sedanVehicleType.id,
-  vehicleType: sedanVehicleType,
+  vehicleTypeId: pickupVehicleType.id,
+  vehicleType: pickupVehicleType,
   plateNo: 'DEF456',
   modelName: 'Ford F-150',
   modelYear: 2016,

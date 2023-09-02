@@ -5,10 +5,10 @@ export interface IVehicleType {
   description: string;
 }
 
-export const sedanVehicleType: IVehicleType = {
-  id: 6,
-  name: 'Sedan',
-  description: 'Sedan',
+export const pickupVehicleType: IVehicleType = {
+  id: 9,
+  name: 'Pickup',
+  description: 'Pickup',
 };
 
 export const suvVehicleType: IVehicleType = {
@@ -18,7 +18,7 @@ export const suvVehicleType: IVehicleType = {
 };
 
 export const mockVehicleTypes: IVehicleType[] = [
-  sedanVehicleType,
+  pickupVehicleType,
   suvVehicleType,
   {
     id: 1,
@@ -39,10 +39,5 @@ export const mockVehicleTypes: IVehicleType[] = [
     id: 8,
     name: 'Multicab',
     description: 'Multicab',
-  },
-  {
-    id: 9,
-    name: 'Pickup',
-    description: 'Pickup',
   },
 ];

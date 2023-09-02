@@ -176,22 +176,24 @@ export class BookingService {
       vehicles
     );
 
-    const passengersTotalPrice = bookingPassengers
-      .map((passenger) => passenger.totalPrice)
-      .reduce((priceA, priceB) => priceA + priceB, 0);
+    const paymentItems = this.createPaymentItemsForBooking(
+      bookingPassengers,
+      bookingVehicles
+    );
 
-    const vehiclesTotalPrice = bookingVehicles
-      .map((vehicle) => vehicle.totalPrice)
+    const totalPrice = paymentItems
+      .map((paymentItem) => paymentItem.price)
       .reduce((priceA, priceB) => priceA + priceB, 0);
 
     const tempBooking: IBooking = {
       id: -1,
-      totalPrice: passengersTotalPrice + vehiclesTotalPrice,
+      totalPrice,
       paymentReference: null,
       createdAtIso: '',
       status: undefined,
       bookingPassengers,
       bookingVehicles,
+      paymentItems,
     };
 
     return await this.saveTempBooking(tempBooking);
@@ -493,26 +495,28 @@ WHERE row <= ${passengerPreferences.length}
       (tripVehicleType) => tripVehicleType.vehicleTypeId === vehicleTypeId
     );
 
-    const vehicleFare = availableVehicleType.fare;
-    return vehicleFare + vehicleFare * this.AYAHAY_MARKUP_PERCENT;
+    return availableVehicleType.fare;
   }
 
-  private createPaymentItemsForBooking(booking: IBooking): IPaymentItem[] {
+  private createPaymentItemsForBooking(
+    bookingPassengers: IBookingPassenger[],
+    bookingVehicles: IBookingVehicle[]
+  ): IPaymentItem[] {
     const paymentItems: IPaymentItem[] = [];
 
-    booking.bookingPassengers?.forEach((bookingPassenger) =>
+    bookingPassengers?.forEach((bookingPassenger) =>
       paymentItems.push({
         id: -1,
-        bookingId: booking.id,
+        bookingId: -1,
         price: bookingPassenger.totalPrice,
-        description: `Adult Fare (${bookingPassenger.cabin.cabinType.name})`,
+        description: `Adult Fare (${bookingPassenger.cabin.name})`,
       })
     );
 
-    booking.bookingVehicles?.forEach((bookingVehicle) =>
+    bookingVehicles?.forEach((bookingVehicle) =>
       paymentItems.push({
         id: -1,
-        bookingId: booking.id,
+        bookingId: -1,
         price: bookingVehicle.totalPrice,
         description: `Vehicle Fare (${bookingVehicle.vehicle.vehicleType.name})`,
       })
@@ -520,25 +524,30 @@ WHERE row <= ${passengerPreferences.length}
 
     paymentItems.push({
       id: -1,
-      bookingId: booking.id,
-      price: this.calculateServiceCharge(booking),
+      bookingId: -1,
+      price: this.calculateServiceCharge(bookingPassengers, bookingVehicles),
       description: 'Administrative Fee',
     });
 
     return paymentItems;
   }
 
-  private calculateServiceCharge(booking: IBooking): number {
+  private calculateServiceCharge(
+    bookingPassengers: IBookingPassenger[],
+    bookingVehicles: IBookingVehicle[]
+  ): number {
     const passengersServiceCharge =
-      booking.bookingPassengers?.length * this.AYAHAY_MARKUP_FLAT;
-    const vehiclesTotalPrice = booking.bookingVehicles
+      bookingPassengers?.length * this.AYAHAY_MARKUP_FLAT;
+
+    const vehiclesTotalPrice = bookingVehicles
       .map((bookingVehicle) => bookingVehicle.totalPrice)
       .reduce(
         (vehicleAPrice, vehicleBPrice) => vehicleAPrice + vehicleBPrice,
         0
       );
     const vehiclesServiceCharge =
-      vehiclesTotalPrice + vehiclesTotalPrice * this.AYAHAY_MARKUP_PERCENT;
+      vehiclesTotalPrice * this.AYAHAY_MARKUP_PERCENT;
+
     return passengersServiceCharge + vehiclesServiceCharge;
   }
 
