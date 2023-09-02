@@ -8,6 +8,7 @@ node_modules
 .vscode
 *.iml
 .next
+*.env
 
 .yarn/*
 !.yarn/patches
