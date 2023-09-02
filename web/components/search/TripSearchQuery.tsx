@@ -1,13 +1,12 @@
 'use client';
 import React from 'react';
-import { Button, DatePicker, Form, Radio } from 'antd';
+import { Button, DatePicker, Form } from 'antd';
 import PortAutoComplete from '@/components/form/PortAutoComplete';
-import PassengerCount from '@/components/form/PassengerCount';
 import styles from './TripSearchQuery.module.scss';
 import dayjs from 'dayjs';
 import EnumRadio from '@/components/form/EnumRadio';
 import { TRIP_TYPE } from '@ayahay/constants/enum';
-import VehicleCount from '../form/VehicleCount';
+import PassengerAndVehicleCount from '../form/PassengerAndVehicleCount';
 
 export default function TripSearchQuery({
   ...htmlAttributes
@@ -82,14 +81,11 @@ export default function TripSearchQuery({
               </Form.Item>
             )}
           </div>
-          <div className={styles['search-input-wrapper']}>
-            <PassengerCount />
-          </div>
           <div
             className={styles['search-input-wrapper']}
             style={{ borderRight: 0, fontSize: '16px' }}
           >
-            <VehicleCount />
+            <PassengerAndVehicleCount />
           </div>
           <Form.Item style={{ marginBottom: 0, padding: '10px 20px' }}>
             <Button type='primary' htmlType='submit' block>

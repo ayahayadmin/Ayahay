@@ -1,45 +1,51 @@
-import { Button, Form, InputNumber, Popover } from 'antd';
+import { Button, Form, InputNumber, Popover, Space } from 'antd';
 import React from 'react';
-import { DEFAULT_NUM_PASSENGERS } from '@ayahay/constants/default';
+import {
+  DEFAULT_NUM_PASSENGERS,
+  DEFAULT_NUM_VEHICLES,
+} from '@ayahay/constants/default';
 
-export default function PassengerCount() {
+export default function PassengerAndVehicleCount() {
   const form = Form.useFormInstance();
 
   const numPassengers = Form.useWatch('numPassengers', form);
+  const numVehicles = Form.useWatch('numVehicles', form);
 
-  const passengerCountPopoverContent = (
+  const countPopoverContent = (
     <div>
-      <PassengerCountPopover
-        label='Passenger Count'
-        inputName='numPassengers'
-      />
+      <CountPopover label='Passenger' inputName='numPassengers' />
+      <CountPopover label='Vehicle' inputName='numVehicles' />
     </div>
   );
 
   return (
     <Popover
       placement='bottomLeft'
-      title='Passenger Count'
-      content={passengerCountPopoverContent}
+      title='Passengers/Vehicles'
+      content={countPopoverContent}
       trigger='click'
     >
-      <label>Passengers</label>
+      <label>Passengers | Vehicles</label>
       <div style={{ padding: '6.5px 11px' }}>
-        <span>{numPassengers ?? DEFAULT_NUM_PASSENGERS} Passenger Count </span>
+        <span>{numPassengers ?? DEFAULT_NUM_PASSENGERS} Passenger | </span>
+        <span>{numVehicles ?? DEFAULT_NUM_VEHICLES} Vehicle </span>
       </div>
       <Form.Item name='numPassengers' hidden={true}>
+        <InputNumber />
+      </Form.Item>
+      <Form.Item name='numVehicles' hidden={true}>
         <InputNumber />
       </Form.Item>
     </Popover>
   );
 }
 
-interface PassengerCountPopoverProps {
+interface CountPopoverProps {
   label: string;
   inputName: string;
 }
 
-function PassengerCountPopover({ inputName }: PassengerCountPopoverProps) {
+function CountPopover({ label, inputName }: CountPopoverProps) {
   const form = Form.useFormInstance();
 
   const numPassenger = Form.useWatch(inputName, form);
@@ -54,7 +60,8 @@ function PassengerCountPopover({ inputName }: PassengerCountPopoverProps) {
 
   return (
     <div>
-      <div>
+      <Space>
+        <span>{label}</span>
         <Button
           shape='circle'
           disabled={
@@ -69,7 +76,7 @@ function PassengerCountPopover({ inputName }: PassengerCountPopoverProps) {
         <Button shape='circle' onClick={() => onIncrement()}>
           +
         </Button>
-      </div>
+      </Space>
     </div>
   );
 }
