@@ -9,6 +9,7 @@ import {
   Input,
   MenuProps,
   Modal,
+  message,
 } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 import { LoginForm } from '@ayahay/models';
@@ -16,15 +17,26 @@ import Link from 'next/link';
 import { useAuth } from '@/app/contexts/AuthContext';
 import axios from 'axios';
 import { ACCOUNT_API } from '@ayahay/constants';
+import { User, getAuth } from 'firebase/auth';
 
 export default function AuthForm() {
-  const { currentUser, logout, register, resetPassword, signIn } = useAuth();
+  const auth = getAuth();
+  const {
+    currentUser,
+    emailVerification,
+    logout,
+    register,
+    resetPassword,
+    signIn,
+  } = useAuth();
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [error, setError] = useState('');
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [dropdownLabel, setDropdownLabel] = useState('');
+  const [messageApi, contextHolder] = message.useMessage();
 
   const onClick = () => {
     if (!currentUser) {
@@ -42,6 +54,29 @@ export default function AuthForm() {
     logout();
     setDropdownOpen(false);
     setDropdownLabel('');
+  };
+
+  const verifyEmail = async (user: User) => {
+    try {
+      await emailVerification(user);
+      messageApi.open({
+        type: 'success',
+        content:
+          'Email sent! Check your inbox and click the link to verify your email.',
+        duration: 5,
+      });
+    } catch {
+      messageApi.open({
+        type: 'error',
+        content: 'Email failed to send. Please try again later.',
+        duration: 5,
+      });
+    }
+  };
+
+  const myProfile = () => {
+    setIsProfileModalOpen(true);
+    setDropdownOpen(false);
   };
 
   const onFinishLogin = async (values: LoginForm) => {
@@ -102,12 +137,20 @@ export default function AuthForm() {
     setIsLoginModalOpen(false);
     setIsResetModalOpen(false);
     setIsRegisterModalOpen(false);
+    setIsProfileModalOpen(false);
   };
 
   const items: MenuProps['items'] = [
     {
       key: '1',
-      label: <Link href='/'>My Profile</Link>,
+      label: (
+        <button
+          style={{ all: 'unset', width: '100%' }}
+          onClick={() => myProfile()}
+        >
+          My Profile
+        </button>
+      ),
     },
     {
       key: '2',
@@ -335,6 +378,33 @@ export default function AuthForm() {
             </Button>
           </Form.Item>
         </Form>
+      </Modal>
+      <Modal
+        title='My Profile'
+        open={isProfileModalOpen}
+        onCancel={onClickCancel}
+        footer={null}
+        destroyOnClose={true}
+      >
+        {auth.currentUser?.emailVerified ? (
+          <div>
+            <span>{auth.currentUser?.email} is verified</span>
+          </div>
+        ) : (
+          <div>
+            {contextHolder}
+            <span>
+              {auth.currentUser?.email} is not yet verified, please{' '}
+              <Link
+                href='/'
+                onClick={() => verifyEmail(auth.currentUser!)}
+                style={{ textDecoration: 'underline' }}
+              >
+                verify email now
+              </Link>
+            </span>
+          </div>
+        )}
       </Modal>
     </div>
   );

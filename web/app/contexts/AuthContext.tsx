@@ -1,13 +1,15 @@
 import {
   GoogleAuthProvider,
+  User,
   createUserWithEmailAndPassword,
   getAuth,
+  sendEmailVerification,
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut,
 } from 'firebase/auth';
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext } from 'react';
 import { initFirebase } from '../utils/initFirebase';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { verifyToken } from '@/services/auth.service';
@@ -22,6 +24,7 @@ const AuthContext = createContext({
   signInWithGoogle: () => Promise,
   logout: () => Promise,
   resetPassword: (email: string) => Promise,
+  emailVerification: (user: User) => Promise<void>,
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -39,7 +42,9 @@ export default function AuthContextProvider({ children }: any) {
         const token = await user.getIdToken();
         const data = await verifyToken(token);
         const { uid, email } = data;
-        const account = await createAccount(token, uid, email);
+        await createAccount(token, uid, email);
+
+        await emailVerification(user);
 
         return uid;
       })
@@ -95,6 +100,10 @@ export default function AuthContextProvider({ children }: any) {
       });
   }
 
+  async function emailVerification(user: User) {
+    await sendEmailVerification(user);
+  }
+
   const value = {
     currentUser,
     register,
@@ -102,6 +111,7 @@ export default function AuthContextProvider({ children }: any) {
     logout,
     signInWithGoogle,
     resetPassword,
+    emailVerification,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
