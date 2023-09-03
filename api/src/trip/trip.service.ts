@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { Prisma, Trip } from '@prisma/client';
 import { PrismaService } from 'src/prisma.service';
-import { ITrip } from '@ayahay/models';
+import { AvailableTrips, ITrip, SearchAvailableTrips } from '@ayahay/models';
 import { TripMapper } from './trip.mapper';
 
 @Injectable()
@@ -28,25 +28,50 @@ export class TripService {
     return trip;
   }
 
-  async getTrips(params: {
-    skip?: number;
-    take?: number;
-    cursor?: Prisma.TripWhereUniqueInput;
-    where?: Prisma.TripWhereInput;
-    orderBy?: Prisma.TripOrderByWithRelationInput;
-  }): Promise<Trip[]> {
-    const { skip, take, cursor, where, orderBy } = params;
+  async getAvailableTrips(
+    query: SearchAvailableTrips
+  ): Promise<AvailableTrips[]> {
+    const {
+      srcPortId,
+      destPortId,
+      departureDate,
+      passengerCount,
+      vehicleCount,
+      cabinIds,
+    } = query;
+    const convertedCabinIds = cabinIds.split(',').map((id) => Number(id));
+
     try {
-      const trips = await this.prisma.trip.findMany({
-        skip,
-        take,
-        cursor,
-        where,
-        orderBy,
-      });
+      const trips = await this.prisma.$queryRaw<AvailableTrips[]>`
+        SELECT 
+          t.id, 
+          MAX(sp.name) AS "srcPortName", 
+          MAX(dp.name) AS "destPortName", 
+          MAX(s.name) AS "shippingLineName",
+          MAX(t.departure_date) AS "departureDate",
+          STRING_AGG(ct.name, '|') AS "pipeSeparatedCabinNames",
+          STRING_AGG(tc.adult_fare::TEXT, '|') AS "pipeSeparatedCabinFares",
+          STRING_AGG(tc.available_passenger_capacity::TEXT, '|') AS "pipeSeparatedCabinAvailableCapacities",
+          STRING_AGG(tc.passenger_capacity::TEXT, '|') AS "pipeSeparatedCabinCapacities"
+        FROM ayahay.trip t
+          INNER JOIN ayahay.trip_cabin tc ON t.id = tc.trip_id
+          INNER JOIN ayahay.cabin c ON tc.cabin_id = c.id
+          INNER JOIN ayahay.cabin_type ct ON c.cabin_type_id = ct.id
+          INNER JOIN ayahay.port sp ON t.src_port_id = sp.id 
+          INNER JOIN ayahay.port dp ON t.dest_port_id = dp.id
+          INNER JOIN ayahay.shipping_line s ON t.shipping_line_id = s.id
+        WHERE t.available_vehicle_capacity >= ${Number(vehicleCount)}
+          AND t.departure_date >= cast(${departureDate} AS timestamp)
+          AND t.src_port_id = ${Number(srcPortId)}
+          AND t.dest_port_id = ${Number(destPortId)}
+          AND c.cabin_type_id IN (${Prisma.join(convertedCabinIds)})
+        GROUP BY t.id
+        HAVING SUM(tc.available_passenger_capacity) > ${Number(passengerCount)}
+        ORDER BY t.departure_date ASC
+      `;
 
       return trips;
-    } catch {
+    } catch (e) {
       throw new InternalServerErrorException();
     }
   }

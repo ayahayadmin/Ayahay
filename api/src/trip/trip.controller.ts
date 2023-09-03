@@ -8,9 +8,8 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { TripService } from './trip.service';
-import { ITrip, TripSearchDto } from '@ayahay/models';
+import { ITrip, SearchAvailableTrips } from '@ayahay/models';
 import { Prisma } from '@prisma/client';
-import { omit } from 'lodash';
 import { TripMapper } from './trip.mapper';
 import { Roles } from 'src/decorators/roles.decorators';
 import { AuthGuard } from '../auth-guard/auth.guard';
@@ -23,28 +22,16 @@ export class TripController {
   ) {}
 
   @Get()
-  async getAllTrips(
+  async getAvailableTrips(
     @Query()
-    query: Omit<TripSearchDto, 'numAdults' | 'numChildren' | 'numInfants'>
+    query: SearchAvailableTrips
   ): Promise<any[]> {
     if (query.tripIds?.length > 0) {
       const idStrSplit = query.tripIds.split(',');
       return this.tripService.getTripsByIds(idStrSplit.map((id) => Number(id)));
     }
-    // TO DO:
-    // - add data for passengers who booked for a specific trip, so that I'll know how many capacity left in the ship
-    const orderBy = {
-      //if orderBy baseFare? currently FE passes 'basePrice'. Should we change FE to pass 'baseFare' instead?
-      [query.sort ? query.sort : 'departureDate']: 'asc', //ascending by default
-    };
-    const queryWithoutSort = omit(query, 'sort');
-    const where = {
-      ...queryWithoutSort,
-      srcPortId: Number(queryWithoutSort.srcPortId),
-      destPortId: Number(queryWithoutSort.destPortId),
-    };
 
-    return await this.tripService.getTrips({ where, orderBy });
+    return await this.tripService.getAvailableTrips(query);
   }
 
   @Get(':tripId')
