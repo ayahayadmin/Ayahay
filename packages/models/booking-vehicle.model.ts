@@ -1,5 +1,5 @@
 import { IBooking } from './booking.model';
-import { IPassengerVehicle } from './passenger-vehicle.model';
+import { IVehicle } from './vehicle.model';
 import { ITrip } from './trip.model';
 
 export interface IBookingVehicle {
@@ -9,6 +9,6 @@ export interface IBookingVehicle {
   tripId: number;
   trip?: ITrip;
   vehicleId: number;
-  vehicle: IPassengerVehicle;
+  vehicle: IVehicle;
   totalPrice?: number;
 }

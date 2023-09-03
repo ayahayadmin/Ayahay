@@ -1,4 +1,4 @@
-import { IPassenger, IPassengerVehicle } from '@ayahay/models';
+import { IPassenger, IVehicle } from '@ayahay/models';
 
 export interface BookingSearchQuery {
   paymentReference: string;
@@ -8,7 +8,7 @@ export interface CreateTentativeBookingRequest {
   tripIds: number[];
   passengers: IPassenger[];
   passengerPreferences: PassengerPreferences[];
-  vehicles: IPassengerVehicle[];
+  vehicles: IVehicle[];
 }
 
 export interface PassengerPreferences {

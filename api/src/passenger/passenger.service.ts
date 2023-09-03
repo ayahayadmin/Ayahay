@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
 import { IPassenger } from '@ayahay/models';
 import { PassengerMapper } from './passenger.mapper';
+import { PrismaClient } from '@prisma/client';
 
 @Injectable()
 export class PassengerService {
@@ -10,11 +11,16 @@ export class PassengerService {
     private passengerMapper: PassengerMapper
   ) {}
 
-  async createPassenger(passenger: IPassenger): Promise<IPassenger> {
+  async createPassenger(
+    passenger: IPassenger,
+    transactionContext?: PrismaClient
+  ): Promise<IPassenger> {
+    transactionContext ??= this.prisma;
+
     const passengerEntity =
       this.passengerMapper.convertPassengerToEntityForCreation(passenger);
 
-    const createdPassengerEntity = await this.prisma.passenger.create({
+    const createdPassengerEntity = await transactionContext.passenger.create({
       data: passengerEntity,
     });
 

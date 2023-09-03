@@ -5,6 +5,7 @@ import { TripMapper } from './trip/trip.mapper';
 import { BookingMapper } from './booking/booking.mapper';
 import { PassengerMapper } from './passenger/passenger.mapper';
 import { AccountMapper } from './account/account.mapper';
+import { VehicleMapper } from './vehicle/vehicle.mapper';
 
 @Module({
   providers: [
@@ -14,6 +15,7 @@ import { AccountMapper } from './account/account.mapper';
     BookingMapper,
     PassengerMapper,
     AccountMapper,
+    VehicleMapper,
   ],
   exports: [
     TripMapper,
@@ -22,6 +24,7 @@ import { AccountMapper } from './account/account.mapper';
     BookingMapper,
     PassengerMapper,
     AccountMapper,
+    VehicleMapper,
   ],
 })
 export class MapperModule {}

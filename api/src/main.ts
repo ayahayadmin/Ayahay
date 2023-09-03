@@ -15,7 +15,11 @@ async function bootstrap() {
   await app.enableShutdownHooks();
 
   app.enableCors({
-    origin: [process.env.WEB_URL, process.env.ADMIN_URL],
+    origin: [
+      process.env.WEB_URL,
+      process.env.ADMIN_URL,
+      process.env.DRAGONPAY_GATEWAY_URL,
+    ],
   });
   await app.listen(process.env.PORT || 3001, '0.0.0.0');
 }

@@ -14,7 +14,7 @@ export class TripService {
   constructor(private prisma: PrismaService, private tripMapper: TripMapper) {}
 
   async getTrip(
-    tripWhereUniqueInput: Prisma.TripWhereUniqueInput | {}, //{} is only temp, TripWhereUniqueInput is not part of referenceNo
+    tripWhereUniqueInput: Prisma.TripWhereUniqueInput, //{} is only temp, TripWhereUniqueInput is not part of referenceNo
     tripIncludeInput?: Prisma.TripInclude
   ): Promise<Trip> {
     const trip = await this.prisma.trip.findUnique({

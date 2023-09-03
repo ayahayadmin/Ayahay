@@ -10,7 +10,7 @@ export enum CIVIL_STATUS {
   Widowed = 'Widowed',
 }
 
-export enum TRIP_TYPE {
+export enum BOOKING_TYPE {
   Single = 'Single Trip',
   Round = 'Round Trip',
   Multiple = 'Multiple Trips',

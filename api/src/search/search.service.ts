@@ -13,15 +13,11 @@ export class SearchService {
   async getBookingsByReferenceNo(params: {
     skip?: number;
     take?: number;
-    cursor?: Prisma.TripWhereUniqueInput;
-    where?: Prisma.TripWhereInput;
-    orderBy?: Prisma.TripOrderByWithRelationInput;
+    cursor?: Prisma.BookingWhereUniqueInput;
+    where?: Prisma.BookingWhereInput;
+    orderBy?: Prisma.BookingOrderByWithRelationInput;
   }): Promise<Booking[]> {
     const { skip, take, cursor, where, orderBy } = params;
-    const { referenceNo } = where;
-    if (!referenceNo) {
-      throw new BadRequestException('Reference Number Cannot Be Empty');
-    }
 
     const bookings = await this.prisma.booking.findMany({
       skip,

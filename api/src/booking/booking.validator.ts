@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { IPassenger, IPassengerVehicle, ITrip } from '@ayahay/models';
+import { IPassenger, IVehicle, ITrip } from '@ayahay/models';
 import { PassengerPreferences } from '@ayahay/http';
 
 @Injectable()
@@ -13,9 +13,13 @@ export class BookingValidator {
     trips: ITrip[],
     passengers: IPassenger[],
     passengerPreferences: PassengerPreferences[],
-    vehicles: IPassengerVehicle[]
+    vehicles: IVehicle[]
   ): string[] {
     const errorMessages: string[] = [];
+
+    if (!(loggedInAccountId?.length > 0)) {
+      errorMessages.push('Logged in account ID is invalid');
+    }
     if (trips.length > this.MAX_TRIPS_PER_BOOKING) {
       errorMessages.push(
         `Number of trips for one booking exceeded the maximum of ${this.MAX_TRIPS_PER_BOOKING}`

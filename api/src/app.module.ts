@@ -9,6 +9,7 @@ import { MapperModule } from './mapper.module';
 import { GlobalModule } from './global.module';
 import { AccountModule } from './account/account.module';
 import { AuthModule } from './auth/auth.module';
+import { VehicleModule } from './vehicle/vehicle.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { AuthModule } from './auth/auth.module';
     TripModule,
     PaymentModule,
     PassengerModule,
+    VehicleModule,
     MapperModule,
     GlobalModule,
     AccountModule,

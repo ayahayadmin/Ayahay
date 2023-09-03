@@ -23,7 +23,7 @@ export interface IBookingPassenger {
   seatId?: number;
   seat?: ISeat;
 
-  meal: string;
+  meal?: string;
   totalPrice?: number;
   referenceNo: string;
   checkInDate?: string;

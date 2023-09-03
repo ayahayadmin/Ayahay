@@ -200,9 +200,12 @@ model Port {
 
 model Booking {
   id Int @default(autoincrement()) @id
+  accountId String @map("account_id")
+  account Account @relation(fields: [accountId], references: [id])
 
   status String
   totalPrice Float @map("total_price")
+  bookingType String @map("booking_type")
   paymentReference String @map("payment_reference") @unique
   createdAt DateTime @map("created_at")
 
@@ -226,7 +229,7 @@ model BookingPassenger {
   seatId Int? @map("seat_id")
   seat Seat? @relation(fields: [seatId], references: [id])
 
-  meal String
+  meal String?
   referenceNo String @map("reference_no")
   checkInDate DateTime? @map("check_in_date")
 
@@ -252,7 +255,6 @@ model Passenger {
 
   buddies Passenger[] @relation("PassengerBuddies")
   bookings BookingPassenger[]
-  vehicles PassengerVehicle[]
 
   @@map("passenger")
 }
@@ -264,34 +266,36 @@ model BookingVehicle {
   tripId Int @map("trip_id")
   trip Trip @relation(fields: [tripId], references: [id])
   vehicleId Int @map("vehicle_id")
-  vehicle PassengerVehicle @relation(fields: [vehicleId], references: [id])
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id])
 
   @@map("booking_vehicle")
 }
 
-model PassengerVehicle {
+model Vehicle {
   id Int @default(autoincrement()) @id
-  passengerId Int @map("passenger_id")
-  passenger Passenger @relation(fields: [passengerId], references: [id])
+  accountId String? @map("account_id")
+  account Account? @relation(fields: [accountId], references: [id])
   vehicleTypeId Int @map("vehicle_type_id")
   vehicleType VehicleType @relation(fields: [vehicleTypeId], references: [id])
 
   plateNo String @map("plate_number")
   modelName String @map("model_name")
   modelYear Int @map("model_year")
-  modelBody String @map("model_body")
   officialReceiptUrl String @map("official_receipt_url")
   certificateOfRegistrationUrl String @map("certificate_of_registration_url")
 
   bookings BookingVehicle[]
 
-  @@map("passenger_vehicle")
+  @@map("vehicle")
 }
 
 model TempBooking {
   id Int @default(autoincrement()) @id
+  accountId String @map("account_id")
+  account Account @relation(fields: [accountId], references: [id])
 
   totalPrice Float @map("total_price")
+  bookingType String @map("booking_type")
   paymentReference String? @map("payment_reference")
   createdAt DateTime @map("created_at")
 
@@ -310,6 +314,9 @@ model Account {
   email String
   role String
 
+  bookings Booking[]
+  vehicles Vehicle[]
+  tempBookings TempBooking[]
   notifications AccountNotification[]
 
   @@map("account")
@@ -375,7 +382,7 @@ model VehicleType {
 
   trips TripVehicleType[]
   schedules ShippingLineScheduleRate[]
-  vehicles PassengerVehicle[]
+  vehicles Vehicle[]
 
   @@map("vehicle_type")
 }
@@ -387,4 +394,6 @@ model PaymentItem {
 
   price Float
   description String
+
+  @@map("payment_item")
 }

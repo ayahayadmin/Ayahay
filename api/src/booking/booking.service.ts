@@ -1,12 +1,12 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { Booking, Prisma, TempBooking } from '@prisma/client';
+import { Booking, Prisma, PrismaClient, TempBooking } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
 import {
   IBooking,
   IBookingPassenger,
   IBookingVehicle,
   IPassenger,
-  IPassengerVehicle,
+  IVehicle,
   IPaymentItem,
   ITrip,
 } from '@ayahay/models';
@@ -16,6 +16,7 @@ import { TripService } from '../trip/trip.service';
 import { BookingMapper } from './booking.mapper';
 import { PassengerService } from '../passenger/passenger.service';
 import { BookingValidator } from './booking.validator';
+import { VehicleService } from '../vehicle/vehicle.service';
 
 @Injectable()
 export class BookingService {
@@ -32,7 +33,8 @@ export class BookingService {
     private readonly utilityService: UtilityService,
     private readonly bookingMapper: BookingMapper,
     private readonly bookingValidator: BookingValidator,
-    private readonly passengerService: PassengerService
+    private readonly passengerService: PassengerService,
+    private readonly vehicleService: VehicleService
   ) {}
 
   async getAllBookings(query: BookingSearchQuery): Promise<IBooking[]> {
@@ -111,16 +113,12 @@ export class BookingService {
   }
 
   async createTentativeBooking(
+    loggedInAccountId: string,
     tripIds: number[],
     passengers: IPassenger[],
     passengerPreferences: PassengerPreferences[],
-    vehicles: IPassengerVehicle[]
+    vehicles: IVehicle[]
   ): Promise<IBooking | undefined> {
-    // TODO: Get Logged In User Account ID
-    const loggedInAccountId = '5qI9igARB9ZD1JdE2PODBpLRyAU2';
-    // TODO: for testing; accounts are set automatically
-    passengers[0].accountId = loggedInAccountId;
-
     const trips = await this.tripService.getTripsByIds(tripIds);
 
     const errorMessages =
@@ -187,7 +185,9 @@ export class BookingService {
 
     const tempBooking: IBooking = {
       id: -1,
+      accountId: loggedInAccountId,
       totalPrice,
+      bookingType: 'Single',
       paymentReference: null,
       createdAtIso: '',
       status: undefined,
@@ -465,7 +465,7 @@ WHERE row <= ${passengerPreferences.length}
 
   private createTentativeBookingVehicles(
     trips: ITrip[],
-    vehicles: IPassengerVehicle[]
+    vehicles: IVehicle[]
   ): IBookingVehicle[] | undefined {
     const bookingVehicles: IBookingVehicle[] = [];
 
@@ -487,7 +487,7 @@ WHERE row <= ${passengerPreferences.length}
 
   private calculateTotalPriceForOneVehicle(
     trip: ITrip,
-    vehicle: IPassengerVehicle
+    vehicle: IVehicle
   ): number {
     const { vehicleTypeId } = vehicle;
 
@@ -552,22 +552,11 @@ WHERE row <= ${passengerPreferences.length}
   }
 
   private async saveTempBooking(booking: IBooking): Promise<IBooking> {
-    const { totalPrice, bookingPassengers, bookingVehicles, paymentItems } =
-      booking;
-    const paymentItemsJson = paymentItems as any as Prisma.JsonValue;
-    const passengersJson = bookingPassengers as any[] as Prisma.JsonArray;
-    const vehiclesJson = bookingVehicles as any[] as Prisma.JsonArray;
-
-    const tempBooking = await this.prisma.tempBooking.create({
-      data: {
-        totalPrice,
-        paymentReference: null,
-        createdAt: new Date(),
-        passengersJson,
-        vehiclesJson,
-        paymentItemsJson,
-      },
-    });
+    const tempBookingToCreate =
+      this.bookingMapper.convertBookingToTempBookingEntityForCreation(booking);
+    const tempBooking = await this.prisma.tempBooking.create(
+      tempBookingToCreate
+    );
 
     return {
       ...booking,
@@ -575,107 +564,246 @@ WHERE row <= ${passengerPreferences.length}
     } as IBooking;
   }
 
-  async createBookingFromTempBooking(tempBooking: TempBooking): Promise<void> {
-    if (tempBooking.paymentReference === null) {
-      throw new BadRequestException('The booking has no payment reference.');
-    }
+  async createBookingFromTempBooking(
+    tempBooking: TempBooking,
+    transactionContext?: PrismaClient
+  ): Promise<void> {
+    transactionContext ??= this.prisma;
 
     // TODO: check if seats are available
-    const bookingPassengers = (tempBooking.passengersJson as unknown[]).map(
-      (bookingPassenger) => bookingPassenger as IBookingPassenger
-    );
-    const bookingVehicles = (tempBooking.vehiclesJson as unknown[]).map(
-      (bookingVehicle) => bookingVehicle as IBookingVehicle
-    );
+    const bookingPassengers =
+      tempBooking.passengersJson as any[] as IBookingPassenger[];
+    const bookingVehicles =
+      tempBooking.vehiclesJson as any[] as IBookingVehicle[];
+    const paymentItems =
+      tempBooking.paymentItemsJson as any[] as IPaymentItem[];
 
     const bookingToCreate: IBooking = {
       id: -1,
-
+      accountId: tempBooking.accountId,
       status: 'Pending',
       totalPrice: tempBooking.totalPrice,
+      bookingType: tempBooking.bookingType as any,
       paymentReference: tempBooking.paymentReference,
       createdAtIso: new Date().toISOString(),
 
       bookingPassengers,
       bookingVehicles,
+      paymentItems,
     };
 
-    await this.saveBooking(bookingToCreate);
+    await this.saveBooking(bookingToCreate, transactionContext);
+
+    await this.updatePassengerCapacities(
+      bookingPassengers,
+      'decrement',
+      transactionContext
+    );
+
+    await this.updateVehicleCapacities(
+      bookingVehicles,
+      'decrement',
+      transactionContext
+    );
   }
 
   // saves actual booking data; called after payment
-  private async saveBooking(booking: IBooking): Promise<IBooking> {
-    await this.saveNewPassengersInBooking(booking);
+  private async saveBooking(
+    booking: IBooking,
+    transactionContext?: PrismaClient
+  ): Promise<IBooking> {
+    transactionContext ??= this.prisma;
 
-    const bookingPassengerData = booking.bookingPassengers.map(
-      (bookingPassenger) =>
-        ({
-          meal: bookingPassenger.meal,
-          referenceNo: bookingPassenger.referenceNo,
-          checkInDate: null,
-          tripId: bookingPassenger.tripId,
-          passengerId: bookingPassenger.passenger.id,
-          seatId: bookingPassenger.seatId,
-          cabinId: bookingPassenger.cabinId,
-        } as Prisma.BookingPassengerCreateManyInput)
+    await this.saveNewPassengers(booking.bookingPassengers, transactionContext);
+    await this.saveNewVehicles(booking.bookingVehicles, transactionContext);
+
+    const bookingToCreate =
+      this.bookingMapper.convertBookingToEntityForCreation(booking);
+    const bookingEntity = await transactionContext.booking.create(
+      bookingToCreate
     );
-
-    const bookingVehicleData = booking.bookingVehicles.map(
-      (vehicle) =>
-        ({
-          tripId: vehicle.tripId,
-          vehicleId: vehicle.vehicleId,
-        } as Prisma.BookingVehicleCreateManyInput)
-    );
-
-    const bookingEntity = await this.prisma.booking.create({
-      data: {
-        status: booking.status as any,
-        totalPrice: booking.totalPrice,
-        paymentReference: booking.paymentReference,
-        createdAt: new Date(booking.createdAtIso),
-        passengers: {
-          createMany: {
-            data: bookingPassengerData,
-          },
-        },
-        vehicles: {
-          createMany: {
-            data: bookingVehicleData,
-          },
-        },
-      },
-    });
 
     return this.bookingMapper.convertBookingToBasicDto(bookingEntity);
   }
 
   // creates the passengers in booking with ID -1
   // returns the created passengers' ID with the same order as BookingPassengers in booking
-  private async saveNewPassengersInBooking(booking: IBooking): Promise<void> {
-    const passengerOfLoggedInUser = booking.bookingPassengers[0].passenger;
-    // if user passenger profile not created yet, we create it here
-    if (passengerOfLoggedInUser.id <= 0) {
-      // TODO: Get Logged In User Account ID
-      passengerOfLoggedInUser.accountId = '5qI9igARB9ZD1JdE2PODBpLRyAU2';
-      const createdPassenger = await this.passengerService.createPassenger(
-        passengerOfLoggedInUser
-      );
-      passengerOfLoggedInUser.id = createdPassenger.id;
-    }
+  private async saveNewPassengers(
+    bookingPassengers: IBookingPassenger[],
+    transactionContext?: PrismaClient
+  ): Promise<void> {
+    transactionContext ??= this.prisma;
 
     await Promise.all(
-      booking.bookingPassengers.map(async ({ passenger }) => {
+      bookingPassengers.map(async ({ passenger }) => {
         // if passenger already has an ID, do nothing
         if (passenger.id > 0) {
           return;
         }
-        passenger.buddyId = passengerOfLoggedInUser.id;
         const createdPassenger = await this.passengerService.createPassenger(
-          passenger
+          passenger,
+          transactionContext
         );
         passenger.id = createdPassenger.id;
       })
+    );
+  }
+
+  // creates the passengers in booking with ID -1
+  // returns the created passengers' ID with the same order as BookingPassengers in booking
+  private async saveNewVehicles(
+    bookingVehicles: IBookingVehicle[],
+    transactionContext?: PrismaClient
+  ): Promise<void> {
+    transactionContext ??= this.prisma;
+
+    await Promise.all(
+      bookingVehicles.map(async ({ vehicle }) => {
+        // if passenger already has an ID, do nothing
+        if (vehicle.id > 0) {
+          return;
+        }
+
+        const createdVehicle = await this.vehicleService.createVehicle(
+          vehicle,
+          transactionContext
+        );
+        vehicle.id = createdVehicle.id;
+      })
+    );
+  }
+
+  private async updatePassengerCapacities(
+    bookingPassengers: IBookingPassenger[],
+    operation: 'increment' | 'decrement',
+    transactionContext?: PrismaClient
+  ): Promise<void> {
+    transactionContext ??= this.prisma;
+
+    const tripCabinPassengerCount: {
+      [tripId: number]: {
+        [cabinId: number]: number;
+      };
+    } = {};
+
+    bookingPassengers.forEach(({ tripId, cabinId }) => {
+      if (tripCabinPassengerCount[tripId] === undefined) {
+        tripCabinPassengerCount[tripId] = {};
+      }
+
+      if (!tripCabinPassengerCount[tripId][cabinId]) {
+        tripCabinPassengerCount[tripId][cabinId] = 1;
+      } else {
+        tripCabinPassengerCount[tripId][cabinId]++;
+      }
+    });
+
+    for (const tripIdStr of Object.keys(tripCabinPassengerCount)) {
+      for (const cabinIdStr of Object.keys(
+        tripCabinPassengerCount[tripIdStr]
+      )) {
+        const tripId = Number(tripIdStr);
+        const cabinId = Number(cabinIdStr);
+
+        let passengerCount = tripCabinPassengerCount[tripId][cabinId];
+
+        if (operation === 'decrement') {
+          passengerCount = -passengerCount;
+        }
+
+        await transactionContext.tripCabin.update({
+          where: {
+            tripId_cabinId: {
+              tripId,
+              cabinId,
+            },
+          },
+          data: {
+            availablePassengerCapacity: {
+              increment: passengerCount,
+            },
+          },
+        });
+      }
+    }
+  }
+
+  private async updateVehicleCapacities(
+    bookingVehicles: IBookingVehicle[],
+    operation: 'increment' | 'decrement',
+    transactionContext?: PrismaClient
+  ): Promise<void> {
+    transactionContext ??= this.prisma;
+
+    const tripVehicleCount: {
+      [tripId: number]: number;
+    } = {};
+
+    bookingVehicles.forEach(({ tripId }) => {
+      if (!tripVehicleCount[tripId]) {
+        tripVehicleCount[tripId] = 1;
+      } else {
+        tripVehicleCount[tripId]++;
+      }
+    });
+
+    for (const tripIdStr of Object.keys(tripVehicleCount)) {
+      const tripId = Number(tripIdStr);
+
+      let vehicleCount = tripVehicleCount[tripId];
+
+      if (operation === 'decrement') {
+        vehicleCount = -vehicleCount;
+      }
+
+      await transactionContext.trip.update({
+        where: {
+          id: tripId,
+        },
+        data: {
+          availableVehicleCapacity: {
+            increment: vehicleCount,
+          },
+        },
+      });
+    }
+  }
+
+  public async failBooking(
+    paymentReference: string,
+    transactionContext?: PrismaClient
+  ): Promise<void> {
+    transactionContext ??= this.prisma;
+
+    const booking = await transactionContext.booking.findUnique({
+      where: {
+        paymentReference,
+      },
+      include: {
+        passengers: true,
+        vehicles: true,
+      },
+    });
+
+    await transactionContext.booking.update({
+      where: {
+        paymentReference,
+      },
+      data: {
+        status: 'Failed',
+      },
+    });
+
+    await this.updatePassengerCapacities(
+      booking.passengers as any[] as IBookingPassenger[],
+      'increment',
+      transactionContext
+    );
+
+    await this.updateVehicleCapacities(
+      booking.vehicles as any[] as IBookingVehicle[],
+      'increment',
+      transactionContext
     );
   }
 }

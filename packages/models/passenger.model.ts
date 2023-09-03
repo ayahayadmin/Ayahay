@@ -5,11 +5,7 @@ import {
   SEX,
 } from '@ayahay/constants/enum';
 import { PassengerPreferences } from '@ayahay/http';
-import {
-  IPassengerVehicle,
-  mockInnova,
-  mockPickup,
-} from './passenger-vehicle.model';
+import { IVehicle, mockInnova, mockPickup } from './vehicle.model';
 import { IAccount } from './account.model';
 
 export interface IPassenger {
@@ -28,7 +24,7 @@ export interface IPassenger {
   preferences?: PassengerPreferences;
   buddyId?: number;
   companions?: IPassenger[];
-  vehicles?: IPassengerVehicle[];
+  vehicles?: IVehicle[];
 }
 
 export const mockPassenger: IPassenger = {

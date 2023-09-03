@@ -58,11 +58,7 @@ export default function CreateBookingForm({
     const tentativeBooking = await createTentativeBooking(
       [trip?.id],
       passengers,
-      passengers.map((passenger: IPassenger, index: number) => {
-        // TODO: remove following 4 lines after back-end has been setup
-        passenger.id = index;
-        return passenger.preferences;
-      }),
+      passengers.map((passenger: IPassenger) => passenger.preferences),
       vehicles
     );
 

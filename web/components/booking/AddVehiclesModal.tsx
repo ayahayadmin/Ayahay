@@ -1,4 +1,4 @@
-import { IPassenger, IPassengerVehicle } from '@ayahay/models';
+import { IPassenger, IVehicle } from '@ayahay/models';
 import { Checkbox, Modal, ModalProps, Typography } from 'antd';
 import { useState } from 'react';
 import { CheckboxValueType } from 'antd/es/checkbox/Group';
@@ -7,7 +7,7 @@ const { Title } = Typography;
 
 interface AddVehiclesModalProps {
   loggedInPassenger?: IPassenger;
-  onSubmitVehicles: (vehicles: IPassengerVehicle[]) => void;
+  onSubmitVehicles: (vehicles: IVehicle[]) => void;
 }
 
 export default function AddVehiclesModal({

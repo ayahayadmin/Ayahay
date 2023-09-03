@@ -12,7 +12,7 @@ import { CIVIL_STATUS, OCCUPATION, SEX } from '@ayahay/constants/enum';
 import { DEFAULT_PASSENGER } from '@ayahay/constants/default';
 import {
   IPassenger,
-  IPassengerVehicle,
+  IVehicle,
   mockFather,
   mockVehicleTypes,
 } from '@ayahay/models';
@@ -54,7 +54,7 @@ export default function PassengerInformationForm({
     });
   };
 
-  const addVehicles = (registeredVehicles: IPassengerVehicle[]) => {
+  const addVehicles = (registeredVehicles: IVehicle[]) => {
     setVehicleModalOpen(false);
     let nextIndex = vehicles.length;
     registeredVehicles.forEach((vehicle) => {

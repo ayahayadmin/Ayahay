@@ -1,6 +1,8 @@
 import {
   CanActivate,
   ExecutionContext,
+  ForbiddenException,
+  HttpException,
   Injectable,
   InternalServerErrorException,
   UnauthorizedException,
@@ -57,24 +59,31 @@ export class AuthGuard implements CanActivate {
     }
   }
 
-  private matchRoles(requiredRoles: string[], role: string) {
-    return includes(requiredRoles, role);
-  }
-
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const token = this.extractTokenFromHeader(request);
 
-    const { email, uid } = await this.decryptToken(token)
-      .then((res) => {
-        if (!res.email_verified) {
-          throw new UnauthorizedException();
-        }
-        return res;
-      })
-      .catch((error) => {
-        throw new UnauthorizedException();
-      });
+    let isEmailVerified = false;
+    let email = '';
+    let uid = '';
+
+    try {
+      const {
+        email: _email,
+        uid: _uid,
+        email_verified,
+      } = await this.decryptToken(token);
+      email = _email;
+      uid = _uid;
+      isEmailVerified = email_verified;
+    } catch (e: any) {
+      console.error(e);
+      throw new UnauthorizedException();
+    }
+
+    if (!isEmailVerified) {
+      throw new ForbiddenException('Unverified email');
+    }
 
     let account = await this.getAccount(uid);
 
@@ -87,13 +96,19 @@ export class AuthGuard implements CanActivate {
       [context.getHandler(), context.getClass()]
     );
 
+    request['user'] = account;
+
     if (!requiredRoles) {
       return true;
     }
 
     const accountRole = account.role;
 
-    return this.matchRoles(requiredRoles, accountRole);
+    if (includes(requiredRoles, accountRole)) {
+      return true;
+    }
+
+    throw new ForbiddenException('Insufficient access');
   }
 
   private extractTokenFromHeader(request: Request): string | undefined {

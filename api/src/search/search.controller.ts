@@ -14,9 +14,7 @@ export class SearchController {
   async getBookingsByReferenceNo(
     @Query('referenceNo') referenceNo: string
   ): Promise<Booking[]> {
-    const bookings = await this.searchService.getBookingsByReferenceNo({
-      where: { referenceNo },
-    });
+    const bookings = await this.searchService.getBookingsByReferenceNo({});
 
     return bookings;
   }

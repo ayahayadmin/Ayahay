@@ -1,14 +1,14 @@
-import { IPassenger } from './passenger.model';
+import { IAccount } from './account.model';
 import {
   IVehicleType,
   pickupVehicleType,
   suvVehicleType,
 } from './vehicle-type.model';
 
-export interface IPassengerVehicle {
+export interface IVehicle {
   id: number;
-  passengerId: number;
-  passenger?: IPassenger;
+  accountId?: string;
+  account?: IAccount;
   vehicleTypeId: number;
   vehicleType?: IVehicleType;
 
@@ -20,9 +20,8 @@ export interface IPassengerVehicle {
   certificateOfRegistrationUrl: string;
 }
 
-export const mockInnova: IPassengerVehicle = {
-  id: 1,
-  passengerId: 1,
+export const mockInnova: IVehicle = {
+  id: -1,
   vehicleTypeId: suvVehicleType.id,
   vehicleType: suvVehicleType,
   plateNo: 'ABC123',
@@ -32,9 +31,8 @@ export const mockInnova: IPassengerVehicle = {
   certificateOfRegistrationUrl: '',
 };
 
-export const mockPickup: IPassengerVehicle = {
-  id: 2,
-  passengerId: 1,
+export const mockPickup: IVehicle = {
+  id: -2,
   vehicleTypeId: pickupVehicleType.id,
   vehicleType: pickupVehicleType,
   plateNo: 'DEF456',

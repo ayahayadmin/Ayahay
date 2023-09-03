@@ -1,9 +1,13 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { v4 as uuidv4 } from 'uuid';
 import { BookingService } from '../booking/booking.service';
-import { IBooking } from '@ayahay/models';
 import { PaymentInitiationResponse } from '@ayahay/http';
+import { createHash } from 'crypto';
 import axios from 'axios';
 
 @Injectable()
@@ -13,7 +17,6 @@ export class PaymentService {
     private bookingService: BookingService
   ) {}
 
-  // TODO: should return void when payment flow is finalized
   async startPaymentFlow(
     tempBookingId: number
   ): Promise<PaymentInitiationResponse> {
@@ -52,9 +55,7 @@ export class PaymentService {
     transactionId: string,
     request: DragonpayPaymentInitiationRequest
   ): Promise<DragonpayPaymentInitiationResponse> {
-    const dragonpayInitiationBaseUrl =
-      process.env.PAYMENT_GATEWAY_INITIATION_BASE_URL;
-    const dragonpayInitiationUrl = `${dragonpayInitiationBaseUrl}/${transactionId}/post`;
+    const dragonpayInitiationUrl = `${process.env.PAYMENT_GATEWAY_URL}/api/collect/v1/${transactionId}/post`;
 
     const merchantId = process.env.PAYMENT_GATEWAY_MERCHANT_ID;
     const password = process.env.PAYMENT_GATEWAY_PASSWORD;
@@ -90,36 +91,133 @@ export class PaymentService {
       },
     });
 
-    setTimeout(() => this.finishPaymentFlow(paymentReference), 15000);
+    if (process.env.NODE_ENV === 'local') {
+      await this.handleDragonpayPostback(
+        paymentReference,
+        '',
+        'P',
+        '',
+        0,
+        '',
+        '',
+        ''
+      );
+    }
+
     return {
       paymentGatewayUrl: paymentGatewayResponse.Url,
       paymentReference,
     };
   }
 
-  // should be called in the callback function called by the payment gateway
-  // when the user has finished the transaction
-  async finishPaymentFlow(paymentReference: string): Promise<void> {
-    // TODO: assign a proper value
-    const isPaymentSuccessful = true;
+  async handleDragonpayPostback(
+    transactionId: string,
+    referenceNo: string,
+    status: string,
+    message: string,
+    amount: number,
+    currency: string,
+    processorId: string,
+    digest: string
+  ): Promise<string> {
+    this.verifyDigest(transactionId, referenceNo, status, message, digest);
 
-    if (!isPaymentSuccessful) {
-      throw new Error('The payment was not successful.');
+    if (status === 'P') {
+      await this.prisma.$transaction(
+        async (transactionContext) =>
+          await this.onPendingTransaction(
+            transactionContext,
+            transactionId,
+            amount
+          )
+      );
     }
 
-    const tempBooking = await this.prisma.tempBooking.findFirst({
+    if (status === 'S') {
+      await this.onSuccessfulTransaction(transactionId);
+    }
+
+    if (status === 'F' || status === 'V') {
+      await this.prisma.$transaction(
+        async (transactionContext) =>
+          await this.onFailedTransaction(transactionContext, transactionId)
+      );
+    }
+
+    return 'result=OK';
+  }
+
+  private verifyDigest(
+    transactionId: string,
+    referenceNo: string,
+    status: string,
+    message: string,
+    requestDigest: string
+  ) {
+    if (process.env.NODE_ENV === 'local') {
+      return;
+    }
+
+    const expectedDigest = createHash('sha1')
+      .update(
+        `${transactionId}:${referenceNo}:${status}:${message}:${process.env.PAYMENT_GATEWAY_PASSWORD}`
+      )
+      .digest('hex');
+
+    return requestDigest === expectedDigest;
+  }
+
+  // called when the user has initiated payment intent
+  // creates a booking, essentially reserving the seats for the users
+  private async onPendingTransaction(
+    transactionContext: any,
+    paymentReference: string,
+    amount: number
+  ): Promise<void> {
+    const tempBooking = await transactionContext.tempBooking.findFirst({
       where: {
         paymentReference,
       },
     });
 
     if (tempBooking === null) {
-      throw new Error(
+      throw new BadRequestException(
         'The booking session with the specified payment reference cannot be found.'
       );
     }
 
-    return this.bookingService.createBookingFromTempBooking(tempBooking);
+    if (process.env.NODE_ENV !== 'local' && tempBooking.totalPrice !== amount) {
+      throw new BadRequestException(
+        'The total price of the booking does not match the amount provided.'
+      );
+    }
+
+    return this.bookingService.createBookingFromTempBooking(
+      tempBooking,
+      transactionContext
+    );
+  }
+
+  // updates booking status to payment complete
+  // essentially user can check in after this
+  async onSuccessfulTransaction(paymentReference: string): Promise<void> {
+    await this.prisma.booking.update({
+      where: {
+        paymentReference,
+      },
+      data: {
+        status: 'Success',
+      },
+    });
+  }
+
+  // if transaction fails or is cancelled
+  // updates booking status to failed
+  private async onFailedTransaction(
+    transactionContext: any,
+    paymentReference: string
+  ): Promise<void> {
+    await this.bookingService.failBooking(paymentReference, transactionContext);
   }
 }
 

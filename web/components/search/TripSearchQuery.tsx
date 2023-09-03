@@ -5,7 +5,7 @@ import PortAutoComplete from '@/components/form/PortAutoComplete';
 import styles from './TripSearchQuery.module.scss';
 import dayjs from 'dayjs';
 import EnumRadio from '@/components/form/EnumRadio';
-import { TRIP_TYPE } from '@ayahay/constants/enum';
+import { BOOKING_TYPE } from '@ayahay/constants/enum';
 import PassengerAndVehicleCount from '../form/PassengerAndVehicleCount';
 
 export default function TripSearchQuery({
@@ -22,7 +22,7 @@ export default function TripSearchQuery({
     >
       <div className={styles['search-container']}>
         <div className={styles['search-type']}>
-          <EnumRadio _enum={TRIP_TYPE} name='tripType' disabled={false} />
+          <EnumRadio _enum={BOOKING_TYPE} name='tripType' disabled={false} />
         </div>
 
         <article className={styles['search-main']}>

@@ -8,7 +8,7 @@ export * from './ship.model';
 export * from './shipping-line.model';
 export * from './trip.model';
 export * from './booking-vehicle.model';
-export * from './passenger-vehicle.model';
+export * from './vehicle.model';
 export * from './account.model';
 export * from './seat-type.model';
 export * from './cabin-type.model';

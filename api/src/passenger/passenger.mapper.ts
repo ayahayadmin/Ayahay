@@ -17,11 +17,14 @@ export class PassengerMapper {
       address: passenger.address,
       nationality: passenger.nationality,
       accountId: passenger.accountId,
-      account: {
-        connect: {
-          id: passenger.accountId,
-        },
-      },
+      account:
+        passenger.accountId === undefined
+          ? undefined
+          : {
+              connect: {
+                id: passenger.accountId,
+              },
+            },
       buddy:
         passenger.buddyId === undefined
           ? undefined
