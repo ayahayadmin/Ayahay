@@ -67,6 +67,9 @@ export class AuthGuard implements CanActivate {
 
     const { email, uid } = await this.decryptToken(token)
       .then((res) => {
+        if (!res.email_verified) {
+          throw new UnauthorizedException();
+        }
         return res;
       })
       .catch((error) => {
