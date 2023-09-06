@@ -25,13 +25,17 @@ export class TripController {
   async getAvailableTrips(
     @Query()
     query: SearchAvailableTrips
-  ): Promise<any[]> {
+  ): Promise<ITrip[]> {
     if (query.tripIds?.length > 0) {
       const idStrSplit = query.tripIds.split(',');
       return this.tripService.getTripsByIds(idStrSplit.map((id) => Number(id)));
     }
 
-    return await this.tripService.getAvailableTrips(query);
+    const trips = await this.tripService.getAvailableTrips(query);
+
+    return trips.map((trip) =>
+      this.tripMapper.convertAvailableTripsToDto(trip)
+    );
   }
 
   @Get(':tripId')
