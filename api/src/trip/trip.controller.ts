@@ -31,11 +31,7 @@ export class TripController {
       return this.tripService.getTripsByIds(idStrSplit.map((id) => Number(id)));
     }
 
-    const trips = await this.tripService.getAvailableTrips(query);
-
-    return trips.map((trip) =>
-      this.tripMapper.convertAvailableTripsToDto(trip)
-    );
+    return await this.tripService.getAvailableTrips(query);
   }
 
   @Get(':tripId')
