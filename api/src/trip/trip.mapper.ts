@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import {
+  AvailableTrips,
   ICabin,
   ITrip,
   ITripCabin,
@@ -38,17 +39,17 @@ export class TripMapper {
     };
   }
 
-  convertAvailableTripsToDto(trip: any): ITrip {
+  convertAvailableTripsToDto(trip: AvailableTrips): ITrip {
     return {
       id: trip.id,
       referenceNo: trip.referenceNo,
-      shipId: trip.shipId,
-      shippingLineId: trip.shippingLineId,
-      srcPortId: trip.srcPortId,
-      destPortId: trip.destPortId,
-      seatSelection: trip.seatSelection,
-      availableVehicleCapacity: trip.availableVehicleCapacity,
-      vehicleCapacity: trip.vehicleCapacity,
+      shipId: Number(trip.shipId),
+      shippingLineId: Number(trip.shippingLineId),
+      srcPortId: Number(trip.srcPortId),
+      destPortId: Number(trip.destPortId),
+      seatSelection: Boolean(trip.seatSelection),
+      availableVehicleCapacity: Number(trip.availableVehicleCapacity),
+      vehicleCapacity: Number(trip.vehicleCapacity),
       departureDateIso: trip.departureDate.toISOString(),
       bookingStartDateIso: trip.bookingStartDate.toISOString(),
       bookingCutOffDateIso: trip.bookingCutOffDate.toISOString(),
@@ -65,16 +66,16 @@ export class TripMapper {
       ),
       availableVehicleTypes: this.covertPipeSeparatedTripVehicleTypesToDto(
         trip.id,
-        trip.pipeSeparatedVehicleTypeIds.split('|'),
-        trip.pipeSeparatedVehicleNames.split('|'),
-        trip.pipeSeparatedVehicleFares.split('|')
+        trip.pipeSeparatedVehicleTypeIds?.split('|'),
+        trip.pipeSeparatedVehicleNames?.split('|'),
+        trip.pipeSeparatedVehicleFares?.split('|')
       ),
       availableSeatTypes: [],
       meals: [],
     };
   }
 
-  convertPipeSeparatedTripCabinsToDto(
+  private convertPipeSeparatedTripCabinsToDto(
     tripId,
     cabinIds,
     shipId,
@@ -103,7 +104,7 @@ export class TripMapper {
     });
   }
 
-  convertPipeSeparatedCabinsToDto(
+  private convertPipeSeparatedCabinsToDto(
     cabinId,
     shipId,
     cabinTypeId,
@@ -119,7 +120,7 @@ export class TripMapper {
     };
   }
 
-  covertPipeSeparatedTripVehicleTypesToDto(
+  private covertPipeSeparatedTripVehicleTypesToDto(
     tripId,
     vehicleTypeIds,
     vehicleNames,
@@ -138,14 +139,14 @@ export class TripMapper {
     });
   }
 
-  covertPipeSeparatedVehicleTypeToDto(
+  private covertPipeSeparatedVehicleTypeToDto(
     vehicleTypeId,
     vehicleName
   ): IVehicleType {
     return {
       id: vehicleTypeId,
       name: vehicleName,
-      description: 'random',
+      description: '',
     };
   }
 
