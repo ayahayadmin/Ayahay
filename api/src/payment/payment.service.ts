@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
+  Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { v4 as uuidv4 } from 'uuid';
@@ -12,6 +13,8 @@ import axios from 'axios';
 
 @Injectable()
 export class PaymentService {
+  private readonly logger = new Logger(PaymentService.name);
+
   constructor(
     private prisma: PrismaService,
     private bookingService: BookingService
@@ -73,7 +76,7 @@ export class PaymentService {
       );
       return data;
     } catch (e) {
-      console.error(e);
+      this.logger.error(`Payment initiation failed: ${e}`);
     }
   }
 
@@ -146,7 +149,7 @@ export class PaymentService {
       }
     } catch (e) {
       // TODO: cancel transaction ASAP
-      console.error('Postback error:', e);
+      this.logger.error(`Postback error: ${e}`);
     }
 
     return 'result=OK';
