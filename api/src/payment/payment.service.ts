@@ -129,14 +129,16 @@ export class PaymentService {
       if (this.isPendingStatus(status)) {
         await this.prisma.$transaction(
           async (transactionContext) =>
-            await this.onPendingTransaction(
-              transactionContext,
-              transactionId,
-              amount
-            )
+            await this.onPendingTransaction(transactionContext, transactionId)
         );
       } else if (this.isSuccessfulStatus(status)) {
-        await this.onSuccessfulTransaction(transactionId);
+        await this.prisma.$transaction(
+          async (transactionContext) =>
+            await this.onSuccessfulTransaction(
+              transactionContext,
+              transactionId
+            )
+        );
       } else if (this.isFailedStatus(status)) {
         await this.prisma.$transaction(
           async (transactionContext) =>
@@ -181,41 +183,48 @@ export class PaymentService {
   // creates a booking, essentially reserving the seats for the users
   private async onPendingTransaction(
     transactionContext: any,
-    transactionId: string,
-    amount: number
+    transactionId: string
   ): Promise<void> {
-    const tempBooking = await transactionContext.tempBooking.findFirst({
+    const existingBooking = await transactionContext.booking.findUnique({
       where: {
-        paymentReference: transactionId,
+        id: transactionId,
       },
     });
 
-    if (tempBooking === null) {
-      throw new BadRequestException(
-        'The booking session with the specified payment reference cannot be found.'
+    if (existingBooking === null) {
+      await this.bookingService.createBookingFromTempBooking(
+        transactionId,
+        'Pending',
+        transactionContext
       );
     }
-
-    if (process.env.NODE_ENV !== 'local' && tempBooking.totalPrice !== amount) {
-      throw new BadRequestException(
-        'The total price of the booking does not match the amount provided.'
-      );
-    }
-
-    return this.bookingService.createBookingFromTempBooking(
-      tempBooking,
-      transactionContext
-    );
   }
 
-  isSuccessfulStatus(status: string): boolean {
+  private isSuccessfulStatus(status: string): boolean {
     return status === 'S';
   }
 
   // updates booking status to payment complete
   // essentially user can check in after this
-  async onSuccessfulTransaction(transactionId: string): Promise<void> {
-    await this.prisma.booking.update({
+  private async onSuccessfulTransaction(
+    transactionContext: any,
+    transactionId: string
+  ): Promise<void> {
+    const existingBooking = await transactionContext.booking.findUnique({
+      where: {
+        id: transactionId,
+      },
+    });
+
+    if (existingBooking === null) {
+      return this.bookingService.createBookingFromTempBooking(
+        transactionId,
+        'Success',
+        transactionContext
+      );
+    }
+
+    await transactionContext.booking.update({
       where: {
         id: transactionId,
       },
@@ -225,7 +234,7 @@ export class PaymentService {
     });
   }
 
-  isFailedStatus(status: string): boolean {
+  private isFailedStatus(status: string): boolean {
     return status === 'F' || status === 'V';
   }
 

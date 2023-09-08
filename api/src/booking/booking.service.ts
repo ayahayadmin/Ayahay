@@ -564,10 +564,23 @@ WHERE row <= ${passengerPreferences.length}
   }
 
   async createBookingFromTempBooking(
-    tempBooking: TempBooking,
+    paymentReference: string,
+    status: string,
     transactionContext?: PrismaClient
   ): Promise<void> {
     transactionContext ??= this.prisma;
+
+    const tempBooking = await transactionContext.tempBooking.findFirst({
+      where: {
+        paymentReference,
+      },
+    });
+
+    if (tempBooking === null) {
+      throw new BadRequestException(
+        'The booking session with the specified payment reference cannot be found.'
+      );
+    }
 
     // TODO: check if seats are available
     const bookingPassengers =
@@ -580,7 +593,7 @@ WHERE row <= ${passengerPreferences.length}
     const bookingToCreate: IBooking = {
       id: tempBooking.paymentReference,
       accountId: tempBooking.accountId,
-      status: 'Pending',
+      status: status as any,
       totalPrice: tempBooking.totalPrice,
       bookingType: tempBooking.bookingType as any,
       createdAtIso: new Date().toISOString(),
