@@ -18,11 +18,11 @@ import { AuthGuard } from 'src/auth-guard/auth.guard';
 import { Roles } from 'src/decorators/roles.decorators';
 
 @Controller('bookings')
-@UseGuards(AuthGuard)
 export class BookingController {
   constructor(private bookingService: BookingService) {}
 
   @Get()
+  @UseGuards(AuthGuard)
   @Roles('Staff', 'Admin')
   async getAllBookings(
     @Query() bookingSearchQuery: BookingSearchQuery
@@ -31,16 +31,11 @@ export class BookingController {
   }
 
   @Get(':id')
-  @Roles('Passenger', 'Staff', 'Admin')
   async getBookingSummaryById(
-    @Param('id') idStr: string
+    @Param('id') id: string
   ): Promise<IBooking | undefined> {
-    try {
-      const id = Number(idStr);
-    } catch {}
-
     const bookings = await this.bookingService.getAllBookings({
-      paymentReference: idStr,
+      id,
     });
 
     if (bookings.length === 0) {
@@ -51,7 +46,6 @@ export class BookingController {
   }
 
   @Post()
-  @Roles('Passenger', 'Staff', 'Admin')
   async createTemporaryBooking(
     @Request() req,
     @Body()
@@ -63,19 +57,21 @@ export class BookingController {
     }: CreateTempBookingRequest
   ): Promise<IBooking> {
     return this.bookingService.createTentativeBooking(
-      req.user.id,
       tripIds,
       passengers,
       passengerPreferences,
-      vehicles
+      vehicles,
+      req.user?.id
     );
   }
 
   @Put(':id')
+  @UseGuards(AuthGuard)
   @Roles('Passenger', 'Staff', 'Admin')
   async updateBooking(@Param('id') id: string) {}
 
   @Delete(':id')
+  @UseGuards(AuthGuard)
   @Roles('Passenger', 'Staff', 'Admin')
   async deleteBooking(@Param('id') id: string) {}
 }

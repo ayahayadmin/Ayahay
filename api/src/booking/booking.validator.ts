@@ -9,17 +9,14 @@ export class BookingValidator {
   private readonly MAX_VEHICLES_PER_BOOKING = 5;
 
   public validateCreateTentativeBookingRequest(
-    loggedInAccountId: string,
     trips: ITrip[],
     passengers: IPassenger[],
     passengerPreferences: PassengerPreferences[],
-    vehicles: IVehicle[]
+    vehicles: IVehicle[],
+    loggedInAccountId?: string
   ): string[] {
     const errorMessages: string[] = [];
 
-    if (!(loggedInAccountId?.length > 0)) {
-      errorMessages.push('Logged in account ID is invalid');
-    }
     if (trips.length > this.MAX_TRIPS_PER_BOOKING) {
       errorMessages.push(
         `Number of trips for one booking exceeded the maximum of ${this.MAX_TRIPS_PER_BOOKING}`
@@ -112,7 +109,7 @@ export class BookingValidator {
 
   private isPassengerLinkedToAccount(
     passenger: IPassenger,
-    accountId: string
+    accountId?: string
   ): boolean {
     return passenger.accountId === accountId;
   }

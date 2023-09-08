@@ -199,14 +199,13 @@ model Port {
 }
 
 model Booking {
-  id Int @default(autoincrement()) @id
-  accountId String @map("account_id")
-  account Account @relation(fields: [accountId], references: [id])
+  id String @id
+  accountId String? @map("account_id")
+  account Account? @relation(fields: [accountId], references: [id])
 
   status String
   totalPrice Float @map("total_price")
   bookingType String @map("booking_type")
-  paymentReference String @map("payment_reference") @unique
   createdAt DateTime @map("created_at")
 
   passengers BookingPassenger[]
@@ -218,7 +217,7 @@ model Booking {
 
 model BookingPassenger {
   id Int @default(autoincrement()) @id
-  bookingId Int @map("booking_id")
+  bookingId String @map("booking_id")
   booking Booking @relation(fields: [bookingId], references: [id])
   tripId Int @map("trip_id")
   trip Trip @relation(fields: [tripId], references: [id])
@@ -261,7 +260,7 @@ model Passenger {
 
 model BookingVehicle {
   id Int @default(autoincrement()) @id
-  bookingId Int @map("booking_id")
+  bookingId String @map("booking_id")
   booking Booking @relation(fields: [bookingId], references: [id])
   tripId Int @map("trip_id")
   trip Trip @relation(fields: [tripId], references: [id])
@@ -291,8 +290,8 @@ model Vehicle {
 
 model TempBooking {
   id Int @default(autoincrement()) @id
-  accountId String @map("account_id")
-  account Account @relation(fields: [accountId], references: [id])
+  accountId String? @map("account_id")
+  account Account? @relation(fields: [accountId], references: [id])
 
   totalPrice Float @map("total_price")
   bookingType String @map("booking_type")
@@ -389,7 +388,7 @@ model VehicleType {
 
 model PaymentItem {
   id Int @default(autoincrement()) @id
-  bookingId Int @map("booking_id")
+  bookingId String @map("booking_id")
   booking Booking @relation(fields: [bookingId], references: [id])
 
   price Float

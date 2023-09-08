@@ -40,7 +40,7 @@ export class BookingService {
   async getAllBookings(query: BookingSearchQuery): Promise<IBooking[]> {
     const bookingEntities = await this.prisma.booking.findMany({
       where: {
-        paymentReference: query.paymentReference,
+        id: query.id,
       },
     });
 
@@ -113,21 +113,21 @@ export class BookingService {
   }
 
   async createTentativeBooking(
-    loggedInAccountId: string,
     tripIds: number[],
     passengers: IPassenger[],
     passengerPreferences: PassengerPreferences[],
-    vehicles: IVehicle[]
+    vehicles: IVehicle[],
+    loggedInAccountId?: string
   ): Promise<IBooking | undefined> {
     const trips = await this.tripService.getTripsByIds(tripIds);
 
     const errorMessages =
       this.bookingValidator.validateCreateTentativeBookingRequest(
-        loggedInAccountId,
         trips,
         passengers,
         passengerPreferences,
-        vehicles
+        vehicles,
+        loggedInAccountId
       );
 
     if (errorMessages.length > 0) {
@@ -184,11 +184,10 @@ export class BookingService {
       .reduce((priceA, priceB) => priceA + priceB, 0);
 
     const tempBooking: IBooking = {
-      id: -1,
+      id: '',
       accountId: loggedInAccountId,
       totalPrice,
       bookingType: 'Single',
-      paymentReference: null,
       createdAtIso: '',
       status: undefined,
       bookingPassengers,
@@ -560,7 +559,7 @@ WHERE row <= ${passengerPreferences.length}
 
     return {
       ...booking,
-      id: tempBooking.id,
+      id: tempBooking.id.toString(),
     } as IBooking;
   }
 
@@ -579,12 +578,11 @@ WHERE row <= ${passengerPreferences.length}
       tempBooking.paymentItemsJson as any[] as IPaymentItem[];
 
     const bookingToCreate: IBooking = {
-      id: -1,
+      id: tempBooking.paymentReference,
       accountId: tempBooking.accountId,
       status: 'Pending',
       totalPrice: tempBooking.totalPrice,
       bookingType: tempBooking.bookingType as any,
-      paymentReference: tempBooking.paymentReference,
       createdAtIso: new Date().toISOString(),
 
       bookingPassengers,
@@ -770,14 +768,14 @@ WHERE row <= ${passengerPreferences.length}
   }
 
   public async failBooking(
-    paymentReference: string,
+    id: string,
     transactionContext?: PrismaClient
   ): Promise<void> {
     transactionContext ??= this.prisma;
 
     const booking = await transactionContext.booking.findUnique({
       where: {
-        paymentReference,
+        id,
       },
       include: {
         passengers: true,
@@ -787,7 +785,7 @@ WHERE row <= ${passengerPreferences.length}
 
     await transactionContext.booking.update({
       where: {
-        paymentReference,
+        id,
       },
       data: {
         status: 'Failed',

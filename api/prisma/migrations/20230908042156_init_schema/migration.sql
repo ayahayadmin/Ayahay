@@ -127,12 +127,11 @@ CREATE TABLE "port" (
 
 -- CreateTable
 CREATE TABLE "booking" (
-    "id" SERIAL NOT NULL,
-    "account_id" TEXT NOT NULL,
+    "id" TEXT NOT NULL,
+    "account_id" TEXT,
     "status" TEXT NOT NULL,
     "total_price" DOUBLE PRECISION NOT NULL,
     "booking_type" TEXT NOT NULL,
-    "payment_reference" TEXT NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "booking_pkey" PRIMARY KEY ("id")
@@ -141,7 +140,7 @@ CREATE TABLE "booking" (
 -- CreateTable
 CREATE TABLE "booking_passenger" (
     "id" SERIAL NOT NULL,
-    "booking_id" INTEGER NOT NULL,
+    "booking_id" TEXT NOT NULL,
     "trip_id" INTEGER NOT NULL,
     "passenger_id" INTEGER NOT NULL,
     "cabin_id" INTEGER NOT NULL,
@@ -174,7 +173,7 @@ CREATE TABLE "passenger" (
 -- CreateTable
 CREATE TABLE "booking_vehicle" (
     "id" SERIAL NOT NULL,
-    "booking_id" INTEGER NOT NULL,
+    "booking_id" TEXT NOT NULL,
     "trip_id" INTEGER NOT NULL,
     "vehicle_id" INTEGER NOT NULL,
 
@@ -198,7 +197,7 @@ CREATE TABLE "vehicle" (
 -- CreateTable
 CREATE TABLE "temp_booking" (
     "id" SERIAL NOT NULL,
-    "account_id" TEXT NOT NULL,
+    "account_id" TEXT,
     "total_price" DOUBLE PRECISION NOT NULL,
     "booking_type" TEXT NOT NULL,
     "payment_reference" TEXT,
@@ -272,15 +271,12 @@ CREATE TABLE "vehicle_type" (
 -- CreateTable
 CREATE TABLE "payment_item" (
     "id" SERIAL NOT NULL,
-    "booking_id" INTEGER NOT NULL,
+    "booking_id" TEXT NOT NULL,
     "price" DOUBLE PRECISION NOT NULL,
     "description" TEXT NOT NULL,
 
     CONSTRAINT "payment_item_pkey" PRIMARY KEY ("id")
 );
-
--- CreateIndex
-CREATE UNIQUE INDEX "booking_payment_reference_key" ON "booking"("payment_reference");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "account_passenger_id_key" ON "account"("passenger_id");
@@ -355,7 +351,7 @@ ALTER TABLE "shipping_line_schedule_rate" ADD CONSTRAINT "shipping_line_schedule
 ALTER TABLE "shipping_line_schedule_rate" ADD CONSTRAINT "shipping_line_schedule_rate_vehicle_type_id_fkey" FOREIGN KEY ("vehicle_type_id") REFERENCES "vehicle_type"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "booking" ADD CONSTRAINT "booking_account_id_fkey" FOREIGN KEY ("account_id") REFERENCES "account"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "booking" ADD CONSTRAINT "booking_account_id_fkey" FOREIGN KEY ("account_id") REFERENCES "account"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "booking_passenger" ADD CONSTRAINT "booking_passenger_booking_id_fkey" FOREIGN KEY ("booking_id") REFERENCES "booking"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -391,7 +387,7 @@ ALTER TABLE "vehicle" ADD CONSTRAINT "vehicle_account_id_fkey" FOREIGN KEY ("acc
 ALTER TABLE "vehicle" ADD CONSTRAINT "vehicle_vehicle_type_id_fkey" FOREIGN KEY ("vehicle_type_id") REFERENCES "vehicle_type"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "temp_booking" ADD CONSTRAINT "temp_booking_account_id_fkey" FOREIGN KEY ("account_id") REFERENCES "account"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "temp_booking" ADD CONSTRAINT "temp_booking_account_id_fkey" FOREIGN KEY ("account_id") REFERENCES "account"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "account" ADD CONSTRAINT "account_passenger_id_fkey" FOREIGN KEY ("passenger_id") REFERENCES "passenger"("id") ON DELETE SET NULL ON UPDATE CASCADE;

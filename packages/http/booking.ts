@@ -1,7 +1,7 @@
 import { IPassenger, IVehicle } from '@ayahay/models';
 
 export interface BookingSearchQuery {
-  paymentReference: string;
+  id: string;
 }
 
 export interface CreateTentativeBookingRequest {

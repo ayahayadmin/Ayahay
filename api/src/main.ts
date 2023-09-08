@@ -4,7 +4,7 @@ import {
   FastifyAdapter,
   NestFastifyApplication,
 } from '@nestjs/platform-fastify';
-import { PrismaService } from './prisma.service';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
@@ -21,6 +21,14 @@ async function bootstrap() {
       process.env.DRAGONPAY_GATEWAY_URL,
     ],
   });
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+      disableErrorMessages: process.env.NODE_ENV === 'production',
+    })
+  );
+
   await app.listen(process.env.PORT || 3001, '0.0.0.0');
 }
 bootstrap();

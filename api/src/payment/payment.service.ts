@@ -120,28 +120,33 @@ export class PaymentService {
     processorId: string,
     digest: string
   ): Promise<string> {
-    this.verifyDigest(transactionId, referenceNo, status, message, digest);
+    try {
+      this.verifyDigest(transactionId, referenceNo, status, message, digest);
 
-    if (status === 'P') {
-      await this.prisma.$transaction(
-        async (transactionContext) =>
-          await this.onPendingTransaction(
-            transactionContext,
-            transactionId,
-            amount
-          )
-      );
-    }
+      if (status === 'P') {
+        await this.prisma.$transaction(
+          async (transactionContext) =>
+            await this.onPendingTransaction(
+              transactionContext,
+              transactionId,
+              amount
+            )
+        );
+      }
 
-    if (status === 'S') {
-      await this.onSuccessfulTransaction(transactionId);
-    }
+      if (status === 'S') {
+        await this.onSuccessfulTransaction(transactionId);
+      }
 
-    if (status === 'F' || status === 'V') {
-      await this.prisma.$transaction(
-        async (transactionContext) =>
-          await this.onFailedTransaction(transactionContext, transactionId)
-      );
+      if (status === 'F' || status === 'V') {
+        await this.prisma.$transaction(
+          async (transactionContext) =>
+            await this.onFailedTransaction(transactionContext, transactionId)
+        );
+      }
+    } catch (e) {
+      // TODO: cancel transaction ASAP
+      console.error(e);
     }
 
     return 'result=OK';
@@ -171,12 +176,12 @@ export class PaymentService {
   // creates a booking, essentially reserving the seats for the users
   private async onPendingTransaction(
     transactionContext: any,
-    paymentReference: string,
+    transactionId: string,
     amount: number
   ): Promise<void> {
     const tempBooking = await transactionContext.tempBooking.findFirst({
       where: {
-        paymentReference,
+        paymentReference: transactionId,
       },
     });
 
@@ -200,10 +205,10 @@ export class PaymentService {
 
   // updates booking status to payment complete
   // essentially user can check in after this
-  async onSuccessfulTransaction(paymentReference: string): Promise<void> {
+  async onSuccessfulTransaction(transactionId: string): Promise<void> {
     await this.prisma.booking.update({
       where: {
-        paymentReference,
+        id: transactionId,
       },
       data: {
         status: 'Success',
@@ -215,9 +220,9 @@ export class PaymentService {
   // updates booking status to failed
   private async onFailedTransaction(
     transactionContext: any,
-    paymentReference: string
+    transactionId: string
   ): Promise<void> {
-    await this.bookingService.failBooking(paymentReference, transactionContext);
+    await this.bookingService.failBooking(transactionId, transactionContext);
   }
 }
 
