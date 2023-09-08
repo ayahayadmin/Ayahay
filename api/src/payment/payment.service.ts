@@ -146,7 +146,7 @@ export class PaymentService {
       }
     } catch (e) {
       // TODO: cancel transaction ASAP
-      console.error(e);
+      console.error('Postback error:', e);
     }
 
     return 'result=OK';
@@ -169,7 +169,9 @@ export class PaymentService {
       )
       .digest('hex');
 
-    return requestDigest === expectedDigest;
+    if (requestDigest !== expectedDigest) {
+      throw new BadRequestException('Invalid digest');
+    }
   }
 
   // called when the user has initiated payment intent
