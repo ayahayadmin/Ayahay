@@ -126,7 +126,7 @@ export class PaymentService {
     try {
       this.verifyDigest(transactionId, referenceNo, status, message, digest);
 
-      if (status === 'P') {
+      if (this.isPendingStatus(status)) {
         await this.prisma.$transaction(
           async (transactionContext) =>
             await this.onPendingTransaction(
@@ -135,13 +135,9 @@ export class PaymentService {
               amount
             )
         );
-      }
-
-      if (status === 'S') {
+      } else if (this.isSuccessfulStatus(status)) {
         await this.onSuccessfulTransaction(transactionId);
-      }
-
-      if (status === 'F' || status === 'V') {
+      } else if (this.isFailedStatus(status)) {
         await this.prisma.$transaction(
           async (transactionContext) =>
             await this.onFailedTransaction(transactionContext, transactionId)
@@ -177,6 +173,10 @@ export class PaymentService {
     }
   }
 
+  private isPendingStatus(status: string): boolean {
+    return status === 'P' || status === 'U';
+  }
+
   // called when the user has initiated payment intent
   // creates a booking, essentially reserving the seats for the users
   private async onPendingTransaction(
@@ -208,6 +208,10 @@ export class PaymentService {
     );
   }
 
+  isSuccessfulStatus(status: string): boolean {
+    return status === 'S';
+  }
+
   // updates booking status to payment complete
   // essentially user can check in after this
   async onSuccessfulTransaction(transactionId: string): Promise<void> {
@@ -219,6 +223,10 @@ export class PaymentService {
         status: 'Success',
       },
     });
+  }
+
+  isFailedStatus(status: string): boolean {
+    return status === 'F' || status === 'V';
   }
 
   // if transaction fails or is cancelled
