@@ -143,13 +143,27 @@ export interface SearchAvailableTrips {
 
 export interface AvailableTrips {
   id: number;
-  srcPortName: string;
-  destPortName: string;
-  shippingLineName: string;
-  departureDate: string;
+  departureDate: Date;
+  referenceNo: string;
+  shipId: string;
+  shippingLineId: string;
+  srcPortId: string;
+  destPortId: string;
+  seatSelection: string;
+  availableVehicleCapacity: string;
+  vehicleCapacity: string;
+  bookingStartDate: Date;
+  bookingCutOffDate: Date;
 
+  pipeSeparatedCabinIds: string;
   pipeSeparatedCabinNames: string;
   pipeSeparatedCabinFares: string;
   pipeSeparatedCabinAvailableCapacities: string;
   pipeSeparatedCabinCapacities: string;
+  pipeSeparatedCabinTypeIds: string;
+  pipeSeparatedRecommendedCabinCapacities: string;
+
+  pipeSeparatedVehicleTypeIds: string;
+  pipeSeparatedVehicleNames: string;
+  pipeSeparatedVehicleFares: string;
 }
