@@ -1,7 +1,7 @@
 import { IPort } from '@ayahay/models';
 import { Form, FormItemProps, Select } from 'antd';
 import React, { useEffect, useState } from 'react';
-import { getPorts } from '@/services/port.service';
+import { getPortsMock } from '@/services/port.service';
 
 const { Option } = Select;
 
@@ -17,7 +17,7 @@ export default function PortAutoComplete({
   const [portOptions, setPortOptions] = useState([] as IPort[]);
 
   const initializePorts = () => {
-    const ports = getPorts();
+    const ports = getPortsMock();
     setAllPorts(ports);
     setPortOptions(ports);
   };
