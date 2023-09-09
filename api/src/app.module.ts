@@ -11,6 +11,7 @@ import { AccountModule } from './account/account.module';
 import { AuthModule } from './auth/auth.module';
 import { VehicleModule } from './vehicle/vehicle.module';
 import { PortModule } from './port/port.module';
+import { ShippingLineModule } from './shipping-line/shipping-line.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { PortModule } from './port/port.module';
     AccountModule,
     AuthModule,
     PortModule,
+    ShippingLineModule,
   ],
 })
 export class AppModule {}
