@@ -1,6 +1,6 @@
 import { Form, FormItemProps, Select } from 'antd';
 import React, { useEffect, useState } from 'react';
-import { getShippingLines } from '@/services/shipping-line.service';
+import { getShippingLinesMock } from '@/services/shipping-line.service';
 import { IShippingLine } from '@ayahay/models';
 
 const { Option } = Select;
@@ -16,7 +16,7 @@ export default function ShippingLineFilter({
   );
 
   const initializeShippingLines = () => {
-    const shippingLines = getShippingLines();
+    const shippingLines = getShippingLinesMock();
     setAllShippingLines(shippingLines);
     setShippingLineOptions(shippingLines);
   };
