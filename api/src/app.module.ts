@@ -12,6 +12,7 @@ import { AuthModule } from './auth/auth.module';
 import { VehicleModule } from './vehicle/vehicle.module';
 import { PortModule } from './port/port.module';
 import { ShippingLineModule } from './shipping-line/shipping-line.module';
+import { CabinTypeModule } from './cabin-type/cabin-type.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { ShippingLineModule } from './shipping-line/shipping-line.module';
     AuthModule,
     PortModule,
     ShippingLineModule,
+    CabinTypeModule,
   ],
 })
 export class AppModule {}
