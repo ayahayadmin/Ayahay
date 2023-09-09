@@ -131,14 +131,25 @@ export interface TripData {
   page: number;
 }
 
-export interface TripSearchDto {
-  // tripType: string;
+export interface SearchAvailableTrips {
   tripIds: string;
-  srcPortId: string;
-  destPortId: string;
+  srcPortId: number;
+  destPortId: number;
   departureDate: string;
-  numAdults: string;
-  numChildren: string;
-  numInfants: string;
-  sort: string;
+  passengerCount: number;
+  vehicleCount: number;
+  cabinIds?: string;
+}
+
+export interface AvailableTrips {
+  id: number;
+  srcPortName: string;
+  destPortName: string;
+  shippingLineName: string;
+  departureDate: string;
+
+  pipeSeparatedCabinNames: string;
+  pipeSeparatedCabinFares: string;
+  pipeSeparatedCabinAvailableCapacities: string;
+  pipeSeparatedCabinCapacities: string;
 }

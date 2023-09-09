@@ -6,8 +6,9 @@ import {
 } from '@nestjs/common';
 import { Prisma, Trip } from '@prisma/client';
 import { PrismaService } from 'src/prisma.service';
-import { ITrip } from '@ayahay/models';
+import { AvailableTrips, ITrip, SearchAvailableTrips } from '@ayahay/models';
 import { TripMapper } from './trip.mapper';
+import { isEmpty } from 'lodash';
 
 @Injectable()
 export class TripService {
@@ -28,27 +29,59 @@ export class TripService {
     return trip;
   }
 
-  async getTrips(params: {
-    skip?: number;
-    take?: number;
-    cursor?: Prisma.TripWhereUniqueInput;
-    where?: Prisma.TripWhereInput;
-    orderBy?: Prisma.TripOrderByWithRelationInput;
-  }): Promise<Trip[]> {
-    const { skip, take, cursor, where, orderBy } = params;
-    try {
-      const trips = await this.prisma.trip.findMany({
-        skip,
-        take,
-        cursor,
-        where,
-        orderBy,
-      });
+  async getAvailableTrips(query: SearchAvailableTrips): Promise<ITrip[]> {
+    const {
+      srcPortId,
+      destPortId,
+      departureDate,
+      passengerCount,
+      vehicleCount,
+      cabinIds,
+    } = query;
 
-      return trips;
-    } catch {
-      throw new InternalServerErrorException();
-    }
+    const trips = await this.prisma.$queryRaw<AvailableTrips[]>`
+      SELECT 
+        t.id, 
+        MAX(t.departure_date) AS "departureDate",
+        t.reference_number AS "referenceNo",
+        t.ship_id AS "shipId",
+        t.shipping_line_id AS "shippingLineId",
+        t.src_port_id AS "srcPortId",
+        t.dest_port_id AS "destPortId",
+        t.seat_selection AS "seatSelection",
+        t.available_vehicle_capacity AS "availableVehicleCapacity",
+        t.vehicle_capacity AS "vehicleCapacity",
+        t.booking_start_date AS "bookingStartDate",
+        t.booking_cut_off_date AS "bookingCutOffDate",
+        STRING_AGG(tc.cabin_id::TEXT, '|') AS "pipeSeparatedCabinIds",
+        STRING_AGG(tc.adult_fare::TEXT, '|') AS "pipeSeparatedCabinFares",
+        STRING_AGG(tc.available_passenger_capacity::TEXT, '|') AS "pipeSeparatedCabinAvailableCapacities",
+        STRING_AGG(tc.passenger_capacity::TEXT, '|') AS "pipeSeparatedCabinCapacities",
+        STRING_AGG(c.cabin_type_id::TEXT, '|') AS "pipeSeparatedCabinTypeIds",
+        STRING_AGG(c.name::TEXT, '|') AS "pipeSeparatedCabinNames",
+        STRING_AGG(c.recommended_passenger_capacity::TEXT, '|') AS "pipeSeparatedRecommendedCabinCapacities"
+      FROM ayahay.trip t
+        INNER JOIN ayahay.trip_cabin tc ON t.id = tc.trip_id
+        INNER JOIN ayahay.cabin c ON tc.cabin_id = c.id
+      WHERE t.available_vehicle_capacity >= ${Number(vehicleCount)}
+        AND t.departure_date >= cast(${departureDate} AS timestamp)
+        AND t.src_port_id = ${Number(srcPortId)}
+        AND t.dest_port_id = ${Number(destPortId)}
+        ${
+          isEmpty(cabinIds)
+            ? Prisma.empty
+            : Prisma.sql`AND c.cabin_type_id IN (${Prisma.join(
+                cabinIds.split(',').map((id) => Number(id))
+              )})`
+        }
+      GROUP BY t.id
+      HAVING SUM(tc.available_passenger_capacity) > ${Number(passengerCount)}
+      ORDER BY t.departure_date ASC
+    `;
+
+    return trips.map((trip) =>
+      this.tripMapper.convertAvailableTripsToDto(trip)
+    );
   }
 
   async getTripsByIds(tripIds: number[]): Promise<ITrip[]> {

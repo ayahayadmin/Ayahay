@@ -20,7 +20,7 @@ import { ISeatPlan } from './seat-plan.model';
  */
 export interface ITripCabin {
   tripId: number;
-  trip: ITrip;
+  trip?: ITrip;
   cabinId: number;
   cabin: ICabin;
   seatPlanId?: number;
