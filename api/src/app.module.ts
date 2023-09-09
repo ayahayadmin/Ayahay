@@ -10,6 +10,7 @@ import { GlobalModule } from './global.module';
 import { AccountModule } from './account/account.module';
 import { AuthModule } from './auth/auth.module';
 import { VehicleModule } from './vehicle/vehicle.module';
+import { PortModule } from './port/port.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { VehicleModule } from './vehicle/vehicle.module';
     GlobalModule,
     AccountModule,
     AuthModule,
+    PortModule,
   ],
 })
 export class AppModule {}
