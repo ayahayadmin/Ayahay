@@ -8,7 +8,6 @@ export class PortService {
   constructor(private prisma: PrismaService) {}
 
   async getPorts(): Promise<IPort[]> {
-    const ports = await this.prisma.port.findMany({});
-    return ports;
+    return await this.prisma.port.findMany({});
   }
 }
