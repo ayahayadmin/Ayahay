@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { Controller, Param, Post, Body } from '@nestjs/common';
 import { PaymentService } from './payment.service';
 import { PaymentInitiationResponse } from '@ayahay/http';
 
@@ -13,16 +13,16 @@ export class PaymentController {
     return this.paymentService.startPaymentFlow(+tempBookingId);
   }
 
-  @Get('postback/dpay')
+  @Post('postback/dpay')
   async dragonpayPostback(
-    @Query('txnid') transactionId: string,
-    @Query('refno') referenceNo: string,
-    @Query('status') status: string,
-    @Query('message') message: string,
-    @Query('amount') amount: number,
-    @Query('ccy') currency: string,
-    @Query('procid') processorId: string,
-    @Query('digest') digest: string
+    @Body('txnid') transactionId: string,
+    @Body('refno') referenceNo: string,
+    @Body('status') status: string,
+    @Body('message') message: string,
+    @Body('amount') amount: number,
+    @Body('ccy') currency: string,
+    @Body('procid') processorId: string,
+    @Body('digest') digest: string
   ): Promise<string> {
     return this.paymentService.handleDragonpayPostback(
       transactionId,

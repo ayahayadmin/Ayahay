@@ -123,6 +123,9 @@ export class PaymentService {
     processorId: string,
     digest: string
   ): Promise<string> {
+    this.logger.log(
+      `Received Dragonpay postback with Transaction ID: ${transactionId} & Status: ${status}`
+    );
     try {
       this.verifyDigest(transactionId, referenceNo, status, message, digest);
 
