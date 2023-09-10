@@ -1,9 +1,22 @@
 import { Injectable } from '@nestjs/common';
-import { IBooking, IBookingVehicle } from '@ayahay/models';
+import { IBooking, IBookingPassenger, IBookingVehicle } from '@ayahay/models';
 import { Prisma } from '@prisma/client';
+import { TripMapper } from 'src/trip/trip.mapper';
+import { PassengerMapper } from '../passenger/passenger.mapper';
+import { CabinMapper } from '../cabin/cabin.mapper';
+import { VehicleMapper } from '../vehicle/vehicle.mapper';
+import { PaymentMapper } from '../payment/payment.mapper';
 
 @Injectable()
 export class BookingMapper {
+  constructor(
+    private readonly tripMapper: TripMapper,
+    private readonly passengerMapper: PassengerMapper,
+    private readonly cabinMapper: CabinMapper,
+    private readonly paymentMapper: PaymentMapper,
+    private readonly vehicleMapper: VehicleMapper
+  ) {}
+
   convertBookingToBasicDto(booking: Prisma.BookingGetPayload<any>): IBooking {
     const { id, accountId, status, totalPrice, bookingType, createdAt } =
       booking;
@@ -15,6 +28,61 @@ export class BookingMapper {
       totalPrice,
       bookingType: bookingType as any,
       createdAtIso: createdAt.toISOString(),
+    };
+  }
+
+  convertBookingToSummary(booking: any): IBooking {
+    return {
+      id: booking.id,
+      accountId: booking.accountId,
+
+      bookingType: booking.bookingType,
+      createdAtIso: booking.createdAtIso,
+      status: booking.status,
+      totalPrice: booking.totalPrice,
+
+      bookingPassengers: booking.passengers.map((bookingPassenger) =>
+        this.convertBookingPassengerToSummary(bookingPassenger)
+      ),
+      bookingVehicles: booking.vehicles.map((bookingVehicle) =>
+        this.convertBookingVehicleToSummary(bookingVehicle)
+      ),
+      paymentItems: booking.paymentItems.map((paymentItem) =>
+        this.paymentMapper.convertPaymentItemToDto(paymentItem)
+      ),
+    };
+  }
+
+  private convertBookingPassengerToSummary(
+    bookingPassenger: any
+  ): IBookingPassenger {
+    return {
+      id: bookingPassenger.id,
+      bookingId: bookingPassenger.bookingId,
+      tripId: bookingPassenger.tripId,
+      trip: this.tripMapper.convertTripToBasicDto(bookingPassenger.trip),
+      passengerId: bookingPassenger.passengerId,
+      passenger: this.passengerMapper.convertPassengerToDto(
+        bookingPassenger.passenger
+      ),
+      cabinId: bookingPassenger.cabinId,
+      cabin: this.cabinMapper.convertCabinToDto(bookingPassenger.cabin),
+      seatId: bookingPassenger.seatId,
+
+      meal: bookingPassenger.meal,
+      referenceNo: bookingPassenger.referenceNo,
+      checkInDate: bookingPassenger.checkInDate,
+    };
+  }
+
+  private convertBookingVehicleToSummary(bookingVehicle: any): IBookingVehicle {
+    return {
+      id: bookingVehicle.id,
+      bookingId: bookingVehicle.bookingId,
+      tripId: bookingVehicle.tripId,
+      trip: this.tripMapper.convertTripToBasicDto(bookingVehicle.trip),
+      vehicleId: bookingVehicle.vehicleId,
+      vehicle: this.vehicleMapper.convertVehicleToDto(bookingVehicle.vehicle),
     };
   }
 

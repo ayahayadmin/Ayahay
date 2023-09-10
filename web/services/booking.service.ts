@@ -31,28 +31,20 @@ export async function createTentativeBooking(
   }
 }
 
-export async function getBookingByPaymentReference(
-  paymentReference: string
+export async function getBookingById(
+  bookingId: string
 ): Promise<IBooking | undefined> {
   const authToken = await getAuth().currentUser?.getIdToken();
 
   try {
-    const { data: bookings } = await axios.get<IBooking[]>(
-      `${BOOKING_API}/${paymentReference}`,
+    const { data: booking } = await axios.get<IBooking>(
+      `${BOOKING_API}/${bookingId}`,
       { headers: { Authorization: `Bearer ${authToken}` } }
     );
 
-    if (bookings.length !== 1) {
-      return undefined;
-    }
-
-    return bookings[0];
+    return booking;
   } catch (e) {
     console.error(e);
     return undefined;
   }
-}
-
-export function getBookingById(bookingId: number): IBooking | undefined {
-  return undefined;
 }

@@ -24,8 +24,8 @@ export default function PassengerPreferencesForm({
   };
 
   const copyPreferences = (srcIndex: number, destIndex: number) => {
-    const srcNamePath = ['passengers', srcIndex, 'preferences'];
-    const destNamePath = ['passengers', destIndex, 'preferences'];
+    const srcNamePath = ['preferences', srcIndex];
+    const destNamePath = ['preferences', destIndex];
     form.setFieldValue(destNamePath, form.getFieldValue(srcNamePath));
   };
 
@@ -34,7 +34,7 @@ export default function PassengerPreferencesForm({
     trip && (
       <>
         <Title level={2}>Passenger Preferences</Title>
-        <Form.List name='passengers'>
+        <Form.List name='preferences'>
           {(fields, _) => (
             <>
               {fields.map(({ key, name, ...restField }, index) => (
@@ -55,12 +55,12 @@ export default function PassengerPreferencesForm({
                   {trip.availableSeatTypes.length > 0 && (
                     <Form.Item
                       {...restField}
-                      name={[name, 'preferences', 'seatTypeId']}
+                      name={[name, 'seatTypeId']}
                       label='Seat Preference'
                       colon={false}
                     >
                       <Radio.Group>
-                        <Radio value='Any'>Any</Radio>
+                        <Radio value={undefined}>Any</Radio>
                         {trip.availableSeatTypes.map((seatType, index) => (
                           <Radio value={seatType} key={index}>
                             {seatType}
@@ -74,12 +74,12 @@ export default function PassengerPreferencesForm({
                   ).length > 0 && (
                     <Form.Item
                       {...restField}
-                      name={[name, 'preferences', 'cabinTypeId']}
+                      name={[name, 'cabinTypeId']}
                       label='Cabin Preference'
                       colon={false}
                     >
                       <Radio.Group>
-                        <Radio>Any</Radio>
+                        <Radio value={undefined}>Any</Radio>
                         {trip.availableCabins
                           .filter(
                             (tripCabin) =>
@@ -98,7 +98,7 @@ export default function PassengerPreferencesForm({
                   )}
                   <Form.Item
                     {...restField}
-                    name={[name, 'preferences', 'meal']}
+                    name={[name, 'meal']}
                     label='Meal Preference'
                     colon={false}
                   >

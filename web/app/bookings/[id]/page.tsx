@@ -14,13 +14,16 @@ export default function GetBooking({ params }) {
   const [booking, setBooking] = useState<IBooking | undefined>();
   const [qrCodeValue, setQrCodeValue] = useState<string>('');
 
-  const onPageLoad = () => {
-    const bookingId = parseInt(params.id);
-    setBooking(getBookingById(bookingId));
+  const onPageLoad = async () => {
+    const bookingId = params.id;
+    const booking = await getBookingById(bookingId);
+    setBooking(booking);
     setQrCodeValue(window.location.href);
   };
 
-  useEffect(onPageLoad, []);
+  useEffect(() => {
+    onPageLoad();
+  }, []);
 
   return (
     <div className={styles['main-container']}>
@@ -43,7 +46,7 @@ export default function GetBooking({ params }) {
         </section>
         <section className={styles['trip-card']}>
           <Title level={2}>Trip Details</Title>
-          <TripSummary trip={booking?.trip} />
+          <TripSummary trip={booking?.bookingPassengers?.[0]?.trip} />
         </section>
       </div>
       <Title level={2}>Passengers</Title>

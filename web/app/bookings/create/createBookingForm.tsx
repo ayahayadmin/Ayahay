@@ -1,13 +1,12 @@
 import { Form, Spin, Steps, Grid, notification } from 'antd';
 import styles from './createBookingForm.module.scss';
 import { IBooking, IPassenger } from '@ayahay/models';
-import { DEFAULT_PASSENGER } from '@ayahay/constants/default';
 import PassengerInformationForm from '@/components/booking/PassengerInformationForm';
 import React, { useState } from 'react';
 import PassengerPreferencesForm from '@/components/booking/PassengerPreferencesForm';
 import {
   createTentativeBooking,
-  getBookingByPaymentReference,
+  getBookingById,
 } from '@/services/booking.service';
 import BookingConfirmation from '@/components/booking/BookingConfirmation';
 import { useTripFromSearchParams } from '@/hooks/trip';
@@ -32,6 +31,7 @@ export default function CreateBookingForm({
   const [form] = Form.useForm();
   const passengers = Form.useWatch('passengers', form);
   const vehicles = Form.useWatch('vehicles', form);
+  const preferences = Form.useWatch('preferences', form);
   const [loadingMessage, setLoadingMessage] = useState<string>('');
   const [bookingPreview, setBookingPreview] = useState<IBooking>();
   const [currentStep, setCurrentStep] = useState(0);
@@ -42,6 +42,12 @@ export default function CreateBookingForm({
 
   const previousStep = () => {
     setCurrentStep(currentStep - 1);
+  };
+
+  const initializePreferences = async () => {
+    const preferences = passengers.map((_: any) => ({}));
+    form.setFieldValue('preferences', preferences);
+    nextStep();
   };
 
   const findSeats = async () => {
@@ -58,7 +64,7 @@ export default function CreateBookingForm({
     const tentativeBooking = await createTentativeBooking(
       [trip?.id],
       passengers,
-      passengers.map((passenger: IPassenger) => passenger.preferences),
+      preferences,
       vehicles
     );
 
@@ -93,10 +99,10 @@ export default function CreateBookingForm({
     window.open(response.paymentGatewayUrl);
 
     // check payment status every 5 seconds
-    const paymentTimer: NodeJS.Timer = setInterval(
-      () => checkPaymentStatus(response.paymentReference, paymentTimer),
-      5000
-    );
+    // const paymentTimer: NodeJS.Timer = setInterval(
+    //   () => checkPaymentStatus(response.paymentReference, paymentTimer),
+    //   5000
+    // );
   };
 
   const onStartPaymentError = () => {
@@ -111,7 +117,7 @@ export default function CreateBookingForm({
     paymentReference: string,
     paymentTimer: NodeJS.Timer
   ): Promise<void> => {
-    const booking = await getBookingByPaymentReference(paymentReference);
+    const booking = await getBookingById(paymentReference);
 
     if (booking === undefined) {
       console.log('Payment still not finished');
@@ -130,8 +136,9 @@ export default function CreateBookingForm({
       form={form}
       id={styles['create-booking-form']}
       initialValues={{
-        passengers: [DEFAULT_PASSENGER],
+        passengers: [{}],
         vehicles: [],
+        preferences: [{}],
       }}
       onValuesChange={(changesValues, values) => console.log(values)}
       onFinish={(values) => console.log(values)}
@@ -145,7 +152,7 @@ export default function CreateBookingForm({
       <Spin spinning={loadingMessage?.length > 0} tip={loadingMessage}>
         <div style={{ display: currentStep === 0 ? 'block' : 'none' }}>
           <PassengerInformationForm
-            onNextStep={nextStep}
+            onNextStep={initializePreferences}
             onPreviousStep={previousStep}
           />
         </div>

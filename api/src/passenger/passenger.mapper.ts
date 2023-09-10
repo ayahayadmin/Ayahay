@@ -1,9 +1,29 @@
 import { Injectable } from '@nestjs/common';
-import { IPassenger } from '@ayahay/models';
+import { IAccount, IPassenger, IVehicle } from '@ayahay/models';
 import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class PassengerMapper {
+  convertPassengerToDto(passenger: any): IPassenger {
+    return {
+      id: passenger.id,
+      accountId: passenger.accountId,
+      buddyId: passenger.buddyId,
+
+      firstName: passenger.firstName,
+      lastName: passenger.lastName,
+      occupation: passenger.occupation,
+      sex: passenger.sex,
+      civilStatus: passenger.civilStatus,
+      birthdayIso: passenger.birthday.toISOString(),
+      address: passenger.address,
+      nationality: passenger.nationality,
+      discountType: passenger.discountType,
+
+      companions: [],
+    };
+  }
+
   convertPassengerToEntityForCreation(
     passenger: IPassenger
   ): Prisma.PassengerCreateInput {

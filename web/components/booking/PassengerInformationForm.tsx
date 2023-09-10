@@ -9,7 +9,6 @@ import {
 } from 'antd';
 import React, { useState } from 'react';
 import { CIVIL_STATUS, OCCUPATION, SEX } from '@ayahay/constants/enum';
-import { DEFAULT_PASSENGER } from '@ayahay/constants/default';
 import {
   IPassenger,
   IVehicle,
@@ -210,7 +209,7 @@ export default function PassengerInformationForm({
               </div>
             ))}
 
-            <Button type='dashed' onClick={() => add(DEFAULT_PASSENGER)} block>
+            <Button type='dashed' onClick={() => add({})} block>
               Add Companion
             </Button>
             {loggedInPassenger && (

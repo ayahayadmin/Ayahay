@@ -1,5 +1,5 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { IPassenger, IVehicle, ITrip } from '@ayahay/models';
+import { Injectable } from '@nestjs/common';
+import { IPassenger, IVehicle, ITrip, IBooking } from '@ayahay/models';
 import { PassengerPreferences } from '@ayahay/http';
 
 @Injectable()

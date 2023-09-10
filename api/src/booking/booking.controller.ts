@@ -32,17 +32,10 @@ export class BookingController {
 
   @Get(':id')
   async getBookingSummaryById(
+    @Request() req,
     @Param('id') id: string
-  ): Promise<IBooking | undefined> {
-    const bookings = await this.bookingService.getAllBookings({
-      id,
-    });
-
-    if (bookings.length === 0) {
-      return undefined;
-    }
-
-    return bookings[0];
+  ): Promise<IBooking> {
+    return this.bookingService.getBookingById(id, req.user?.id);
   }
 
   @Post()

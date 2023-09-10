@@ -1,6 +1,6 @@
 import { Descriptions, Skeleton, Typography, Grid } from 'antd';
-import { IBooking } from '@ayahay/models/booking.model';
-import React from 'react';
+import { IBooking, ITrip } from '@ayahay/models/booking.model';
+import React, { useState, useEffect } from 'react';
 import PassengerSummary from './PassengerSummary';
 
 const { useBreakpoint } = Grid;
@@ -82,7 +82,7 @@ export default function BookingSummary({ booking }: BookingSummaryProps) {
         ))}
       {booking && booking.paymentItems && (
         <article id='payment-summary' style={{ maxWidth: '512px' }}>
-          <Title level={3}>Payment Summary</Title>
+          <Title level={2}>Payment Summary</Title>
 
           <Descriptions bordered column={{ xxl: 1 }}>
             {booking.paymentItems.map((paymentItem) => (

@@ -12,6 +12,9 @@ export interface IPassenger {
   id: number;
   accountId?: string;
   account?: IAccount;
+  buddyId?: number;
+  buddy?: IPassenger;
+
   firstName: string;
   lastName: string;
   occupation: keyof typeof OCCUPATION;
@@ -21,10 +24,8 @@ export interface IPassenger {
   address: string;
   nationality: string;
   discountType?: keyof typeof DISCOUNT_TYPE;
-  preferences?: PassengerPreferences;
-  buddyId?: number;
+
   companions?: IPassenger[];
-  vehicles?: IVehicle[];
 }
 
 export const mockPassenger: IPassenger = {
@@ -37,7 +38,6 @@ export const mockPassenger: IPassenger = {
   birthdayIso: '1999/09/09',
   address: 'Quezon City',
   nationality: 'Filipino',
-  preferences: {},
 };
 
 export const mockSon: IPassenger = {
@@ -50,7 +50,6 @@ export const mockSon: IPassenger = {
   birthdayIso: '2018-05-05',
   address: 'Mandaluyong City',
   nationality: 'Filipino',
-  preferences: {},
 };
 
 export const mockWife: IPassenger = {
@@ -63,7 +62,6 @@ export const mockWife: IPassenger = {
   birthdayIso: '1999-05-05',
   address: 'Mandaluyong City',
   nationality: 'Filipino',
-  preferences: {},
 };
 
 export const mockFather: IPassenger = {
@@ -76,9 +74,7 @@ export const mockFather: IPassenger = {
   birthdayIso: '1999-10-20',
   address: 'Mandaluyong City',
   nationality: 'Filipino',
-  preferences: {},
   companions: [mockWife, mockSon],
-  vehicles: [mockInnova, mockPickup],
 };
 
 export const mockPassengers: IPassenger[] = [

@@ -29,7 +29,7 @@ export default function RootLayout({
           >
             <App>
               <Layout>
-                <Layout>
+                <Layout className='body'>
                   <WebHeader />
                   <Content style={{ backgroundColor: 'white' }}>
                     {children}

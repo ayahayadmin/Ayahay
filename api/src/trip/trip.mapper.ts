@@ -1,8 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
 import {
   AvailableTrips,
   ICabin,
+  IPort,
+  IShip,
+  IShippingLine,
   ITrip,
   ITripCabin,
   ITripVehicleType,
@@ -18,6 +20,34 @@ export class TripMapper {
     private readonly shippingLineMapper: ShippingLineMapper,
     private readonly portMapper: PortMapper
   ) {}
+
+  convertTripToBasicDto(trip: any): ITrip {
+    return {
+      id: trip.id,
+      referenceNo: trip.referenceNo,
+      shipId: trip.shipId,
+      shippingLineId: trip.shippingLineId,
+      shippingLine: this.shippingLineMapper.convertShippingLineToDto(
+        trip.shippingLine
+      ),
+      srcPortId: trip.srcPortId,
+      srcPort: this.portMapper.convertPortToDto(trip.srcPort),
+      destPortId: trip.destPortId,
+      destPort: this.portMapper.convertPortToDto(trip.destPort),
+
+      departureDateIso: trip.departureDateIso,
+      seatSelection: trip.seatSelection,
+      availableVehicleCapacity: trip.availableVehicleCapacity,
+      vehicleCapacity: trip.vehicleCapacity,
+      bookingStartDateIso: trip.bookingStartDateIso,
+      bookingCutOffDateIso: trip.bookingCutOffDateIso,
+
+      availableCabins: [],
+      availableVehicleTypes: [],
+      availableSeatTypes: [],
+      meals: [],
+    };
+  }
 
   convertTripToDto(trip: any): ITrip {
     return {

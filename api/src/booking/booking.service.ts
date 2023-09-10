@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Booking, Prisma, PrismaClient, TempBooking } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
 import {
@@ -49,67 +54,54 @@ export class BookingService {
     );
   }
 
-  async booking(
-    bookingWhereUniqueInput: Prisma.BookingWhereUniqueInput
-  ): Promise<Booking | null> {
-    return this.prisma.booking.findUnique({
-      where: bookingWhereUniqueInput,
+  async getBookingById(
+    id: string,
+    loggedInAccountId?: string
+  ): Promise<IBooking> {
+    const booking = await this.prisma.booking.findUnique({
+      where: {
+        id,
+      },
+      include: {
+        passengers: {
+          include: {
+            trip: {
+              include: {
+                shippingLine: true,
+                srcPort: true,
+                destPort: true,
+              },
+            },
+            passenger: true,
+            cabin: {
+              include: {
+                cabinType: true,
+              },
+            },
+          },
+        },
+        vehicles: {
+          include: {
+            vehicle: {
+              include: {
+                vehicleType: true,
+              },
+            },
+          },
+        },
+        paymentItems: true,
+      },
     });
-  }
 
-  async bookingSummary(
-    bookingWhereUniqueInput: Prisma.BookingWhereUniqueInput
-  ): Promise<Prisma.BookingGetPayload<{
-    include: {
-      passengers: {
-        include: {
-          passenger: true;
-          seat: true;
-        };
-      };
-      trip: {
-        include: {
-          srcPort: true;
-          destPort: true;
-        };
-      };
-    };
-  }> | null> {
-    return null;
-    // return this.prisma.booking.findUnique({
-    //   where: bookingWhereUniqueInput,
-    //   include: {
-    //     passengers: {
-    //       include: {
-    //         passenger: true,
-    //         seat: true,
-    //       },
-    //     },
-    //     trip: {
-    //       include: {
-    //         srcPort: true,
-    //         destPort: true,
-    //       },
-    //     },
-    //   },
-    // });
-  }
+    if (booking === null) {
+      throw new NotFoundException();
+    }
 
-  async bookings(params: {
-    skip?: number;
-    take?: number;
-    cursor?: Prisma.BookingWhereUniqueInput;
-    where?: Prisma.BookingWhereInput;
-    orderBy?: Prisma.BookingOrderByWithRelationInput;
-  }): Promise<Booking[]> {
-    const { skip, take, cursor, where, orderBy } = params;
-    return this.prisma.booking.findMany({
-      skip,
-      take,
-      cursor,
-      where,
-      orderBy,
-    });
+    if (booking.accountId != null && booking.accountId !== loggedInAccountId) {
+      throw new ForbiddenException();
+    }
+
+    return this.bookingMapper.convertBookingToSummary(booking);
   }
 
   async createTentativeBooking(
