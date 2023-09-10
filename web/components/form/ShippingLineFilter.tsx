@@ -15,14 +15,14 @@ export default function ShippingLineFilter({
     [] as IShippingLine[]
   );
 
-  const initializeShippingLines = async () => {
-    const shippingLines = await getShippingLines();
-    setAllShippingLines(shippingLines);
-    setShippingLineOptions(shippingLines);
-  };
-
   useEffect(() => {
-    initializeShippingLines;
+    const initializeShippingLines = async () => {
+      const shippingLines = await getShippingLines();
+      setAllShippingLines(shippingLines);
+      setShippingLineOptions(shippingLines);
+    };
+
+    initializeShippingLines();
   }, []);
 
   const onSearchShippingLine = (value: string) => {
