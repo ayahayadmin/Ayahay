@@ -10,6 +10,10 @@ import { GlobalModule } from './global.module';
 import { AccountModule } from './account/account.module';
 import { AuthModule } from './auth/auth.module';
 import { VehicleModule } from './vehicle/vehicle.module';
+import { PortModule } from './port/port.module';
+import { ShippingLineModule } from './shipping-line/shipping-line.module';
+import { CabinTypeModule } from './cabin-type/cabin-type.module';
+import { VehicleTypeModule } from './vehicle-type/vehicle-type.module';
 
 @Module({
   imports: [
@@ -24,6 +28,10 @@ import { VehicleModule } from './vehicle/vehicle.module';
     GlobalModule,
     AccountModule,
     AuthModule,
+    PortModule,
+    ShippingLineModule,
+    CabinTypeModule,
+    VehicleTypeModule,
   ],
 })
 export class AppModule {}

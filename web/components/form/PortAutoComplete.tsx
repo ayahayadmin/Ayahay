@@ -16,13 +16,15 @@ export default function PortAutoComplete({
   const [allPorts, setAllPorts] = useState([] as IPort[]);
   const [portOptions, setPortOptions] = useState([] as IPort[]);
 
-  const initializePorts = () => {
-    const ports = getPorts();
-    setAllPorts(ports);
-    setPortOptions(ports);
-  };
+  useEffect(() => {
+    const initializePorts = async () => {
+      const ports = await getPorts();
+      setAllPorts(ports);
+      setPortOptions(ports);
+    };
 
-  useEffect(initializePorts, []);
+    initializePorts();
+  }, []);
 
   const onSearchPort = (value: string) => {
     let filteredPorts: IPort[];
