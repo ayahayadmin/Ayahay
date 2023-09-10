@@ -13,12 +13,12 @@ async function fetchAndCachePorts(): Promise<IPort[]> {
 export async function getPorts(): Promise<IPort[]> {
   const portsJson = localStorage.getItem('ports');
   if (portsJson === undefined || portsJson === null) {
-    return fetchAndCachePorts();
+    return await fetchAndCachePorts();
   }
 
   const { data, timestamp } = JSON.parse(portsJson);
   if (!isWithinTimeInterval(timestamp)) {
-    return fetchAndCachePorts();
+    return await fetchAndCachePorts();
   }
   return data;
 }

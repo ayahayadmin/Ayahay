@@ -16,12 +16,12 @@ async function fetchAndCacheCabinTypes(): Promise<ICabinType[]> {
 export async function getCabinTypes(): Promise<ICabinType[]> {
   const cabinTypesJson = localStorage.getItem('cabin-types');
   if (cabinTypesJson === undefined || cabinTypesJson === null) {
-    return fetchAndCacheCabinTypes();
+    return await fetchAndCacheCabinTypes();
   }
 
   const { data, timestamp } = JSON.parse(cabinTypesJson);
   if (!isWithinTimeInterval(timestamp)) {
-    return fetchAndCacheCabinTypes();
+    return await fetchAndCacheCabinTypes();
   }
   return data;
 }

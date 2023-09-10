@@ -16,12 +16,12 @@ async function fetchAndCacheVehicleTypes(): Promise<IVehicleType[]> {
 export async function getVehicleTypes(): Promise<IVehicleType[]> {
   const vehicleTypesJson = localStorage.getItem('vehicle-types');
   if (vehicleTypesJson === undefined || vehicleTypesJson === null) {
-    return fetchAndCacheVehicleTypes();
+    return await fetchAndCacheVehicleTypes();
   }
 
   const { data, timestamp } = JSON.parse(vehicleTypesJson);
   if (!isWithinTimeInterval(timestamp)) {
-    return fetchAndCacheVehicleTypes();
+    return await fetchAndCacheVehicleTypes();
   }
   return data;
 }

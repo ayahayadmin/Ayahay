@@ -16,12 +16,12 @@ async function fetchAndCacheShippingLines(): Promise<IShippingLine[]> {
 export async function getShippingLines(): Promise<IShippingLine[]> {
   const shippingLinesJson = localStorage.getItem('shipping-lines');
   if (shippingLinesJson === undefined || shippingLinesJson === null) {
-    return fetchAndCacheShippingLines();
+    return await fetchAndCacheShippingLines();
   }
 
   const { data, timestamp } = JSON.parse(shippingLinesJson);
   if (!isWithinTimeInterval(timestamp)) {
-    return fetchAndCacheShippingLines();
+    return await fetchAndCacheShippingLines();
   }
   return data;
 }
