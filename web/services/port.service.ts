@@ -2,7 +2,7 @@ import { PORTS_API } from '@ayahay/constants';
 import { IPort } from '@ayahay/models/port.model';
 import axios from 'axios';
 import dayjs from 'dayjs';
-import { isWithinTimeInterval, removeCache } from './utils';
+import { isWithinTimeInterval } from './utils';
 
 async function fetchAndCachePorts(): Promise<IPort[]> {
   const { data } = await axios.get(`${PORTS_API}`);

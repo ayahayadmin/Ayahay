@@ -2,7 +2,7 @@ import { VEHICLE_TYPES_API } from '@ayahay/constants';
 import { IVehicleType } from '@ayahay/models';
 import axios from 'axios';
 import dayjs from 'dayjs';
-import { isWithinTimeInterval, removeCache } from './utils';
+import { isWithinTimeInterval } from './utils';
 
 async function fetchAndCacheVehicleTypes(): Promise<IVehicleType[]> {
   const { data } = await axios.get(`${VEHICLE_TYPES_API}`);

@@ -2,7 +2,7 @@ import { SHIPPING_LINE_API } from '@ayahay/constants';
 import { IShippingLine } from '@ayahay/models/shipping-line.model';
 import axios from 'axios';
 import dayjs from 'dayjs';
-import { isWithinTimeInterval, removeCache } from './utils';
+import { isWithinTimeInterval } from './utils';
 
 async function fetchAndCacheShippingLines(): Promise<IShippingLine[]> {
   const { data } = await axios.get(`${SHIPPING_LINE_API}`);

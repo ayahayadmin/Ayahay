@@ -5,7 +5,3 @@ export const isWithinTimeInterval = (time: Dayjs): boolean => {
   const difference = dayjs().diff(time, 'minute');
   return difference <= 30;
 };
-
-export const removeCache = (key: string) => {
-  localStorage.removeItem(key);
-};

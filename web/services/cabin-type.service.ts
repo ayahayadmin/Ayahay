@@ -2,7 +2,7 @@ import { CABIN_TYPES_API } from '@ayahay/constants';
 import { ICabinType } from '@ayahay/models';
 import axios from 'axios';
 import dayjs from 'dayjs';
-import { isWithinTimeInterval, removeCache } from './utils';
+import { isWithinTimeInterval } from './utils';
 
 async function fetchAndCacheCabinTypes(): Promise<ICabinType[]> {
   const { data } = await axios.get(`${CABIN_TYPES_API}`);
