@@ -1,7 +1,7 @@
 import { IPort } from '@ayahay/models';
 import { Form, FormItemProps, Select } from 'antd';
 import React, { useEffect, useState } from 'react';
-import { getPortsMock } from '@/services/port.service';
+import { getPorts } from '@/services/port.service';
 
 const { Option } = Select;
 
@@ -16,13 +16,15 @@ export default function PortAutoComplete({
   const [allPorts, setAllPorts] = useState([] as IPort[]);
   const [portOptions, setPortOptions] = useState([] as IPort[]);
 
-  const initializePorts = () => {
-    const ports = getPortsMock();
+  const initializePorts = async () => {
+    const ports = await getPorts();
     setAllPorts(ports);
     setPortOptions(ports);
   };
 
-  useEffect(initializePorts, []);
+  useEffect(() => {
+    initializePorts;
+  }, []);
 
   const onSearchPort = (value: string) => {
     let filteredPorts: IPort[];
