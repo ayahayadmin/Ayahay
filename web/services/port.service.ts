@@ -4,18 +4,21 @@ import axios from 'axios';
 import dayjs from 'dayjs';
 import { isWithinTimeInterval, removeCache } from './utils';
 
+async function fetchAndCachePorts(): Promise<IPort[]> {
+  const { data } = await axios.get(`${PORTS_API}`);
+  localStorage.setItem('ports', JSON.stringify({ data, timestamp: dayjs() }));
+  return data;
+}
+
 export async function getPorts(): Promise<IPort[]> {
   const portsJson = localStorage.getItem('ports');
   if (portsJson === undefined || portsJson === null) {
-    const { data } = await axios.get(`${PORTS_API}`);
-    localStorage.setItem('ports', JSON.stringify({ data, timestamp: dayjs() }));
-    return data;
+    return fetchAndCachePorts();
   }
 
   const { data, timestamp } = JSON.parse(portsJson);
   if (!isWithinTimeInterval(timestamp)) {
-    removeCache('ports');
-    //re-fetch ports?
+    return fetchAndCachePorts();
   }
   return data;
 }
