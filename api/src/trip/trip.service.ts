@@ -81,7 +81,7 @@ export class TripService {
               )})`
         }
       GROUP BY t.id
-      HAVING SUM(tc.available_passenger_capacity) > ${Number(passengerCount)}
+      HAVING SUM(tc.available_passenger_capacity) >= ${Number(passengerCount)}
       ORDER BY t.departure_date ASC
     `;
 
