@@ -136,12 +136,13 @@ const columns: ColumnsType<ITrip> = [
   },
   {
     key: 'action',
-    render: () => (
+    dataIndex: 'id',
+    render: (text: string) => (
       <Space size='middle'>
         <Button
           type='primary'
           size='large'
-          href='https://ayahay-booking-platform-web.vercel.app/bookings/create?tripId=1'
+          href={`${process.env.NEXT_PUBLIC_WEB_URL}/bookings/create?tripId=${text}`}
           target='_blank'
           className={styles['book-button']}
         >
