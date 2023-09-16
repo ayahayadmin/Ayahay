@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  Patch,
   Post,
   Put,
   Query,
@@ -67,6 +68,16 @@ export class BookingController {
   @UseGuards(AuthGuard)
   @Roles('Passenger', 'Staff', 'Admin')
   async deleteBooking(@Param('id') id: string) {}
+
+  @Patch(':bookingId/:bookingPassengerId/check-in')
+  @UseGuards(AuthGuard)
+  @Roles('Staff', 'Admin')
+  async checkInPassenger(
+    @Param('bookingId') bookingId: string,
+    @Param('bookingPassengerId') bookingPassengerId: number
+  ) {
+    return this.bookingService.checkInPassenger(bookingId, bookingPassengerId);
+  }
 }
 
 interface CreateTempBookingRequest {

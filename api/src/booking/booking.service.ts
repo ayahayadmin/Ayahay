@@ -809,6 +809,28 @@ WHERE row <= ${passengerPreferences.length}
       transactionContext
     );
   }
+
+  public async checkInPassenger(bookingId: string, bookingPassengerId: number) {
+    const bookingPassenger = await this.prisma.bookingPassenger.findFirst({
+      where: {
+        id: bookingPassengerId,
+        bookingId,
+      },
+    });
+
+    if (bookingPassenger === null) {
+      throw new NotFoundException();
+    }
+
+    await this.prisma.bookingPassenger.update({
+      where: {
+        id: bookingPassengerId,
+      },
+      data: {
+        checkInDate: new Date(),
+      },
+    });
+  }
 }
 
 interface AvailableBooking {
