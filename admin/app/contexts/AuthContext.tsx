@@ -27,7 +27,7 @@ export default function AuthContextProvider({ children }: any) {
       .then((userCredential) => {
         // Signed in
         const user = userCredential.user;
-        console.log(`success sign in: ${JSON.stringify(user, null, 2)}`);
+        console.log(`success sign in`);
         return user.uid;
       })
       .catch((error) => {
@@ -41,12 +41,12 @@ export default function AuthContextProvider({ children }: any) {
     return sendPasswordResetEmail(auth, email, { url: 'http://localhost:3002' }) //TO DO: localhost would be changed ofc
       .then((res) => {
         // Reset successful.
-        console.log(`reset success: ${JSON.stringify(res, null, 2)}`);
+        console.log(`reset success`);
         return true;
       })
       .catch((error) => {
         // An error happened.
-        console.log(`reset error: ${error.message}`); //maybe throw an error
+        console.log(`reset error`); //maybe throw an error
       });
   }
 
