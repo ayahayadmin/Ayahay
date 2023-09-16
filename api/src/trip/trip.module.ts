@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
 import { TripController } from './trip.controller';
 import { TripService } from './trip.service';
-import { PrismaService } from 'src/prisma.service';
+import { TripValidator } from './trip.validator';
 
 @Module({
   controllers: [TripController],
-  providers: [TripService, PrismaService],
+  providers: [TripService, TripValidator],
   exports: [TripService],
 })
 export class TripModule {}

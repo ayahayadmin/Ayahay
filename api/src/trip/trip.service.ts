@@ -4,15 +4,21 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { Prisma, Trip } from '@prisma/client';
+import { Prisma, PrismaClient, Trip } from '@prisma/client';
 import { PrismaService } from 'src/prisma.service';
 import { AvailableTrips, ITrip, SearchAvailableTrips } from '@ayahay/models';
 import { TripMapper } from './trip.mapper';
 import { isEmpty } from 'lodash';
+import { UpdateTripCapacityRequest } from '@ayahay/http';
+import { TripValidator } from './trip.validator';
 
 @Injectable()
 export class TripService {
-  constructor(private prisma: PrismaService, private tripMapper: TripMapper) {}
+  constructor(
+    private prisma: PrismaService,
+    private tripMapper: TripMapper,
+    private tripValidator: TripValidator
+  ) {}
 
   async getTrip(
     tripWhereUniqueInput: Prisma.TripWhereUniqueInput, //{} is only temp, TripWhereUniqueInput is not part of referenceNo
@@ -145,6 +151,109 @@ export class TripService {
       });
     } catch {
       throw new InternalServerErrorException();
+    }
+  }
+
+  public async updateTripCapacities(
+    tripId: number,
+    updateTripCapacityRequest: UpdateTripCapacityRequest
+  ): Promise<void> {
+    const trip = await this.prisma.trip.findUnique({
+      where: {
+        id: tripId,
+      },
+      include: {
+        availableCabins: true,
+      },
+    });
+
+    if (trip === undefined) {
+      throw new NotFoundException();
+    }
+
+    const errors = await this.tripValidator.validateUpdateTripCapacityRequest(
+      trip,
+      updateTripCapacityRequest
+    );
+
+    if (errors !== undefined) {
+      throw new BadRequestException(errors);
+    }
+
+    await this.prisma.$transaction(async (transactionContext) => {
+      await this.updateTripVehicleCapacity(
+        trip,
+        updateTripCapacityRequest.vehicleCapacity,
+        transactionContext as any
+      );
+      await this.updateTripCabinCapacities(
+        trip,
+        updateTripCapacityRequest.cabinCapacities,
+        transactionContext as any
+      );
+    });
+  }
+
+  private async updateTripVehicleCapacity(
+    trip: any,
+    newVehicleCapacity: number,
+    transactionContext?: PrismaClient
+  ): Promise<void> {
+    transactionContext ??= this.prisma;
+
+    if (trip.vehicleCapacity === newVehicleCapacity) {
+      return;
+    }
+
+    await transactionContext.trip.update({
+      where: {
+        id: trip.id,
+      },
+      data: {
+        vehicleCapacity: newVehicleCapacity,
+      },
+    });
+  }
+
+  private async updateTripCabinCapacities(
+    trip: any,
+    newCabinCapacities: { cabinId: number; passengerCapacity: number }[],
+    transactionContext?: PrismaClient
+  ): Promise<void> {
+    transactionContext ??= this.prisma;
+
+    const cabinCapacitiesToUpdate: {
+      cabinId: number;
+      passengerCapacity: number;
+    }[] = [];
+
+    // get cabin capacities that has changes
+    for (const cabinCapacity of newCabinCapacities) {
+      const { cabinId, passengerCapacity } = cabinCapacity;
+
+      const tripCabin = trip.availableCabins.find(
+        (tripCabin) => tripCabin.cabinId === cabinId
+      );
+
+      if (tripCabin.passengerCapacity !== passengerCapacity) {
+        cabinCapacitiesToUpdate.push(cabinCapacity);
+      }
+    }
+
+    for (const cabinCapacity of cabinCapacitiesToUpdate) {
+      const { cabinId, passengerCapacity } = cabinCapacity;
+
+      await transactionContext.tripCabin.update({
+        where: {
+          tripId_cabinId: {
+            tripId: trip.id,
+            cabinId: cabinId,
+          },
+        },
+        data: {
+          passengerCapacity,
+        },
+      });
     }
   }
 }

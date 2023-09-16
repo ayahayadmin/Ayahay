@@ -14,3 +14,8 @@ export interface TripsSearchQuery {
 export interface AdminSearchQuery {
   cabinTypes?: string[];
 }
+
+export interface UpdateTripCapacityRequest {
+  vehicleCapacity: number;
+  cabinCapacities: { cabinId: number; passengerCapacity: number }[];
+}

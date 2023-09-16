@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Param,
+  Patch,
   Post,
   Query,
   UseGuards,
@@ -13,6 +14,7 @@ import { Prisma } from '@prisma/client';
 import { TripMapper } from './trip.mapper';
 import { Roles } from 'src/decorators/roles.decorators';
 import { AuthGuard } from '../auth-guard/auth.guard';
+import { UpdateTripCapacityRequest } from '@ayahay/http';
 
 @Controller('trips')
 export class TripController {
@@ -53,5 +55,18 @@ export class TripController {
   @Roles('Admin', 'SuperAdmin')
   async createTrip(@Body() data: Prisma.TripCreateInput) {
     return await this.tripService.createTrip(data);
+  }
+
+  @Patch(':tripId/capacity')
+  @UseGuards(AuthGuard)
+  @Roles('Staff', 'Admin')
+  async updateTripCabinCapacity(
+    @Param('tripId') tripId: number,
+    @Body() updateTripCapacityRequest: UpdateTripCapacityRequest
+  ): Promise<void> {
+    return await this.tripService.updateTripCapacities(
+      tripId,
+      updateTripCapacityRequest
+    );
   }
 }
