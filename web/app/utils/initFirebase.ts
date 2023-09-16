@@ -1,15 +1,13 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
 
 const config = {
-  apiKey: 'AIzaSyAs71mazWJwZyYuOluRUMNkPxE5_-hH-J0',
-  authDomain: 'ayahay-f89b6.firebaseapp.com',
-  projectId: 'ayahay-f89b6',
-  storageBucket: 'ayahay-f89b6.appspot.com',
-  messagingSenderId: '1011801913478',
-  appId: '1:1011801913478:web:7fc3be78d145bb7771f907',
-  measurementId: 'G-6K4KCB6DBZ',
+  apiKey: process.env.NEXT_PUBLIC_FB_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FB_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FB_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FB_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FB_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FB_APP_ID,
+  measurementId: process.env.NEXT_PUBLIC_FB_MEASUREMENT_ID,
 };
 
 export const app = initializeApp(config);
