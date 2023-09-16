@@ -12,6 +12,7 @@ export interface IBooking {
   accountId: string;
   account?: IAccount;
 
+  referenceNo: string;
   status: keyof typeof PAYMENT_STATUS;
   totalPrice: number;
   bookingType: keyof typeof BOOKING_TYPE;
@@ -28,6 +29,7 @@ export const mockBooking: IBooking = {
   totalPrice: 1000,
   bookingType: 'Single',
   createdAtIso: '',
+  referenceNo: '',
   status: 'Pending',
   bookingPassengers: [
     mockBookingPassengers[0],
@@ -47,6 +49,7 @@ export const mockBookings: IBooking[] = [
     totalPrice: 1000,
     bookingType: 'Single',
     createdAtIso: '',
+    referenceNo: '',
     status: 'Pending',
   },
   {
@@ -55,6 +58,7 @@ export const mockBookings: IBooking[] = [
     totalPrice: 1000,
     bookingType: 'Single',
     createdAtIso: '',
+    referenceNo: '',
     status: 'Pending',
   },
   {
@@ -63,6 +67,7 @@ export const mockBookings: IBooking[] = [
     totalPrice: 1000,
     bookingType: 'Single',
     createdAtIso: '',
+    referenceNo: '',
     status: 'Pending',
     bookingPassengers: [mockBookingPassengers[6]],
   },
@@ -72,6 +77,7 @@ export const mockBookings: IBooking[] = [
     totalPrice: 1000,
     bookingType: 'Single',
     createdAtIso: '',
+    referenceNo: '',
     status: 'Pending',
     bookingPassengers: [
       mockBookingPassengers[7],
@@ -85,6 +91,7 @@ export const mockBookings: IBooking[] = [
     totalPrice: 1000,
     bookingType: 'Single',
     createdAtIso: '',
+    referenceNo: '',
     status: 'Pending',
   },
 ];

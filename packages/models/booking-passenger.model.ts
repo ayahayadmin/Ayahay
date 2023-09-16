@@ -25,7 +25,6 @@ export interface IBookingPassenger {
 
   meal?: string;
   totalPrice?: number;
-  referenceNo: string;
   checkInDate?: string;
 }
 
@@ -39,7 +38,6 @@ export const mockBookingPassenger: IBookingPassenger = {
   passenger: mockPassenger,
   cabinId: -1,
   meal: 'Tapsilog',
-  referenceNo: 'ABCD',
 };
 
 export const mockBookingPassengers: IBookingPassenger[] = [
@@ -52,7 +50,6 @@ export const mockBookingPassengers: IBookingPassenger[] = [
     passenger: mockFather,
     cabinId: -1,
     meal: 'Tapsilog',
-    referenceNo: 'ABCD',
     checkInDate: today,
   },
   {
@@ -63,7 +60,6 @@ export const mockBookingPassengers: IBookingPassenger[] = [
     passenger: mockWife,
     cabinId: -1,
     meal: 'Tapsilog',
-    referenceNo: 'ABCD',
   },
   {
     id: 4,
@@ -73,7 +69,6 @@ export const mockBookingPassengers: IBookingPassenger[] = [
     passenger: mockSon,
     cabinId: -1,
     meal: 'Tapsilog',
-    referenceNo: 'ABCD',
     checkInDate: today,
   },
   {
@@ -84,7 +79,6 @@ export const mockBookingPassengers: IBookingPassenger[] = [
     passenger: mockFather,
     cabinId: -1,
     meal: 'Tapsilog',
-    referenceNo: 'ABCD',
     checkInDate: today,
   },
   {
@@ -95,7 +89,6 @@ export const mockBookingPassengers: IBookingPassenger[] = [
     passenger: mockWife,
     cabinId: -1,
     meal: 'Tapsilog',
-    referenceNo: 'ABCD',
   },
   {
     id: 7,
@@ -105,7 +98,6 @@ export const mockBookingPassengers: IBookingPassenger[] = [
     passenger: mockSon,
     cabinId: -1,
     meal: 'Tapsilog',
-    referenceNo: 'ABCD',
     checkInDate: today,
   },
   {
@@ -116,7 +108,6 @@ export const mockBookingPassengers: IBookingPassenger[] = [
     passenger: mockWife,
     cabinId: -1,
     meal: 'Tapsilog',
-    referenceNo: 'ABCD',
   },
   {
     id: 9,
@@ -126,7 +117,6 @@ export const mockBookingPassengers: IBookingPassenger[] = [
     passenger: mockSon,
     cabinId: -1,
     meal: 'Tapsilog',
-    referenceNo: 'ABCD',
     checkInDate: today,
   },
   {
@@ -137,7 +127,6 @@ export const mockBookingPassengers: IBookingPassenger[] = [
     passenger: mockFather,
     cabinId: -1,
     meal: 'Tapsilog',
-    referenceNo: 'ABCD',
     checkInDate: today,
   },
 ];

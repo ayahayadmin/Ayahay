@@ -82,6 +82,13 @@ export class BookingService {
         },
         vehicles: {
           include: {
+            trip: {
+              include: {
+                shippingLine: true,
+                srcPort: true,
+                destPort: true,
+              },
+            },
             vehicle: {
               include: {
                 vehicleType: true,
@@ -180,6 +187,7 @@ export class BookingService {
       accountId: loggedInAccountId,
       totalPrice,
       bookingType: 'Single',
+      referenceNo: '',
       createdAtIso: '',
       status: undefined,
       bookingPassengers,
@@ -362,7 +370,6 @@ WHERE row <= ${passengerPreferences.length}
           : undefined,
       passengerId: passenger.id,
       passenger,
-      referenceNo: this.utilityService.generateReferenceNo(trip.id),
       meal: preferences.meal,
       totalPrice,
       checkInDate: null,
@@ -585,6 +592,8 @@ WHERE row <= ${passengerPreferences.length}
     const bookingToCreate: IBooking = {
       id: tempBooking.paymentReference,
       accountId: tempBooking.accountId,
+
+      referenceNo: tempBooking.paymentReference.substring(0, 6).toUpperCase(),
       status: status as any,
       totalPrice: tempBooking.totalPrice,
       bookingType: tempBooking.bookingType as any,

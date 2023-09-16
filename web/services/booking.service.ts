@@ -3,6 +3,7 @@ import { PassengerPreferences } from '@ayahay/http';
 import axios, { AxiosResponse } from 'axios';
 import { BOOKING_API } from '@ayahay/constants/api';
 import { getAuth } from 'firebase/auth';
+import { getVehicleType } from '@/services/vehicle-type.service';
 
 export async function createTentativeBooking(
   tripIds: number[],
@@ -11,6 +12,18 @@ export async function createTentativeBooking(
   vehicles: IVehicle[]
 ): Promise<IBooking | undefined> {
   const authToken = await getAuth().currentUser?.getIdToken();
+
+  for (const vehicle of vehicles) {
+    if (vehicle.id && vehicle.id > 0) {
+      return;
+    }
+
+    // TODO: remove these after file upload has been properly implemented
+    vehicle.certificateOfRegistrationUrl ??= '';
+    vehicle.officialReceiptUrl ??= '';
+
+    vehicle.vehicleType = await getVehicleType(vehicle.vehicleTypeId);
+  }
 
   try {
     const { data: booking } = await axios.post<IBooking>(

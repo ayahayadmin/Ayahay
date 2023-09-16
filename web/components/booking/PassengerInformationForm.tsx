@@ -307,6 +307,26 @@ export default function PassengerInformationForm({
                     }))}
                   />
                 </Form.Item>
+                <Form.Item
+                  {...restField}
+                  name={[name, 'certificateOfRegistrationUrl']}
+                  hidden={true}
+                >
+                  <Input
+                    disabled={vehicles?.[index]?.id !== undefined}
+                    placeholder='Certificate of Registration'
+                  />
+                </Form.Item>
+                <Form.Item
+                  {...restField}
+                  name={[name, 'officialReceiptUrl']}
+                  hidden={true}
+                >
+                  <Input
+                    disabled={vehicles?.[index]?.id !== undefined}
+                    placeholder='Official Receipt URL'
+                  />
+                </Form.Item>
                 <Button onClick={() => remove(name)}>Remove Vehicle</Button>
               </div>
             ))}

@@ -1,5 +1,6 @@
 import { IPassenger } from './passenger.model';
 import { ACCOUNT_ROLE } from '@ayahay/constants';
+import { IVehicle } from './vehicle.model';
 
 export interface IAccount {
   // firebase user ID
@@ -9,6 +10,8 @@ export interface IAccount {
 
   email: string;
   role: keyof typeof ACCOUNT_ROLE;
+
+  vehicles?: IVehicle[];
 }
 
 export interface LoginForm {

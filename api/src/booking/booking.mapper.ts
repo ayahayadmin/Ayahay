@@ -18,12 +18,20 @@ export class BookingMapper {
   ) {}
 
   convertBookingToBasicDto(booking: Prisma.BookingGetPayload<any>): IBooking {
-    const { id, accountId, status, totalPrice, bookingType, createdAt } =
-      booking;
+    const {
+      id,
+      accountId,
+      referenceNo,
+      status,
+      totalPrice,
+      bookingType,
+      createdAt,
+    } = booking;
 
     return {
       id,
       accountId,
+      referenceNo,
       status: status as any,
       totalPrice,
       bookingType: bookingType as any,
@@ -36,8 +44,9 @@ export class BookingMapper {
       id: booking.id,
       accountId: booking.accountId,
 
+      referenceNo: booking.referenceNo,
       bookingType: booking.bookingType,
-      createdAtIso: booking.createdAtIso,
+      createdAtIso: booking.createdAt.toISOString(),
       status: booking.status,
       totalPrice: booking.totalPrice,
 
@@ -70,7 +79,6 @@ export class BookingMapper {
       seatId: bookingPassenger.seatId,
 
       meal: bookingPassenger.meal,
-      referenceNo: bookingPassenger.referenceNo,
       checkInDate: bookingPassenger.checkInDate,
     };
   }
@@ -121,7 +129,6 @@ export class BookingMapper {
       (bookingPassenger) =>
         ({
           meal: bookingPassenger.meal ?? null,
-          referenceNo: bookingPassenger.referenceNo,
           checkInDate: null,
           tripId: bookingPassenger.tripId,
           passengerId: bookingPassenger.passenger.id,
@@ -150,10 +157,11 @@ export class BookingMapper {
       data: {
         id: booking.id,
         accountId: booking.accountId,
-        status: 'Pending',
+        referenceNo: booking.referenceNo,
+        status: booking.status,
         totalPrice: booking.totalPrice,
         bookingType: booking.bookingType,
-        createdAt: new Date().toISOString(),
+        createdAt: booking.createdAtIso,
         passengers: {
           createMany: {
             data: bookingPassengerData,

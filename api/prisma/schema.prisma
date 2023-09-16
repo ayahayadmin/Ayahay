@@ -203,6 +203,7 @@ model Booking {
   accountId String? @map("account_id")
   account Account? @relation(fields: [accountId], references: [id])
 
+  referenceNo String @map("reference_no")
   status String
   totalPrice Float @map("total_price")
   bookingType String @map("booking_type")
@@ -229,7 +230,6 @@ model BookingPassenger {
   seat Seat? @relation(fields: [seatId], references: [id])
 
   meal String?
-  referenceNo String @map("reference_no")
   checkInDate DateTime? @map("check_in_date")
 
   @@map("booking_passenger")

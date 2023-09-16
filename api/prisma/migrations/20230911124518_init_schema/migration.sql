@@ -129,6 +129,7 @@ CREATE TABLE "port" (
 CREATE TABLE "booking" (
     "id" TEXT NOT NULL,
     "account_id" TEXT,
+    "reference_no" TEXT NOT NULL,
     "status" TEXT NOT NULL,
     "total_price" DOUBLE PRECISION NOT NULL,
     "booking_type" TEXT NOT NULL,
@@ -146,7 +147,6 @@ CREATE TABLE "booking_passenger" (
     "cabin_id" INTEGER NOT NULL,
     "seat_id" INTEGER,
     "meal" TEXT,
-    "reference_no" TEXT NOT NULL,
     "check_in_date" TIMESTAMP(3),
 
     CONSTRAINT "booking_passenger_pkey" PRIMARY KEY ("id")
