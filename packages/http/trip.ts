@@ -2,10 +2,10 @@ export interface TripsSearchQuery {
   tripType: 'single' | 'round';
   srcPortId: number;
   destPortId: number;
-  departureDateIso: string;
+  departureDate: string;
   returnDateIso?: string;
-  numPassengers: number;
-  numVehicles: number;
+  passengerCount: number;
+  vehicleCount: number;
   shippingLineIds?: number[];
   cabinTypes?: string[];
   sort: string;

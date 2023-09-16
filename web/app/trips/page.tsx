@@ -21,8 +21,8 @@ export default function Trips() {
   const [form] = Form.useForm();
   const searchParams = useSearchParams();
 
-  const numPassengers = Form.useWatch('numPassengers', form);
-  const numVehicles = Form.useWatch('numVehicles', form);
+  const passengerCount = Form.useWatch('passengerCount', form);
+  const vehicleCount = Form.useWatch('vehicleCount', form);
 
   const [searchQuery, setSearchQuery] = useState({} as TripsSearchQuery);
 
@@ -39,7 +39,7 @@ export default function Trips() {
     fire when they are updated. as a workaround, we watch the items manually for form changes
     and use it as dependency in useEffect
    */
-  useEffect(() => debounceSearch(), [numPassengers, numVehicles]);
+  useEffect(() => debounceSearch(), [passengerCount, vehicleCount]);
 
   const debounceSearch = useCallback(debounce(performSearch, 300), []);
 

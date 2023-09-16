@@ -23,7 +23,7 @@ export async function getPorts(): Promise<IPort[]> {
   return data;
 }
 
-export async function getPort(portId: number): Promise<IPort | undefined> {
+export async function getPort(portId: number): Promise<IPort> {
   const ports = await getPorts();
-  return ports.find((port) => port.id === portId);
+  return ports.find((port) => port.id === portId)!;
 }

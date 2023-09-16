@@ -15,11 +15,11 @@ export function initializeSearchFormFromQueryParams(
     tripType: params.tripType ?? DEFAULT_TRIP_TYPE,
     srcPortId: params.srcPortId ? +params.srcPortId : undefined,
     destPortId: params.destPortId ? +params.destPortId : undefined,
-    numPassengers: params.numPassengers
-      ? +params.numPassengers
+    passengerCount: params.passengerCount
+      ? +params.passengerCount
       : DEFAULT_NUM_PASSENGERS,
-    numVehicles: params.numVehicles
-      ? +params.numVehicles
+    vehicleCount: params.vehicleCount
+      ? +params.vehicleCount
       : DEFAULT_NUM_VEHICLES,
     departureDate: dayjs(params.departureDate),
     returnDate: params.returnDate
@@ -39,8 +39,8 @@ export function buildUrlQueryParamsFromSearchForm(form: FormInstance): string {
     srcPortId: form.getFieldValue('srcPortId')?.toString(),
     destPortId: form.getFieldValue('destPortId')?.toString(),
     departureDate: form.getFieldValue('departureDate')?.toISOString(),
-    numPassengers: form.getFieldValue('numPassengers')?.toString(),
-    numVehicles: form.getFieldValue('numVehicles')?.toString(),
+    passengerCount: form.getFieldValue('passengerCount')?.toString(),
+    vehicleCount: form.getFieldValue('vehicleCount')?.toString(),
     shippingLineIds: form.getFieldValue('shippingLineIds')?.toString(),
     cabinTypes: form.getFieldValue('cabinTypes')?.toString(),
     sort: form.getFieldValue('sort'),
@@ -68,9 +68,9 @@ export function buildSearchQueryFromSearchForm(
     tripType: form.getFieldValue('tripType'),
     srcPortId: form.getFieldValue('srcPortId'),
     destPortId: form.getFieldValue('destPortId'),
-    departureDateIso: form.getFieldValue('departureDate').toISOString(),
-    numPassengers: form.getFieldValue('numPassengers'),
-    numVehicles: form.getFieldValue('numVehicles'),
+    departureDate: form.getFieldValue('departureDate').toISOString(),
+    passengerCount: form.getFieldValue('passengerCount'),
+    vehicleCount: form.getFieldValue('vehicleCount'),
     shippingLineIds: form.getFieldValue('shippingLineIds'),
     cabinTypes: form.getFieldValue('cabinTypes'),
     sort: form.getFieldValue('sort'),
@@ -86,5 +86,8 @@ export function buildSearchQueryFromSearchForm(
 }
 
 export function getTime(date: string) {
-  return new Date(date).toLocaleTimeString('en-US');
+  return new Date(date).toLocaleTimeString(undefined, {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 }

@@ -70,7 +70,7 @@ export class TripService {
         INNER JOIN ayahay.trip_cabin tc ON t.id = tc.trip_id
         INNER JOIN ayahay.cabin c ON tc.cabin_id = c.id
       WHERE t.available_vehicle_capacity >= ${Number(vehicleCount)}
-        AND t.departure_date >= cast(${departureDate} AS timestamp)
+        AND t.departure_date >= TO_TIMESTAMP(${departureDate}, 'YYYY-MM-DDTHH:MI:SSZ')
         AND t.src_port_id = ${Number(srcPortId)}
         AND t.dest_port_id = ${Number(destPortId)}
         ${

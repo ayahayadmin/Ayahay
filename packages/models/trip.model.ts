@@ -131,8 +131,14 @@ export interface TripData {
   page: number;
 }
 
+export interface AvailabeTripsResult {
+  data: TripData[];
+  totalPages: number;
+  totalItems: number;
+}
+
 export interface SearchAvailableTrips {
-  tripIds: string;
+  tripIds?: string;
   srcPortId: number;
   destPortId: number;
   departureDate: string;

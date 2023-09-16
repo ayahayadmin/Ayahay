@@ -27,8 +27,8 @@ export default function Home() {
         form={form}
         initialValues={{
           tripType: DEFAULT_TRIP_TYPE,
-          numPassengers: DEFAULT_NUM_PASSENGERS,
-          numVehicles: DEFAULT_NUM_VEHICLES,
+          passengerCount: DEFAULT_NUM_PASSENGERS,
+          vehicleCount: DEFAULT_NUM_VEHICLES,
           departureDate: dayjs(),
           returnDate: dayjs(),
         }}

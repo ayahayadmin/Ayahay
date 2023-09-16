@@ -28,9 +28,9 @@ export async function getShippingLines(): Promise<IShippingLine[]> {
 
 export async function getShippingLine(
   shippingLineId: number
-): Promise<IShippingLine | undefined> {
+): Promise<IShippingLine> {
   const shippingLines = await getShippingLines();
   return shippingLines.find(
     (shippingLine) => shippingLine.id === shippingLineId
-  );
+  )!;
 }

@@ -1,14 +1,19 @@
 import styles from './searchResults.module.scss';
 import React, { useEffect, useState } from 'react';
-import { Button, Pagination, Skeleton, Space, Table } from 'antd';
+import { Button, Pagination, Skeleton, Space, Table, Tooltip } from 'antd';
 import { ITrip, IShippingLine } from '@ayahay/models';
 import { TripsSearchQuery } from '@ayahay/http';
-import { find, get, split, toNumber } from 'lodash';
-import { getPorts } from '@/services/port.service';
-import { getTrips } from '@/services/trip.service';
+import { find, forEach, split, sumBy } from 'lodash';
+import {
+  getAvailableTrips,
+  getCabinCapacities,
+  getCabinFares,
+  getMinimumFare,
+} from '@/services/trip.service';
 import { getTime } from '@/services/search.service';
-import { ArrowRightOutlined } from '@ant-design/icons';
+import { ArrowRightOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
+import dayjs from 'dayjs';
 
 const columns: ColumnsType<ITrip> = [
   {
@@ -28,7 +33,9 @@ const columns: ColumnsType<ITrip> = [
     key: 'srcDestPort',
     render: (text: string, record: ITrip) => (
       <span className={styles['port']}>
-        {record.srcPort!.name} <ArrowRightOutlined /> {record.destPort!.name}
+        {record.srcPort!.name} <ArrowRightOutlined rev={undefined} />
+        &nbsp;
+        {record.destPort!.name}
       </span>
     ),
     responsive: ['md'],
@@ -37,9 +44,13 @@ const columns: ColumnsType<ITrip> = [
     key: 'departureDateTime',
     dataIndex: 'departureDateIso',
     render: (text: string) => (
-      <span className={styles['departureDateTime']}>
-        {split(text, 'T')[0]} at {getTime(text)}
-      </span>
+      <div>
+        <span className={styles['departureDateTime']}>
+          {dayjs(text).format('MMMM D, YYYY')}
+        </span>
+        <br></br>
+        <span>{getTime(text)}</span>
+      </div>
     ),
     responsive: ['md'],
   },
@@ -48,10 +59,12 @@ const columns: ColumnsType<ITrip> = [
     render: (text: string, record: ITrip) => (
       <span className={styles['port-date']}>
         <div>
-          {record.srcPort!.name} <ArrowRightOutlined /> {record.destPort!.name}
+          {record.srcPort!.name} <ArrowRightOutlined rev={undefined} />
+          &nbsp;
+          {record.destPort!.name}
         </div>
         <div>
-          {split(record.departureDateIso, 'T')[0]} at{' '}
+          {dayjs(record.departureDateIso).format('MMMM D, YYYY')} at&nbsp;
           {getTime(record.departureDateIso)}
         </div>
       </span>
@@ -59,19 +72,66 @@ const columns: ColumnsType<ITrip> = [
     align: 'center',
   },
   {
-    key: 'slots',
-    dataIndex: 'slots',
-    render: (text: string) => (
-      <span className={styles['slots']}>{`${text} slot/s`}</span>
-    ),
+    key: 'passengerSlots',
+    render: (text: string, record: ITrip) => {
+      const cabinCapacities: any[] = getCabinCapacities(record.availableCabins);
+      let tooltipTitle = '';
+      forEach(cabinCapacities, (cabin, idx) => {
+        if (idx === cabinCapacities.length - 1) {
+          tooltipTitle += `${cabin.name}: ${cabin.available}/${cabin.total}`;
+        } else {
+          tooltipTitle += `${cabin.name}: ${cabin.available}/${cabin.total}; `;
+        }
+      });
+
+      const totalAvailable = sumBy(cabinCapacities, 'available');
+      const totalCapacity = sumBy(cabinCapacities, 'total');
+
+      return (
+        <div>
+          <span
+            className={styles['slots']}
+          >{`${totalAvailable} slot/s left`}</span>
+          &nbsp;
+          <Tooltip title={tooltipTitle}>
+            <InfoCircleOutlined rev={undefined} />
+          </Tooltip>
+        </div>
+      );
+    },
     responsive: ['md'],
   },
   {
-    key: 'baseFare',
-    dataIndex: 'baseFare',
-    render: (text: string) => (
-      <span className={styles['price']}>{`PHP ${text}`}</span>
+    key: 'vehicleSlots',
+    dataIndex: 'availableVehicleCapacity',
+    render: (text: string, record: ITrip) => (
+      <span>{`${text} vehicle slot/s left`}</span>
     ),
+  },
+  {
+    key: 'adultFare',
+    render: (text: string, record: ITrip) => {
+      const adultFares: any[] = getCabinFares(record.availableCabins);
+      let tooltipTitle = '';
+      forEach(adultFares, (fare, idx) => {
+        if (idx === adultFares.length - 1) {
+          tooltipTitle += `${fare.name}: ${fare.fare}`;
+        } else {
+          tooltipTitle += `${fare.name}: ${fare.fare}; `;
+        }
+      });
+
+      const minFare = getMinimumFare(adultFares);
+
+      return (
+        <div>
+          <span className={styles['price']}>{`PHP ${minFare}`}</span>&nbsp;
+          <Tooltip title={`${tooltipTitle}`}>
+            <InfoCircleOutlined rev={undefined} />
+          </Tooltip>
+        </div>
+      );
+    },
     responsive: ['md'],
   },
   {
@@ -97,7 +157,8 @@ const columns: ColumnsType<ITrip> = [
     dataIndex: 'slots',
     render: (text: string, record: ITrip) => (
       <span className={styles['slot-price-action']}>
-        <div className={styles['price']}>{`PHP ${record.baseFare}`}</div>
+        <div className={styles['price']}>{`PHP ${'1000'}`}</div>
+        {/* record.availableCabins[0].adultFare */}
         <div>{`${text} slot/s`}</div>
         <Space size='middle'>
           <Button
@@ -120,13 +181,16 @@ const columns: ColumnsType<ITrip> = [
     render: (text: string, record: ITrip) => (
       <span className={styles['all-columns']}>
         <div>
-          {record.srcPort!.name} <ArrowRightOutlined /> {record.destPort!.name}
+          {record.srcPort!.name} <ArrowRightOutlined rev={undefined} />
+          &nbsp;
+          {record.destPort!.name}
         </div>
         <div>
-          {split(record.departureDateIso, 'T')[0]} at{' '}
+          {split(record.departureDateIso, 'T')[0]} at&nbsp;
           {getTime(record.departureDateIso)}
         </div>
-        <div className={styles['price']}>{`PHP ${record.baseFare}`}</div>
+        <div className={styles['price']}>{`PHP ${'1000'}`}</div>&nbsp;
+        {/* record.availableCabins[0].adultFare */}
         <div>{`${text} slot/s`}</div>
         <Space size='middle'>
           <Button
@@ -157,8 +221,6 @@ export default function SearchResult({ searchQuery }: SearchResultsProps) {
   const [totalItems, setTotalItems] = useState(0);
   const [loading, setLoading] = useState(false);
 
-  const ports = getPorts();
-
   useEffect(() => {
     setPage(1);
     fetchTrips(page);
@@ -168,41 +230,16 @@ export default function SearchResult({ searchQuery }: SearchResultsProps) {
     fetchTrips(page);
   }, [page]);
 
-  const fetchTrips = (page: number) => {
+  const fetchTrips = async (page: number) => {
     setLoading(true);
-    const {
-      departureDateIso,
-      destPortId,
-      numAdults,
-      numChildren,
-      numInfants,
-      shippingLineIds,
-      sort,
-      srcPortId,
-    } = searchQuery;
-    setTimeout(() => {
-      const srcPort = get(find(ports, { id: toNumber(srcPortId) }), 'name');
-      const destPort = get(find(ports, { id: toNumber(destPortId) }), 'name');
-      const paxes = {
-        numAdults,
-        numChildren,
-        numInfants,
-      };
-      const trips = getTrips(
-        srcPort!,
-        destPort!,
-        departureDateIso,
-        paxes,
-        sort,
-        shippingLineIds
-      );
-      const { data, totalPages, totalItems } = trips;
-      const tripData = find(data, { page });
-      setTripData(tripData?.availableTrips || []);
-      setTotalPages(totalPages);
-      setTotalItems(totalItems);
-      setLoading(false);
-    }, 1000);
+    const trips = await getAvailableTrips(searchQuery);
+    const { data, totalPages, totalItems } = trips;
+    const tripData = find(data, { page });
+
+    setTripData(tripData?.availableTrips || []);
+    setTotalPages(totalPages);
+    setTotalItems(totalItems);
+    setLoading(false);
   };
 
   return (

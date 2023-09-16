@@ -8,13 +8,13 @@ import {
 export default function PassengerAndVehicleCount() {
   const form = Form.useFormInstance();
 
-  const numPassengers = Form.useWatch('numPassengers', form);
-  const numVehicles = Form.useWatch('numVehicles', form);
+  const passengerCount = Form.useWatch('passengerCount', form);
+  const vehicleCount = Form.useWatch('vehicleCount', form);
 
   const countPopoverContent = (
     <div>
-      <CountPopover label='Passenger' inputName='numPassengers' />
-      <CountPopover label='Vehicle' inputName='numVehicles' />
+      <CountPopover label='Passenger' inputName='passengerCount' />
+      <CountPopover label='Vehicle' inputName='vehicleCount' />
     </div>
   );
 
@@ -27,13 +27,13 @@ export default function PassengerAndVehicleCount() {
     >
       <label>Passengers | Vehicles</label>
       <div style={{ padding: '6.5px 11px' }}>
-        <span>{numPassengers ?? DEFAULT_NUM_PASSENGERS} Passenger | </span>
-        <span>{numVehicles ?? DEFAULT_NUM_VEHICLES} Vehicle </span>
+        <span>{passengerCount ?? DEFAULT_NUM_PASSENGERS} Passenger | </span>
+        <span>{vehicleCount ?? DEFAULT_NUM_VEHICLES} Vehicle </span>
       </div>
-      <Form.Item name='numPassengers' hidden={true}>
+      <Form.Item name='passengerCount' hidden={true}>
         <InputNumber />
       </Form.Item>
-      <Form.Item name='numVehicles' hidden={true}>
+      <Form.Item name='vehicleCount' hidden={true}>
         <InputNumber />
       </Form.Item>
     </Popover>
@@ -66,7 +66,7 @@ function CountPopover({ label, inputName }: CountPopoverProps) {
           shape='circle'
           disabled={
             numPassenger === 0 ||
-            (inputName === 'numPassengers' && numPassenger === 1)
+            (inputName === 'passengerCount' && numPassenger === 1)
           }
           onClick={() => onDecrement()}
         >
