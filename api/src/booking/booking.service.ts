@@ -162,12 +162,6 @@ export class BookingService {
       availableBookingsInTripsThatMatchPreferences
     );
 
-    if (bookingPassengers === undefined) {
-      throw new BadRequestException(
-        'Could not find available bookings for the passengers.'
-      );
-    }
-
     const bookingVehicles = this.createTentativeBookingVehicles(
       trips,
       vehicles
@@ -205,27 +199,28 @@ export class BookingService {
     const availableBookings: AvailableBooking[] = [];
 
     for (const trip of tripsWithoutSeatSelection) {
-      const availableCabins = trip.availableCabins
-        .filter((cabin) => cabin.availablePassengerCapacity > 0)
+      trip.availableCabins
+        // by default, get the cheapest cabin
         .sort((cabinA, cabinB) => cabinA.adultFare - cabinB.adultFare);
-      if (availableCabins.length === 0) {
-        continue;
-      }
 
       for (const preferences of passengerPreferences) {
-        // by default, get the cheapest cabin
-        let availableCabin = availableCabins[0];
+        let cabinIndex = trip.availableCabins.findIndex(
+          (tripCabin) => tripCabin.availablePassengerCapacity > 0
+        );
 
         if (preferences.cabinTypeId !== undefined) {
-          const availableCabinWithPreference = availableCabins.find(
+          const cabinIndexWithPreference = trip.availableCabins.findIndex(
             (tripCabin) =>
-              tripCabin.cabin.cabinTypeId === preferences.cabinTypeId
+              tripCabin.cabin.cabinTypeId === preferences.cabinTypeId &&
+              tripCabin.availablePassengerCapacity > 0
           );
 
-          if (availableCabinWithPreference !== undefined) {
-            availableCabin = availableCabinWithPreference;
+          if (cabinIndexWithPreference !== -1) {
+            cabinIndex = cabinIndexWithPreference;
           }
         }
+
+        const availableCabin = trip.availableCabins[cabinIndex];
 
         availableBookings.push({
           cabinId: availableCabin.cabinId,
@@ -234,6 +229,8 @@ export class BookingService {
           cabinAdultFare: availableCabin.adultFare,
           tripId: trip.id,
         });
+
+        trip.availableCabins[cabinIndex].availablePassengerCapacity--;
       }
     }
 
@@ -309,7 +306,7 @@ WHERE row <= ${passengerPreferences.length}
         const passenger = passengers[i];
         const preferences = passengerPreferences[i];
         const bestBooking = this.getBestBooking(
-          availableBookings,
+          availableBookingsInTrip,
           preferences,
           trip.seatSelection
         );
@@ -393,9 +390,12 @@ WHERE row <= ${passengerPreferences.length}
       passengerPreferences;
 
     if (seatSelection === false) {
-      return availableBookings.find(
-        (booking) =>
-          preferredCabin === undefined || preferredCabin === booking.cabinTypeId
+      return (
+        availableBookings.find(
+          (booking) =>
+            preferredCabin === undefined ||
+            preferredCabin === booking.cabinTypeId
+        ) ?? availableBookings[0]
       );
     }
 
@@ -829,6 +829,10 @@ WHERE row <= ${passengerPreferences.length}
 
     if (bookingPassenger === null) {
       throw new NotFoundException();
+    }
+
+    if (bookingPassenger.checkInDate !== null) {
+      throw new BadRequestException('The passenger has checked in already.');
     }
 
     await this.prisma.bookingPassenger.update({

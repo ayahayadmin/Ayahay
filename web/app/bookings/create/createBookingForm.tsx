@@ -1,8 +1,8 @@
-import { Form, Spin, Steps, Grid, notification } from 'antd';
+import { Form, Spin, Steps, Grid, notification, Modal } from 'antd';
 import styles from './createBookingForm.module.scss';
 import { IBooking, IPassenger } from '@ayahay/models';
 import PassengerInformationForm from '@/components/booking/PassengerInformationForm';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import PassengerPreferencesForm from '@/components/booking/PassengerPreferencesForm';
 import {
   createTentativeBooking,
@@ -11,6 +11,7 @@ import {
 import BookingConfirmation from '@/components/booking/BookingConfirmation';
 import { useTripFromSearchParams } from '@/hooks/trip';
 import { startPaymentForBooking } from '@/services/payment.service';
+import { InfoCircleOutlined } from '@ant-design/icons';
 
 const { useBreakpoint } = Grid;
 interface CreateBookingFormProps {
@@ -28,6 +29,7 @@ export default function CreateBookingForm({
 }: CreateBookingFormProps) {
   const { trip } = useTripFromSearchParams();
   const screens = useBreakpoint();
+  const [modal, contextHolder] = Modal.useModal();
   const [form] = Form.useForm();
   const passengers = Form.useWatch('passengers', form);
   const vehicles = Form.useWatch('vehicles', form);
@@ -86,23 +88,56 @@ export default function CreateBookingForm({
   };
 
   const payBooking = async (tentativeBookingId: number): Promise<void> => {
-    setLoadingMessage('Waiting for successful payment...');
+    setLoadingMessage('Initiating payment...');
 
     const response = await startPaymentForBooking(tentativeBookingId);
 
+    setLoadingMessage('');
     if (response === undefined) {
       onStartPaymentError();
-      setLoadingMessage('');
       return;
     }
 
+    informPaymentInitiation(response.paymentReference);
     window.open(response.paymentGatewayUrl);
+  };
 
-    // check payment status every 5 seconds
-    // const paymentTimer: NodeJS.Timer = setInterval(
-    //   () => checkPaymentStatus(response.paymentReference, paymentTimer),
-    //   5000
-    // );
+  const informPaymentInitiation = (transactionId: string) => {
+    modal.info({
+      width: 'min(90vw, 512px)',
+      centered: true,
+      title:
+        'You will be redirected to the secure Dragonpay Payment Gateway to pay for your booking.',
+      icon: <InfoCircleOutlined />,
+      content: (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <p>
+            You can safely close this tab or book again by clicking the button
+            below.
+          </p>
+          <p>
+            For any concerns, please email us at it@ayahay.com with the subject
+            header:
+          </p>
+          <p>
+            <strong>Booking {transactionId.toUpperCase()}</strong>
+          </p>
+        </div>
+      ),
+      okText: 'Book Again',
+      onOk: () => window.location.reload(),
+    });
+  };
+
+  const informFullyBooked = () => {
+    modal.info({
+      width: 'min(90vw, 512px)',
+      centered: true,
+      title: 'The selected trip is now fully booked.',
+      icon: <InfoCircleOutlined />,
+      content: <p>You will now be redirected to the landing page.</p>,
+      onOk: () => window.location.replace('/'),
+    });
   };
 
   const onStartPaymentError = () => {
@@ -111,21 +146,6 @@ export default function CreateBookingForm({
       description:
         'There seems to be an issue with the payment. Please try again in a few minutes or contact us at help@ayahay.com for assistance.',
     });
-  };
-
-  const checkPaymentStatus = async (
-    paymentReference: string,
-    paymentTimer: NodeJS.Timer
-  ): Promise<void> => {
-    const booking = await getBookingById(paymentReference);
-
-    if (booking === undefined) {
-      console.log('Payment still not finished');
-      return;
-    }
-
-    clearInterval(paymentTimer);
-    onComplete && onComplete(booking);
   };
 
   const items = steps.map(({ title }) => ({ key: title, title: title }));
@@ -138,7 +158,7 @@ export default function CreateBookingForm({
       initialValues={{
         passengers: [{}],
         vehicles: [],
-        preferences: [{}],
+        preferences: [],
       }}
       onValuesChange={(changesValues, values) => console.log(values)}
       onFinish={(values) => console.log(values)}
@@ -170,6 +190,7 @@ export default function CreateBookingForm({
           />
         </div>
       </Spin>
+      {contextHolder}
     </Form>
   );
 }

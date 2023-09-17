@@ -22,9 +22,6 @@ export class BookingValidator {
         `Number of trips for one booking exceeded the maximum of ${this.MAX_TRIPS_PER_BOOKING}`
       );
     }
-    if (passengers.length <= 0) {
-      errorMessages.push(`There must be at least one passenger in the booking`);
-    }
 
     // TODO: check if all trip are existing records
     if (passengers.length > this.MAX_PASSENGERS_PER_BOOKING) {
@@ -45,19 +42,24 @@ export class BookingValidator {
       );
     }
 
-    // TODO: check if num of passengers still < availableCabins & with vehicles too
-    // TODO: check if vehicle types are supported by all trips
     errorMessages.push(
-      ...this.validateBookingPassengers(loggedInAccountId, passengers)
+      ...this.validatePassengers(loggedInAccountId, passengers),
+      ...this.validateTripCapacities(trips, passengers, vehicles)
     );
+
+    // TODO: check if vehicle types are supported by all trips
 
     return errorMessages;
   }
 
-  private validateBookingPassengers(
+  private validatePassengers(
     loggedInAccountId: string,
     passengers: IPassenger[]
   ): string[] {
+    if (passengers.length <= 0) {
+      return [];
+    }
+
     const errorMessages: string[] = [];
 
     const passengerOfLoggedInUser = passengers[0];
@@ -120,5 +122,36 @@ export class BookingValidator {
 
   private isBuddyOf(buddy: IPassenger, passenger: IPassenger): boolean {
     return buddy.buddyId === passenger.id;
+  }
+
+  private validateTripCapacities(
+    trips: ITrip[],
+    passengers: IPassenger[],
+    vehicles: IVehicle[]
+  ): string[] {
+    const errorMessages = [];
+
+    for (const trip of trips) {
+      if (vehicles.length > trip.availableVehicleCapacity) {
+        errorMessages.push(
+          'The number of vehicles for this booking exceeds the available vehicle capacity of this trip.'
+        );
+      }
+
+      const totalAvailablePassengerCapacity = trip.availableCabins
+        .map((tripCabin) => tripCabin.availablePassengerCapacity)
+        .reduce(
+          (cabinACapacity, cabinBCapacity) => cabinACapacity + cabinBCapacity,
+          0
+        );
+
+      if (passengers.length > totalAvailablePassengerCapacity) {
+        errorMessages.push(
+          'The number of passengers for this booking exceeds the available passenger capacity of this trip.'
+        );
+      }
+    }
+
+    return errorMessages;
   }
 }

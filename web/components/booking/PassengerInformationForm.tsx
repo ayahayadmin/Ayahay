@@ -203,9 +203,7 @@ export default function PassengerInformationForm({
                     placeholder='Filipino, Chinese, American, etc.'
                   />
                 </Form.Item>
-                {index > 0 && (
-                  <Button onClick={() => remove(name)}>Remove Passenger</Button>
-                )}
+                <Button onClick={() => remove(name)}>Remove Passenger</Button>
               </div>
             ))}
 

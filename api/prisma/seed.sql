@@ -171,15 +171,15 @@ INSERT INTO ayahay.trip_cabin
     (
         (SELECT id FROM ayahay.trip WHERE reference_number = 'SEED1'),
         (SELECT id FROM ayahay.cabin WHERE "name" = 'Aircon'),
-        107,
-        107,
+        2,
+        2,
         450
     ),
     (
         (SELECT id FROM ayahay.trip WHERE reference_number = 'SEED1'),
         (SELECT id FROM ayahay.cabin WHERE "name" = 'Non-Aircon'),
-        168,
-        168,
+        2,
+        2,
         400
     )
 ;
