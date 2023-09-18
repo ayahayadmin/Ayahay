@@ -113,6 +113,6 @@ export function getCabinFares(cabins: ITripCabin[]) {
   });
 }
 
-export function getMinimumFare(fares: any) {
-  return Math.min(...fares.map((fare: any) => fare.fare));
+export function getMaximumFare(fares: any) {
+  return Math.max(...fares.map((fare: any) => fare.fare));
 }

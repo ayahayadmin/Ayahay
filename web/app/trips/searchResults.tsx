@@ -8,7 +8,7 @@ import {
   getAvailableTrips,
   getCabinCapacities,
   getCabinFares,
-  getMinimumFare,
+  getMaximumFare,
 } from '@/services/trip.service';
 import { getTime } from '@/services/search.service';
 import { ArrowRightOutlined, InfoCircleOutlined } from '@ant-design/icons';
@@ -21,7 +21,7 @@ const columns: ColumnsType<ITrip> = [
     dataIndex: 'shippingLine',
     render: (text: IShippingLine) => (
       <img
-        src='/assets/logo-placeholder.png'
+        src='/assets/aznar-logo.jpg'
         alt={`${text.name} Logo`}
         height={80}
         className={styles['logo']}
@@ -121,7 +121,7 @@ const columns: ColumnsType<ITrip> = [
         }
       });
 
-      const minFare = getMinimumFare(adultFares);
+      const minFare = getMaximumFare(adultFares);
 
       return (
         <div>
@@ -165,7 +165,7 @@ const columns: ColumnsType<ITrip> = [
           <Button
             type='primary'
             size='large'
-            href='https://ayahay-booking-platform-web.vercel.app/bookings/create?tripId=1'
+            href={`${process.env.NEXT_PUBLIC_WEB_URL}/bookings/create?tripId=${text}`}
             target='_blank'
             className={styles['book-button']}
           >
@@ -197,7 +197,7 @@ const columns: ColumnsType<ITrip> = [
           <Button
             type='primary'
             size='large'
-            href='https://ayahay-booking-platform-web.vercel.app/bookings/create?tripId=1'
+            href={`${process.env.NEXT_PUBLIC_WEB_URL}/bookings/create?tripId=${text}`}
             target='_blank'
             className={styles['book-button']}
           >
