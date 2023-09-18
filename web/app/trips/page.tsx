@@ -67,9 +67,9 @@ export default function Trips() {
       <div className={styles['main-container']}>
         <div className={styles['left-container']}>
           <div className={styles['left-card']}>
-            <div className={styles['cabin-card']}>
+            {/* <div className={styles['cabin-card']}>
               <CabinFilter name='cabinTypes' label='Cabin Types' />
-            </div>
+            </div> */}
             <div className={styles['shipping-card']}>
               <ShippingLineFilter
                 name='shippingLineIds'
