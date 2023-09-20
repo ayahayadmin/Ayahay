@@ -21,7 +21,7 @@ const columns: ColumnsType<ITrip> = [
     dataIndex: 'shippingLine',
     render: (text: IShippingLine) => (
       <img
-        src='/assets/aznar-logo.jpg'
+        src='/assets/aznar-logo.png'
         alt={`${text.name} Logo`}
         height={80}
         className={styles['logo']}
