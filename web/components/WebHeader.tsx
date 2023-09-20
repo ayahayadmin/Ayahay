@@ -26,18 +26,37 @@ export default function WebHeader() {
       <div className={styles['nav-main']}>
         <Image src={AyahayLogo} alt='Ayahay Logo' height={80} />
         <ul className={styles['nav-links']}>
-          {webLinks.map((link, index) => (
-            <Link key={index} href={link.url}>
-              {link.label}
-            </Link>
-          ))}
+          {webLinks.map((link, index) => {
+            // if (link.label !== 'Resources') {
+            return (
+              <Link key={index} href={link.url}>
+                {link.label}
+              </Link>
+            );
+            // } else {
+            //   return (
+            //     <div className={styles['nav-div']}>
+            //       {link.label}
+            //       {link.sublinks && (
+            //         <ul>
+            //           {link.sublinks.map((sublink, subIndex) => (
+            //             <Link key={`sub_${subIndex}`} href={sublink.url}>
+            //               {sublink.label}
+            //             </Link>
+            //           ))}
+            //         </ul>
+            //       )}
+            //     </div>
+            //   );
+            // }
+          })}
         </ul>
       </div>
 
       <div className={styles['nav-buttons']}>
         {contextHolder}
         <Button type='text' onClick={openNotification} size='large'>
-          <BellOutlined style={{ fontSize: '18px' }} />
+          <BellOutlined style={{ fontSize: '18px' }} rev={undefined} />
         </Button>
         <AuthForm />
       </div>
