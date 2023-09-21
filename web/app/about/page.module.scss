@@ -1,10 +1,26 @@
 .main-container {
   padding: 16px 18vw;
 
+  @media (max-width: 768px) {
+    padding: 24px 13vw;
+  }
+
+  @media (max-width: 568px) {
+    padding: 24px 10vw;
+  }
+
   .cards {
     display: flex;
     flex-direction: row;
     justify-content: center;
     align-items: center;
+
+    @media (max-width: 768px) {
+      // pair cards to be in a column
+    }
+
+    @media (max-width: 568px) {
+      flex-direction: column;
+    }
   }
 }
