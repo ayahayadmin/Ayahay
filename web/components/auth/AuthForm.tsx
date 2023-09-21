@@ -18,6 +18,7 @@ import { useAuth } from '@/app/contexts/AuthContext';
 import axios from 'axios';
 import { ACCOUNT_API } from '@ayahay/constants';
 import { User, getAuth } from 'firebase/auth';
+import styles from './AuthForm.module.scss';
 
 export default function AuthForm() {
   const auth = getAuth();
@@ -104,6 +105,13 @@ export default function AuthForm() {
     const result = await resetPassword(email);
     if (result) {
       setIsResetModalOpen(false); //show pop up that email is sent
+      messageApi.open({
+        //TO DO: check if it's working
+        type: 'success',
+        content:
+          'Email sent! Check your inbox and click the link to verify your email.',
+        duration: 5,
+      });
     }
   };
 
@@ -226,18 +234,18 @@ export default function AuthForm() {
 
           {error && <span>{error}</span>}
 
-          <Form.Item>
+          <Form.Item className={styles['buttons']}>
             <Button
               type='primary'
               htmlType='submit'
-              className='login-form-button'
+              className={styles['button']}
             >
               Log in
             </Button>
             <Button
               type='primary'
               htmlType='submit'
-              className='register-button'
+              className={styles['button']}
               onClick={onClickRegister}
             >
               Register
@@ -276,11 +284,19 @@ export default function AuthForm() {
 
           {error && <span>{error}</span>}
 
-          <Form.Item>
-            <Button key='back' onClick={onClickBack}>
+          <Form.Item className={styles['buttons']}>
+            <Button
+              key='back'
+              onClick={onClickBack}
+              className={styles['button']}
+            >
               Back
             </Button>
-            <Button type='primary' htmlType='submit'>
+            <Button
+              type='primary'
+              htmlType='submit'
+              className={styles['button']}
+            >
               Submit
             </Button>
           </Form.Item>
@@ -369,11 +385,19 @@ export default function AuthForm() {
 
           {error && <span>{error}</span>}
 
-          <Form.Item>
-            <Button key='back' onClick={onClickBack}>
+          <Form.Item className={styles['buttons']}>
+            <Button
+              key='back'
+              onClick={onClickBack}
+              className={styles['button']}
+            >
               Back
             </Button>
-            <Button type='primary' htmlType='submit'>
+            <Button
+              type='primary'
+              htmlType='submit'
+              className={styles['button']}
+            >
               Submit
             </Button>
           </Form.Item>
