@@ -104,12 +104,17 @@ export default function AuthForm() {
     const { email } = values;
     const result = await resetPassword(email);
     if (result) {
-      setIsResetModalOpen(false); //show pop up that email is sent
+      setIsResetModalOpen(false);
       messageApi.open({
-        //TO DO: check if it's working
         type: 'success',
+        content: 'Email sent! Check your inbox to reset your password.',
+        duration: 5,
+      });
+    } else {
+      messageApi.open({
+        type: 'error',
         content:
-          'Email sent! Check your inbox and click the link to verify your email.',
+          'Email failed to send. Make sure you inputted the correct email address.',
         duration: 5,
       });
     }
@@ -260,6 +265,7 @@ export default function AuthForm() {
         footer={null}
         destroyOnClose={true}
       >
+        {contextHolder}
         <Form
           name='forgot_password'
           className='forgot-password-form'
