@@ -16,7 +16,7 @@ export const webLinks = [
   },
   {
     label: 'Partners',
-    url: '/',
+    url: '/partners',
     sublinks: [],
   },
   {
