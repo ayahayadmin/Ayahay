@@ -2,17 +2,40 @@ export const webLinks = [
   {
     label: 'Home',
     url: '/',
-  },
-  {
-    label: 'Destinations',
-    url: '/trips',
+    sublinks: [],
   },
   {
     label: 'About Us',
     url: '/about',
+    sublinks: [],
   },
   {
     label: 'Contact',
-    url: '/contact',
+    url: '/',
+    sublinks: [],
+  },
+  {
+    label: 'Partners',
+    url: '/',
+    sublinks: [],
+  },
+  {
+    label: 'Solution',
+    url: '/',
+    sublinks: [],
+  },
+  {
+    label: 'Resources',
+    url: '/',
+    sublinks: [
+      // {
+      //   label: 'Blogs',
+      //   url: '/',
+      // },
+      // {
+      //   label: 'Vlogs',
+      //   url: '/',
+      // },
+    ],
   },
 ];
