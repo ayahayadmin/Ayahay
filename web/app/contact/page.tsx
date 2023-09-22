@@ -9,6 +9,7 @@ const { TextArea } = Input;
 
 export default function Contact() {
   const [emailBody, setEmailBody] = useState('');
+  const [emailName, setEmailName] = useState('');
 
   const onFinish = (values: any) => {
     const { name, email, message } = values;
@@ -28,7 +29,11 @@ export default function Contact() {
             className={styles['name']}
             rules={[{ required: true, message: 'Please input your name' }]}
           >
-            <Input placeholder='Name' />
+            <Input
+              value={emailName}
+              onChange={(e) => setEmailName(e.target.value)}
+              placeholder='Name'
+            />
           </Form.Item>
           <Form.Item
             name='email'
@@ -59,7 +64,7 @@ export default function Contact() {
           <Button
             type='primary'
             htmlType='submit'
-            // href='mailto:test@mail.com?subject=Ayahay Inquiry&body=Hello'
+            href={`mailto:admin@ayahay.com?subject=${emailName} Ayahay Inquiry&body=${emailBody}`}
           >
             Send
           </Button>
