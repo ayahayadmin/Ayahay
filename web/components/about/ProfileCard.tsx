@@ -1,5 +1,5 @@
 import { Card } from 'antd';
-import styles from './Card.module.scss';
+import styles from './ProfileCard.module.scss';
 
 interface ProfileCardProps {
   srcImage: string;

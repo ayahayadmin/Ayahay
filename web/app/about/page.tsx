@@ -1,7 +1,7 @@
 'use client';
-import { Card, Typography } from 'antd';
+import { Typography } from 'antd';
 import styles from './page.module.scss';
-import ProfileCard from '@/components/about/Card';
+import ProfileCard from '@/components/about/ProfileCard';
 
 const { Title } = Typography;
 
