@@ -18,7 +18,9 @@ export default function ProfileCard({
     <Card
       hoverable
       className={styles['card']}
-      cover={<img alt='example' className={styles['image']} src={srcImage} />}
+      cover={
+        <img alt='profile pic' className={styles['image']} src={srcImage} />
+      }
       onClick={() => {
         window.open(linkedinUrl, '_blank');
       }}
