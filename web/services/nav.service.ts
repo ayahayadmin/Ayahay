@@ -11,7 +11,7 @@ export const webLinks = [
   },
   {
     label: 'Contact',
-    url: '/',
+    url: '/contact',
     sublinks: [],
   },
   {
