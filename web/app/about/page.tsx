@@ -8,7 +8,9 @@ const { Title } = Typography;
 export default function AboutUs() {
   return (
     <div className={styles['main-container']}>
-      <Title level={3}>Who Are We</Title>
+      <Title level={1}>
+        <span className={styles['title-size']}>Who Are We</span>
+      </Title>
       <div className={styles['cards']}>
         <ProfileCard
           srcImage='/assets/jay-engalla.jpg'
@@ -47,8 +49,8 @@ export default function AboutUs() {
           position='Chief Product Officer'
         />
       </div>
-      <Title level={3} className={styles['title']}>
-        About Us
+      <Title level={1} className={styles['title']}>
+        <span className={styles['title-size']}>About Us</span>
       </Title>
       <p>
         Welcome to Ayahay, where innovation meets expertise in the world of
@@ -58,8 +60,8 @@ export default function AboutUs() {
         revolutionize the way logistics and transportation are managed and
         experienced in the Philippines.
       </p>
-      <Title level={3} className={styles['title']}>
-        Our Story
+      <Title level={1} className={styles['title']}>
+        <span className={styles['title-size']}>Our Story</span>
       </Title>
       <p>
         Ayahay was born out of a deep understanding of the challenges faced by
@@ -68,8 +70,8 @@ export default function AboutUs() {
         experience in IT and logistics to create a solution that would bridge
         the gap between traditional practices and modern technology.
       </p>
-      <Title level={3} className={styles['title']}>
-        Expertise in IT Logistics
+      <Title level={1} className={styles['title']}>
+        <span className={styles['title-size']}>Expertise in IT Logistics</span>
       </Title>
       <p>
         Our team comprises experts who have spent years working at the
@@ -79,8 +81,8 @@ export default function AboutUs() {
         solutions that address the unique needs of the logistics and shipping
         industry.
       </p>
-      <Title level={3} className={styles['title']}>
-        Mission
+      <Title level={1} className={styles['title']}>
+        <span className={styles['title-size']}>Mission</span>
       </Title>
       <p>
         Our mission is to empower businesses in the shipping line industry to
@@ -89,8 +91,8 @@ export default function AboutUs() {
         experience for passengers, saving them time and ensuring a hassle-free
         journey.
       </p>
-      <Title level={3} className={styles['title']}>
-        Vision
+      <Title level={1} className={styles['title']}>
+        <span className={styles['title-size']}>Vision</span>
       </Title>
       <p>
         At Ayahay, we envision a future where the shipping line industry in the
