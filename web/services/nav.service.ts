@@ -21,7 +21,7 @@ export const webLinks = [
   },
   {
     label: 'Solution',
-    url: '/',
+    url: '/solution',
     sublinks: [],
   },
   {
