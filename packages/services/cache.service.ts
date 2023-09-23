@@ -1,7 +1,8 @@
 import dayjs from 'dayjs';
+import { CacheKey } from '@ayahay/constants';
 
 export function cacheItem(
-  key: string,
+  key: CacheKey,
   item: any,
   expirationInMinutes?: number
 ) {
@@ -16,7 +17,7 @@ export function cacheItem(
   );
 }
 
-export function fetchItem<T>(key: string): T | undefined {
+export function fetchItem<T>(key: CacheKey): T | undefined {
   const cachedItemJson = localStorage.getItem(key);
   if (cachedItemJson === null) {
     return undefined;
@@ -30,6 +31,6 @@ export function fetchItem<T>(key: string): T | undefined {
   return data;
 }
 
-export function invalidateItem(key: string) {
+export function invalidateItem(key: CacheKey) {
   localStorage.removeItem(key);
 }
