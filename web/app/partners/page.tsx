@@ -15,31 +15,27 @@ export default function Partners() {
       </Title>
       <div>
         <Carousel draggable style={{ background: '#edf0fb' }} ref={ref}>
-          <div
-            onClick={() => {
-              window.open('https://aznarshipping.ph/', '_blank');
-            }}
-          >
+          <a href='https://aznarshipping.ph/' target='_blank'>
             <img
               className={styles['image']}
               alt='aznar'
               src='/assets/aznar-logo.png'
             />
-          </div>
-          <div onClick={() => {}}>
+          </a>
+          <a href='#' target='_blank'>
             <img
               className={styles['image']}
               alt='placeholder'
               src='/assets/logo-placeholder.png'
             />
-          </div>
-          <div onClick={() => {}}>
+          </a>
+          <a href='#' target='_blank'>
             <img
               className={styles['image']}
               alt='placeholder'
               src='/assets/logo-placeholder.png'
             />
-          </div>
+          </a>
         </Carousel>
         <div className={styles['buttons']}>
           <Button
