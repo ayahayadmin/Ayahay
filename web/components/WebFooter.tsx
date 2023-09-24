@@ -4,10 +4,12 @@ import styles from './WebFooter.module.scss';
 import {
   FacebookFilled,
   InstagramFilled,
+  LinkedinFilled,
   TwitterSquareFilled,
 } from '@ant-design/icons';
-import { Col, Input, Row, Space } from 'antd';
+import { Space } from 'antd';
 import { Footer } from 'antd/es/layout/layout';
+import Link from 'next/link';
 
 export default function WebFooter() {
   return (
@@ -46,18 +48,18 @@ export default function WebFooter() {
           <h3>Follow us on social media</h3>
           <div className={styles['left-col-card']}>
             <Space>
-              <FacebookFilled
-                className={styles.icon}
-                style={{ fontSize: '28px' }}
-              />
-              <InstagramFilled
-                className={styles.icon}
-                style={{ fontSize: '28px' }}
-              />
-              <TwitterSquareFilled
-                className={styles.icon}
-                style={{ fontSize: '28px' }}
-              />
+              <Link href='https://www.facebook.com/profile.php?id=61551614079847&is_tour_dismissed=true'>
+                <FacebookFilled style={{ fontSize: 28 }} rev={undefined} />
+              </Link>
+              <Link href='https://www.instagram.com/ayahayig'>
+                <InstagramFilled style={{ fontSize: 28 }} rev={undefined} />
+              </Link>
+              <Link href='https://twitter.com/ayahayX'>
+                <TwitterSquareFilled style={{ fontSize: 28 }} rev={undefined} />
+              </Link>
+              <Link href='https://www.linkedin.com/company/ayahay-technologies-corporation/about/?viewAsMember=true'>
+                <LinkedinFilled style={{ fontSize: 28 }} rev={undefined} />
+              </Link>
             </Space>
           </div>
         </div>

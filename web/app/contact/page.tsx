@@ -1,8 +1,16 @@
 'use client';
-import { Button, Form, Input, Typography } from 'antd';
+import { Button, Form, Input, Space, Typography } from 'antd';
 import styles from './page.module.scss';
 import { useState } from 'react';
-import { MailOutlined, PhoneOutlined } from '@ant-design/icons';
+import {
+  FacebookFilled,
+  InstagramFilled,
+  LinkedinFilled,
+  MailOutlined,
+  PhoneOutlined,
+  TwitterSquareFilled,
+} from '@ant-design/icons';
+import Link from 'next/link';
 
 const { Title } = Typography;
 const { TextArea } = Input;
@@ -70,13 +78,44 @@ export default function Contact() {
           </Button>
         </Form.Item>
       </Form>
-      <p>You may also directly reach out to us via:</p>
+      <Title
+        level={2}
+        style={{ fontSize: 20, marginBottom: 10, marginTop: 10 }}
+      >
+        You may also directly reach out to us via:
+      </Title>
       <div className={styles['contact']}>
         <PhoneOutlined rev={undefined} /> Phone: (032) 517 4255
       </div>
       <div className={styles['contact']}>
         <MailOutlined rev={undefined} /> Email: admin@ayahay.com
       </div>
+      <Title
+        level={2}
+        style={{ fontSize: 20, marginBottom: 10, marginTop: 10 }}
+      >
+        Follow us on social media to keep up to date:
+      </Title>
+      <Space>
+        <Link href='https://www.facebook.com/profile.php?id=61551614079847&is_tour_dismissed=true'>
+          <FacebookFilled style={{ fontSize: 28 }} rev={undefined} />
+        </Link>
+        <Link href='https://www.instagram.com/ayahayig'>
+          <InstagramFilled style={{ fontSize: 28 }} rev={undefined} />
+        </Link>
+        <Link href='https://twitter.com/ayahayX'>
+          <TwitterSquareFilled style={{ fontSize: 28 }} rev={undefined} />
+        </Link>
+        <Link href='https://www.linkedin.com/company/ayahay-technologies-corporation/about/?viewAsMember=true'>
+          <LinkedinFilled style={{ fontSize: 28 }} rev={undefined} />
+        </Link>
+        <Link
+          href='https://www.tiktok.com/@ayahaytiktok'
+          style={{ fontSize: 25 }}
+        >
+          Tiktok
+        </Link>
+      </Space>
     </div>
   );
 }
