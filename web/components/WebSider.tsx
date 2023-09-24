@@ -2,7 +2,7 @@
 import Sider from 'antd/es/layout/Sider';
 import { Menu } from 'antd';
 import { webLinks } from '@/services/nav.service';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import styles from './WebSider.module.scss';
 
@@ -22,12 +22,9 @@ export default function WebSider() {
           theme='dark'
           mode='inline'
           defaultSelectedKeys={webLinks
-            .filter((link) => pathName === link.url)
-            .map((link) => link.url)}
-          items={webLinks.map((link) => ({
-            key: link.url,
-            label: link.label,
-          }))}
+            .filter((link) => pathName === `/${link.key}`)
+            .map((link) => link.key)}
+          items={webLinks}
           onClick={({ key }) => router.push(key)}
         />
       </nav>
