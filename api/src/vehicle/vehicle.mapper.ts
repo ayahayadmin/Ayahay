@@ -11,8 +11,9 @@ export class VehicleMapper {
       id: vehicle.id,
       accountId: vehicle.accountId,
       vehicleTypeId: vehicle.vehicleTypeId,
-      vehicleType: this.convertVehicleTypeToDto(vehicle.vehicleType),
-
+      vehicleType: vehicle.vehicleType
+        ? this.convertVehicleTypeToDto(vehicle.vehicleType)
+        : undefined,
       plateNo: vehicle.plateNo,
       modelName: vehicle.modelName,
       modelYear: vehicle.modelYear,
@@ -38,14 +39,13 @@ export class VehicleMapper {
       modelYear: vehicle.modelYear,
       officialReceiptUrl: vehicle.officialReceiptUrl,
       certificateOfRegistrationUrl: vehicle.certificateOfRegistrationUrl,
-      account:
-        vehicle.accountId === undefined
-          ? undefined
-          : {
-              connect: {
-                id: vehicle.accountId,
-              },
+      account: vehicle.accountId
+        ? {
+            connect: {
+              id: vehicle.accountId,
             },
+          }
+        : undefined,
       vehicleType: {
         connect: {
           id: vehicle.vehicleTypeId,

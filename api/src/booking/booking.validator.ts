@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { IPassenger, IVehicle, ITrip, IBooking } from '@ayahay/models';
+import { IPassenger, IVehicle, ITrip, IAccount } from '@ayahay/models';
 import { PassengerPreferences } from '@ayahay/http';
 
 @Injectable()
@@ -13,7 +13,7 @@ export class BookingValidator {
     passengers: IPassenger[],
     passengerPreferences: PassengerPreferences[],
     vehicles: IVehicle[],
-    loggedInAccountId?: string
+    loggedInAccount?: IAccount
   ): string[] {
     const errorMessages: string[] = [];
 
@@ -43,7 +43,7 @@ export class BookingValidator {
     }
 
     errorMessages.push(
-      ...this.validatePassengers(loggedInAccountId, passengers),
+      ...this.validatePassengers(passengers, loggedInAccount),
       ...this.validateTripCapacities(trips, passengers, vehicles)
     );
 
@@ -53,8 +53,8 @@ export class BookingValidator {
   }
 
   private validatePassengers(
-    loggedInAccountId: string,
-    passengers: IPassenger[]
+    passengers: IPassenger[],
+    loggedInAccount?: IAccount
   ): string[] {
     if (passengers.length <= 0) {
       return [];
@@ -62,42 +62,19 @@ export class BookingValidator {
 
     const errorMessages: string[] = [];
 
-    const passengerOfLoggedInUser = passengers[0];
-
-    // we allow passenger without linked account (we link logged in account later)
-    if (
-      this.isPassengerCreated(passengerOfLoggedInUser) &&
-      !this.isPassengerLinkedToAccount(
-        passengerOfLoggedInUser,
-        loggedInAccountId
-      )
-    ) {
-      errorMessages.push(
-        'The account associated with the first passenger is not your account.'
-      );
-    }
-
-    if (this.hasBuddy(passengerOfLoggedInUser)) {
-      errorMessages.push(
-        "A passenger with an account cannot be another passenger's buddy"
-      );
-    }
-
-    for (let i = 1; i < passengers.length; i++) {
-      const travelBuddiesOfLoggedInPassenger = passengers[i];
-      if (travelBuddiesOfLoggedInPassenger.accountId !== undefined) {
-        errorMessages.push('Travel Buddies cannot be linked to an account.');
+    for (const passenger of passengers) {
+      if (loggedInAccount === undefined && this.isPassengerCreated(passenger)) {
+        errorMessages.push(
+          'A guest booking cannot have an existing passenger.'
+        );
       }
 
       if (
-        this.isPassengerCreated(passengerOfLoggedInUser) &&
-        !this.isBuddyOf(
-          travelBuddiesOfLoggedInPassenger,
-          passengerOfLoggedInUser
-        )
+        loggedInAccount?.role === 'Passenger' &&
+        passenger.discountType !== undefined
       ) {
         errorMessages.push(
-          'Travel Buddies should be a buddy of the logged in passenger.'
+          'Only staff members can set the discount type of a passenger.'
         );
       }
     }
@@ -105,6 +82,28 @@ export class BookingValidator {
     return errorMessages;
   }
 
+  private validateBuddy(
+    buddy: IPassenger,
+    loggedInPassenger: IPassenger
+  ): string[] {
+    // TODO: fetch passengers with ID from DB, validate they're buddies with logged in passenger
+
+    const errorMessages: string[] = [];
+    if (buddy.accountId !== undefined) {
+      errorMessages.push('Travel Buddies cannot be linked to an account.');
+    }
+
+    if (
+      this.isPassengerCreated(loggedInPassenger) &&
+      !this.isBuddyOf(buddy, loggedInPassenger)
+    ) {
+      errorMessages.push(
+        'Travel Buddies should be a buddy of the logged in passenger.'
+      );
+    }
+
+    return errorMessages;
+  }
   private isPassengerCreated(passenger: IPassenger): boolean {
     return passenger.id > 0;
   }

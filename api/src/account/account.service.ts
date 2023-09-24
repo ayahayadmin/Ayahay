@@ -11,6 +11,24 @@ export class AccountService {
     private accountMapper: AccountMapper
   ) {}
 
+  async getMyAccountInformation(loggedInAccountId: string): Promise<IAccount> {
+    const myAccountEntity = await this.prisma.account.findUnique({
+      where: {
+        id: loggedInAccountId,
+      },
+      include: {
+        passenger: {
+          include: {
+            buddies: true,
+          },
+        },
+        vehicles: true,
+      },
+    });
+
+    return this.accountMapper.convertAccountToDto(myAccountEntity);
+  }
+
   public async getAccountById(accountId: string): Promise<IAccount> {
     const accountEntity = await this.prisma.account.findUnique({
       where: {

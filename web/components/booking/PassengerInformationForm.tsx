@@ -7,9 +7,10 @@ import {
   Select,
   Typography,
 } from 'antd';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { CIVIL_STATUS, OCCUPATION, SEX } from '@ayahay/constants/enum';
 import {
+  IAccount,
   IPassenger,
   IVehicle,
   mockFather,
@@ -20,6 +21,8 @@ import AddCompanionsModal from '@/components/booking/AddCompanionsModal';
 import EnumSelect from '@/components/form/EnumSelect';
 import AddVehiclesModal from '@/components/booking/AddVehiclesModal';
 import { toPassengerFormValue } from '@ayahay/services/form.service';
+import { getMyAccountInformation } from '@/services/account.service';
+import { useAuth } from '@/app/contexts/AuthContext';
 
 const { Title } = Typography;
 
@@ -34,12 +37,101 @@ export default function PassengerInformationForm({
   onNextStep,
   onPreviousStep,
 }: PassengerInformationFormProps) {
+  const { currentUser } = useAuth();
   const form = Form.useFormInstance();
   const passengers = Form.useWatch('passengers', form);
   const vehicles = Form.useWatch('vehicles', form);
-  const [loggedInPassenger, setLoggedInPassenger] = useState<IPassenger>();
+  const [loggedInAccount, setLoggedInAccount] = useState<
+    IAccount | undefined
+  >();
   const [companionModalOpen, setCompanionModalOpen] = useState(false);
   const [vehicleModalOpen, setVehicleModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (currentUser) {
+      fetchLoggedInAccount();
+    } else {
+      setLoggedInAccount(undefined);
+      removeAllCompanions();
+      removeAllRegisteredVehicles();
+    }
+  }, [currentUser]);
+
+  const fetchLoggedInAccount = async () => {
+    const myAccountInformation = await getMyAccountInformation();
+    if (myAccountInformation === undefined) {
+      return;
+    }
+
+    setLoggedInAccount(myAccountInformation);
+    insertPassengerAtFirstIndex(myAccountInformation.passenger);
+  };
+
+  const insertPassengerAtFirstIndex = (passenger?: IPassenger) => {
+    if (passenger === undefined) {
+      return;
+    }
+
+    if (passengers.length === 1 && passengers[0].firstName === undefined) {
+      form.setFieldValue(['passengers', 0], toPassengerFormValue(passenger));
+      return;
+    }
+
+    const newPassengerOrder = [passenger];
+
+    for (const currentPassenger of passengers) {
+      newPassengerOrder.push(currentPassenger);
+    }
+
+    form.resetFields();
+
+    for (let i = 0; i < newPassengerOrder.length; i++) {
+      form.setFieldValue(
+        ['passengers', i],
+        toPassengerFormValue(newPassengerOrder[i])
+      );
+    }
+  };
+
+  const removeAllCompanions = () => {
+    if (passengers === undefined || passengers.length === 0) {
+      return;
+    }
+
+    const nonCompanions = [];
+
+    for (const passenger of passengers) {
+      if (passenger.id === undefined) {
+        nonCompanions.push(passenger);
+      }
+    }
+
+    form.resetFields();
+
+    for (let i = 0; i < nonCompanions.length; i++) {
+      form.setFieldValue(['passengers', i], nonCompanions[i]);
+    }
+  };
+
+  const removeAllRegisteredVehicles = () => {
+    if (vehicles === undefined || vehicles.length === 0) {
+      return;
+    }
+
+    const nonRegisteredVehicles = [];
+
+    for (const vehicle of vehicles) {
+      if (vehicle.id === undefined) {
+        nonRegisteredVehicles.push(vehicle);
+      }
+    }
+
+    form.resetFields();
+
+    for (let i = 0; i < nonRegisteredVehicles.length; i++) {
+      form.setFieldValue(['vehicles', i], nonRegisteredVehicles[i]);
+    }
+  };
 
   const addPassengers = (companions: IPassenger[]) => {
     setCompanionModalOpen(false);
@@ -93,21 +185,24 @@ export default function PassengerInformationForm({
     }
   };
 
-  const onLogin = () => {
-    setLoggedInPassenger(mockFather);
-    form.setFieldValue(['passengers', 0], toPassengerFormValue(mockFather));
+  const openLoginModal = () => {
+    const accountBtn: HTMLButtonElement | null =
+      document.querySelector('#account-btn');
+    accountBtn?.click();
   };
 
   return (
     <>
       <Title level={2}>Passenger Information</Title>
-      <Button
-        type='link'
-        onClick={() => onLogin()}
-        style={{ whiteSpace: 'normal' }}
-      >
-        Have an account? Log in to book faster.
-      </Button>
+      {loggedInAccount === undefined && (
+        <Button
+          type='link'
+          onClick={() => openLoginModal()}
+          style={{ whiteSpace: 'normal' }}
+        >
+          Have an account? Log in to book faster.
+        </Button>
+      )}
       <Form.List name='passengers'>
         {(fields, { add, remove }) => (
           <>
@@ -210,23 +305,29 @@ export default function PassengerInformationForm({
             <Button type='dashed' onClick={() => add({})} block>
               Add Companion
             </Button>
-            {loggedInPassenger && (
-              <Button
-                type='dashed'
-                onClick={() => setCompanionModalOpen(true)}
-                block
-              >
-                Add Travel Buddies
-              </Button>
-            )}
-            {loggedInPassenger && (
-              <AddCompanionsModal
-                open={companionModalOpen}
-                loggedInPassenger={loggedInPassenger}
-                onSubmitCompanions={addPassengers}
-                onCancel={() => setCompanionModalOpen(false)}
-              />
-            )}
+            {loggedInAccount &&
+              loggedInAccount.passenger &&
+              loggedInAccount.passenger.companions &&
+              loggedInAccount.passenger.companions.length > 0 && (
+                <Button
+                  type='dashed'
+                  onClick={() => setCompanionModalOpen(true)}
+                  block
+                >
+                  Add Travel Buddies
+                </Button>
+              )}
+            {loggedInAccount &&
+              loggedInAccount.passenger &&
+              loggedInAccount.passenger.companions &&
+              loggedInAccount.passenger.companions.length > 0 && (
+                <AddCompanionsModal
+                  open={companionModalOpen}
+                  companions={loggedInAccount.passenger.companions}
+                  onSubmitCompanions={addPassengers}
+                  onCancel={() => setCompanionModalOpen(false)}
+                />
+              )}
           </>
         )}
       </Form.List>
@@ -332,23 +433,27 @@ export default function PassengerInformationForm({
             <Button type='dashed' onClick={() => add()} block>
               Add Vehicle
             </Button>
-            {loggedInPassenger && (
-              <Button
-                type='dashed'
-                onClick={() => setVehicleModalOpen(true)}
-                block
-              >
-                Add Registered Vehicle
-              </Button>
-            )}
-            {loggedInPassenger && (
-              <AddVehiclesModal
-                open={vehicleModalOpen}
-                loggedInPassenger={loggedInPassenger}
-                onSubmitVehicles={addVehicles}
-                onCancel={() => setVehicleModalOpen(false)}
-              />
-            )}
+            {loggedInAccount &&
+              loggedInAccount.vehicles &&
+              loggedInAccount.vehicles.length > 0 && (
+                <Button
+                  type='dashed'
+                  onClick={() => setVehicleModalOpen(true)}
+                  block
+                >
+                  Add Registered Vehicle
+                </Button>
+              )}
+            {loggedInAccount &&
+              loggedInAccount.vehicles &&
+              loggedInAccount.vehicles.length > 0 && (
+                <AddVehiclesModal
+                  open={vehicleModalOpen}
+                  vehicles={loggedInAccount.vehicles}
+                  onSubmitVehicles={addVehicles}
+                  onCancel={() => setVehicleModalOpen(false)}
+                />
+              )}
           </>
         )}
       </Form.List>

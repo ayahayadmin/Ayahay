@@ -9,16 +9,23 @@ import {
   signInWithPopup,
   signOut,
 } from 'firebase/auth';
-import { createContext, useContext } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import { initFirebase } from '../utils/initFirebase';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { verifyToken } from '@/services/auth.service';
-import { createAccount } from '@/services/account.service';
+import {
+  createAccount,
+  getMyAccountInformation,
+} from '@/services/account.service';
+import { invalidateItem } from '@ayahay/services/cache.service';
+import { accountRelatedCacheKeys } from '@ayahay/constants';
+import { IAccount } from '@ayahay/models';
 
 initFirebase();
 const auth = getAuth();
 const AuthContext = createContext({
   currentUser: null,
+  loggedInAccount: undefined as IAccount | undefined,
   register: (email: string, password: string) => Promise,
   signIn: (email: string, password: string) => Promise,
   signInWithGoogle: () => Promise,
@@ -94,7 +101,9 @@ export default function AuthContextProvider({ children }: any) {
     return signOut(auth)
       .then(() => {
         // Sign-out successful.
-        console.log('sign out success');
+        for (const accountRelatedCacheKey of accountRelatedCacheKeys) {
+          invalidateItem(accountRelatedCacheKey);
+        }
       })
       .catch((error) => {
         // An error happened.

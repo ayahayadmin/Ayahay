@@ -14,6 +14,7 @@ import {
   IVehicle,
   IPaymentItem,
   ITrip,
+  IAccount,
 } from '@ayahay/models';
 import { BookingSearchQuery, PassengerPreferences } from '@ayahay/http';
 import { UtilityService } from '../utility.service';
@@ -116,7 +117,7 @@ export class BookingService {
     passengers: IPassenger[],
     passengerPreferences: PassengerPreferences[],
     vehicles: IVehicle[],
-    loggedInAccountId?: string
+    loggedInAccount?: IAccount
   ): Promise<IBooking | undefined> {
     const trips = await this.tripService.getTripsByIds(tripIds);
 
@@ -126,7 +127,7 @@ export class BookingService {
         passengers,
         passengerPreferences,
         vehicles,
-        loggedInAccountId
+        loggedInAccount
       );
 
     if (errorMessages.length > 0) {
@@ -159,12 +160,14 @@ export class BookingService {
       trips,
       passengers,
       passengerPreferences,
-      availableBookingsInTripsThatMatchPreferences
+      availableBookingsInTripsThatMatchPreferences,
+      loggedInAccount
     );
 
     const bookingVehicles = this.createTentativeBookingVehicles(
       trips,
-      vehicles
+      vehicles,
+      loggedInAccount
     );
 
     const paymentItems = this.createPaymentItemsForBooking(
@@ -178,7 +181,7 @@ export class BookingService {
 
     const tempBooking: IBooking = {
       id: '',
-      accountId: loggedInAccountId,
+      accountId: loggedInAccount?.id,
       totalPrice,
       bookingType: 'Single',
       referenceNo: '',
@@ -293,7 +296,8 @@ WHERE row <= ${passengerPreferences.length}
     trips: ITrip[],
     passengers: IPassenger[],
     passengerPreferences: PassengerPreferences[],
-    availableBookings: AvailableBooking[]
+    availableBookings: AvailableBooking[],
+    loggedInAccount?: IAccount
   ): IBookingPassenger[] | undefined {
     const bookingPassengers: IBookingPassenger[] = [];
 
@@ -319,7 +323,8 @@ WHERE row <= ${passengerPreferences.length}
           trip,
           passenger,
           preferences,
-          bestBooking
+          bestBooking,
+          loggedInAccount
         );
         bookingPassengers.push(bookingPassengerForTrip);
 
@@ -336,12 +341,18 @@ WHERE row <= ${passengerPreferences.length}
     trip: ITrip,
     passenger: IPassenger,
     preferences: PassengerPreferences,
-    bestBooking: AvailableBooking
+    bestBooking: AvailableBooking,
+    loggedInAccount?: IAccount
   ): IBookingPassenger | undefined {
     const totalPrice = this.calculateTotalPriceForOnePassenger(
       passenger,
       bestBooking
     );
+
+    // remember the passenger for easier booking for passenger accounts
+    if (passenger.id === undefined && loggedInAccount?.role === 'Passenger') {
+      passenger.buddyId = loggedInAccount.passengerId;
+    }
 
     return {
       tripId: trip.id,
@@ -463,12 +474,18 @@ WHERE row <= ${passengerPreferences.length}
 
   private createTentativeBookingVehicles(
     trips: ITrip[],
-    vehicles: IVehicle[]
+    vehicles: IVehicle[],
+    loggedInAccount?: IAccount
   ): IBookingVehicle[] | undefined {
     const bookingVehicles: IBookingVehicle[] = [];
 
-    for (const trip of trips) {
-      vehicles.forEach((vehicle) => {
+    vehicles.forEach((vehicle) => {
+      // remember vehicles for easier booking for passenger accounts
+      if (vehicle.id === undefined && loggedInAccount?.role === 'Passenger') {
+        vehicle.accountId = loggedInAccount.id;
+      }
+
+      for (const trip of trips) {
         bookingVehicles.push({
           id: -1,
           bookingId: -1,
@@ -477,8 +494,8 @@ WHERE row <= ${passengerPreferences.length}
           tripId: trip.id,
           totalPrice: this.calculateTotalPriceForOneVehicle(trip, vehicle),
         } as IBookingVehicle);
-      });
-    }
+      }
+    });
 
     return bookingVehicles;
   }

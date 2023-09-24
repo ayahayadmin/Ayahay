@@ -12,8 +12,8 @@ import { TripService } from './trip.service';
 import { ITrip, SearchAvailableTrips } from '@ayahay/models';
 import { Prisma } from '@prisma/client';
 import { TripMapper } from './trip.mapper';
-import { Roles } from 'src/decorators/roles.decorators';
-import { AuthGuard } from '../auth-guard/auth.guard';
+import { Roles } from 'src/decorator/roles.decorator';
+import { AuthGuard } from '../guard/auth.guard';
 import { UpdateTripCapacityRequest } from '@ayahay/http';
 
 @Controller('trips')

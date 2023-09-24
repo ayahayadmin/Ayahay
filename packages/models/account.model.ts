@@ -11,6 +11,7 @@ export interface IAccount {
   email: string;
   role: keyof typeof ACCOUNT_ROLE;
 
+  passengers?: IPassenger[];
   vehicles?: IVehicle[];
 }
 

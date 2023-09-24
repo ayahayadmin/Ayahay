@@ -4,8 +4,6 @@ import {
   OCCUPATION,
   SEX,
 } from '@ayahay/constants/enum';
-import { PassengerPreferences } from '@ayahay/http';
-import { IVehicle, mockInnova, mockPickup } from './vehicle.model';
 import { IAccount } from './account.model';
 
 export interface IPassenger {

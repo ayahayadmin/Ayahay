@@ -6,12 +6,12 @@ import { CheckboxValueType } from 'antd/es/checkbox/Group';
 const { Title } = Typography;
 
 interface AddCompanionsModalProps {
-  loggedInPassenger?: IPassenger;
+  companions: IPassenger[];
   onSubmitCompanions: (companions: IPassenger[]) => void;
 }
 
 export default function AddCompanionsModal({
-  loggedInPassenger,
+  companions,
   onSubmitCompanions,
   onOk,
   ...modalProps
@@ -20,16 +20,14 @@ export default function AddCompanionsModal({
     CheckboxValueType[]
   >([]);
 
-  const options = loggedInPassenger?.companions?.map((companion, index) => ({
+  const options = companions.map((companion, index) => ({
     value: index,
     label: `${companion.firstName} ${companion.lastName}`,
   }));
 
   const onOkModal = () => {
     onSubmitCompanions(
-      selectedCompanionIndices.map(
-        (index) => loggedInPassenger?.companions?.[index]
-      )
+      selectedCompanionIndices.map((index) => companions?.[index])
     );
   };
 

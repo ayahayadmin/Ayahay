@@ -6,12 +6,12 @@ import { CheckboxValueType } from 'antd/es/checkbox/Group';
 const { Title } = Typography;
 
 interface AddVehiclesModalProps {
-  loggedInPassenger?: IPassenger;
+  vehicles: IVehicle[];
   onSubmitVehicles: (vehicles: IVehicle[]) => void;
 }
 
 export default function AddVehiclesModal({
-  loggedInPassenger,
+  vehicles,
   onSubmitVehicles,
   onOk,
   ...modalProps
@@ -20,17 +20,13 @@ export default function AddVehiclesModal({
     CheckboxValueType[]
   >([]);
 
-  const options = loggedInPassenger?.vehicles?.map((vehicle, index) => ({
+  const options = vehicles?.map((vehicle, index) => ({
     value: index,
     label: `${vehicle.modelName} ${vehicle.modelYear} ${vehicle.plateNo}`,
   }));
 
   const onOkModal = () => {
-    onSubmitVehicles(
-      selectedVehicleIndices.map(
-        (index) => loggedInPassenger?.vehicles?.[index]
-      )
-    );
+    onSubmitVehicles(selectedVehicleIndices.map((index) => vehicles?.[index]));
   };
 
   return (
