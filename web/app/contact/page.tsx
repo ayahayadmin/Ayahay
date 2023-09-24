@@ -97,24 +97,31 @@ export default function Contact() {
         Follow us on social media to keep up to date:
       </Title>
       <Space>
-        <Link href='https://www.facebook.com/profile.php?id=61551614079847&is_tour_dismissed=true'>
+        <a
+          href='https://www.facebook.com/profile.php?id=61551614079847&is_tour_dismissed=true'
+          target='_blank'
+        >
           <FacebookFilled style={{ fontSize: 28 }} rev={undefined} />
-        </Link>
-        <Link href='https://www.instagram.com/ayahayig'>
+        </a>
+        <a href='https://www.instagram.com/ayahayig' target='_blank'>
           <InstagramFilled style={{ fontSize: 28 }} rev={undefined} />
-        </Link>
-        <Link href='https://twitter.com/ayahayX'>
+        </a>
+        <a href='https://twitter.com/ayahayX' target='_blank'>
           <TwitterSquareFilled style={{ fontSize: 28 }} rev={undefined} />
-        </Link>
-        <Link href='https://www.linkedin.com/company/ayahay-technologies-corporation/about/?viewAsMember=true'>
+        </a>
+        <a
+          href='https://www.linkedin.com/company/ayahay-technologies-corporation/about/?viewAsMember=true'
+          target='_blank'
+        >
           <LinkedinFilled style={{ fontSize: 28 }} rev={undefined} />
-        </Link>
-        <Link
+        </a>
+        <a
           href='https://www.tiktok.com/@ayahaytiktok'
           style={{ fontSize: 25 }}
+          target='_blank'
         >
           Tiktok
-        </Link>
+        </a>
       </Space>
     </div>
   );

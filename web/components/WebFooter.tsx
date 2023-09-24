@@ -48,18 +48,24 @@ export default function WebFooter() {
           <h3>Follow us on social media</h3>
           <div className={styles['left-col-card']}>
             <Space>
-              <Link href='https://www.facebook.com/profile.php?id=61551614079847&is_tour_dismissed=true'>
+              <a
+                href='https://www.facebook.com/profile.php?id=61551614079847&is_tour_dismissed=true'
+                target='_blank'
+              >
                 <FacebookFilled style={{ fontSize: 28 }} rev={undefined} />
-              </Link>
-              <Link href='https://www.instagram.com/ayahayig'>
+              </a>
+              <a href='https://www.instagram.com/ayahayig' target='_blank'>
                 <InstagramFilled style={{ fontSize: 28 }} rev={undefined} />
-              </Link>
-              <Link href='https://twitter.com/ayahayX'>
+              </a>
+              <a href='https://twitter.com/ayahayX' target='_blank'>
                 <TwitterSquareFilled style={{ fontSize: 28 }} rev={undefined} />
-              </Link>
-              <Link href='https://www.linkedin.com/company/ayahay-technologies-corporation/about/?viewAsMember=true'>
+              </a>
+              <a
+                href='https://www.linkedin.com/company/ayahay-technologies-corporation/about/?viewAsMember=true'
+                target='_blank'
+              >
                 <LinkedinFilled style={{ fontSize: 28 }} rev={undefined} />
-              </Link>
+              </a>
             </Space>
           </div>
         </div>
