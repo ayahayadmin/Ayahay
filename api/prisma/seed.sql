@@ -71,32 +71,32 @@ INSERT INTO ayahay.shipping_line
 ;
 
 INSERT INTO cabin_type
-    (id, "name", "description", shipping_line_id)
+    ("name", "description", shipping_line_id)
     VALUES
-    (1, 'Aircon', 'Aircon', (SELECT id FROM ayahay.shipping_line WHERE "name" = 'Aznar Shipping')),
-    (2, 'Non-Aircon', 'Non-Aircon', (SELECT id FROM ayahay.shipping_line WHERE "name" = 'Aznar Shipping'))
+    ('Aircon', 'Aircon', (SELECT id FROM ayahay.shipping_line WHERE "name" = 'Aznar Shipping')),
+    ('Non-Aircon', 'Non-Aircon', (SELECT id FROM ayahay.shipping_line WHERE "name" = 'Aznar Shipping'))
 ;
 
 INSERT INTO vehicle_type
-    (id, "name", "description")
+    ("name", "description")
     VALUES
-    (1, 'Bicycle', 'Bicycle'),
-    (2, 'Motorcycle', 'Motorcycle'),
-    (3, 'Tricycle', 'Tricycle'),
-    (4, 'Big Bus', 'Bus with 60 pax capacity'),
-    (5, 'Mini Bus', 'Bus with 30 pax capacity'),
-    (6, 'Sedan', 'Sedan'),
-    (7, 'SUV', 'SUV'),
-    (8, 'Multicab', 'Multicab'),
-    (9, 'Pickup', 'Pickup'),
-    (10, '4-Wheeler Van', '4-Wheeler Van'),
-    (11, '4-Wheeler Light Van', '4-Wheeler Light Van'),
-    (12, '6-Wheeler Light Van', '6-Wheeler Light Van'),
-    (13, '6-Wheeler Chassis', '6-Wheeler Chassis'),
-    (14, '6-Wheeler Dump Truck', '6-Wheeler Dump Truck'),
-    (15, '8-Wheeler Oil Tanker', '8-Wheeler Oil Tanker'),
-    (16, '8-Wheeler Chassis', '8-Wheeler Chassis'),
-    (17, '10-Wheeler Chassis', '10-Wheeler Chassis')
+    ('Bicycle', 'Bicycle'),
+    ('Motorcycle', 'Motorcycle'),
+    ('Tricycle', 'Tricycle'),
+    ('Big Bus', 'Bus with 60 pax capacity'),
+    ('Mini Bus', 'Bus with 30 pax capacity'),
+    ('Sedan', 'Sedan'),
+    ('SUV', 'SUV'),
+    ('Multicab', 'Multicab'),
+    ('Pickup', 'Pickup'),
+    ('4-Wheeler Van', '4-Wheeler Van'),
+    ('4-Wheeler Light Van', '4-Wheeler Light Van'),
+    ('6-Wheeler Light Van', '6-Wheeler Light Van'),
+    ('6-Wheeler Chassis', '6-Wheeler Chassis'),
+    ('6-Wheeler Dump Truck', '6-Wheeler Dump Truck'),
+    ('8-Wheeler Oil Tanker', '8-Wheeler Oil Tanker'),
+    ('8-Wheeler Chassis', '8-Wheeler Chassis'),
+    ('10-Wheeler Chassis', '10-Wheeler Chassis')
 ;
 
 INSERT INTO ayahay.ship
@@ -217,4 +217,20 @@ INSERT INTO ayahay.trip_vehicle_type
 INSERT INTO ayahay.account
     (id, email, "role")
     VALUES
-    ('5qI9igARB9ZD1JdE2PODBpLRyAU2', 'it.ayahay@gmail.com', 'SuperAdmin')
+    ('5qI9igARB9ZD1JdE2PODBpLRyAU2', 'it.ayahay@gmail.com', 'SuperAdmin'),
+    ('NO9nCMzIlLfQLZECaWN99cVl87q2', 'staff@ayahay.com', 'Staff'),
+    ('d4cOs2S1R4VTmoUWjm1qWMAgBTj2', 'ngocarlos@gmail.com', 'Passenger')
+;
+
+INSERT INTO ayahay.passenger
+    (first_name, last_name, occupation, sex, civil_status, birthday, "address", nationality, buddy_id, account_id)
+    VALUES
+    ('Carlos', 'Ngo', 'SelfEmployed', 'Male', 'Single', '1999-10-20', 'Mandaluyong City', 'Filipino', NULL, (SELECT id FROM ayahay.account WHERE email = 'ngocarlos@gmail.com' LIMIT 1))
+;
+
+UPDATE ayahay.account
+    SET passenger_id = (
+        SELECT id FROM ayahay.passenger WHERE first_name = 'Carlos'
+    )
+    WHERE email = 'ngocarlos@gmail.com'
+;

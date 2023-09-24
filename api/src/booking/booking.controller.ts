@@ -15,8 +15,9 @@ import { BookingService } from './booking.service';
 import { IAccount, IBooking, IPassenger, IVehicle } from '@ayahay/models';
 import { PassengerPreferences } from '@ayahay/http';
 import { BookingSearchQuery } from '@ayahay/http';
-import { AuthGuard } from 'src/auth-guard/auth.guard';
-import { Roles } from 'src/decorators/roles.decorators';
+import { AuthGuard } from 'src/guard/auth.guard';
+import { Roles } from 'src/decorator/roles.decorator';
+import { AllowUnauthenticated } from '../decorator/authenticated.decorator';
 
 @Controller('bookings')
 export class BookingController {
@@ -40,6 +41,8 @@ export class BookingController {
   }
 
   @Post()
+  @UseGuards(AuthGuard)
+  @AllowUnauthenticated()
   async createTemporaryBooking(
     @Request() req,
     @Body()
@@ -55,7 +58,7 @@ export class BookingController {
       passengers,
       passengerPreferences,
       vehicles,
-      req.user?.id
+      req.user
     );
   }
 

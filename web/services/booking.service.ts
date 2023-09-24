@@ -14,10 +14,6 @@ export async function createTentativeBooking(
   const authToken = await getAuth().currentUser?.getIdToken();
 
   for (const vehicle of vehicles) {
-    if (vehicle.id && vehicle.id > 0) {
-      return;
-    }
-
     // TODO: remove these after file upload has been properly implemented
     vehicle.certificateOfRegistrationUrl ??= '';
     vehicle.officialReceiptUrl ??= '';

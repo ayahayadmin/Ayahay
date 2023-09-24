@@ -1,8 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AuthGuard } from './auth.guard';
-import { PrismaService } from 'src/prisma.service';
 
 @Module({
-  providers: [AuthGuard, PrismaService],
+  providers: [AuthGuard],
 })
 export class GuardModule {}

@@ -1,33 +1,29 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
 import { IAccount } from '@ayahay/models';
 import { ACCOUNT_ROLE } from '@ayahay/constants';
+import { PassengerMapper } from '../passenger/passenger.mapper';
+import { VehicleMapper } from '../vehicle/vehicle.mapper';
 
 @Injectable()
 export class AccountMapper {
-  convertAccountToDto(
-    account: Prisma.AccountGetPayload<{ include: { passenger: true } }>
-  ): IAccount {
+  constructor(
+    private readonly passengerMapper: PassengerMapper,
+    private readonly vehicleMapper: VehicleMapper
+  ) {}
+
+  convertAccountToDto(account: any): IAccount {
     return {
       id: account.id,
       email: account.email,
-      passengerId: account.passengerId,
+      passengerId: account.passengerId ?? undefined,
       passenger: account.passenger
-        ? {
-            id: account.passengerId,
-            accountId: account.id,
-            firstName: account.passenger.firstName,
-            lastName: account.passenger.lastName,
-            occupation: account.passenger.occupation as any,
-            sex: account.passenger.sex as any,
-            civilStatus: account.passenger.civilStatus as any,
-            birthdayIso: account.passenger.birthday.toISOString(),
-            address: account.passenger.address,
-            nationality: account.passenger.nationality,
-            buddyId: account.passenger.buddyId,
-          }
-        : null,
+        ? this.passengerMapper.convertPassengerToDto(account.passenger, true)
+        : undefined,
       role: account.role as ACCOUNT_ROLE,
+
+      vehicles: account.vehicles.map((vehicle) =>
+        this.vehicleMapper.convertVehicleToDto(vehicle)
+      ),
     };
   }
 }

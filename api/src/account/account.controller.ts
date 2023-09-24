@@ -1,14 +1,28 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
 import { AccountService } from './account.service';
-import { IAccount } from '@ayahay/models';
-import { AuthGuard } from 'src/auth-guard/auth.guard';
+import { IAccount, IPassenger } from '@ayahay/models';
+import { AuthGuard } from 'src/guard/auth.guard';
 import { Prisma } from '@prisma/client';
-import { Roles } from 'src/decorators/roles.decorators';
+import { Roles } from 'src/decorator/roles.decorator';
 
 @Controller('accounts')
 @UseGuards(AuthGuard)
 export class AccountController {
   constructor(private accountService: AccountService) {}
+
+  @Get('me')
+  @Roles('Passenger', 'Staff', 'Admin', 'SuperAdmin')
+  async getMyAccountInformation(@Request() req): Promise<IAccount> {
+    return this.accountService.getMyAccountInformation(req.user.id);
+  }
 
   @Get(':accountId')
   @Roles('Passenger', 'Staff', 'Admin', 'SuperAdmin')

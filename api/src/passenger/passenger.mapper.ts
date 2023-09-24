@@ -4,7 +4,7 @@ import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class PassengerMapper {
-  convertPassengerToDto(passenger: any): IPassenger {
+  convertPassengerToDto(passenger: any, withBuddies?: boolean): IPassenger {
     return {
       id: passenger.id,
       accountId: passenger.accountId,
@@ -18,9 +18,13 @@ export class PassengerMapper {
       birthdayIso: passenger.birthday.toISOString(),
       address: passenger.address,
       nationality: passenger.nationality,
-      discountType: passenger.discountType,
+      discountType: passenger.discountType ?? undefined,
 
-      companions: [],
+      companions: withBuddies
+        ? passenger.buddies.map((companion) =>
+            this.convertPassengerToDto(companion, false)
+          )
+        : [],
     };
   }
 
@@ -37,22 +41,20 @@ export class PassengerMapper {
       address: passenger.address,
       nationality: passenger.nationality,
       accountId: passenger.accountId,
-      account:
-        passenger.accountId === undefined
-          ? undefined
-          : {
-              connect: {
-                id: passenger.accountId,
-              },
+      account: passenger.accountId
+        ? {
+            connect: {
+              id: passenger.accountId,
             },
-      buddy:
-        passenger.buddyId === undefined
-          ? undefined
-          : {
-              connect: {
-                id: passenger.buddyId,
-              },
+          }
+        : undefined,
+      buddy: passenger.buddyId
+        ? {
+            connect: {
+              id: passenger.buddyId,
             },
+          }
+        : undefined,
     } as Prisma.PassengerCreateInput;
   }
 }
