@@ -3,13 +3,15 @@ import React from 'react';
 import Image from 'next/image';
 import styles from './WebHeader.module.scss';
 import AyahayLogo from '/public/assets/ayahay-logo.png';
-import Link from 'next/link';
-import { Button, notification } from 'antd';
+import { Button, Menu, notification } from 'antd';
 import { BellOutlined } from '@ant-design/icons';
 import { webLinks } from '@/services/nav.service';
 import AuthForm from '@/components/auth/AuthForm';
+import { usePathname, useRouter } from 'next/navigation';
 
 export default function WebHeader() {
+  const pathName = usePathname();
+  const router = useRouter();
   const [api, contextHolder] = notification.useNotification();
 
   const openNotification = () => {
@@ -26,30 +28,16 @@ export default function WebHeader() {
       <div className={styles['nav-main']}>
         <Image src={AyahayLogo} alt='Ayahay Logo' height={80} />
         <ul className={styles['nav-links']}>
-          {webLinks.map((link, index) => {
-            // if (link.label !== 'Resources') {
-            return (
-              <Link key={index} href={link.url}>
-                {link.label}
-              </Link>
-            );
-            // } else {
-            //   return (
-            //     <div className={styles['nav-div']}>
-            //       {link.label}
-            //       {link.sublinks && (
-            //         <ul>
-            //           {link.sublinks.map((sublink, subIndex) => (
-            //             <Link key={`sub_${subIndex}`} href={sublink.url}>
-            //               {sublink.label}
-            //             </Link>
-            //           ))}
-            //         </ul>
-            //       )}
-            //     </div>
-            //   );
-            // }
-          })}
+          <Menu
+            mode='horizontal'
+            style={{ background: 'none', borderBottomStyle: 'none' }}
+            defaultSelectedKeys={webLinks
+              .filter((link) => pathName === `/${link.key}`)
+              .map((link) => link.key)}
+            disabledOverflow={true}
+            items={webLinks}
+            onClick={({ key }) => router.push(key)}
+          />
         </ul>
       </div>
 
