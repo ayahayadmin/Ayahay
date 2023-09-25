@@ -1,16 +1,28 @@
-import { Controller, Param, Post, Body } from '@nestjs/common';
+import {
+  Controller,
+  Param,
+  Post,
+  Body,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
 import { PaymentService } from './payment.service';
 import { PaymentInitiationResponse } from '@ayahay/http';
+import { AllowUnauthenticated } from '../decorator/authenticated.decorator';
+import { AuthGuard } from '../guard/auth.guard';
 
 @Controller('pay')
 export class PaymentController {
   constructor(private paymentService: PaymentService) {}
 
   @Post('booking/:id')
+  @UseGuards(AuthGuard)
+  @AllowUnauthenticated()
   async payBooking(
+    @Request() req,
     @Param('id') tempBookingId: string
   ): Promise<PaymentInitiationResponse> {
-    return this.paymentService.startPaymentFlow(+tempBookingId);
+    return this.paymentService.startPaymentFlow(+tempBookingId, req.user);
   }
 
   @Post('postback/dpay')

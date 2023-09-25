@@ -33,6 +33,8 @@ export class BookingController {
   }
 
   @Get(':id')
+  @UseGuards(AuthGuard)
+  @AllowUnauthenticated()
   async getBookingSummaryById(
     @Request() req,
     @Param('id') id: string

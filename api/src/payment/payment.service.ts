@@ -10,6 +10,7 @@ import { BookingService } from '../booking/booking.service';
 import { PaymentInitiationResponse } from '@ayahay/http';
 import { createHash } from 'crypto';
 import axios from 'axios';
+import { IAccount } from '@ayahay/models';
 
 @Injectable()
 export class PaymentService {
@@ -21,7 +22,8 @@ export class PaymentService {
   ) {}
 
   async startPaymentFlow(
-    tempBookingId: number
+    tempBookingId: number,
+    loggedInAccount?: IAccount
   ): Promise<PaymentInitiationResponse> {
     const tempBooking = await this.prisma.tempBooking.findUnique({
       where: {
@@ -35,6 +37,15 @@ export class PaymentService {
     }
 
     const paymentReference = uuidv4();
+
+    if (this.shouldSkipPaymentFlow(loggedInAccount)) {
+      return this.skipPaymentFlow(
+        tempBookingId,
+        paymentReference,
+        `${process.env.WEB_URL}/bookings/${paymentReference}`
+      );
+    }
+
     const paymentGatewayResponse =
       await this.initiateTransactionWithPaymentGateway(paymentReference, {
         Amount: tempBooking.totalPrice,
@@ -50,11 +61,42 @@ export class PaymentService {
     return this.onSuccessfulPaymentInitiation(
       tempBookingId,
       paymentReference,
-      paymentGatewayResponse
+      paymentGatewayResponse.Url
     );
   }
 
-  async initiateTransactionWithPaymentGateway(
+  private shouldSkipPaymentFlow(loggedInAccount?: IAccount): boolean {
+    const isPaymentGatewayConfigured =
+      process.env.PAYMENT_GATEWAY_URL !== undefined;
+
+    const isStaffOrAdmin =
+      loggedInAccount && loggedInAccount.role !== 'Passenger';
+
+    const isLocalEnvironment = process.env.NODE_ENV === 'local';
+
+    return !isPaymentGatewayConfigured || isStaffOrAdmin || isLocalEnvironment;
+  }
+
+  private async skipPaymentFlow(
+    tempBookingId: number,
+    paymentReference: string,
+    redirectUrl: string
+  ): Promise<PaymentInitiationResponse> {
+    const response = await this.onSuccessfulPaymentInitiation(
+      tempBookingId,
+      paymentReference,
+      redirectUrl
+    );
+
+    await this.prisma.$transaction(
+      async (transactionContext) =>
+        await this.onSuccessfulTransaction(transactionContext, paymentReference)
+    );
+
+    return response;
+  }
+
+  private async initiateTransactionWithPaymentGateway(
     transactionId: string,
     request: DragonpayPaymentInitiationRequest
   ): Promise<DragonpayPaymentInitiationResponse> {
@@ -80,10 +122,10 @@ export class PaymentService {
     }
   }
 
-  async onSuccessfulPaymentInitiation(
+  private async onSuccessfulPaymentInitiation(
     tempBookingId: number,
     paymentReference: string,
-    paymentGatewayResponse: DragonpayPaymentInitiationResponse
+    redirectUrl: string
   ): Promise<PaymentInitiationResponse> {
     await this.prisma.tempBooking.update({
       where: {
@@ -94,21 +136,8 @@ export class PaymentService {
       },
     });
 
-    if (process.env.NODE_ENV === 'local') {
-      await this.handleDragonpayPostback(
-        paymentReference,
-        '',
-        'P',
-        '',
-        0,
-        '',
-        '',
-        ''
-      );
-    }
-
     return {
-      paymentGatewayUrl: paymentGatewayResponse.Url,
+      redirectUrl,
       paymentReference,
     };
   }

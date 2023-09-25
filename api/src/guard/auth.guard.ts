@@ -122,10 +122,6 @@ export class AuthGuard implements CanActivate {
       return true;
     }
 
-    if (!isEmailVerified) {
-      throw new ForbiddenException('Unverified email');
-    }
-
     const requiredRoles = this.reflector.getAllAndOverride<ACCOUNT_ROLE[]>(
       ROLES_KEY,
       [context.getHandler(), context.getClass()]
@@ -133,6 +129,10 @@ export class AuthGuard implements CanActivate {
 
     if (requiredRoles && !includes(requiredRoles, account.role)) {
       throw new ForbiddenException('Insufficient access');
+    }
+
+    if (account.role === 'Passenger' && !isEmailVerified) {
+      throw new ForbiddenException('Unverified email');
     }
 
     return true;

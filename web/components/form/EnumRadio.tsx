@@ -3,7 +3,7 @@ import React from 'react';
 
 interface EnumProps {
   _enum: any;
-  disabled: boolean;
+  disabled?: boolean;
 }
 
 export default function EnumRadio({

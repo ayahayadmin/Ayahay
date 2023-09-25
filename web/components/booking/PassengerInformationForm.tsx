@@ -8,7 +8,12 @@ import {
   Typography,
 } from 'antd';
 import React, { useEffect, useState } from 'react';
-import { CIVIL_STATUS, OCCUPATION, SEX } from '@ayahay/constants/enum';
+import {
+  CIVIL_STATUS,
+  DISCOUNT_TYPE,
+  OCCUPATION,
+  SEX,
+} from '@ayahay/constants/enum';
 import {
   IAccount,
   IPassenger,
@@ -27,6 +32,7 @@ import { useAuth } from '@/app/contexts/AuthContext';
 const { Title } = Typography;
 
 interface PassengerInformationFormProps {
+  loggedInAccount?: IAccount;
   onNextStep?: () => void;
   onPreviousStep?: () => void;
 }
@@ -34,38 +40,24 @@ interface PassengerInformationFormProps {
 const yearToday = new Date().getFullYear();
 
 export default function PassengerInformationForm({
+  loggedInAccount,
   onNextStep,
   onPreviousStep,
 }: PassengerInformationFormProps) {
-  const { currentUser } = useAuth();
   const form = Form.useFormInstance();
   const passengers = Form.useWatch('passengers', form);
   const vehicles = Form.useWatch('vehicles', form);
-  const [loggedInAccount, setLoggedInAccount] = useState<
-    IAccount | undefined
-  >();
   const [companionModalOpen, setCompanionModalOpen] = useState(false);
   const [vehicleModalOpen, setVehicleModalOpen] = useState(false);
 
   useEffect(() => {
-    if (currentUser) {
-      fetchLoggedInAccount();
+    if (loggedInAccount) {
+      insertPassengerAtFirstIndex(loggedInAccount.passenger);
     } else {
-      setLoggedInAccount(undefined);
       removeAllCompanions();
       removeAllRegisteredVehicles();
     }
-  }, [currentUser]);
-
-  const fetchLoggedInAccount = async () => {
-    const myAccountInformation = await getMyAccountInformation();
-    if (myAccountInformation === undefined) {
-      return;
-    }
-
-    setLoggedInAccount(myAccountInformation);
-    insertPassengerAtFirstIndex(myAccountInformation.passenger);
-  };
+  }, [loggedInAccount]);
 
   const insertPassengerAtFirstIndex = (passenger?: IPassenger) => {
     if (passenger === undefined) {
@@ -298,6 +290,15 @@ export default function PassengerInformationForm({
                     placeholder='Filipino, Chinese, American, etc.'
                   />
                 </Form.Item>
+                {loggedInAccount && loggedInAccount.role !== 'Passenger' && (
+                  <EnumRadio
+                    _enum={DISCOUNT_TYPE}
+                    {...restField}
+                    name={[name, 'discountType']}
+                    label='Discount Type'
+                    colon={false}
+                  />
+                )}
                 <Button onClick={() => remove(name)}>Remove Passenger</Button>
               </div>
             ))}

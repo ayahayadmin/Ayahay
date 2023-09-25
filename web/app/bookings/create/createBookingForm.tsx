@@ -1,6 +1,6 @@
 import { Form, Spin, Steps, Grid, notification, Modal } from 'antd';
 import styles from './createBookingForm.module.scss';
-import { IBooking, IPassenger } from '@ayahay/models';
+import { IAccount, IBooking, IPassenger } from '@ayahay/models';
 import PassengerInformationForm from '@/components/booking/PassengerInformationForm';
 import React, { useEffect, useState } from 'react';
 import PassengerPreferencesForm from '@/components/booking/PassengerPreferencesForm';
@@ -12,8 +12,14 @@ import BookingConfirmation from '@/components/booking/BookingConfirmation';
 import { useTripFromSearchParams } from '@/hooks/trip';
 import { startPaymentForBooking } from '@/services/payment.service';
 import { InfoCircleOutlined } from '@ant-design/icons';
+import { invalidateItem } from '@ayahay/services/cache.service';
+import { useAuth } from '@/app/contexts/AuthContext';
+import { getMyAccountInformation } from '@/services/account.service';
+import { useRouter } from 'next/navigation';
+import { useLoggedInAccount } from '@/hooks/auth';
 
 const { useBreakpoint } = Grid;
+
 interface CreateBookingFormProps {
   onComplete: (booking: IBooking) => void;
 }
@@ -27,6 +33,7 @@ const steps = [
 export default function CreateBookingForm({
   onComplete,
 }: CreateBookingFormProps) {
+  const { loggedInAccount } = useLoggedInAccount();
   const { trip } = useTripFromSearchParams();
   const screens = useBreakpoint();
   const [modal, contextHolder] = Modal.useModal();
@@ -99,7 +106,11 @@ export default function CreateBookingForm({
     }
 
     informPaymentInitiation(response.paymentReference);
-    window.open(response.paymentGatewayUrl);
+    window.open(response.redirectUrl);
+
+    // we cache saved passengers and vehicles in loggedInAccount. we invalidate this to
+    // ensure that the fetched data will include the passengers & vehicles created from this booking
+    invalidateItem('loggedInAccount');
   };
 
   const informPaymentInitiation = (transactionId: string) => {
@@ -172,6 +183,7 @@ export default function CreateBookingForm({
       <Spin spinning={loadingMessage?.length > 0} tip={loadingMessage}>
         <div style={{ display: currentStep === 0 ? 'block' : 'none' }}>
           <PassengerInformationForm
+            loggedInAccount={loggedInAccount}
             onNextStep={initializePreferences}
             onPreviousStep={previousStep}
           />
