@@ -2,9 +2,9 @@ import {
   CanActivate,
   ExecutionContext,
   ForbiddenException,
-  HttpException,
   Injectable,
   InternalServerErrorException,
+  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
@@ -17,6 +17,7 @@ import { ACCOUNT_ROLE } from '@ayahay/constants';
 import { ROLES_KEY } from 'src/decorator/roles.decorator';
 import { PrismaService } from 'src/prisma.service';
 import { AUTHENTICATED_KEY } from '../decorator/authenticated.decorator';
+import { VERIFIED_KEY } from 'src/decorator/verified.decorator';
 
 /**
  * Sets request.user to the logged-in account making the request
@@ -43,6 +44,8 @@ import { AUTHENTICATED_KEY } from '../decorator/authenticated.decorator';
 export class AuthGuard implements CanActivate {
   constructor(private reflector: Reflector, private prisma: PrismaService) {}
 
+  private readonly logger = new Logger(AuthGuard.name);
+
   private decryptToken(token: string): Promise<any> {
     initFirebase();
     return admin
@@ -52,7 +55,7 @@ export class AuthGuard implements CanActivate {
         return decodedToken;
       })
       .catch((error) => {
-        console.log(`error: ${error}`);
+        this.logger.error(`Decrypt token failed: ${error}`);
         throw new Error(error);
       });
   }
@@ -86,6 +89,11 @@ export class AuthGuard implements CanActivate {
     const token = this.extractTokenFromHeader(request);
     const shouldBeAuthenticated =
       this.reflector.getAllAndOverride<boolean>(AUTHENTICATED_KEY, [
+        context.getHandler(),
+        context.getClass(),
+      ]) ?? true;
+    const shouldBeVerified =
+      this.reflector.getAllAndOverride<boolean>(VERIFIED_KEY, [
         context.getHandler(),
         context.getClass(),
       ]) ?? true;
@@ -129,6 +137,10 @@ export class AuthGuard implements CanActivate {
 
     if (requiredRoles && !includes(requiredRoles, account.role)) {
       throw new ForbiddenException('Insufficient access');
+    }
+
+    if (shouldBeVerified === false) {
+      return true;
     }
 
     if (account.role === 'Passenger' && !isEmailVerified) {

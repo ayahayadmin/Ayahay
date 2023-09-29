@@ -1,5 +1,5 @@
 import { ACCOUNT_API } from '@ayahay/constants';
-import { IAccount, mockFather } from '@ayahay/models';
+import { IAccount, IPassenger } from '@ayahay/models';
 import { cacheItem, fetchItem } from '@ayahay/services/cache.service';
 import axios from 'axios';
 import { getAuth } from 'firebase/auth';

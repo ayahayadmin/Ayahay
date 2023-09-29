@@ -9,24 +9,24 @@ import {
   signInWithPopup,
   signOut,
 } from 'firebase/auth';
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext } from 'react';
 import { initFirebase } from '../utils/initFirebase';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { verifyToken } from '@/services/auth.service';
-import {
-  createAccount,
-  getMyAccountInformation,
-} from '@/services/account.service';
 import { invalidateItem } from '@ayahay/services/cache.service';
 import { accountRelatedCacheKeys } from '@ayahay/constants';
-import { IAccount } from '@ayahay/models';
+import { IAccount, RegisterForm } from '@ayahay/models';
+import {
+  createPassenger,
+  mapPassengerToDto,
+} from '@/services/passenger.service';
 
 initFirebase();
-const auth = getAuth();
+export const auth = getAuth();
 const AuthContext = createContext({
   currentUser: null,
   loggedInAccount: undefined as IAccount | undefined,
-  register: (email: string, password: string) => Promise,
+  register: (email: string, password: string, values: RegisterForm) => Promise,
   signIn: (email: string, password: string) => Promise,
   signInWithGoogle: () => Promise,
   logout: () => Promise,
@@ -39,7 +39,7 @@ export const useAuth = () => useContext(AuthContext);
 export default function AuthContextProvider({ children }: any) {
   const [currentUser, loading] = useAuthState(auth);
 
-  function register(email: string, password: string) {
+  function register(email: string, password: string, values: RegisterForm) {
     return createUserWithEmailAndPassword(auth, email, password)
       .then(async (userCredential) => {
         // Signed in
@@ -48,8 +48,10 @@ export default function AuthContextProvider({ children }: any) {
 
         const token = await user.getIdToken();
         const data = await verifyToken(token);
-        const { uid, email } = data;
-        await createAccount(token, uid, email);
+        const { uid } = data;
+
+        const mappedPassenger = mapPassengerToDto(uid, values);
+        await createPassenger(token, mappedPassenger);
 
         await emailVerification(user);
 
@@ -58,7 +60,7 @@ export default function AuthContextProvider({ children }: any) {
       .catch((error) => {
         const errorCode = error.code;
         const errorMessage = error.message;
-        console.log(`register in error`); //maybe throw an error
+        throw new Error(`register in error`);
       });
   }
 
@@ -92,8 +94,7 @@ export default function AuthContextProvider({ children }: any) {
         return true;
       })
       .catch((error) => {
-        // An error happened.
-        console.log(`reset error`); //maybe throw an error
+        throw new Error(`sign in with Google error`);
       });
   }
 
@@ -106,8 +107,7 @@ export default function AuthContextProvider({ children }: any) {
         }
       })
       .catch((error) => {
-        // An error happened.
-        console.log('sign out error'); //maybe throw an error
+        throw new Error('sign out error');
       });
   }
 

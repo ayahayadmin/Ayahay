@@ -8,10 +8,11 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AccountService } from './account.service';
-import { IAccount, IPassenger } from '@ayahay/models';
+import { IAccount } from '@ayahay/models';
 import { AuthGuard } from 'src/guard/auth.guard';
 import { Prisma } from '@prisma/client';
 import { Roles } from 'src/decorator/roles.decorator';
+import { AllowUnverified } from 'src/decorator/verified.decorator';
 
 @Controller('accounts')
 @UseGuards(AuthGuard)
@@ -20,6 +21,7 @@ export class AccountController {
 
   @Get('me')
   @Roles('Passenger', 'Staff', 'Admin', 'SuperAdmin')
+  @AllowUnverified()
   async getMyAccountInformation(@Request() req): Promise<IAccount> {
     return this.accountService.getMyAccountInformation(req.user.id);
   }

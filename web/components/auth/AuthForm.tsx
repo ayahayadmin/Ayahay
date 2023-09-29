@@ -1,24 +1,15 @@
 'use client';
 import React, { useState } from 'react';
-import {
-  Avatar,
-  Button,
-  Checkbox,
-  Dropdown,
-  Form,
-  Input,
-  MenuProps,
-  Modal,
-  message,
-} from 'antd';
+import { Avatar, Button, Dropdown, MenuProps, Modal, message } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
-import { LoginForm } from '@ayahay/models';
+import { LoginForm, RegisterForm } from '@ayahay/models';
 import Link from 'next/link';
 import { useAuth } from '@/app/contexts/AuthContext';
-import axios from 'axios';
-import { ACCOUNT_API } from '@ayahay/constants';
 import { User, getAuth } from 'firebase/auth';
-import styles from './AuthForm.module.scss';
+import Register from '../form/Register';
+import Login from '../form/Login';
+import ForgotPassword from '../form/ForgotPassword';
+import { useLoggedInAccount } from '@/hooks/auth';
 
 export default function AuthForm() {
   const auth = getAuth();
@@ -30,14 +21,12 @@ export default function AuthForm() {
     resetPassword,
     signIn,
   } = useAuth();
+  const { loggedInAccount } = useLoggedInAccount();
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-  const [error, setError] = useState('');
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [dropdownLabel, setDropdownLabel] = useState('');
-  const [messageApi, contextHolder] = message.useMessage();
 
   const onClick = () => {
     if (!currentUser) {
@@ -54,20 +43,19 @@ export default function AuthForm() {
   const logOut = () => {
     logout();
     setDropdownOpen(false);
-    setDropdownLabel('');
   };
 
   const verifyEmail = async (user: User) => {
     try {
       await emailVerification(user);
-      messageApi.open({
+      message.success({
         type: 'success',
         content:
           'Email sent! Check your inbox and click the link to verify your email.',
         duration: 5,
       });
     } catch {
-      messageApi.open({
+      message.error({
         type: 'error',
         content: 'Email failed to send. Please try again later.',
         duration: 5,
@@ -84,17 +72,14 @@ export default function AuthForm() {
     console.log('Received values of form: ', values);
     const { email, password } = values;
     try {
-      const userId = await signIn(email, password);
-      axios
-        .get(`${ACCOUNT_API}/${userId}`)
-        .then(({ data }) => {
-          setDropdownLabel(data.email.split('@')[0]);
-        })
-        .catch((error) => {
-          console.error('Axios Error', error.message);
-        });
+      await signIn(email, password);
       setIsLoginModalOpen(false);
     } catch (error) {
+      message.error({
+        type: 'error',
+        content: 'E-mail or password is incorrect.',
+        duration: 5,
+      });
       console.error(error);
     }
   };
@@ -105,13 +90,13 @@ export default function AuthForm() {
     const result = await resetPassword(email);
     if (result) {
       setIsResetModalOpen(false);
-      messageApi.open({
+      message.success({
         type: 'success',
         content: 'Email sent! Check your inbox to reset your password.',
         duration: 5,
       });
     } else {
-      messageApi.open({
+      message.error({
         type: 'error',
         content:
           'Email failed to send. Make sure you inputted the correct email address.',
@@ -120,13 +105,21 @@ export default function AuthForm() {
     }
   };
 
-  const onFinishRegister = async (values: any) => {
+  const onFinishRegister = async (values: RegisterForm) => {
     console.log('Received values of register: ', values);
     const { email, password } = values;
-    const uid = await register(email, password);
-    if (uid) {
-      //TO DO: save account deets in Account table
-      setIsRegisterModalOpen(false);
+    try {
+      const uid = await register(email, password, values);
+      if (uid) {
+        setIsRegisterModalOpen(false);
+      }
+    } catch (error) {
+      message.error({
+        type: 'error',
+        content: 'Register account error',
+        duration: 5,
+      });
+      console.error(error);
     }
   };
 
@@ -178,7 +171,12 @@ export default function AuthForm() {
     },
   ];
 
-  const label = currentUser ? `Welcome, ${dropdownLabel}` : 'Log In';
+  const label = currentUser
+    ? `Welcome, ${
+        loggedInAccount?.passenger?.firstName ??
+        loggedInAccount?.email.split('@')[0]
+      }`
+    : 'Log In';
   return (
     <div>
       <Dropdown menu={{ items }} open={!!currentUser && dropdownOpen}>
@@ -189,74 +187,25 @@ export default function AuthForm() {
           onClick={onClick}
         >
           <span style={{ marginRight: '12px', fontSize: '14px' }}>{label}</span>
-          <Avatar icon={<UserOutlined />} />
+          <Avatar icon={<UserOutlined rev={undefined} />} />
         </Button>
       </Dropdown>
       <Modal
-        title='Login'
+        title='Hey there!'
         open={isLoginModalOpen}
         onCancel={onClickCancel}
         footer={null}
         destroyOnClose={true}
       >
-        <Form
-          name='normal_login'
-          className='login-form'
-          onFinish={onFinishLogin}
+        Don't have an account?{' '}
+        <Link
+          href='/'
+          onClick={onClickRegister}
+          style={{ textDecoration: 'underline' }}
         >
-          <Form.Item
-            label='E-mail:'
-            name='email'
-            rules={[
-              {
-                type: 'email',
-                message: 'The input is not valid E-mail!',
-              },
-              {
-                required: true,
-                message: 'Please input your E-mail!',
-              },
-            ]}
-          >
-            <Input onFocus={() => setError('')} placeholder='Enter email' />
-          </Form.Item>
-          <Form.Item
-            label='Password:'
-            name='password'
-            rules={[{ required: true, message: 'Please input your Password!' }]}
-          >
-            <Input.Password
-              onFocus={() => setError('')}
-              type='password'
-              placeholder='Enter password'
-            />
-          </Form.Item>
-          <Form.Item>
-            <a className='login-form-forgot' onClick={onClickReset}>
-              Forgot password?
-            </a>
-          </Form.Item>
-
-          {error && <span>{error}</span>}
-
-          <Form.Item className={styles['buttons']}>
-            <Button
-              type='primary'
-              htmlType='submit'
-              className={styles['button']}
-            >
-              Log in
-            </Button>
-            <Button
-              type='primary'
-              htmlType='submit'
-              className={styles['button']}
-              onClick={onClickRegister}
-            >
-              Register
-            </Button>
-          </Form.Item>
-        </Form>
+          Register now!
+        </Link>
+        <Login onFinishLogin={onFinishLogin} onClickReset={onClickReset} />
       </Modal>
       <Modal
         title='Forgot Your Password?'
@@ -265,48 +214,10 @@ export default function AuthForm() {
         footer={null}
         destroyOnClose={true}
       >
-        {contextHolder}
-        <Form
-          name='forgot_password'
-          className='forgot-password-form'
-          onFinish={onFinishReset}
-        >
-          <Form.Item
-            label='E-mail:'
-            name='email'
-            rules={[
-              {
-                type: 'email',
-                message: 'The input is not valid E-mail!',
-              },
-              {
-                required: true,
-                message: 'Please input your E-mail!',
-              },
-            ]}
-          >
-            <Input onFocus={() => setError('')} placeholder='Enter email' />
-          </Form.Item>
-
-          {error && <span>{error}</span>}
-
-          <Form.Item className={styles['buttons']}>
-            <Button
-              key='back'
-              onClick={onClickBack}
-              className={styles['button']}
-            >
-              Back
-            </Button>
-            <Button
-              type='primary'
-              htmlType='submit'
-              className={styles['button']}
-            >
-              Submit
-            </Button>
-          </Form.Item>
-        </Form>
+        <ForgotPassword
+          onFinishReset={onFinishReset}
+          onClickBack={onClickBack}
+        />
       </Modal>
       <Modal
         title='Register'
@@ -315,99 +226,10 @@ export default function AuthForm() {
         footer={null}
         destroyOnClose={true}
       >
-        <Form
-          name='normal_register'
-          className='register-form'
-          onFinish={onFinishRegister}
-        >
-          <Form.Item
-            label='E-mail:'
-            name='email'
-            rules={[
-              {
-                type: 'email',
-                message: 'The input is not valid E-mail!',
-              },
-              {
-                required: true,
-                message: 'Please input your E-mail!',
-              },
-            ]}
-          >
-            <Input onFocus={() => setError('')} placeholder='Enter email' />
-          </Form.Item>
-          <Form.Item
-            label='Password:'
-            name='password'
-            rules={[{ required: true, message: 'Please input your Password!' }]}
-          >
-            <Input.Password
-              onFocus={() => setError('')}
-              type='password'
-              placeholder='Enter password'
-            />
-          </Form.Item>
-          <Form.Item
-            name='confirm'
-            label='Confirm Password'
-            dependencies={['password']}
-            rules={[
-              {
-                required: true,
-                message: 'Please confirm your password!',
-              },
-              ({ getFieldValue }) => ({
-                validator(_, value) {
-                  if (!value || getFieldValue('password') === value) {
-                    return Promise.resolve();
-                  }
-                  return Promise.reject(
-                    new Error(
-                      'The two passwords that you entered do not match!'
-                    )
-                  );
-                },
-              }),
-            ]}
-          >
-            <Input.Password />
-          </Form.Item>
-          <Form.Item
-            name='agreement'
-            valuePropName='checked'
-            rules={[
-              {
-                validator: (_, value) =>
-                  value
-                    ? Promise.resolve()
-                    : Promise.reject(new Error('Should accept agreement')),
-              },
-            ]}
-          >
-            <Checkbox>
-              Agree with the <a href=''>Terms of Service</a>
-            </Checkbox>
-          </Form.Item>
-
-          {error && <span>{error}</span>}
-
-          <Form.Item className={styles['buttons']}>
-            <Button
-              key='back'
-              onClick={onClickBack}
-              className={styles['button']}
-            >
-              Back
-            </Button>
-            <Button
-              type='primary'
-              htmlType='submit'
-              className={styles['button']}
-            >
-              Submit
-            </Button>
-          </Form.Item>
-        </Form>
+        <Register
+          onFinishRegister={onFinishRegister}
+          onClickBack={onClickBack}
+        />
       </Modal>
       <Modal
         title='My Profile'
@@ -422,7 +244,6 @@ export default function AuthForm() {
           </div>
         ) : (
           <div>
-            {contextHolder}
             <span>
               {auth.currentUser?.email} is not yet verified, please{' '}
               <Link
