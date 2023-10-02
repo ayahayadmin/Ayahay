@@ -16,8 +16,8 @@ async function bootstrap() {
 
   app.enableCors({
     origin: [
-      process.env.NEXT_PUBLIC_WEB_URL,
-      process.env.NEXT_PUBLIC_ADMIN_URL,
+      process.env.WEB_URL,
+      process.env.ADMIN_URL,
       process.env.DRAGONPAY_GATEWAY_URL,
     ],
   });
