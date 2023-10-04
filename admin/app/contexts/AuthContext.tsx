@@ -7,9 +7,11 @@ import {
 import { createContext, useContext } from 'react';
 import { initFirebase } from '../utils/initFirebase';
 import { useAuthState } from 'react-firebase-hooks/auth';
+import { accountRelatedCacheKeys } from '@ayahay/constants';
+import { invalidateItem } from '@ayahay/services/cache.service';
 
 initFirebase();
-const auth = getAuth();
+export const auth = getAuth();
 const AuthContext = createContext({
   currentUser: null,
   signIn: (email: string, password: string) => Promise,
@@ -31,9 +33,7 @@ export default function AuthContextProvider({ children }: any) {
         return user.uid;
       })
       .catch((error) => {
-        const errorCode = error.code;
-        const errorMessage = error.message;
-        throw new Error(`sign in error: ${errorCode}: ${errorMessage}`);
+        throw new Error(`sign in error`);
       });
   }
 
@@ -45,8 +45,7 @@ export default function AuthContextProvider({ children }: any) {
         return true;
       })
       .catch((error) => {
-        // An error happened.
-        console.log(`reset error`); //maybe throw an error
+        throw new Error('reset error');
       });
   }
 
@@ -54,11 +53,12 @@ export default function AuthContextProvider({ children }: any) {
     return signOut(auth)
       .then(() => {
         // Sign-out successful.
-        console.log('sign out success');
+        for (const accountRelatedCacheKey of accountRelatedCacheKeys) {
+          invalidateItem(accountRelatedCacheKey);
+        }
       })
       .catch((error) => {
-        // An error happened.
-        console.log('sign out error'); //maybe throw an error
+        throw new Error('sign out error');
       });
   }
 

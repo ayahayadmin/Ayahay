@@ -1,9 +1,12 @@
 'use client';
 import styles from './page.module.scss';
 import React from 'react';
-import { Button, Typography, Select, Form } from 'antd';
+import { Button, Typography, Select, Form, Spin } from 'antd';
 import { getAllBookings } from '@/services/booking.service';
 import { generateBookingCsv } from '@/services/csv.service';
+import { useAuthState } from '@/hooks/auth';
+import { redirect } from 'next/navigation';
+import { useLoggedInAccount } from '@ayahay/hooks/auth';
 
 const { Title } = Typography;
 
@@ -19,6 +22,20 @@ for (let monthDiff = 0; monthDiff < 3; monthDiff++) {
 }
 
 export default function DownloadBookings() {
+  const { loggedInAccount } = useLoggedInAccount();
+  const { pending, isSignedIn, user, auth } = useAuthState();
+
+  if (pending) {
+    return <Spin size='large' className={styles['spinner']} />;
+  }
+
+  const allowedRoles = ['SuperAdmin', 'Admin'];
+  if (!isSignedIn) {
+    redirect('/');
+  } else if (loggedInAccount && !allowedRoles.includes(loggedInAccount.role)) {
+    redirect('/404');
+  }
+
   const onFinish = (formValues: any) => {
     const monthIso = formValues.month;
     const requestedMonthDate = new Date(monthIso);

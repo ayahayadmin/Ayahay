@@ -14,9 +14,9 @@ import { startPaymentForBooking } from '@/services/payment.service';
 import { InfoCircleOutlined } from '@ant-design/icons';
 import { invalidateItem } from '@ayahay/services/cache.service';
 import { useAuth } from '@/app/contexts/AuthContext';
-import { getMyAccountInformation } from '@/services/account.service';
+import { getMyAccountInformation } from '@ayahay/services/account.service';
 import { useRouter } from 'next/navigation';
-import { useLoggedInAccount } from '@/hooks/auth';
+import { useLoggedInAccount } from '@ayahay/hooks/auth';
 
 const { useBreakpoint } = Grid;
 

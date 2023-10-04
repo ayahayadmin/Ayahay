@@ -1,9 +1,11 @@
 'use client';
 import './globals.css';
-import Header from '@/components/Header';
+import AdminHeader from '@/components/AdminHeader';
 import { Jost } from 'next/font/google';
-import { App, ConfigProvider } from 'antd';
+import { App, ConfigProvider, Layout } from 'antd';
 import AuthContextProvider from './contexts/AuthContext';
+import AdminSider from '@/components/AdminSider';
+import { Content } from 'antd/es/layout/layout';
 
 const jost = Jost({ subsets: ['latin'], display: 'swap' });
 
@@ -16,18 +18,25 @@ export default function RootLayout({
     <html lang='en' className={jost.className}>
       <body>
         <AuthContextProvider>
-          <Header />
-          <main>
-            <ConfigProvider
-              theme={{
-                token: {
-                  fontFamily: jost.style.fontFamily,
-                },
-              }}
-            >
-              <App>{children}</App>
-            </ConfigProvider>
-          </main>
+          <ConfigProvider
+            theme={{
+              token: {
+                fontFamily: jost.style.fontFamily,
+              },
+            }}
+          >
+            <App>
+              <Layout>
+                <Layout className='body'>
+                  <AdminHeader />
+                  <Content style={{ backgroundColor: 'white' }}>
+                    {children}
+                  </Content>
+                </Layout>
+                <AdminSider />
+              </Layout>
+            </App>
+          </ConfigProvider>
         </AuthContextProvider>
       </body>
     </html>

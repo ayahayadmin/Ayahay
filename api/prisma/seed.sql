@@ -219,6 +219,7 @@ INSERT INTO ayahay.account
     VALUES
     ('5qI9igARB9ZD1JdE2PODBpLRyAU2', 'it.ayahay@gmail.com', 'SuperAdmin'),
     ('NO9nCMzIlLfQLZECaWN99cVl87q2', 'staff@ayahay.com', 'Staff'),
+    ('LCSK51Yl3Hhn436C6YTRa7mXUX62', 'admin@ayahay.com', 'Admin')
     ('d4cOs2S1R4VTmoUWjm1qWMAgBTj2', 'ngocarlos@gmail.com', 'Passenger')
 ;
 

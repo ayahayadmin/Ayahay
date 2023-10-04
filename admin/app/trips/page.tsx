@@ -4,15 +4,18 @@ import {
   buildUrlQueryParamsFromAdminSearchForm,
   initializeAdminSearchFormFromQueryParams,
 } from '@/services/search.service';
-import { Form } from 'antd';
+import { Form, Spin } from 'antd';
 import { debounce } from 'lodash';
 import { useCallback, useEffect, useState } from 'react';
 import BookingList from './[id]/page';
 import { AdminSearchQuery } from '@ayahay/http';
 import TripList from './tripList';
-import { useSearchParams } from 'next/navigation';
+import { redirect, useSearchParams } from 'next/navigation';
+import { useAuthState } from '@/hooks/auth';
+import styles from './page.module.scss';
 
 export default function Schedules() {
+  const { pending, isSignedIn, user, auth } = useAuthState();
   const searchParams = useSearchParams();
   const [form] = Form.useForm();
   const [searchQuery, setSearchQuery] = useState({} as AdminSearchQuery);
@@ -39,6 +42,14 @@ export default function Schedules() {
     const updatedUrl = `${window.location.origin}${window.location.pathname}?${updatedQueryParams}`;
     window.history.replaceState({ path: updatedUrl }, '', updatedUrl);
   };
+
+  if (pending) {
+    return <Spin size='large' className={styles['spinner']} />;
+  }
+
+  if (!isSignedIn) {
+    redirect('/');
+  }
 
   return (
     <Form

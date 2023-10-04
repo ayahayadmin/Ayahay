@@ -7,7 +7,7 @@ import { IBooking } from '@ayahay/models/booking.model';
 import { QRCode, Skeleton, Typography } from 'antd';
 import TripSummary from '@ayahay/components/descriptions/TripSummary';
 import { usePathname } from 'next/navigation';
-import { useLoggedInAccount } from '@/hooks/auth';
+import { useLoggedInAccount } from '@ayahay/hooks/auth';
 
 const { Title } = Typography;
 

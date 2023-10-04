@@ -1,10 +1,5 @@
 import { IBooking, ITrip, mockShip, mockShippingLine } from '@ayahay/models';
-import {
-  createBooking,
-  getAvailableSeatsInTrip,
-  getBestSeat,
-} from '@/services/booking.service';
-import { generateReferenceNo } from '@ayahay/services/random.service';
+// import { generateReferenceNo } from '@ayahay/services/random.service';
 import { addTrips, getTripByReferenceNo } from '@/services/trip.service';
 
 export function processTripCsv(
@@ -68,7 +63,8 @@ function processCsvRows<T>(
   return values;
 }
 
-function processTripRow(row: string[]): ITrip {
+function processTripRow(row: string[]): any {
+  //should return ITrip
   const headers = [
     'shippingLineName',
     'srcPortName',
@@ -104,11 +100,11 @@ function processTripRow(row: string[]): ITrip {
       name: trip.destPortName,
     },
     departureDateIso: new Date(trip.departureDate).toISOString(),
-    baseFare: Number.parseFloat(trip.baseFare),
+    // baseFare: Number.parseFloat(trip.baseFare),
     availableSeatTypes: [],
     availableCabins: [],
     meals: [],
-    referenceNo: generateReferenceNo(randomId),
+    referenceNo: 'ABC', // generateReferenceNo(randomId),
   };
 }
 
@@ -146,7 +142,7 @@ function processBookingRow(rowValues: string[]): IBooking {
   const randomId = Math.floor(Math.random() * 1000);
 
   const tripReferenceNo = rowObject.tripReferenceNo;
-  let trip = getTripByReferenceNo(tripReferenceNo);
+  let trip: any = getTripByReferenceNo(tripReferenceNo); //trip should be ITrip not any
   if (trip === undefined) {
     trip = {
       id: randomId,
@@ -165,7 +161,7 @@ function processBookingRow(rowValues: string[]): IBooking {
         name: rowObject.destPortName,
       },
       departureDateIso: new Date(rowObject.departureDate).toISOString(),
-      baseFare: 100,
+      // baseFare: 100,
       availableSeatTypes: [],
       availableCabins: [],
       meals: [],
@@ -175,19 +171,13 @@ function processBookingRow(rowValues: string[]): IBooking {
     addTrips([trip]);
   }
 
-  const availableSeats = getAvailableSeatsInTrip(trip);
-  const seat = getBestSeat(availableSeats, {
-    seat: 'Any',
-    meal: 'Any',
-    cabin: 'Any',
-  });
-
-  const booking: IBooking = {
-    id: randomId,
+  const booking: any = {
+    // booking should be IBooking
+    id: String(randomId),
     tripId: trip.id,
     trip,
     totalPrice: rowObject.totalPrice,
-    referenceNo: generateReferenceNo(randomId),
+    referenceNo: 'ABC', //generateReferenceNo(randomId),
     paymentReference: rowObject.paymentReference,
     bookingPassengers: [
       {
@@ -206,20 +196,21 @@ function processBookingRow(rowValues: string[]): IBooking {
           nationality: rowObject.nationality,
         },
         seatId: randomId,
-        seat,
+        // seat,
         meal: 'Bacsilog',
         totalPrice: rowObject.totalPrice,
-        referenceNo: generateReferenceNo(randomId),
+        // referenceNo: generateReferenceNo(randomId),
       },
     ],
   };
 
-  createBooking(booking);
+  // createBooking(booking);
 
   return booking;
 }
 
-export function generateBookingCsv(bookings: IBooking[]): Blob {
+export function generateBookingCsv(bookings: IBooking[] | any[]): Blob {
+  //there should be no any type
   const content = bookings
     .filter(
       (booking) =>
@@ -229,7 +220,7 @@ export function generateBookingCsv(bookings: IBooking[]): Blob {
       return (
         booking.bookingPassengers &&
         booking.bookingPassengers
-          .map((bookingPassenger) => {
+          .map((bookingPassenger: any) => {
             return [
               booking?.trip?.referenceNo ?? '',
               booking?.trip?.srcPort?.name ?? '',

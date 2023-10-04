@@ -26,7 +26,7 @@ import AddCompanionsModal from '@/components/booking/AddCompanionsModal';
 import EnumSelect from '@/components/form/EnumSelect';
 import AddVehiclesModal from '@/components/booking/AddVehiclesModal';
 import { toPassengerFormValue } from '@ayahay/services/form.service';
-import { getMyAccountInformation } from '@/services/account.service';
+import { getMyAccountInformation } from '@ayahay/services/account.service';
 import { useAuth } from '@/app/contexts/AuthContext';
 
 const { Title } = Typography;

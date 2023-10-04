@@ -12,6 +12,7 @@
     "@ant-design/icons": "^5.0.1",
     "@ayahay/components": "^0.1.0",
     "@ayahay/constants": "^0.1.0",
+    "@ayahay/hooks": "^0.1.0",
     "@ayahay/http": "^0.1.0",
     "@ayahay/models": "^0.1.0",
     "@ayahay/services": "^0.1.0",

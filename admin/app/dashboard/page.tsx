@@ -2,7 +2,7 @@
 import { IBookingPassenger } from '@/../packages/models';
 import BarChart from '@/components/charts/barChart';
 import { getAllTrips } from '@/services/trip.service';
-import { DatePicker } from 'antd';
+import { DatePicker, Spin } from 'antd';
 import { RangePickerProps } from 'antd/es/date-picker';
 import dayjs, { Dayjs } from 'dayjs';
 import { filter, forEach, isEmpty, keys, map, sum } from 'lodash';
@@ -11,6 +11,9 @@ import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import { getBookingPassengersByTripId } from '@/services/booking-passenger.service';
 import styles from './page.module.scss';
+import { useAuthState } from '@/hooks/auth';
+import { redirect } from 'next/navigation';
+import { useLoggedInAccount } from '@ayahay/hooks/auth';
 
 const { RangePicker } = DatePicker;
 dayjs.extend(isSameOrBefore);
@@ -29,6 +32,8 @@ interface CheckedInToTrip {
 }
 
 export default function Dashboard() {
+  const { loggedInAccount } = useLoggedInAccount();
+  const { pending, isSignedIn, user, auth } = useAuthState();
   const dateToday = dayjs();
   const [startMonth, setStartMonth] = useState(
     dateToday.startOf('month') as Dayjs
@@ -39,12 +44,6 @@ export default function Dashboard() {
     {} as TripToBookingPassenger
   );
   const [checkedInCount, setCheckedInCount] = useState({} as CheckedInToTrip);
-
-  const countCheckedInBookingPassenger = (bookingPassengers: any) => {
-    return filter(bookingPassengers, (bookingPassenger) => {
-      return !isEmpty(bookingPassenger?.checkInDate); //returns bookingPassenger that has checkInDate property
-    }).length;
-  };
 
   useEffect(() => {
     // TO DO: might want to create a function in .service.tsx, cuz ginagamit din to ni tripList.tsx
@@ -99,6 +98,23 @@ export default function Dashboard() {
     // //TO DO: With bookingPassenger:
     // - Check if isEmpty() really works on all cases, like what if ''/undefined/null si checkInDate?
   }, [startMonth, endMonth]);
+
+  if (pending) {
+    return <Spin size='large' className={styles['spinner']} />;
+  }
+
+  const allowedRoles = ['SuperAdmin', 'Admin'];
+  if (!isSignedIn) {
+    redirect('/');
+  } else if (loggedInAccount && !allowedRoles.includes(loggedInAccount.role)) {
+    redirect('/404');
+  }
+
+  const countCheckedInBookingPassenger = (bookingPassengers: any) => {
+    return filter(bookingPassengers, (bookingPassenger) => {
+      return !isEmpty(bookingPassenger?.checkInDate); //returns bookingPassenger that has checkInDate property
+    }).length;
+  };
 
   const disabledDate: RangePickerProps['disabledDate'] = (current) => {
     const lastYear = dateToday.subtract(1, 'year');

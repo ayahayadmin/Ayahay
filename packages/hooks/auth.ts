@@ -1,20 +1,23 @@
-import { auth, useAuth } from '@/app/contexts/AuthContext';
+import { auth } from '@ayahay/admin/app/contexts/AuthContext';
 import { useEffect, useState } from 'react';
 import { IAccount } from '@ayahay/models';
-import { getMyAccountInformation } from '@/services/account.service';
+import { useRouter } from 'next/navigation';
+import { getMyAccountInformation } from '@ayahay/services/account.service';
 
 export function useLoggedInAccount() {
   const [loggedInAccount, setLoggedInAccount] = useState<
     IAccount | undefined
   >();
+  const router = useRouter();
 
   useEffect(() => {
-    auth.onAuthStateChanged((user) => {
+    auth.onAuthStateChanged(async (user) => {
       if (user) {
-        fetchLoggedInAccount();
+        await fetchLoggedInAccount();
       } else {
         // User is signed out
         setLoggedInAccount(undefined);
+        router.push('/');
       }
     });
   }, []);

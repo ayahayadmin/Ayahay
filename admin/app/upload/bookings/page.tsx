@@ -2,14 +2,31 @@
 import styles from './page.module.scss';
 import { InboxOutlined, DownloadOutlined } from '@ant-design/icons';
 import React from 'react';
-import { message, Button, Upload, Typography } from 'antd';
+import { message, Button, Upload, Typography, Spin } from 'antd';
 import { processBookingCsv } from '@/services/csv.service';
 import { IBooking } from '@ayahay/models';
+import { useAuthState } from '@/hooks/auth';
+import { useLoggedInAccount } from '@ayahay/hooks/auth';
+import { redirect } from 'next/navigation';
 
 const { Title } = Typography;
 const { Dragger } = Upload;
 
 export default function UploadBookings() {
+  const { loggedInAccount } = useLoggedInAccount();
+  const { pending, isSignedIn, user, auth } = useAuthState();
+
+  if (pending) {
+    return <Spin size='large' className={styles['spinner']} />;
+  }
+
+  const allowedRoles = ['SuperAdmin', 'Admin'];
+  if (!isSignedIn) {
+    redirect('/');
+  } else if (loggedInAccount && !allowedRoles.includes(loggedInAccount.role)) {
+    redirect('/404');
+  }
+
   const onUpload = (options: any) => {
     const { file, onProgress, onSuccess } = options;
     onProgress({ percent: 50 });
@@ -41,7 +58,7 @@ export default function UploadBookings() {
         customRequest={onUpload}
       >
         <p className='ant-upload-drag-icon'>
-          <InboxOutlined />
+          <InboxOutlined rev={undefined} />
         </p>
         <p className='ant-upload-text'>
           Click or drag bookings .csv file to this area to upload
@@ -52,7 +69,7 @@ export default function UploadBookings() {
           onClick={(e) => e.stopPropagation()}
           type='primary'
           shape='round'
-          icon={<DownloadOutlined />}
+          icon={<DownloadOutlined rev={undefined} />}
         >
           Download Template
         </Button>

@@ -9,7 +9,7 @@ import { User, getAuth } from 'firebase/auth';
 import Register from '../form/Register';
 import Login from '../form/Login';
 import ForgotPassword from '../form/ForgotPassword';
-import { useLoggedInAccount } from '@/hooks/auth';
+import { useLoggedInAccount } from '@ayahay/hooks/auth';
 
 export default function AuthForm() {
   const auth = getAuth();

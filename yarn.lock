@@ -141,6 +141,7 @@ __metadata:
     "@ant-design/icons": ^5.0.1
     "@ayahay/components": ^0.1.0
     "@ayahay/constants": ^0.1.0
+    "@ayahay/hooks": ^0.1.0
     "@ayahay/http": ^0.1.0
     "@ayahay/models": ^0.1.0
     "@ayahay/services": ^0.1.0
@@ -235,6 +236,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@ayahay/hooks@^0.1.0, @ayahay/hooks@workspace:packages/hooks":
+  version: 0.0.0-use.local
+  resolution: "@ayahay/hooks@workspace:packages/hooks"
+  languageName: unknown
+  linkType: soft
+
 "@ayahay/http@^0.1.0, @ayahay/http@workspace:packages/http":
   version: 0.0.0-use.local
   resolution: "@ayahay/http@workspace:packages/http"
@@ -265,6 +272,7 @@ __metadata:
     "@ant-design/icons": ^5.0.1
     "@ayahay/components": ^0.1.0
     "@ayahay/constants": ^0.1.0
+    "@ayahay/hooks": ^0.1.0
     "@ayahay/http": ^0.1.0
     "@ayahay/models": ^0.1.0
     "@ayahay/services": ^0.1.0
