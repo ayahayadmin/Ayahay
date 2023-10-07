@@ -176,6 +176,7 @@ CREATE TABLE "booking_vehicle" (
     "booking_id" TEXT NOT NULL,
     "trip_id" INTEGER NOT NULL,
     "vehicle_id" INTEGER NOT NULL,
+    "check_in_date" TIMESTAMP(3),
 
     CONSTRAINT "booking_vehicle_pkey" PRIMARY KEY ("id")
 );
