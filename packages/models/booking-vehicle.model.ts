@@ -11,4 +11,5 @@ export interface IBookingVehicle {
   vehicleId: number;
   vehicle: IVehicle;
   totalPrice?: number;
+  checkInDate?: string;
 }
