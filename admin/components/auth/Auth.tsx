@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useAuth } from '@/app/contexts/AuthContext';
 import { Button, Form, Input, Modal, Spin, message } from 'antd';
 import { LoginForm } from '@ayahay/models';
-import styles from './auth.module.scss';
+import styles from './Auth.module.scss';
 import { useAuthState } from '@/hooks/auth';
 import { useRouter } from 'next/navigation';
 

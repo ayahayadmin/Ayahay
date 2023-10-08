@@ -12,7 +12,7 @@ import {
 } from 'lodash';
 import styles from './page.module.scss';
 import { useEffect, useState } from 'react';
-import { ISeat, mockSeats } from '@ayahay/models/seat.model';
+import { ISeat } from '@ayahay/models/seat.model';
 import { Modal, Select } from 'antd';
 import { mockShips } from '@ayahay/models/ship.model';
 import { mockTrip } from '@ayahay/models/trip.model';

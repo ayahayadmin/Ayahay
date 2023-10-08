@@ -38,7 +38,9 @@ export default function AuthContextProvider({ children }: any) {
   }
 
   function resetPassword(email: string) {
-    return sendPasswordResetEmail(auth, email, { url: 'http://localhost:3002' }) //TO DO: localhost would be changed ofc
+    return sendPasswordResetEmail(auth, email, {
+      url: process.env.NEXT_PUBLIC_ADMIN_URL ?? 'https://www.admin.ayahay.com',
+    })
       .then((res) => {
         // Reset successful.
         console.log(`reset success`);
