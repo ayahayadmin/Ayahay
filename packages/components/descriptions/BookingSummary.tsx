@@ -2,9 +2,10 @@ import { Descriptions, Skeleton, Typography, Grid, QRCode } from 'antd';
 import { IBooking } from '@ayahay/models/booking.model';
 import { PAYMENT_STATUS } from '@ayahay/constants';
 import React from 'react';
-import PassengerSummary from './PassengerSummary';
+import PassengersSummary from './PassengersSummary';
 import dayjs from 'dayjs';
 import TripSummary from './TripSummary';
+import VehiclesSummary from './VehiclesSummary';
 
 const { useBreakpoint } = Grid;
 const { Title } = Typography;
@@ -61,45 +62,10 @@ export default function BookingSummary({ booking }: BookingSummaryProps) {
         booking.bookingPassengers.length > 0 && (
           <section>
             <Title level={2}>Passengers</Title>
-            {booking.bookingPassengers.map(
-              ({ passenger, cabin, seat, meal, totalPrice }, index) => (
-                <article key={index} style={{ margin: '16px 0' }}>
-                  {index === 0 && <Title level={3}>You</Title>}
-                  {index > 0 && <Title level={3}>Companion {index}</Title>}
-                  <div>
-                    <Title level={4}>Personal Information</Title>
-                    <PassengerSummary passenger={passenger} />
-                  </div>
-                  <div>
-                    <Title level={4}>Booking Information</Title>
-                    {cabin && (
-                      <Descriptions
-                        bordered={screens.sm}
-                        column={{ xxl: 4, xl: 3, lg: 3, md: 3, sm: 2, xs: 1 }}
-                        style={{ margin: '16px 0' }}
-                      >
-                        {seat && (
-                          <Descriptions.Item label='Seat'>
-                            {seat?.name}
-                          </Descriptions.Item>
-                        )}
-                        {seat && (
-                          <Descriptions.Item label='Seat Type'>
-                            {seat?.seatType?.name}
-                          </Descriptions.Item>
-                        )}
-                        <Descriptions.Item label='Cabin'>
-                          {cabin.name}
-                        </Descriptions.Item>
-                        <Descriptions.Item label='Meal'>
-                          {meal ?? 'None'}
-                        </Descriptions.Item>
-                      </Descriptions>
-                    )}
-                  </div>
-                </article>
-              )
-            )}
+            <PassengersSummary
+              passengers={booking.bookingPassengers}
+              allowCheckIn={booking?.status === 'Success'}
+            />
           </section>
         )}
       {booking &&
@@ -107,28 +73,10 @@ export default function BookingSummary({ booking }: BookingSummaryProps) {
         booking.bookingVehicles.length > 0 && (
           <section>
             <Title level={2}>Vehicles</Title>
-            {booking.bookingVehicles.map(({ vehicle, totalPrice }, index) => (
-              <article key={index}>
-                <Title level={3}>Vehicle {index + 1}</Title>
-                <Descriptions
-                  bordered
-                  column={{ xxl: 4, xl: 3, lg: 3, md: 3, sm: 2, xs: 1 }}
-                >
-                  <Descriptions.Item label='Plate Number'>
-                    {vehicle.plateNo}
-                  </Descriptions.Item>
-                  <Descriptions.Item label='Model Name'>
-                    {vehicle.modelName}
-                  </Descriptions.Item>
-                  <Descriptions.Item label='Model Year Manufactured'>
-                    {vehicle.modelYear}
-                  </Descriptions.Item>
-                  <Descriptions.Item label='Model Body'>
-                    {vehicle.vehicleType?.name}
-                  </Descriptions.Item>
-                </Descriptions>
-              </article>
-            ))}
+            <VehiclesSummary
+              vehicles={booking.bookingVehicles}
+              allowCheckIn={booking?.status === 'Success'}
+            />
           </section>
         )}
       {booking && booking.paymentItems && (

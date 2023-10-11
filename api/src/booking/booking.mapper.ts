@@ -79,7 +79,7 @@ export class BookingMapper {
       seatId: bookingPassenger.seatId,
 
       meal: bookingPassenger.meal,
-      checkInDate: bookingPassenger.checkInDate,
+      checkInDate: bookingPassenger.checkInDate ?? undefined,
     };
   }
 
@@ -91,6 +91,8 @@ export class BookingMapper {
       trip: this.tripMapper.convertTripToBasicDto(bookingVehicle.trip),
       vehicleId: bookingVehicle.vehicleId,
       vehicle: this.vehicleMapper.convertVehicleToDto(bookingVehicle.vehicle),
+
+      checkInDate: bookingVehicle.checkInDate ?? undefined,
     };
   }
 

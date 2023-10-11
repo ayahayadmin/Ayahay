@@ -57,7 +57,7 @@ export class BookingService {
 
   async getBookingById(
     id: string,
-    loggedInAccountId?: string
+    loggedInAccount?: IAccount
   ): Promise<IBooking> {
     const booking = await this.prisma.booking.findUnique({
       where: {
@@ -105,7 +105,16 @@ export class BookingService {
       throw new NotFoundException();
     }
 
-    if (booking.accountId != null && booking.accountId !== loggedInAccountId) {
+    if (loggedInAccount === undefined && booking.accountId !== null) {
+      throw new ForbiddenException();
+    }
+
+    if (
+      booking.accountId !== null &&
+      loggedInAccount !== undefined &&
+      loggedInAccount.role === 'Passenger' &&
+      booking.accountId !== loggedInAccount.id
+    ) {
       throw new ForbiddenException();
     }
 
@@ -228,6 +237,10 @@ export class BookingService {
         availableBookings.push({
           cabinId: availableCabin.cabinId,
           cabinName: availableCabin.cabin.name,
+          cabinTypeName: availableCabin.cabin.cabinType.name,
+          cabinTypeShippingLineId:
+            availableCabin.cabin.cabinType.shippingLineId,
+          cabinTypeDescription: availableCabin.cabin.cabinType.description,
           cabinTypeId: availableCabin.cabin.cabinTypeId,
           cabinAdultFare: availableCabin.adultFare,
           tripId: trip.id,
@@ -360,6 +373,12 @@ WHERE row <= ${passengerPreferences.length}
       cabin: {
         id: bestBooking.cabinId,
         cabinTypeId: bestBooking.cabinTypeId,
+        cabinType: {
+          id: bestBooking.cabinTypeId,
+          shippingLineId: bestBooking.cabinTypeShippingLineId,
+          name: bestBooking.cabinTypeName,
+          description: bestBooking.cabinTypeDescription,
+        },
         shipId: -1,
         name: bestBooking.cabinName,
         recommendedPassengerCapacity: -1,
@@ -861,14 +880,43 @@ WHERE row <= ${passengerPreferences.length}
       },
     });
   }
+
+  public async checkInVehicle(bookingId: string, bookingVehicleId: number) {
+    const bookingVehicle = await this.prisma.bookingVehicle.findFirst({
+      where: {
+        id: bookingVehicleId,
+        bookingId,
+      },
+    });
+
+    if (bookingVehicle === null) {
+      throw new NotFoundException();
+    }
+
+    if (bookingVehicle.checkInDate !== null) {
+      throw new BadRequestException('The vehicle has checked in already.');
+    }
+
+    await this.prisma.bookingVehicle.update({
+      where: {
+        id: bookingVehicleId,
+      },
+      data: {
+        checkInDate: new Date(),
+      },
+    });
+  }
 }
 
 interface AvailableBooking {
   tripId: number;
 
   cabinId: number;
-  cabinTypeId: number;
   cabinName: string;
+  cabinTypeId: number;
+  cabinTypeShippingLineId: number;
+  cabinTypeName: string;
+  cabinTypeDescription: string;
   cabinAdultFare: number;
 
   seatId?: number;
