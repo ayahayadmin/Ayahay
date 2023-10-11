@@ -24,7 +24,6 @@ import { ITrip } from '@ayahay/models';
 import { RangePickerProps } from 'antd/es/date-picker';
 import { filter, map } from 'lodash';
 import { getAllTrips } from '@/services/trip.service';
-import { useAuth } from '@/app/contexts/AuthContext';
 import Logout from './auth/Logout';
 import { useLoggedInAccount } from '@ayahay/hooks/auth';
 import { webLinks } from '@/services/nav.service';
@@ -60,7 +59,6 @@ export default function AdminHeader() {
   const [endDate, setEndDate] = useState(dateToday.endOf('day') as Dayjs);
   const [emailBody, setEmailBody] = useState('');
   const [messageApi, msgContextHolder] = message.useMessage();
-  const { currentUser } = useAuth();
   const pathName = usePathname();
   const router = useRouter();
 
@@ -143,7 +141,7 @@ export default function AdminHeader() {
     <nav className={styles['nav-container']}>
       <div className={styles['nav-main']}>
         <Image src={AyahayLogo} alt='Ayahay Logo' height={80} />
-        {currentUser && (
+        {loggedInAccount && (
           <ul className={styles['nav-links']}>
             <Menu
               mode='horizontal'
@@ -159,7 +157,7 @@ export default function AdminHeader() {
         )}
       </div>
 
-      {currentUser && (
+      {loggedInAccount && (
         <div className={styles['nav-buttons']}>
           <Search
             placeholder='Search for booking...'
