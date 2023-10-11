@@ -33,7 +33,7 @@ export default function DownloadBookings() {
   if (!isSignedIn) {
     redirect('/');
   } else if (loggedInAccount && !allowedRoles.includes(loggedInAccount.role)) {
-    redirect('/404');
+    redirect('/403');
   }
 
   const onFinish = (formValues: any) => {

@@ -1,3 +1,7 @@
+import { IPort, IShip } from '@ayahay/models';
+import { VehicleRates } from './vehicle-type';
+import { PassengerRates } from './cabin-type';
+
 export interface TripsSearchQuery {
   tripType: 'single' | 'round';
   srcPortId: number;
@@ -18,4 +22,23 @@ export interface AdminSearchQuery {
 export interface UpdateTripCapacityRequest {
   vehicleCapacity: number;
   cabinCapacities: { cabinId: number; passengerCapacity: number }[];
+}
+
+export interface DashboardTrips {
+  id: number;
+  srcPortId: number;
+  srcPort?: IPort;
+  destPortId: number;
+  destPort?: IPort;
+  departureDateIso: string;
+  shipId: number;
+  ship?: IShip;
+  availableVehicleCapacity: number;
+  vehicleCapacity: number;
+  availableCapacities: number;
+  passengerCapacities: number;
+  passengerRates: PassengerRates[];
+  vehicleRates: VehicleRates[];
+  checkedInPassengerCount?: number;
+  checkedInVehicleCount?: number;
 }

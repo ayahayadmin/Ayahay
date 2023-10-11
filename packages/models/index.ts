@@ -6,6 +6,8 @@ export * from './port.model';
 export * from './seat.model';
 export * from './ship.model';
 export * from './shipping-line.model';
+export * from './shipping-line-schedule.model';
+export * from './shipping-line-schedule-rate.model';
 export * from './trip.model';
 export * from './booking-vehicle.model';
 export * from './vehicle.model';

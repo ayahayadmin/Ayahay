@@ -2,19 +2,30 @@
 import { IBookingPassenger } from '@/../packages/models';
 import BarChart from '@/components/charts/barChart';
 import { getAllTrips } from '@/services/trip.service';
-import { DatePicker, Spin } from 'antd';
+import {
+  Button,
+  DatePicker,
+  Popover,
+  Spin,
+  TimeRangePickerProps,
+  Typography,
+} from 'antd';
 import { RangePickerProps } from 'antd/es/date-picker';
 import dayjs, { Dayjs } from 'dayjs';
-import { filter, forEach, isEmpty, keys, map, sum } from 'lodash';
 import { useEffect, useState } from 'react';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
-import { getBookingPassengersByTripId } from '@/services/booking-passenger.service';
 import styles from './page.module.scss';
 import { useAuthState } from '@/hooks/auth';
 import { redirect } from 'next/navigation';
 import { useLoggedInAccount } from '@ayahay/hooks/auth';
+import Table, { ColumnsType } from 'antd/es/table';
+import { getTripInformation } from '@/services/search.service';
+import { TripRatesModal } from '@/components/modal/TripRatesModal';
+import { StockOutlined } from '@ant-design/icons';
+import { DashboardTrips } from '@ayahay/http';
 
+const { Title } = Typography;
 const { RangePicker } = DatePicker;
 dayjs.extend(isSameOrBefore);
 dayjs.extend(isSameOrAfter);
@@ -31,73 +42,122 @@ interface CheckedInToTrip {
   [key: string]: number;
 }
 
+const rangePresets: TimeRangePickerProps['presets'] = [
+  { label: 'Last 7 Days', value: [dayjs().add(-7, 'd'), dayjs()] },
+  { label: 'Last 14 Days', value: [dayjs().add(-14, 'd'), dayjs()] },
+  { label: 'Last 30 Days', value: [dayjs().add(-30, 'd'), dayjs()] },
+  { label: 'Last 90 Days', value: [dayjs().add(-90, 'd'), dayjs()] },
+];
+
+const columns: ColumnsType<DashboardTrips> = [
+  {
+    title: 'Origin',
+    key: 'srcPort',
+    render: (text: string, record: DashboardTrips) => (
+      <span>{record.srcPort!.name}</span>
+    ),
+  },
+  {
+    title: 'Destination',
+    key: 'destPort',
+    render: (text: string, record: DashboardTrips) => (
+      <span>{record.destPort!.name}</span>
+    ),
+  },
+  {
+    title: 'Departure Date',
+    key: 'departureDateIso',
+    dataIndex: 'departureDateIso',
+    render: (text: string) => <span>{dayjs(text).format('MMMM D, YYYY')}</span>,
+  },
+  {
+    title: 'Vessel',
+    key: 'shipName',
+    render: (text: string, record: DashboardTrips) => (
+      <span>{record.ship?.name}</span>
+    ),
+  },
+  {
+    title: 'Pax Capacity',
+    key: 'passengerCapacities',
+    dataIndex: 'passengerCapacities',
+  },
+  {
+    title: 'Vehicle Capacity',
+    key: 'vehicleCapacity',
+    dataIndex: 'vehicleCapacity',
+  },
+  {
+    title: 'Pax Booked',
+    key: 'passengerBooked',
+    render: (text: string, record: DashboardTrips) => (
+      <span>{record.passengerCapacities - record.availableCapacities}</span>
+    ),
+  },
+  {
+    title: 'Vehicle Booked',
+    key: 'vehicleBooked',
+    render: (text: string, record: DashboardTrips) => (
+      <span>{record.vehicleCapacity - record.availableVehicleCapacity}</span>
+    ),
+  },
+  {
+    title: 'Onboarded Pax',
+    key: 'checkedInPax',
+    render: (text: string, record: DashboardTrips) => (
+      <span>{record.checkedInPassengerCount ?? 0}</span>
+    ),
+  },
+  {
+    title: 'Onboarded Vehicle',
+    key: 'checkedInVehicle',
+    render: (text: string, record: DashboardTrips) => (
+      <span>{record.checkedInVehicleCount ?? 0}</span>
+    ),
+  },
+  {
+    title: 'Rate',
+    key: 'fare',
+    render: (text: string, record: DashboardTrips) => (
+      <Popover
+        title={<Title level={2}>Rates</Title>}
+        content={
+          <TripRatesModal
+            passengerRates={record.passengerRates}
+            vehicleRates={record.vehicleRates}
+          />
+        }
+        trigger='click'
+      >
+        <Button type='text'>
+          <StockOutlined rev={undefined} />
+        </Button>
+      </Popover>
+    ),
+  },
+];
+const PAGE_SIZE = 10;
+
 export default function Dashboard() {
   const { loggedInAccount } = useLoggedInAccount();
   const { pending, isSignedIn, user, auth } = useAuthState();
   const dateToday = dayjs();
-  const [startMonth, setStartMonth] = useState(
-    dateToday.startOf('month') as Dayjs
-  );
-  const [endMonth, setEndMonth] = useState(dateToday.endOf('month') as Dayjs);
-  const [tripNames, setTripNames] = useState([] as string[]);
-  const [tripWithBookingPassengers, setTripWithBookingPassengers] = useState(
-    {} as TripToBookingPassenger
-  );
-  const [checkedInCount, setCheckedInCount] = useState({} as CheckedInToTrip);
+  const [startDate, setStartDate] = useState(dateToday.startOf('day') as Dayjs);
+  const [endDate, setEndDate] = useState(dateToday.endOf('day') as Dayjs);
+  const [tripInfo, setTripInfo] = useState([] as DashboardTrips[] | undefined);
 
   useEffect(() => {
-    // TO DO: might want to create a function in .service.tsx, cuz ginagamit din to ni tripList.tsx
-    const trips = filter(getAllTrips(), (trip) => {
-      return (
-        startMonth.isSameOrBefore(trip.departureDateIso) &&
-        endMonth.isSameOrAfter(trip.departureDateIso)
-      );
+    getTripInfo();
+  }, [startDate, endDate]);
+
+  const getTripInfo = async () => {
+    // TODO: there's still a small bug wherein the start date seems to deduct 1 day? Choosing Dec 20 in the UI will sometimes pass Dec 19
+    const tripInfo = await getTripInformation({
+      startDate,
+      endDate,
     });
-
-    // Maps tripId: tripName
-    const tripIdAndName: TripIdToTripName = trips.reduce((acc, curr) => {
-      return {
-        ...acc,
-        [curr.id]: `${curr?.srcPort?.name}-${curr?.destPort?.name}`,
-      };
-    }, {});
-
-    const tripIds = keys(tripIdAndName);
-
-    let bookingPassengersToTripMap: TripToBookingPassenger = {};
-    let tripNameKey: string[] = [];
-    let checkedInCountPerTrip: CheckedInToTrip = {};
-    // Maps trip name (src-dest) to bookingPassengers
-    forEach(tripIds, (tripId) => {
-      const key = tripIdAndName[tripId];
-      const bookingPassengers = getBookingPassengersByTripId(Number(tripId));
-
-      if (bookingPassengersToTripMap.hasOwnProperty(key)) {
-        bookingPassengersToTripMap = {
-          ...bookingPassengersToTripMap,
-          [key]: [...bookingPassengersToTripMap[key], ...bookingPassengers],
-        };
-        checkedInCountPerTrip = {
-          ...checkedInCountPerTrip,
-          [key]:
-            checkedInCountPerTrip[key] +
-            countCheckedInBookingPassenger(bookingPassengers),
-        };
-      } else {
-        bookingPassengersToTripMap[key] = bookingPassengers;
-        tripNameKey.push(key);
-        checkedInCountPerTrip[key] =
-          countCheckedInBookingPassenger(bookingPassengers);
-      }
-    });
-
-    setTripNames(tripNameKey);
-    setTripWithBookingPassengers(bookingPassengersToTripMap);
-    setCheckedInCount(checkedInCountPerTrip);
-
-    // //TO DO: With bookingPassenger:
-    // - Check if isEmpty() really works on all cases, like what if ''/undefined/null si checkInDate?
-  }, [startMonth, endMonth]);
+    setTripInfo(tripInfo);
+  };
 
   if (pending) {
     return <Spin size='large' className={styles['spinner']} />;
@@ -107,14 +167,8 @@ export default function Dashboard() {
   if (!isSignedIn) {
     redirect('/');
   } else if (loggedInAccount && !allowedRoles.includes(loggedInAccount.role)) {
-    redirect('/404');
+    redirect('/403');
   }
-
-  const countCheckedInBookingPassenger = (bookingPassengers: any) => {
-    return filter(bookingPassengers, (bookingPassenger) => {
-      return !isEmpty(bookingPassenger?.checkInDate); //returns bookingPassenger that has checkInDate property
-    }).length;
-  };
 
   const disabledDate: RangePickerProps['disabledDate'] = (current) => {
     const lastYear = dateToday.subtract(1, 'year');
@@ -122,58 +176,32 @@ export default function Dashboard() {
   };
 
   const onChange: RangePickerProps['onChange'] = (date, dateString) => {
-    setStartMonth(dayjs(dateString[0]).startOf('day'));
-    setEndMonth(dayjs(dateString[1]).endOf('day'));
+    setStartDate(dayjs(dateString[0]).startOf('day'));
+    setEndDate(dayjs(dateString[1]).endOf('day'));
   };
 
   return (
-    <div>
+    <div className={styles['main-container']}>
       <div>
         <RangePicker
-          defaultValue={[startMonth, endMonth]}
+          defaultValue={[startDate, endDate]}
+          presets={rangePresets}
           disabledDate={disabledDate}
           onChange={onChange}
         />
-      </div>
-      <div>
-        <h1>
-          Passenger count:{' '}
-          {sum(
-            map(tripWithBookingPassengers, (trip) => {
-              return trip.length;
-            })
-          )}
-        </h1>
-      </div>
-      <div className={styles['bar-graph']}>
-        <BarChart
-          data={{
-            labels: [...tripNames],
-            datasets: [
-              {
-                label: 'Not Checked-in Passengers',
-                data: [
-                  ...map(tripNames, (tripName) => {
-                    return (
-                      tripWithBookingPassengers[tripName].length -
-                      checkedInCount[tripName]
-                    );
-                  }),
-                ],
-                hoverOffset: 4,
-              },
-              {
-                label: 'Checked-in Passengers',
-                data: [
-                  ...map(tripNames, (tripName) => {
-                    return checkedInCount[tripName];
-                  }),
-                ],
-                hoverOffset: 14,
-              },
-            ],
-          }}
-        />
+        <Table
+          columns={columns}
+          dataSource={tripInfo}
+          pagination={false}
+        ></Table>
+        {/* {totalItems / PAGE_SIZE > 1 && (
+          <Pagination
+            total={totalItems}
+            current={page}
+            pageSize={PAGE_SIZE}
+            onChange={(page) => setPage(page)}
+          ></Pagination>
+        )} */}
       </div>
     </div>
   );
