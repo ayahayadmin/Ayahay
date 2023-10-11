@@ -45,6 +45,9 @@ export class TripService {
       cabinIds,
     } = query;
 
+    const dateSelectedPlusAWeek = new Date(departureDate);
+    dateSelectedPlusAWeek.setDate(dateSelectedPlusAWeek.getDate() + 7);
+
     const trips = await this.prisma.$queryRaw<AvailableTrips[]>`
       SELECT 
         t.id, 
@@ -70,7 +73,8 @@ export class TripService {
         INNER JOIN ayahay.trip_cabin tc ON t.id = tc.trip_id
         INNER JOIN ayahay.cabin c ON tc.cabin_id = c.id
       WHERE t.available_vehicle_capacity >= ${Number(vehicleCount)}
-        AND t.departure_date >= TO_TIMESTAMP(${departureDate}, 'YYYY-MM-DDTHH:MI:SSZ')
+        AND t.departure_date >= ${departureDate}::DATE
+        AND t.departure_date <= ${dateSelectedPlusAWeek.toISOString()}::DATE + 1 - interval '1 sec'
         AND t.src_port_id = ${Number(srcPortId)}
         AND t.dest_port_id = ${Number(destPortId)}
         ${
