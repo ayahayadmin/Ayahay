@@ -70,14 +70,14 @@ INSERT INTO ayahay.shipping_line
     ('Aznar Shipping')
 ;
 
-INSERT INTO cabin_type
+INSERT INTO ayahay.cabin_type
     ("name", "description", shipping_line_id)
     VALUES
     ('Aircon', 'Aircon', (SELECT id FROM ayahay.shipping_line WHERE "name" = 'Aznar Shipping')),
     ('Non-Aircon', 'Non-Aircon', (SELECT id FROM ayahay.shipping_line WHERE "name" = 'Aznar Shipping'))
 ;
 
-INSERT INTO vehicle_type
+INSERT INTO ayahay.vehicle_type
     ("name", "description")
     VALUES
     ('Bicycle', 'Bicycle'),
@@ -102,14 +102,16 @@ INSERT INTO vehicle_type
 INSERT INTO ayahay.ship
     ("name", shipping_line_id, recommended_vehicle_capacity)
     VALUES
-    ('Melrivic 2', (SELECT id FROM ayahay.shipping_line WHERE "name" = 'Aznar Shipping'), 5)
+    ('Melrivic 2', (SELECT id FROM ayahay.shipping_line WHERE "name" = 'Aznar Shipping'), 5),
+    ('Melrivic 7', (SELECT id FROM ayahay.shipping_line WHERE "name" = 'Aznar Shipping'), 5)
 ;
 
 INSERT INTO ayahay.cabin
     ("name", recommended_passenger_capacity, ship_id, cabin_type_id)
     VALUES
-    ('Aircon', 150, (SELECT id FROM ayahay.ship WHERE "name" = 'Melrivic 2'), (SELECT id from ayahay.cabin_type WHERE "name" = 'Aircon')),
-    ('Non-Aircon', 100, (SELECT id FROM ayahay.ship WHERE "name" = 'Melrivic 2'), (SELECT id from ayahay.cabin_type WHERE "name" = 'Non-Aircon'))
+    ('Melrivic 2 Aircon Cabin', 150, (SELECT id FROM ayahay.ship WHERE "name" = 'Melrivic 2'), (SELECT id from ayahay.cabin_type WHERE "name" = 'Aircon')),
+    ('Melrivic 2 Non-Aircon Cabin', 100, (SELECT id FROM ayahay.ship WHERE "name" = 'Melrivic 2'), (SELECT id from ayahay.cabin_type WHERE "name" = 'Non-Aircon')),
+    ('Melrivic 7 Non-Aircon Cabin', 339, (SELECT id FROM ayahay.ship WHERE "name" = 'Melrivic 7'), (SELECT id from ayahay.cabin_type WHERE "name" = 'Non-Aircon'))
 ;
 
 -- INSERT INTO ayahay.seat_plan
@@ -170,14 +172,14 @@ INSERT INTO ayahay.trip_cabin
     VALUES
     (
         (SELECT id FROM ayahay.trip WHERE reference_number = 'SEED1'),
-        (SELECT id FROM ayahay.cabin WHERE "name" = 'Aircon'),
+        (SELECT id FROM ayahay.cabin WHERE "name" = 'Melrivic 2 Aircon Cabin'),
         2,
         2,
         450
     ),
     (
         (SELECT id FROM ayahay.trip WHERE reference_number = 'SEED1'),
-        (SELECT id FROM ayahay.cabin WHERE "name" = 'Non-Aircon'),
+        (SELECT id FROM ayahay.cabin WHERE "name" = 'Melrivic 2 Non-Aircon Cabin'),
         2,
         2,
         400
@@ -215,12 +217,12 @@ INSERT INTO ayahay.trip_vehicle_type
 ;
 
 INSERT INTO ayahay.account
-    (id, email, "role")
+    (id, email, "role", shipping_line_id)
     VALUES
-    ('5qI9igARB9ZD1JdE2PODBpLRyAU2', 'it.ayahay@gmail.com', 'SuperAdmin'),
-    ('NO9nCMzIlLfQLZECaWN99cVl87q2', 'staff@ayahay.com', 'Staff'),
-    ('LCSK51Yl3Hhn436C6YTRa7mXUX62', 'admin@ayahay.com', 'Admin'),
-    ('d4cOs2S1R4VTmoUWjm1qWMAgBTj2', 'ngocarlos@gmail.com', 'Passenger')
+    ('5qI9igARB9ZD1JdE2PODBpLRyAU2', 'it.ayahay@gmail.com', 'SuperAdmin', (SELECT id FROM ayahay.shipping_line WHERE "name" = 'Aznar Shipping')),
+    ('NO9nCMzIlLfQLZECaWN99cVl87q2', 'staff@ayahay.com', 'Staff', (SELECT id FROM ayahay.shipping_line WHERE "name" = 'Aznar Shipping')),
+    ('LCSK51Yl3Hhn436C6YTRa7mXUX62', 'admin@ayahay.com', 'Admin', (SELECT id FROM ayahay.shipping_line WHERE "name" = 'Aznar Shipping')),
+    ('d4cOs2S1R4VTmoUWjm1qWMAgBTj2', 'ngocarlos@gmail.com', 'Passenger', (SELECT id FROM ayahay.shipping_line WHERE "name" = 'Aznar Shipping'))
 ;
 
 INSERT INTO ayahay.passenger
@@ -234,4 +236,87 @@ UPDATE ayahay.account
         SELECT id FROM ayahay.passenger WHERE first_name = 'Carlos'
     )
     WHERE email = 'ngocarlos@gmail.com'
+;
+
+INSERT INTO ayahay.shipping_line_schedule
+    (
+        "name",
+        departure_hour,
+        departure_minute,
+        days_before_booking_start,
+        days_before_booking_cut_off,
+        ship_id,
+        shipping_line_id,
+        src_port_id,
+        dest_port_id
+    )
+    VALUES
+    (
+        'Bogo -> Palompon 11:30 AM',
+        11,
+        30,
+        60,
+        7,
+        (SELECT id FROM ayahay.ship WHERE "name" = 'Melrivic 7'),
+        (SELECT id FROM ayahay.shipping_line WHERE "name" = 'Aznar Shipping'),
+        (SELECT id FROM ayahay.port WHERE "name" = 'Bogo'),
+        (SELECT id FROM ayahay.port WHERE "name" = 'Palompon')
+    ),
+    (
+        'Bogo -> Palompon 11:00 PM',
+        23,
+        00,
+        60,
+        7,
+        (SELECT id FROM ayahay.ship WHERE "name" = 'Melrivic 7'),
+        (SELECT id FROM ayahay.shipping_line WHERE "name" = 'Aznar Shipping'),
+        (SELECT id FROM ayahay.port WHERE "name" = 'Bogo'),
+        (SELECT id FROM ayahay.port WHERE "name" = 'Palompon')
+    ),
+    (
+        'Palompon -> Bogo 3:30 PM',
+        15,
+        30,
+        60,
+        7,
+        (SELECT id FROM ayahay.ship WHERE "name" = 'Melrivic 7'),
+        (SELECT id FROM ayahay.shipping_line WHERE "name" = 'Aznar Shipping'),
+        (SELECT id FROM ayahay.port WHERE "name" = 'Palompon'),
+        (SELECT id FROM ayahay.port WHERE "name" = 'Bogo')
+    ),
+    (
+        'Palompon -> Bogo 6:00 PM',
+        18,
+        00,
+        60,
+        7,
+        (SELECT id FROM ayahay.ship WHERE "name" = 'Melrivic 7'),
+        (SELECT id FROM ayahay.shipping_line WHERE "name" = 'Aznar Shipping'),
+        (SELECT id FROM ayahay.port WHERE "name" = 'Palompon'),
+        (SELECT id FROM ayahay.port WHERE "name" = 'Bogo')
+    )
+;
+
+INSERT INTO ayahay.shipping_line_schedule_rate
+    (
+        schedule_id,
+        cabin_id,
+        vehicle_type_id,
+        fare
+    )
+    (
+        SELECT schedule.id, rate.cabin_id, rate.vehicle_type_id, rate.fare
+        FROM ayahay.shipping_line_schedule schedule
+        LEFT JOIN (
+            VALUES
+                ((SELECT id FROM ayahay.cabin WHERE "name" = 'Melrivic 7 Non-Aircon Cabin'), NULL, 400),
+                (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = 'Bicycle'), 130),
+                (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = 'Motorcycle'), 1150),
+                (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = 'Tricycle'), 1440),
+                (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = 'Sedan'), 2650),
+                (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = 'SUV'), 2650),
+                (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = 'Multicab'), 2650),
+                (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = 'Pickup'), 2650)
+        ) AS rate(cabin_id, vehicle_type_id, fare) ON true = true
+    )
 ;

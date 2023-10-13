@@ -9,15 +9,20 @@ import { PrismaService } from 'src/prisma.service';
 import { AvailableTrips, ITrip, SearchAvailableTrips } from '@ayahay/models';
 import { TripMapper } from './trip.mapper';
 import { isEmpty } from 'lodash';
-import { UpdateTripCapacityRequest } from '@ayahay/http';
+import {
+  CreateTripsFromSchedulesRequest,
+  UpdateTripCapacityRequest,
+} from '@ayahay/http';
 import { TripValidator } from './trip.validator';
+import { ShippingLineService } from '../shipping-line/shipping-line.service';
 
 @Injectable()
 export class TripService {
   constructor(
-    private prisma: PrismaService,
-    private tripMapper: TripMapper,
-    private tripValidator: TripValidator
+    private readonly shippingLineService: ShippingLineService,
+    private readonly prisma: PrismaService,
+    private readonly tripMapper: TripMapper,
+    private readonly tripValidator: TripValidator
   ) {}
 
   async getTrip(
@@ -156,6 +161,87 @@ export class TripService {
     } catch {
       throw new InternalServerErrorException();
     }
+  }
+
+  async createTripsFromSchedules(
+    createTripsFromSchedulesRequest: CreateTripsFromSchedulesRequest
+  ): Promise<void> {
+    const tripsToCreate =
+      await this.shippingLineService.convertSchedulesToTrips(
+        createTripsFromSchedulesRequest
+      );
+
+    const tripReferenceNos: string[] = [];
+    const tripEntities: Prisma.TripCreateManyInput[] = [];
+    const tripCabinsPerTrip: {
+      [referenceNo: string]: Prisma.TripCabinCreateManyInput[];
+    } = {};
+    const tripVehicleTypesPerTrip: {
+      [referenceNo: string]: Prisma.TripVehicleTypeCreateManyInput[];
+    } = {};
+
+    for (const trip of tripsToCreate) {
+      const referenceNo = trip.referenceNo;
+      // TODO: handle the unlikely scenario when referenceNo is repeated twice
+
+      tripReferenceNos.push(referenceNo);
+      tripEntities.push(this.tripMapper.convertTripToEntityForCreation(trip));
+      tripCabinsPerTrip[referenceNo] = trip.availableCabins.map((tripCabin) =>
+        this.tripMapper.convertTripCabinToEntityForCreation(tripCabin)
+      );
+      tripVehicleTypesPerTrip[referenceNo] = trip.availableVehicleTypes.map(
+        (tripVehicleType) =>
+          this.tripMapper.convertTripVehicleTypeToEntityForCreation(
+            tripVehicleType
+          )
+      );
+    }
+
+    await this.prisma.$transaction(async (transactionContext) => {
+      await transactionContext.trip.createMany({
+        data: tripEntities,
+      });
+
+      const tripCabinEntities: Prisma.TripCabinCreateManyInput[] = [];
+      const tripVehicleTypeEntities: Prisma.TripVehicleTypeCreateManyInput[] =
+        [];
+
+      const createdTripEntities = await transactionContext.trip.findMany({
+        where: {
+          referenceNo: {
+            in: tripReferenceNos,
+          },
+          departureDate: {
+            gt: new Date(),
+          },
+        },
+      });
+
+      for (const createdTripEntity of createdTripEntities) {
+        const tripCabinsOfTrip =
+          tripCabinsPerTrip[createdTripEntity.referenceNo];
+        const tripVehicleTypesOfTrip =
+          tripVehicleTypesPerTrip[createdTripEntity.referenceNo];
+
+        for (const tripCabin of tripCabinsOfTrip) {
+          tripCabin.tripId = createdTripEntity.id;
+          tripCabinEntities.push(tripCabin);
+        }
+
+        for (const tripVehicleType of tripVehicleTypesOfTrip) {
+          tripVehicleType.tripId = createdTripEntity.id;
+          tripVehicleTypeEntities.push(tripVehicleType);
+        }
+      }
+
+      await transactionContext.tripCabin.createMany({
+        data: tripCabinEntities,
+      });
+
+      await transactionContext.tripVehicleType.createMany({
+        data: tripVehicleTypeEntities,
+      });
+    });
   }
 
   public async updateTripCapacities(

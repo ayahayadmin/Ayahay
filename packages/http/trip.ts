@@ -1,4 +1,4 @@
-import { IPort, IShip } from '@ayahay/models';
+import { IPort, IShip, ITrip } from '@ayahay/models';
 import { VehicleRates } from './vehicle-type';
 import { PassengerRates } from './cabin-type';
 
@@ -41,4 +41,9 @@ export interface DashboardTrips {
   vehicleRates: VehicleRates[];
   checkedInPassengerCount?: number;
   checkedInVehicleCount?: number;
+}
+
+export interface CreateTripsFromSchedulesRequest {
+  schedules: { scheduleId: number; override?: Partial<ITrip> }[];
+  dateRanges: { startDateIso: string; endDateIso: string }[];
 }

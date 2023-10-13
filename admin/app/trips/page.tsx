@@ -7,7 +7,6 @@ import {
 import { Form, Spin } from 'antd';
 import { debounce } from 'lodash';
 import { useCallback, useEffect, useState } from 'react';
-import BookingList from './[id]/page';
 import { AdminSearchQuery } from '@ayahay/http';
 import TripList from './tripList';
 import { redirect, useSearchParams } from 'next/navigation';

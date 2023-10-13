@@ -1,9 +1,8 @@
-import { ITrip, mockTrip, mockTrips } from '@ayahay/models';
-import { random } from 'lodash';
-
-export function getTrip(tripId: number): ITrip {
-  return mockTrip;
-}
+import { IShippingLineSchedule, ITrip, mockTrips } from '@ayahay/models';
+import { TRIP_API } from '@ayahay/constants';
+import { CreateTripsFromSchedulesRequest } from '@ayahay/http';
+import { getAuth } from 'firebase/auth';
+import axios from 'axios';
 
 export function getAllTrips(): ITrip[] {
   const trips = localStorage.getItem('trips');
@@ -20,11 +19,25 @@ export function addTrips(newTrips: ITrip[] | any[]) {
   localStorage.setItem('trips', JSON.stringify(trips));
 }
 
-export const getBaseFare = () => {
-  return random(1000, 9999);
-};
-
 export function getTripByReferenceNo(referenceNo: string): ITrip | undefined {
   const trips = getAllTrips();
   return trips.find((trip) => trip.referenceNo === referenceNo);
+}
+
+export async function createTripsFromSchedules(
+  request: CreateTripsFromSchedulesRequest
+): Promise<any | undefined> {
+  const authToken = await getAuth().currentUser?.getIdToken();
+
+  try {
+    await axios.post<IShippingLineSchedule[]>(
+      `${TRIP_API}/from-schedules`,
+      request,
+      { headers: { Authorization: `Bearer ${authToken}` } }
+    );
+  } catch (e: any) {
+    return e;
+  }
+
+  return undefined;
 }

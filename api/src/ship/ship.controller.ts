@@ -1,13 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Post,
-  Put,
-  Query,
-} from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { ShipService } from './ship.service';
 import { IShip } from '@ayahay/models';
 

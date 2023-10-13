@@ -3,7 +3,7 @@ import { PassengerService } from './passenger.service';
 import { Roles } from 'src/decorator/roles.decorator';
 import { IPassenger } from '@ayahay/models';
 import { AuthGuard } from 'src/guard/auth.guard';
-import { AllowUnverified } from 'src/decorator/verified.decorator';
+import { AllowUnverifiedPassengers } from 'src/decorator/verified.decorator';
 
 @Controller('passengers')
 @UseGuards(AuthGuard)
@@ -12,7 +12,7 @@ export class PassengerController {
 
   @Post()
   @Roles('Passenger')
-  @AllowUnverified()
+  @AllowUnverifiedPassengers()
   async createPassenger(@Body() data: IPassenger): Promise<IPassenger> {
     return await this.passengerService.createPassenger(data);
   }
