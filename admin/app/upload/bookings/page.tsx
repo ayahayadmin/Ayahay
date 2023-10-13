@@ -24,7 +24,7 @@ export default function UploadBookings() {
   if (!isSignedIn) {
     redirect('/');
   } else if (loggedInAccount && !allowedRoles.includes(loggedInAccount.role)) {
-    redirect('/404');
+    redirect('/403');
   }
 
   const onUpload = (options: any) => {

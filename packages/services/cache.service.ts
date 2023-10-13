@@ -1,4 +1,4 @@
-import dayjs from 'dayjs';
+import dayjs, { Dayjs } from 'dayjs';
 import { CacheKey } from '@ayahay/constants';
 
 export function cacheItem(

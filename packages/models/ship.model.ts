@@ -7,7 +7,7 @@ export interface IShip {
   shippingLineId: number;
   shippingLine?: IShippingLine;
   recommendedVehicleCapacity: number;
-  cabins: ICabin[];
+  cabins?: ICabin[];
 }
 
 export const mockShip: IShip = {

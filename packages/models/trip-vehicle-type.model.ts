@@ -9,7 +9,7 @@ export interface ITripVehicleType {
   tripId: number;
   trip?: ITrip;
   vehicleTypeId: number;
-  vehicleType: IVehicleType;
+  vehicleType?: IVehicleType;
 
   fare: number;
 }

@@ -5,7 +5,7 @@ import {
   SearchAvailableTrips,
   TripData,
 } from '@ayahay/models';
-import { ceil, forEach } from 'lodash';
+import { ceil, forEach, isEmpty } from 'lodash';
 import axios from 'axios';
 import { TRIP_API } from '@ayahay/constants/api';
 import { getPort } from './port.service';
@@ -36,7 +36,20 @@ export async function getTrip(tripId: number): Promise<ITrip | undefined> {
 
 export async function getAvailableTrips(
   query: SearchAvailableTrips
-): Promise<AvailabeTripsResult> {
+): Promise<AvailabeTripsResult | undefined> {
+  if (isEmpty(query)) {
+    return;
+  }
+
+  const dateSelected = new Date(query.departureDate);
+  const dateOffset =
+    dateSelected.getTime() - dateSelected.getTimezoneOffset() * 60000; //to resolve one day off
+
+  query = {
+    ...query,
+    departureDate: new Date(dateOffset).toISOString(),
+  };
+
   const responseData: ITrip[] = await axios
     .get(`${TRIP_API}`, { params: { ...query } })
     .then((res) => {

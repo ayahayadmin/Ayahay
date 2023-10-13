@@ -10,11 +10,11 @@ export class UtilityService {
    * @param id
    */
   generateReferenceNo(id: number) {
-    const randomString = this.generateRandomAlphabeticString(5);
+    const randomString = this.generateRandomAlphanumericString(5);
     return `${randomString}${id.toString(16).toUpperCase()}`;
   }
 
-  generateRandomAlphabeticString(length: number) {
+  generateRandomAlphanumericString(length: number) {
     let result = '';
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     const charactersLength = characters.length;

@@ -17,7 +17,9 @@ export function useLoggedInAccount() {
       } else {
         // User is signed out
         setLoggedInAccount(undefined);
-        router.push('/');
+        if (window.location.origin === process.env.NEXT_PUBLIC_ADMIN_URL) {
+          router.push('/');
+        }
       }
     });
   }, []);

@@ -13,6 +13,7 @@ import {
 import { ShippingLineMapper } from '../shipping-line/shipping-line.mapper';
 import { PortMapper } from '../port/port.mapper';
 import { map } from 'lodash';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class TripMapper {
@@ -35,7 +36,7 @@ export class TripMapper {
       destPortId: trip.destPortId,
       destPort: this.portMapper.convertPortToDto(trip.destPort),
 
-      departureDateIso: trip.departureDateIso,
+      departureDateIso: trip.departureDate.toISOString(),
       seatSelection: trip.seatSelection,
       availableVehicleCapacity: trip.availableVehicleCapacity,
       vehicleCapacity: trip.vehicleCapacity,
@@ -200,6 +201,44 @@ export class TripMapper {
       vehicleType: {
         ...tripVehicleType.vehicleType,
       },
+    };
+  }
+
+  convertTripToEntityForCreation(trip: ITrip): Prisma.TripCreateManyInput {
+    return {
+      shipId: trip.shipId,
+      shippingLineId: trip.shippingLineId,
+      srcPortId: trip.srcPortId,
+      destPortId: trip.destPortId,
+
+      departureDate: new Date(trip.departureDateIso),
+      referenceNo: trip.referenceNo,
+      availableVehicleCapacity: trip.vehicleCapacity,
+      vehicleCapacity: trip.vehicleCapacity,
+      bookingStartDate: new Date(trip.bookingStartDateIso),
+      bookingCutOffDate: new Date(trip.bookingCutOffDateIso),
+    };
+  }
+
+  convertTripCabinToEntityForCreation(
+    tripCabin: ITripCabin
+  ): Prisma.TripCabinCreateManyInput {
+    return {
+      tripId: -1,
+      cabinId: tripCabin.cabinId,
+      availablePassengerCapacity: tripCabin.passengerCapacity,
+      passengerCapacity: tripCabin.passengerCapacity,
+      adultFare: tripCabin.adultFare,
+    };
+  }
+
+  convertTripVehicleTypeToEntityForCreation(
+    tripVehicleType: ITripVehicleType
+  ): Prisma.TripVehicleTypeCreateManyInput {
+    return {
+      tripId: -1,
+      vehicleTypeId: tripVehicleType.vehicleTypeId,
+      fare: tripVehicleType.fare,
     };
   }
 }

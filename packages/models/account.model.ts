@@ -1,12 +1,15 @@
 import { IPassenger } from './passenger.model';
 import { ACCOUNT_ROLE, CIVIL_STATUS, OCCUPATION, SEX } from '@ayahay/constants';
 import { IVehicle } from './vehicle.model';
+import { IShippingLine } from './shipping-line.model';
 
 export interface IAccount {
   // firebase user ID
   id: string;
   passengerId?: number;
   passenger?: IPassenger;
+  shippingLineId?: number;
+  shippingLine?: IShippingLine;
 
   email: string;
   role: keyof typeof ACCOUNT_ROLE;

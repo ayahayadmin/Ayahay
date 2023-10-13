@@ -17,7 +17,7 @@ export default function Reporting() {
   if (!isSignedIn) {
     redirect('/');
   } else if (loggedInAccount && !allowedRoles.includes(loggedInAccount.role)) {
-    redirect('/404');
+    redirect('/403');
   }
 
   return <h1>reporting page</h1>;

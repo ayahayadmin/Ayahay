@@ -214,6 +214,7 @@ CREATE TABLE "temp_booking" (
 CREATE TABLE "account" (
     "id" TEXT NOT NULL,
     "passenger_id" INTEGER,
+    "shipping_line_id" INTEGER,
     "email" TEXT NOT NULL,
     "role" TEXT NOT NULL,
 
@@ -392,6 +393,9 @@ ALTER TABLE "temp_booking" ADD CONSTRAINT "temp_booking_account_id_fkey" FOREIGN
 
 -- AddForeignKey
 ALTER TABLE "account" ADD CONSTRAINT "account_passenger_id_fkey" FOREIGN KEY ("passenger_id") REFERENCES "passenger"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "account" ADD CONSTRAINT "account_shipping_line_id_fkey" FOREIGN KEY ("shipping_line_id") REFERENCES "shipping_line"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "cabin_type" ADD CONSTRAINT "cabin_type_shipping_line_id_fkey" FOREIGN KEY ("shipping_line_id") REFERENCES "shipping_line"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

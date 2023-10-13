@@ -234,8 +234,7 @@ export default function SearchResult({ searchQuery }: SearchResultsProps) {
   const fetchTrips = async (page: number) => {
     setLoading(true);
     const trips = await getAvailableTrips(searchQuery);
-    const { data, totalPages, totalItems } = trips;
-    const tripData = find(data, { page });
+    const tripData = find(trips?.data, { page });
 
     setTripData(tripData?.availableTrips || []);
     setTotalPages(totalPages);

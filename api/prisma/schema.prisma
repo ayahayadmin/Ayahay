@@ -144,6 +144,7 @@ model ShippingLine {
   cabinTypes CabinType[]
   seatTypes SeatType[]
   seatPlans SeatPlan[]
+  accounts Account[]
 
   @@map("shipping_line")
 }
@@ -311,6 +312,8 @@ model Account {
   id String @id
   passengerId Int? @map("passenger_id") @unique
   passenger Passenger? @relation(fields: [passengerId], references: [id])
+  shippingLineId Int? @map("shipping_line_id")
+  shippingLine ShippingLine? @relation(fields: [shippingLineId], references: [id])
 
   email String
   role String

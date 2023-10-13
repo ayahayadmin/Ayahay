@@ -39,7 +39,7 @@ export class BookingController {
     @Request() req,
     @Param('id') id: string
   ): Promise<IBooking> {
-    return this.bookingService.getBookingById(id, req.user?.id);
+    return this.bookingService.getBookingById(id, req.user);
   }
 
   @Post()
@@ -74,14 +74,24 @@ export class BookingController {
   @Roles('Passenger', 'Staff', 'Admin')
   async deleteBooking(@Param('id') id: string) {}
 
-  @Patch(':bookingId/:bookingPassengerId/check-in')
+  @Patch(':bookingId/passengers/:bookingPassengerId/check-in')
   @UseGuards(AuthGuard)
-  @Roles('Staff', 'Admin')
+  @Roles('Staff', 'Admin', 'SuperAdmin')
   async checkInPassenger(
     @Param('bookingId') bookingId: string,
     @Param('bookingPassengerId') bookingPassengerId: number
   ) {
     return this.bookingService.checkInPassenger(bookingId, bookingPassengerId);
+  }
+
+  @Patch(':bookingId/vehicles/:bookingVehicleId/check-in')
+  @UseGuards(AuthGuard)
+  @Roles('Staff', 'Admin', 'SuperAdmin')
+  async checkInVehicle(
+    @Param('bookingId') bookingId: string,
+    @Param('bookingVehicleId') bookingVehicleId: number
+  ) {
+    return this.bookingService.checkInVehicle(bookingId, bookingVehicleId);
   }
 }
 

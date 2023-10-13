@@ -9,5 +9,6 @@ export const PAYMENT_API = `${BASE_URL}/pay`;
 export const PORTS_API = `${BASE_URL}/ports`;
 export const SEARCH_API = `${BASE_URL}/search`;
 export const SHIPPING_LINE_API = `${BASE_URL}/shipping-lines`;
+export const SHIPS_API = `${BASE_URL}/ships`;
 export const TRIP_API = `${BASE_URL}/trips`;
 export const VEHICLE_TYPES_API = `${BASE_URL}/vehicle-types`;

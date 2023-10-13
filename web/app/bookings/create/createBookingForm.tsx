@@ -171,7 +171,6 @@ export default function CreateBookingForm({
         vehicles: [],
         preferences: [],
       }}
-      onValuesChange={(changesValues, values) => console.log(values)}
       onFinish={(values) => console.log(values)}
     >
       <Steps

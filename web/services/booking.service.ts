@@ -48,7 +48,9 @@ export async function getBookingById(
   try {
     const { data: booking } = await axios.get<IBooking>(
       `${BOOKING_API}/${bookingId}`,
-      { headers: { Authorization: `Bearer ${authToken}` } }
+      authToken
+        ? { headers: { Authorization: `Bearer ${authToken}` } }
+        : undefined
     );
 
     return booking;

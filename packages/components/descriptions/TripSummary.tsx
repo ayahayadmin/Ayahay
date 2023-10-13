@@ -25,7 +25,7 @@ export default function TripSummary({ trip }: TripSummaryProps) {
             {trip?.destPort?.name}
           </Descriptions.Item>
           <Descriptions.Item label='Departure Date'>
-            {dayjs(trip?.departureDateIso).format('MMM D, YYYY')}
+            {dayjs(trip?.departureDateIso).format('MMM D, YYYY [at] h:mm A')}
           </Descriptions.Item>
           <Descriptions.Item label='Shipping Line'>
             {trip?.shippingLine?.name}
