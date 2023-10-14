@@ -2,12 +2,18 @@
 import React, { useEffect, useState } from 'react';
 import { IShippingLineSchedule } from '@ayahay/models';
 import { getSchedulesOfShippingLine } from '@/services/shipping-line.service';
-import { Typography } from 'antd';
+import { Spin, Typography } from 'antd';
 import CreateTripsFromScheduleForm from './createTripsFromScheduleForm';
+import { useLoggedInAccount } from '@ayahay/hooks/auth';
+import { useAuthState } from '@/hooks/auth';
+import styles from './page.module.scss';
+import { redirect } from 'next/navigation';
 
 const { Title } = Typography;
 
 export default function CreateTripsFromSchedulesPage() {
+  const { loggedInAccount } = useLoggedInAccount();
+  const { pending, isSignedIn } = useAuthState();
   const [schedules, setSchedules] = useState<IShippingLineSchedule[]>([]);
 
   const fetchSchedules = async (): Promise<void> => {
@@ -22,6 +28,17 @@ export default function CreateTripsFromSchedulesPage() {
   useEffect(() => {
     fetchSchedules();
   }, []);
+
+  if (pending) {
+    return <Spin size='large' className={styles['spinner']} />;
+  }
+
+  const allowedRoles = ['SuperAdmin', 'Admin'];
+  if (!isSignedIn) {
+    redirect('/');
+  } else if (loggedInAccount && !allowedRoles.includes(loggedInAccount.role)) {
+    redirect('/403');
+  }
 
   return (
     <div style={{ margin: '32px 64px' }}>
