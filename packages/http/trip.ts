@@ -45,5 +45,5 @@ export interface DashboardTrips {
 
 export interface CreateTripsFromSchedulesRequest {
   schedules: { scheduleId: number; override?: Partial<ITrip> }[];
-  dateRanges: { startDateIso: string; endDateIso: string }[];
+  dateRanges: { startDate: string; endDate: string }[];
 }

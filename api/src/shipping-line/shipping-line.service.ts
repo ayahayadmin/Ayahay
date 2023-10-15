@@ -86,8 +86,8 @@ export class ShippingLineService {
     const trips: ITrip[] = [];
     for (const schedule of scheduleEntities) {
       for (const dateRange of createTripsFromSchedulesRequest.dateRanges) {
-        const startDate = new Date(dateRange.startDateIso);
-        const endDate = new Date(dateRange.endDateIso);
+        const startDate = new Date(dateRange.startDate);
+        const endDate = new Date(dateRange.endDate);
         for (
           let currentDate = startDate;
           currentDate <= endDate;
@@ -96,11 +96,15 @@ export class ShippingLineService {
           const tripToCreate =
             this.shippingLineMapper.convertScheduleToTrip(schedule);
 
-          const departureDate = new Date(currentDate);
-          departureDate.setHours(schedule.departureHour);
-          departureDate.setMinutes(schedule.departureMinute);
-          departureDate.setSeconds(0);
-          departureDate.setMilliseconds(0);
+          const yyyyYear = currentDate.getFullYear();
+          const mmMonth = String(currentDate.getMonth() + 1).padStart(2, '0');
+          const ddDay = String(currentDate.getDate()).padStart(2, '0');
+          const hhHour = String(schedule.departureHour).padStart(2, '0');
+          const mmMinute = String(schedule.departureMinute).padStart(2, '0');
+          const hhMmTimezone = '+08:00';
+          const departureDate = new Date(
+            `${yyyyYear}-${mmMonth}-${ddDay}T${hhHour}:${mmMinute}:00.000${hhMmTimezone}`
+          );
 
           tripToCreate.departureDateIso =
             tripToCreate.bookingCutOffDateIso =
