@@ -27,6 +27,7 @@ import { ColumnsType } from 'antd/es/table';
 import { createTripsFromSchedules } from '@/services/trip.service';
 import { split } from 'lodash';
 import { getTime } from '@/services/search.service';
+import { TripRatesModal } from '@/components/modal/TripRatesModal';
 
 interface CreateTripsFromScheduleFormProps {
   schedules: IShippingLineSchedule[];
@@ -88,17 +89,41 @@ const columns: ColumnsType<IShippingLineSchedule> = [
   {
     title: 'Rates',
     key: 'rates',
-    render: (schedule: IShippingLineSchedule) =>
-      schedule.rates && (
-        <div>
-          <Popover
-            content={<ScheduleRatesPopover rates={schedule.rates} />}
-            trigger='click'
-          >
-            <StockOutlined rev={undefined} />
-          </Popover>
-        </div>
-      ),
+    render: (schedule: IShippingLineSchedule) => {
+      const passengerRates =
+        schedule.rates
+          ?.filter((rate) => rate.cabinId !== undefined)
+          ?.map((rate) => ({
+            key: rate.id,
+            cabinTypeName: rate.cabin?.cabinType?.name,
+            cabinTypeFare: rate.fare,
+          })) ?? [];
+      const vehicleRates =
+        schedule.rates
+          ?.filter((rate) => rate.vehicleTypeId !== undefined)
+          ?.map((rate) => ({
+            key: rate.id,
+            vehicleTypeName: rate.vehicleType?.name,
+            vehicleTypeFare: rate.fare,
+          })) ?? [];
+      return (
+        schedule.rates && (
+          <div>
+            <Popover
+              content={
+                <TripRatesModal
+                  passengerRates={passengerRates}
+                  vehicleRates={vehicleRates}
+                />
+              }
+              trigger='click'
+            >
+              <StockOutlined rev={undefined} />
+            </Popover>
+          </div>
+        )
+      );
+    },
   },
 ];
 
@@ -115,10 +140,12 @@ export default function CreateTripsFromScheduleForm({
       schedules: formValues.scheduleIds.map((scheduleId: any) => ({
         scheduleId,
       })),
-      dateRanges: formValues.dateRanges.map(({ dateRange }: any) => ({
-        startDateIso: dateRange[0].toISOString(),
-        endDateIso: dateRange[1].toISOString(),
-      })),
+      dateRanges: formValues.dateRanges.map(({ dateRange }: any) => {
+        return {
+          startDate: dateRange[0].format('YYYY-MM-DD'),
+          endDate: dateRange[1].format('YYYY-MM-DD'),
+        };
+      }),
     };
 
     const error = await createTripsFromSchedules(request);
@@ -224,84 +251,4 @@ function ScheduleCapacitiesPopover({ ship }: { ship: IShip }) {
       </div>
     </article>
   );
-}
-
-function ScheduleRatesPopover({
-  rates,
-}: {
-  rates: IShippingLineScheduleRate[];
-}) {
-  const [passengerRates, setPassengerRates] = useState<PassengerRate[]>([]);
-  const [vehicleRates, setVehicleRates] = useState<VehicleRate[]>([]);
-
-  useEffect(() => {
-    setPassengerRates(
-      rates
-        .filter((rate) => rate.cabinId !== undefined)
-        .map((rate) => ({
-          key: rate.id,
-          cabinTypeName: rate.cabin?.cabinType?.name,
-          cabinTypeFare: rate.fare,
-        }))
-    );
-    setVehicleRates(
-      rates
-        .filter((rate) => rate.vehicleTypeId !== undefined)
-        .map((rate) => ({
-          key: rate.id,
-          vehicleTypeName: rate.vehicleType?.name,
-          vehicleTypeFare: rate.fare,
-        }))
-    );
-  }, [rates]);
-
-  return (
-    <article
-      style={{ minWidth: '300px', maxHeight: '360px', overflowY: 'auto' }}
-    >
-      <Title level={2}>Rates</Title>
-      <Title level={3}>Passengers</Title>
-      <Table columns={passengerRateColumns} dataSource={passengerRates} />
-      <Title level={3}>Vehicles</Title>
-      <Table columns={vehicleRateColumns} dataSource={vehicleRates} />
-    </article>
-  );
-}
-
-const passengerRateColumns: ColumnsType<PassengerRate> = [
-  {
-    title: 'Cabin',
-    dataIndex: 'cabinTypeName',
-    key: 'cabinTypeName',
-  },
-  {
-    title: 'Fare',
-    dataIndex: 'cabinTypeFare',
-    key: 'cabinTypeFare',
-  },
-];
-
-const vehicleRateColumns: ColumnsType<VehicleRate> = [
-  {
-    title: 'Vehicle Type',
-    dataIndex: 'vehicleTypeName',
-    key: 'vehicleTypeName',
-  },
-  {
-    title: 'Fare',
-    dataIndex: 'vehicleTypeFare',
-    key: 'vehicleTypeFare',
-  },
-];
-
-interface PassengerRate {
-  key: number;
-  cabinTypeName?: string;
-  cabinTypeFare: number;
-}
-
-interface VehicleRate {
-  key: number;
-  vehicleTypeName?: string;
-  vehicleTypeFare: number;
 }
