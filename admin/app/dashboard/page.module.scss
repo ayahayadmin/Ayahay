@@ -4,10 +4,19 @@
   @media (max-width: 1023px) {
     padding: 24px 5vw;
   }
-}
 
-.bar-graph {
-  max-width: 70%;
+  .bar-graph {
+    margin: auto;
+    margin-top: 20px;
+    display: block;
+    width: 1000px;
+
+    @media (max-width: 1212px) {
+      max-width: 100%;
+      height: auto;
+      width: auto;
+    }
+  }
 }
 
 .spinner {

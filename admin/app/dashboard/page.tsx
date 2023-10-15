@@ -1,7 +1,5 @@
 'use client';
-import { IBookingPassenger } from '@/../packages/models';
-import BarChart from '@/components/charts/barChart';
-import { getAllTrips } from '@/services/trip.service';
+import BarChart from '@/components/charts/BarChart';
 import {
   Button,
   DatePicker,
@@ -24,23 +22,12 @@ import { getTripInformation } from '@/services/search.service';
 import { TripRatesModal } from '@/components/modal/TripRatesModal';
 import { StockOutlined } from '@ant-design/icons';
 import { DashboardTrips } from '@ayahay/http';
+import { buildPaxAndVehicleBookedData } from '@/services/dashboard.service';
 
 const { Title } = Typography;
 const { RangePicker } = DatePicker;
 dayjs.extend(isSameOrBefore);
 dayjs.extend(isSameOrAfter);
-
-interface TripIdToTripName {
-  [key: string]: string;
-}
-
-interface TripToBookingPassenger {
-  [key: string]: IBookingPassenger[];
-}
-
-interface CheckedInToTrip {
-  [key: string]: number;
-}
 
 const rangePresets: TimeRangePickerProps['presets'] = [
   { label: 'Last 7 Days', value: [dayjs().add(-7, 'd'), dayjs()] },
@@ -151,7 +138,13 @@ export default function Dashboard() {
   }, [startDate, endDate]);
 
   const getTripInfo = async () => {
-    // TODO: there's still a small bug wherein the start date seems to deduct 1 day? Choosing Dec 20 in the UI will sometimes pass Dec 19
+    // if no startDate and endDate was provided
+    if (
+      startDate.toString() === 'Invalid Date' &&
+      endDate.toString() === 'Invalid Date'
+    ) {
+      return;
+    }
     const tripInfo = await getTripInformation({
       startDate,
       endDate,
@@ -180,6 +173,8 @@ export default function Dashboard() {
     setEndDate(dayjs(dateString[1]).endOf('day'));
   };
 
+  const paxAndVehicleBookedData = buildPaxAndVehicleBookedData(tripInfo!);
+
   return (
     <div className={styles['main-container']}>
       <div>
@@ -188,6 +183,7 @@ export default function Dashboard() {
           presets={rangePresets}
           disabledDate={disabledDate}
           onChange={onChange}
+          style={{ margin: '10px 0px' }}
         />
         <Table
           columns={columns}
@@ -202,6 +198,9 @@ export default function Dashboard() {
             onChange={(page) => setPage(page)}
           ></Pagination>
         )} */}
+      </div>
+      <div className={styles['bar-graph']}>
+        {paxAndVehicleBookedData && <BarChart data={paxAndVehicleBookedData} />}
       </div>
     </div>
   );

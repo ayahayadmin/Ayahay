@@ -6,7 +6,7 @@ import { find, join, split } from 'lodash';
 import React, { useEffect, useState } from 'react';
 import Seats from './seats';
 import styles from './page.module.scss';
-import PieChart from '@/components/charts/pieChart';
+import PieChart from '@/components/charts/PieChart';
 import TripBookings from './tripBookings';
 import { useSearchParams } from 'next/navigation';
 

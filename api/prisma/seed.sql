@@ -164,6 +164,18 @@ INSERT INTO ayahay.trip
         (SELECT id FROM ayahay.shipping_line WHERE "name" = 'Aznar Shipping'),
         (SELECT id FROM ayahay.port WHERE "name" = 'Danao'),
         (SELECT id FROM ayahay.port WHERE "name" = 'Isabel')
+    ),
+    (
+        TIMESTAMP '2023-12-01 10:30:00',
+        TIMESTAMP '2023-06-15 10:30:00',
+        TIMESTAMP '2023-11-20 10:30:00',
+        'SEED2',
+        5,
+        8,
+        (SELECT id FROM ayahay.ship WHERE "name" = 'Melrivic 7'),
+        (SELECT id FROM ayahay.shipping_line WHERE "name" = 'Aznar Shipping'),
+        (SELECT id FROM ayahay.port WHERE "name" = 'Bogo'),
+        (SELECT id FROM ayahay.port WHERE "name" = 'San Carlos')
     )
 ;
 
@@ -183,6 +195,13 @@ INSERT INTO ayahay.trip_cabin
         2,
         2,
         400
+    ),
+    (
+        (SELECT id FROM ayahay.trip WHERE reference_number = 'SEED2'),
+        (SELECT id FROM ayahay.cabin WHERE "name" = 'Melrivic 7 Non-Aircon Cabin'),
+        3,
+        10,
+        500
     )
 ;
 
@@ -213,6 +232,41 @@ INSERT INTO ayahay.trip_vehicle_type
         (SELECT id FROM ayahay.trip WHERE reference_number = 'SEED1'),
         (SELECT id FROM ayahay.vehicle_type WHERE "name" = 'SUV'),
         3795
+    ),
+    (
+        (SELECT id FROM ayahay.trip WHERE reference_number = 'SEED2'),
+        (SELECT id FROM ayahay.vehicle_type WHERE "name" = 'Big Bus'),
+        1896
+    ),
+    (
+        (SELECT id FROM ayahay.trip WHERE reference_number = 'SEED2'),
+        (SELECT id FROM ayahay.vehicle_type WHERE "name" = 'Mini Bus'),
+        1690
+    ),
+    (
+        (SELECT id FROM ayahay.trip WHERE reference_number = 'SEED2'),
+        (SELECT id FROM ayahay.vehicle_type WHERE "name" = 'Multicab'),
+        1385
+    ),
+    (
+        (SELECT id FROM ayahay.trip WHERE reference_number = 'SEED2'),
+        (SELECT id FROM ayahay.vehicle_type WHERE "name" = '4-Wheeler Van'),
+        2526
+    ),
+    (
+        (SELECT id FROM ayahay.trip WHERE reference_number = 'SEED2'),
+        (SELECT id FROM ayahay.vehicle_type WHERE "name" = '6-Wheeler Light Van'),
+        3759
+    ),
+    (
+        (SELECT id FROM ayahay.trip WHERE reference_number = 'SEED2'),
+        (SELECT id FROM ayahay.vehicle_type WHERE "name" = '8-Wheeler Oil Tanker'),
+        4781
+    ),
+    (
+        (SELECT id FROM ayahay.trip WHERE reference_number = 'SEED2'),
+        (SELECT id FROM ayahay.vehicle_type WHERE "name" = '10-Wheeler Chassis'),
+        6834
     )
 ;
 

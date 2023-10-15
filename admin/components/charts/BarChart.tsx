@@ -7,17 +7,19 @@ interface ChartProp {
   data: any;
 }
 
+// For not-stacking bar graphs. For stacking graphs, set y.stacked: true
 const options = {
+  responsive: true,
   scales: {
     x: {
       stacked: true,
     },
     y: {
-      stacked: true,
+      stacked: false,
     },
   },
 };
 
 export default function BarChart({ data }: ChartProp) {
-  return <Bar options={options} data={data}></Bar>;
+  return <Bar options={options} data={data} />;
 }
