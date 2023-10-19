@@ -4,6 +4,7 @@ import {
   Button,
   DatePicker,
   Popover,
+  Skeleton,
   Spin,
   TimeRangePickerProps,
   Typography,
@@ -20,7 +21,7 @@ import { useLoggedInAccount } from '@ayahay/hooks/auth';
 import Table, { ColumnsType } from 'antd/es/table';
 import { getTripInformation } from '@/services/search.service';
 import { TripRatesModal } from '@/components/modal/TripRatesModal';
-import { StockOutlined } from '@ant-design/icons';
+import { BarChartOutlined, StockOutlined } from '@ant-design/icons';
 import { DashboardTrips } from '@ayahay/http';
 import { buildPaxAndVehicleBookedData } from '@/services/dashboard.service';
 
@@ -132,12 +133,14 @@ export default function Dashboard() {
   const [startDate, setStartDate] = useState(dateToday.startOf('day') as Dayjs);
   const [endDate, setEndDate] = useState(dateToday.endOf('day') as Dayjs);
   const [tripInfo, setTripInfo] = useState([] as DashboardTrips[] | undefined);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     getTripInfo();
   }, [startDate, endDate]);
 
   const getTripInfo = async () => {
+    setLoading(true);
     // if no startDate and endDate was provided
     if (
       startDate.toString() === 'Invalid Date' &&
@@ -150,6 +153,7 @@ export default function Dashboard() {
       endDate,
     });
     setTripInfo(tripInfo);
+    setLoading(false);
   };
 
   if (pending) {
@@ -185,12 +189,21 @@ export default function Dashboard() {
           onChange={onChange}
           style={{ margin: '10px 0px' }}
         />
-        <Table
-          columns={columns}
-          dataSource={tripInfo}
-          pagination={false}
-        ></Table>
-        {/* {totalItems / PAGE_SIZE > 1 && (
+        <Skeleton
+          loading={loading}
+          active
+          title={false}
+          paragraph={{
+            rows: 5,
+            width: ['98%', '98%', '98%', '98%', '98%'],
+          }}
+        >
+          <Table
+            columns={columns}
+            dataSource={tripInfo}
+            pagination={false}
+          ></Table>
+          {/* {totalItems / PAGE_SIZE > 1 && (
           <Pagination
             total={totalItems}
             current={page}
@@ -198,9 +211,21 @@ export default function Dashboard() {
             onChange={(page) => setPage(page)}
           ></Pagination>
         )} */}
+        </Skeleton>
       </div>
+
       <div className={styles['bar-graph']}>
-        {paxAndVehicleBookedData && <BarChart data={paxAndVehicleBookedData} />}
+        {loading && (
+          <Skeleton.Node active>
+            <BarChartOutlined
+              style={{ fontSize: 40, color: '#bfbfbf' }}
+              rev={undefined}
+            />
+          </Skeleton.Node>
+        )}
+        {paxAndVehicleBookedData && !loading && (
+          <BarChart data={paxAndVehicleBookedData} />
+        )}
       </div>
     </div>
   );

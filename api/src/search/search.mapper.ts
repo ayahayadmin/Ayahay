@@ -14,8 +14,8 @@ export class SearchMapper {
       shipId: Number(trip.shipId),
       availableVehicleCapacity: Number(trip.availableVehicleCapacity),
       vehicleCapacity: Number(trip.vehicleCapacity),
-      checkedInPassengerCount: trip.checkedInPassengerCount,
-      checkedInVehicleCount: trip.checkedInVehicleCount,
+      checkedInPassengerCount: Number(trip.checkedInPassengerCount),
+      checkedInVehicleCount: Number(trip.checkedInVehicleCount),
       availableCapacities: sum(
         trip.pipeSeparatedCabinAvailableCapacities
           .split('|')

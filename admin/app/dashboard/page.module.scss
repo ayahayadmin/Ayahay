@@ -8,10 +8,12 @@
   .bar-graph {
     margin: auto;
     margin-top: 20px;
-    display: block;
-    width: 1000px;
+    width: 1350px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-    @media (max-width: 1212px) {
+    @media (max-width: 1575px) {
       max-width: 100%;
       height: auto;
       width: auto;
