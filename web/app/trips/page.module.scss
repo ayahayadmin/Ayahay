@@ -23,12 +23,15 @@
       }
 
       .shipping-card {
-        // padding-top: 25px;
-        width: 15vw;
+        width: 350px;
+
+        @media (max-width: 575px) {
+          width: 80vw;
+        }
       }
 
-      @media (max-width: 506px) {
-        padding: 10px 10px 1px 10px;
+      @media (max-width: 575px) {
+        padding: 15px 15px 1px 15px;
       }
     }
   }
@@ -62,7 +65,7 @@
 }
 
 .results-card {
-  @media (max-width: 886px) {
+  @media (max-width: 1104px) {
     width: 90vw;
   }
 }

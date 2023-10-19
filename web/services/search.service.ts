@@ -6,6 +6,7 @@ import {
   DEFAULT_NUM_VEHICLES,
   DEFAULT_TRIP_TYPE,
 } from '@ayahay/constants/default';
+import { forEach } from 'lodash';
 
 export function initializeSearchFormFromQueryParams(
   form: FormInstance,
@@ -90,4 +91,30 @@ export function getTime(date: string) {
     hour: '2-digit',
     minute: '2-digit',
   });
+}
+
+export function getCabinTooltipTitle(cabinCapacities: any[]) {
+  let tooltipTitle = '';
+  forEach(cabinCapacities, (cabin, idx) => {
+    if (idx === cabinCapacities.length - 1) {
+      tooltipTitle += `${cabin.name}: ${cabin.available}/${cabin.total}`;
+    } else {
+      tooltipTitle += `${cabin.name}: ${cabin.available}/${cabin.total}; `;
+    }
+  });
+
+  return tooltipTitle;
+}
+
+export function getFareTooltipTitle(adultFares: any[]) {
+  let tooltipTitle = '';
+  forEach(adultFares, (fare, idx) => {
+    if (idx === adultFares.length - 1) {
+      tooltipTitle += `${fare.name}: ${fare.fare}`;
+    } else {
+      tooltipTitle += `${fare.name}: ${fare.fare}; `;
+    }
+  });
+
+  return tooltipTitle;
 }

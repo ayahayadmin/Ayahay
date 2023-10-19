@@ -1,16 +1,20 @@
 import styles from './searchResults.module.scss';
 import React, { useEffect, useState } from 'react';
-import { Button, Pagination, Skeleton, Space, Table, Tooltip } from 'antd';
+import { Button, Pagination, Skeleton, Table, Tooltip } from 'antd';
 import { ITrip, IShippingLine } from '@ayahay/models';
 import { TripsSearchQuery } from '@ayahay/http';
-import { find, forEach, split, sumBy } from 'lodash';
+import { find, sumBy } from 'lodash';
 import {
   getAvailableTrips,
   getCabinCapacities,
   getCabinFares,
   getMaximumFare,
 } from '@/services/trip.service';
-import { getTime } from '@/services/search.service';
+import {
+  getTime,
+  getCabinTooltipTitle,
+  getFareTooltipTitle,
+} from '@/services/search.service';
 import { ArrowRightOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
@@ -38,21 +42,19 @@ const columns: ColumnsType<ITrip> = [
         {record.destPort!.name}
       </span>
     ),
-    responsive: ['md'],
+    responsive: ['lg'],
   },
   {
     key: 'departureDateTime',
     dataIndex: 'departureDateIso',
     render: (text: string) => (
-      <div>
-        <span className={styles['departureDateTime']}>
-          {dayjs(text).format('MMMM D, YYYY')}
-        </span>
+      <div className={styles['departureDateTime']}>
+        <span>{dayjs(text).format('MMMM D, YYYY')}</span>
         <br></br>
         <span>{getTime(text)}</span>
       </div>
     ),
-    responsive: ['md'],
+    responsive: ['lg'],
   },
   {
     key: 'srcDestPortAndDepartureDateTime',
@@ -70,28 +72,19 @@ const columns: ColumnsType<ITrip> = [
       </span>
     ),
     align: 'center',
+    responsive: ['sm'],
   },
   {
     key: 'passengerSlots',
     render: (text: string, record: ITrip) => {
       const cabinCapacities: any[] = getCabinCapacities(record.availableCabins);
-      let tooltipTitle = '';
-      forEach(cabinCapacities, (cabin, idx) => {
-        if (idx === cabinCapacities.length - 1) {
-          tooltipTitle += `${cabin.name}: ${cabin.available}/${cabin.total}`;
-        } else {
-          tooltipTitle += `${cabin.name}: ${cabin.available}/${cabin.total}; `;
-        }
-      });
-
+      const tooltipTitle = getCabinTooltipTitle(cabinCapacities);
       const totalAvailable = sumBy(cabinCapacities, 'available');
       const totalCapacity = sumBy(cabinCapacities, 'total');
 
       return (
         <div>
-          <span
-            className={styles['slots']}
-          >{`${totalAvailable} slot/s left`}</span>
+          {`${totalAvailable} slot/s left`}
           &nbsp;
           <Tooltip title={tooltipTitle}>
             <InfoCircleOutlined rev={undefined} />
@@ -99,7 +92,7 @@ const columns: ColumnsType<ITrip> = [
         </div>
       );
     },
-    responsive: ['md'],
+    responsive: ['lg'],
   },
   {
     key: 'vehicleSlots',
@@ -107,20 +100,36 @@ const columns: ColumnsType<ITrip> = [
     render: (text: string, record: ITrip) => (
       <span>{`${text} vehicle slot/s left`}</span>
     ),
+    responsive: ['lg'],
+  },
+  {
+    key: 'passengerAndVehicleSlots',
+    dataIndex: 'availableVehicleCapacity',
+    render: (text: string, record: ITrip) => {
+      const cabinCapacities: any[] = getCabinCapacities(record.availableCabins);
+      const tooltipTitle = getCabinTooltipTitle(cabinCapacities);
+      const totalAvailable = sumBy(cabinCapacities, 'available');
+      const totalCapacity = sumBy(cabinCapacities, 'total');
+
+      return (
+        <div className={styles['passenger-vehicle-slots']}>
+          {`${totalAvailable} slot/s left`}
+          &nbsp;
+          <Tooltip title={tooltipTitle}>
+            <InfoCircleOutlined rev={undefined} />
+          </Tooltip>
+          <div>{`${text} vehicle slot/s left`}</div>
+        </div>
+      );
+    },
+    align: 'center',
+    responsive: ['md'],
   },
   {
     key: 'adultFare',
     render: (text: string, record: ITrip) => {
       const adultFares: any[] = getCabinFares(record.availableCabins);
-      let tooltipTitle = '';
-      forEach(adultFares, (fare, idx) => {
-        if (idx === adultFares.length - 1) {
-          tooltipTitle += `${fare.name}: ${fare.fare}`;
-        } else {
-          tooltipTitle += `${fare.name}: ${fare.fare}; `;
-        }
-      });
-
+      const tooltipTitle = getFareTooltipTitle(adultFares);
       const minFare = getMaximumFare(adultFares);
 
       return (
@@ -132,81 +141,154 @@ const columns: ColumnsType<ITrip> = [
         </div>
       );
     },
-    responsive: ['md'],
+    responsive: ['lg'],
   },
   {
     key: 'action',
     dataIndex: 'id',
     render: (text: string) => (
-      <Space size='middle'>
-        <Button
-          type='primary'
-          size='large'
-          href={`${process.env.NEXT_PUBLIC_WEB_URL}/bookings/create?tripId=${text}`}
-          target='_blank'
-          className={styles['book-button']}
-        >
-          Book Now!
-        </Button>
-      </Space>
+      <Button
+        type='primary'
+        size='large'
+        href={`${process.env.NEXT_PUBLIC_WEB_URL}/bookings/create?tripId=${text}`}
+        target='_blank'
+        className={styles['book-button']}
+      >
+        Book Now!
+      </Button>
     ),
-    responsive: ['md'],
     align: 'right',
+    responsive: ['lg'],
   },
   {
-    key: 'slotsAndPriceAndAction',
-    dataIndex: 'slots',
-    render: (text: string, record: ITrip) => (
-      <span className={styles['slot-price-action']}>
-        <div className={styles['price']}>{`PHP ${'1000'}`}</div>
-        {/* record.availableCabins[0].adultFare */}
-        <div>{`${text} slot/s`}</div>
-        <Space size='middle'>
-          <Button
-            type='primary'
-            size='large'
-            href={`${process.env.NEXT_PUBLIC_WEB_URL}/bookings/create?tripId=${text}`}
-            target='_blank'
-            className={styles['book-button']}
-          >
-            Book Now!
-          </Button>
-        </Space>
-      </span>
-    ),
+    key: 'priceAndAction',
+    dataIndex: 'id',
+    render: (text: string, record: ITrip) => {
+      const adultFares: any[] = getCabinFares(record.availableCabins);
+      const tooltipTitle = getFareTooltipTitle(adultFares);
+      const minFare = getMaximumFare(adultFares);
+
+      return (
+        <div className={styles['price-action']}>
+          <div className={styles['price']}>
+            {`PHP ${minFare}`}&nbsp;
+            <Tooltip title={`${tooltipTitle}`}>
+              <InfoCircleOutlined rev={undefined} />
+            </Tooltip>
+          </div>
+          <div>
+            <Button
+              type='primary'
+              size='large'
+              href={`${process.env.NEXT_PUBLIC_WEB_URL}/bookings/create?tripId=${text}`}
+              target='_blank'
+              className={styles['book-button']}
+            >
+              Book Now!
+            </Button>
+          </div>
+        </div>
+      );
+    },
     align: 'right',
+    responsive: ['md'],
+  },
+  {
+    key: 'allColumnsExceptPortsAndDateTime',
+    dataIndex: 'id',
+    render: (text: string, record: ITrip) => {
+      const cabinCapacities: any[] = getCabinCapacities(record.availableCabins);
+      const slotsTooltip = getCabinTooltipTitle(cabinCapacities);
+      const totalAvailable = sumBy(cabinCapacities, 'available');
+      const totalCapacity = sumBy(cabinCapacities, 'total');
+      const adultFares: any[] = getCabinFares(record.availableCabins);
+      const fareTooltip = getFareTooltipTitle(adultFares);
+      const minFare = getMaximumFare(adultFares);
+
+      return (
+        <span className={styles['all-columns-except-port-date']}>
+          {`${totalAvailable} slot/s left`}
+          &nbsp;
+          <Tooltip title={slotsTooltip}>
+            <InfoCircleOutlined rev={undefined} />
+          </Tooltip>
+          <div>{`${text} vehicle slot/s left`}</div>
+          <div className={styles['price']} style={{ marginTop: 10 }}>
+            {`PHP ${minFare}`}&nbsp;
+            <Tooltip title={`${fareTooltip}`}>
+              <InfoCircleOutlined rev={undefined} />
+            </Tooltip>
+          </div>
+          <div>
+            <Button
+              type='primary'
+              size='large'
+              href={`${process.env.NEXT_PUBLIC_WEB_URL}/bookings/create?tripId=${text}`}
+              target='_blank'
+              className={styles['book-button']}
+            >
+              Book Now!
+            </Button>
+          </div>
+        </span>
+      );
+    },
+    align: 'right',
+    responsive: ['sm'],
   },
   {
     key: 'allColumns',
-    dataIndex: 'slots',
-    render: (text: string, record: ITrip) => (
-      <span className={styles['all-columns']}>
-        <div>
-          {record.srcPort!.name} <ArrowRightOutlined rev={undefined} />
-          &nbsp;
-          {record.destPort!.name}
-        </div>
-        <div>
-          {split(record.departureDateIso, 'T')[0]} at&nbsp;
-          {getTime(record.departureDateIso)}
-        </div>
-        <div className={styles['price']}>{`PHP ${'1000'}`}</div>&nbsp;
-        {/* record.availableCabins[0].adultFare */}
-        <div>{`${text} slot/s`}</div>
-        <Space size='middle'>
-          <Button
-            type='primary'
-            size='large'
-            href={`${process.env.NEXT_PUBLIC_WEB_URL}/bookings/create?tripId=${text}`}
-            target='_blank'
-            className={styles['book-button']}
-          >
-            Book Now!
-          </Button>
-        </Space>
-      </span>
-    ),
+    dataIndex: 'id',
+    render: (text: string, record: ITrip) => {
+      const cabinCapacities: any[] = getCabinCapacities(record.availableCabins);
+      const slotsTooltip = getCabinTooltipTitle(cabinCapacities);
+      const totalAvailable = sumBy(cabinCapacities, 'available');
+      const totalCapacity = sumBy(cabinCapacities, 'total');
+      const adultFares: any[] = getCabinFares(record.availableCabins);
+      const fareTooltip = getFareTooltipTitle(adultFares);
+      const minFare = getMaximumFare(adultFares);
+
+      return (
+        <span className={styles['all-columns']}>
+          <div>
+            {record.srcPort!.name} <ArrowRightOutlined rev={undefined} />
+            &nbsp;
+            {record.destPort!.name}
+          </div>
+          <div>
+            {dayjs(record.departureDateIso).format('MMMM D, YYYY')} at&nbsp;
+            {getTime(record.departureDateIso)}
+          </div>
+          <div style={{ marginTop: 10 }}>
+            {`${totalAvailable} slot/s left`}
+            &nbsp;
+            <Tooltip title={slotsTooltip}>
+              <InfoCircleOutlined rev={undefined} />
+            </Tooltip>
+          </div>
+          <div>{`${text} vehicle slot/s left`}</div>
+          <div className={styles['price']} style={{ marginTop: 10 }}>
+            {`PHP ${minFare}`}&nbsp;
+            <Tooltip title={`${fareTooltip}`}>
+              <InfoCircleOutlined rev={undefined} />
+            </Tooltip>
+          </div>
+          <div>
+            <Button
+              type='primary'
+              size='large'
+              href={`${process.env.NEXT_PUBLIC_WEB_URL}/bookings/create?tripId=${text}`}
+              target='_blank'
+              className={styles['book-button']}
+            >
+              Book Now!
+            </Button>
+          </div>
+        </span>
+      );
+    },
     align: 'right',
+    responsive: ['xs'],
   },
 ];
 const PAGE_SIZE = 10;

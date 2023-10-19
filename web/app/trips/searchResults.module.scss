@@ -1,28 +1,31 @@
+.results-container {
+  margin-bottom: 20px;
+}
+
 .search-result {
   flex-grow: 1;
-}
-
-.port-date,
-.slot-price-action {
-  @media (min-width: 768px) {
-    display: none;
-  }
-
-  @media (max-width: 500px) {
-    display: none;
-  }
-}
-
-.all-columns {
-  @media (min-width: 501px) {
-    display: none;
-  }
 }
 
 .price {
   font-weight: 600;
 }
 
-.results-container {
-  margin-bottom: 20px;
+.port-date,
+.price-action,
+.passenger-vehicle-slots {
+  @media (min-width: 992px) {
+    display: none;
+  }
+}
+
+.all-columns-except-port-date {
+  @media (min-width: 768px) {
+    display: none;
+  }
+}
+
+.all-columns {
+  @media (min-width: 576px) {
+    display: none;
+  }
 }
