@@ -168,6 +168,8 @@ export interface AvailableTrips {
   pipeSeparatedCabinCapacities: string;
   pipeSeparatedCabinTypeIds: string;
   pipeSeparatedRecommendedCabinCapacities: string;
+  pipeSeparatedCabinTypeNames: string;
+  pipeSeparatedCabinTypeDescriptions: string;
 
   pipeSeparatedVehicleTypeIds: string;
   pipeSeparatedVehicleNames: string;

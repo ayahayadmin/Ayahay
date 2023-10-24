@@ -56,7 +56,7 @@ export default function Schedules() {
       onValuesChange={(_, __) => debounceSearch()}
       onFinish={(_) => debounceSearch()}
     >
-      <div>
+      <div className={styles['main-container']}>
         <TripList />
         {/* <BookingList /> */}
         {/* <div className={styles.chart}>

@@ -51,7 +51,7 @@ export async function getAvailableTrips(
   };
 
   const responseData: ITrip[] = await axios
-    .get(`${TRIP_API}`, { params: { ...query } })
+    .get(`${TRIP_API}/available`, { params: { ...query } })
     .then((res) => {
       return Promise.all(
         res.data.map((data: ITrip) => {
@@ -91,6 +91,7 @@ export async function getAvailableTrips(
 }
 
 function mapResponseData(responseData: ITrip) {
+  // TO DO: use one in packages
   return Promise.allSettled([
     // For now we are just interested with Ports & Shipping Line. In the future we can add more like Ship
     getPort(responseData.srcPortId),

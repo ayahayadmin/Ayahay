@@ -22,8 +22,8 @@ import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import { ITrip } from '@ayahay/models';
 import { RangePickerProps } from 'antd/es/date-picker';
-import { filter, map } from 'lodash';
-import { getAllTrips } from '@/services/trip.service';
+import { map } from 'lodash';
+import { getTripsByDateRange } from '@/services/trip.service';
 import Logout from './auth/Logout';
 import { useLoggedInAccount } from '@ayahay/hooks/auth';
 import { webLinks } from '@/services/nav.service';
@@ -71,15 +71,16 @@ export default function AdminHeader() {
   useEffect(onPageLoad, []);
 
   useEffect(() => {
-    const trips = filter(getAllTrips(), (trip) => {
-      return (
-        startDate.isSameOrBefore(trip.departureDateIso) &&
-        endDate.isSameOrAfter(trip.departureDateIso)
-      );
-    });
-
-    setTripsData(trips);
+    fetchTrips();
   }, [startDate, endDate]);
+
+  const fetchTrips = async () => {
+    const trips = await getTripsByDateRange(
+      startDate.toISOString(),
+      endDate.toISOString()
+    );
+    setTripsData(trips);
+  };
 
   const onSearch = (value: string) =>
     window.location.assign(`/search?query=${value}`);
