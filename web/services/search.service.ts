@@ -93,7 +93,7 @@ export function getTime(date: string) {
   });
 }
 
-export function getCabinTooltipTitle(cabinCapacities: any[]) {
+export function getCabinPopoverContent(cabinCapacities: any[]) {
   let tooltipTitle = '';
   forEach(cabinCapacities, (cabin, idx) => {
     if (idx === cabinCapacities.length - 1) {
@@ -106,7 +106,7 @@ export function getCabinTooltipTitle(cabinCapacities: any[]) {
   return tooltipTitle;
 }
 
-export function getFareTooltipTitle(adultFares: any[]) {
+export function getFarePopoverContent(adultFares: any[]) {
   let tooltipTitle = '';
   forEach(adultFares, (fare, idx) => {
     if (idx === adultFares.length - 1) {

@@ -17,6 +17,7 @@
   }
 
   p {
+    font-size: clamp(15px, 3vw, 17px);
     padding: 0 10px 0 10px;
   }
 }

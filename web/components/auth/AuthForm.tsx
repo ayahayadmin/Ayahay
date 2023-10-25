@@ -198,13 +198,9 @@ export default function AuthForm() {
         destroyOnClose={true}
       >
         Don't have an account?{' '}
-        <Link
-          href='/'
-          onClick={onClickRegister}
-          style={{ textDecoration: 'underline' }}
-        >
+        <Button type='link' onClick={onClickRegister} style={{ padding: 0 }}>
           Register now!
-        </Link>
+        </Button>
         <Login onFinishLogin={onFinishLogin} onClickReset={onClickReset} />
       </Modal>
       <Modal

@@ -1,6 +1,6 @@
 import styles from './searchResults.module.scss';
 import React, { useEffect, useState } from 'react';
-import { Button, Pagination, Skeleton, Table, Tooltip } from 'antd';
+import { Button, Pagination, Popover, Skeleton, Table } from 'antd';
 import { ITrip, IShippingLine } from '@ayahay/models';
 import { TripsSearchQuery } from '@ayahay/http';
 import { find, sumBy } from 'lodash';
@@ -12,8 +12,8 @@ import {
 } from '@/services/trip.service';
 import {
   getTime,
-  getCabinTooltipTitle,
-  getFareTooltipTitle,
+  getCabinPopoverContent,
+  getFarePopoverContent,
 } from '@/services/search.service';
 import { ArrowRightOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
@@ -78,7 +78,7 @@ const columns: ColumnsType<ITrip> = [
     key: 'passengerSlots',
     render: (text: string, record: ITrip) => {
       const cabinCapacities: any[] = getCabinCapacities(record.availableCabins);
-      const tooltipTitle = getCabinTooltipTitle(cabinCapacities);
+      const popoverContent = getCabinPopoverContent(cabinCapacities);
       const totalAvailable = sumBy(cabinCapacities, 'available');
       const totalCapacity = sumBy(cabinCapacities, 'total');
 
@@ -86,9 +86,9 @@ const columns: ColumnsType<ITrip> = [
         <div>
           {`${totalAvailable} slot/s left`}
           &nbsp;
-          <Tooltip title={tooltipTitle}>
+          <Popover title={'Available Slots'} content={popoverContent}>
             <InfoCircleOutlined rev={undefined} />
-          </Tooltip>
+          </Popover>
         </div>
       );
     },
@@ -107,7 +107,7 @@ const columns: ColumnsType<ITrip> = [
     dataIndex: 'availableVehicleCapacity',
     render: (text: string, record: ITrip) => {
       const cabinCapacities: any[] = getCabinCapacities(record.availableCabins);
-      const tooltipTitle = getCabinTooltipTitle(cabinCapacities);
+      const popoverContent = getCabinPopoverContent(cabinCapacities);
       const totalAvailable = sumBy(cabinCapacities, 'available');
       const totalCapacity = sumBy(cabinCapacities, 'total');
 
@@ -115,9 +115,9 @@ const columns: ColumnsType<ITrip> = [
         <div className={styles['passenger-vehicle-slots']}>
           {`${totalAvailable} slot/s left`}
           &nbsp;
-          <Tooltip title={tooltipTitle}>
+          <Popover title={'Available Slots'} content={popoverContent}>
             <InfoCircleOutlined rev={undefined} />
-          </Tooltip>
+          </Popover>
           <div>{`${text} vehicle slot/s left`}</div>
         </div>
       );
@@ -129,15 +129,15 @@ const columns: ColumnsType<ITrip> = [
     key: 'adultFare',
     render: (text: string, record: ITrip) => {
       const adultFares: any[] = getCabinFares(record.availableCabins);
-      const tooltipTitle = getFareTooltipTitle(adultFares);
+      const popoverContent = getFarePopoverContent(adultFares);
       const minFare = getMaximumFare(adultFares);
 
       return (
         <div>
           <span className={styles['price']}>{`PHP ${minFare}`}</span>&nbsp;
-          <Tooltip title={`${tooltipTitle}`}>
+          <Popover title={'Cabin Fares'} content={popoverContent}>
             <InfoCircleOutlined rev={undefined} />
-          </Tooltip>
+          </Popover>
         </div>
       );
     },
@@ -165,16 +165,16 @@ const columns: ColumnsType<ITrip> = [
     dataIndex: 'id',
     render: (text: string, record: ITrip) => {
       const adultFares: any[] = getCabinFares(record.availableCabins);
-      const tooltipTitle = getFareTooltipTitle(adultFares);
+      const popoverContent = getFarePopoverContent(adultFares);
       const minFare = getMaximumFare(adultFares);
 
       return (
         <div className={styles['price-action']}>
           <div className={styles['price']}>
             {`PHP ${minFare}`}&nbsp;
-            <Tooltip title={`${tooltipTitle}`}>
+            <Popover title={'Cabin Fares'} content={popoverContent}>
               <InfoCircleOutlined rev={undefined} />
-            </Tooltip>
+            </Popover>
           </div>
           <div>
             <Button
@@ -198,26 +198,26 @@ const columns: ColumnsType<ITrip> = [
     dataIndex: 'id',
     render: (text: string, record: ITrip) => {
       const cabinCapacities: any[] = getCabinCapacities(record.availableCabins);
-      const slotsTooltip = getCabinTooltipTitle(cabinCapacities);
+      const slotsPopoverContent = getCabinPopoverContent(cabinCapacities);
       const totalAvailable = sumBy(cabinCapacities, 'available');
       const totalCapacity = sumBy(cabinCapacities, 'total');
       const adultFares: any[] = getCabinFares(record.availableCabins);
-      const fareTooltip = getFareTooltipTitle(adultFares);
+      const farePopoverContent = getFarePopoverContent(adultFares);
       const minFare = getMaximumFare(adultFares);
 
       return (
         <span className={styles['all-columns-except-port-date']}>
           {`${totalAvailable} slot/s left`}
           &nbsp;
-          <Tooltip title={slotsTooltip}>
+          <Popover title={'Available Slots'} content={slotsPopoverContent}>
             <InfoCircleOutlined rev={undefined} />
-          </Tooltip>
+          </Popover>
           <div>{`${text} vehicle slot/s left`}</div>
           <div className={styles['price']} style={{ marginTop: 10 }}>
             {`PHP ${minFare}`}&nbsp;
-            <Tooltip title={`${fareTooltip}`}>
+            <Popover title={'Cabin Fares'} content={farePopoverContent}>
               <InfoCircleOutlined rev={undefined} />
-            </Tooltip>
+            </Popover>
           </div>
           <div>
             <Button
@@ -241,11 +241,11 @@ const columns: ColumnsType<ITrip> = [
     dataIndex: 'id',
     render: (text: string, record: ITrip) => {
       const cabinCapacities: any[] = getCabinCapacities(record.availableCabins);
-      const slotsTooltip = getCabinTooltipTitle(cabinCapacities);
+      const slotsPopoverContent = getCabinPopoverContent(cabinCapacities);
       const totalAvailable = sumBy(cabinCapacities, 'available');
       const totalCapacity = sumBy(cabinCapacities, 'total');
       const adultFares: any[] = getCabinFares(record.availableCabins);
-      const fareTooltip = getFareTooltipTitle(adultFares);
+      const farePopoverContent = getFarePopoverContent(adultFares);
       const minFare = getMaximumFare(adultFares);
 
       return (
@@ -262,16 +262,16 @@ const columns: ColumnsType<ITrip> = [
           <div style={{ marginTop: 10 }}>
             {`${totalAvailable} slot/s left`}
             &nbsp;
-            <Tooltip title={slotsTooltip}>
+            <Popover title={'Available Slots'} content={slotsPopoverContent}>
               <InfoCircleOutlined rev={undefined} />
-            </Tooltip>
+            </Popover>
           </div>
           <div>{`${text} vehicle slot/s left`}</div>
           <div className={styles['price']} style={{ marginTop: 10 }}>
             {`PHP ${minFare}`}&nbsp;
-            <Tooltip title={`${fareTooltip}`}>
+            <Popover title={'Cabin Fares'} content={farePopoverContent}>
               <InfoCircleOutlined rev={undefined} />
-            </Tooltip>
+            </Popover>
           </div>
           <div>
             <Button

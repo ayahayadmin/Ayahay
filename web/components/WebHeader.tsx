@@ -26,7 +26,7 @@ export default function WebHeader() {
   return (
     <nav className={styles['nav-container']}>
       <div className={styles['nav-main']}>
-        <Image src={AyahayLogo} alt='Ayahay Logo' height={80} />
+        <Image src={AyahayLogo} alt='Ayahay' height={80} />
         <ul className={styles['nav-links']}>
           <Menu
             mode='horizontal'
