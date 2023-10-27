@@ -21,10 +21,6 @@ export default function Logout() {
   const items: MenuProps['items'] = [
     {
       key: '1',
-      label: <Link href='/'>My Profile</Link>,
-    },
-    {
-      key: '2',
       label: (
         <button
           style={{ all: 'unset', width: '100%' }}

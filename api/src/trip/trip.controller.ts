@@ -16,6 +16,7 @@ import { Roles } from 'src/decorator/roles.decorator';
 import { AuthGuard } from '../guard/auth.guard';
 import {
   CreateTripsFromSchedulesRequest,
+  TripSearchByDateRange,
   UpdateTripCapacityRequest,
 } from '@ayahay/http';
 
@@ -27,6 +28,11 @@ export class TripController {
   ) {}
 
   @Get()
+  async getTrips(): Promise<ITrip[]> {
+    return await this.tripService.getTrips();
+  }
+
+  @Get('available')
   async getAvailableTrips(
     @Query()
     query: SearchAvailableTrips
@@ -53,6 +59,11 @@ export class TripController {
     return this.tripMapper.convertTripToDto(trip);
   }
 
+  @Get('to-edit')
+  async getTripByDateRange(@Query() query: TripSearchByDateRange) {
+    return await this.tripService.getTripsByDateRange(query);
+  }
+
   @Post()
   @UseGuards(AuthGuard)
   @Roles('Admin', 'SuperAdmin')
@@ -73,7 +84,7 @@ export class TripController {
 
   @Patch(':tripId/capacity')
   @UseGuards(AuthGuard)
-  @Roles('Staff', 'Admin')
+  @Roles('Admin', 'SuperAdmin')
   async updateTripCabinCapacity(
     @Param('tripId') tripId: number,
     @Body() updateTripCapacityRequest: UpdateTripCapacityRequest

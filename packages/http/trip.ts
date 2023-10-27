@@ -47,3 +47,8 @@ export interface CreateTripsFromSchedulesRequest {
   schedules: { scheduleId: number; override?: Partial<ITrip> }[];
   dateRanges: { startDate: string; endDate: string }[];
 }
+
+export interface TripSearchByDateRange {
+  startDate: string;
+  endDate: string;
+}

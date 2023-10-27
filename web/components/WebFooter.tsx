@@ -7,7 +7,7 @@ import {
   LinkedinFilled,
   TwitterSquareFilled,
 } from '@ant-design/icons';
-import { Space } from 'antd';
+import { Button, Space } from 'antd';
 import { Footer } from 'antd/es/layout/layout';
 import Link from 'next/link';
 
@@ -19,29 +19,17 @@ export default function WebFooter() {
           <div className={styles['left-col-card']}>
             <div className={styles['contact-card']}>
               <div className={styles['contact-call']}>
-                <h1>Toll Free Customer Care</h1>
-                <h2>
-                  <a href='#'>+(999) 999 999</a>
-                </h2>
+                <h1>Customer Care</h1>
+                <h2>Smart: (+63) 947 070 4254</h2>
+                <h2>Globe: (+63) 956 047 7025</h2>
               </div>
               <div className={styles['contact-email']}>
-                <h1>Need live support?</h1>
+                <h1>Need support?</h1>
                 <h2>
-                  <a href='#'>support@ayahay.com</a>
+                  <a href={`mailto:admin@ayahay.com?subject=Need Support`}>
+                    admin@ayahay.com
+                  </a>
                 </h2>
-              </div>
-            </div>
-          </div>
-          <h3>Your all-in-one travel app</h3>
-          <div className={styles['left-col-card']}>
-            <div className={styles['download-card']}>
-              <div className={styles['download-button']}>
-                Download
-                <div className={styles['app-store']}>Apple</div>
-              </div>
-              <div className={styles['download-button']}>
-                Download
-                <div className={styles['app-store']}>Google</div>
               </div>
             </div>
           </div>
@@ -78,7 +66,14 @@ export default function WebFooter() {
                 title='email'
                 placeholder='Your Email'
               ></input>
-              <button type='button'>Subscribe</button>
+              <Button
+                type='text'
+                htmlType='submit'
+                href={`mailto:admin@ayahay.com?subject=Ayahay Inquiry`}
+                className={styles['send-button']}
+              >
+                Send
+              </Button>
             </div>
           </div>
           <div className={styles['right-col-card']}>
@@ -130,11 +125,6 @@ export default function WebFooter() {
         </div>
         <div className={styles['bot-sub-container']}>
           <span>© 2023 Ayahay All rights reserved.</span>
-          <ul>
-            <li>Privacy</li>
-            <li>Terms</li>
-            <li>Site Map</li>
-          </ul>
         </div>
       </div>
     </Footer>

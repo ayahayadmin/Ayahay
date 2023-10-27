@@ -11,10 +11,40 @@ import { TripMapper } from './trip.mapper';
 import { isEmpty } from 'lodash';
 import {
   CreateTripsFromSchedulesRequest,
+  TripSearchByDateRange,
   UpdateTripCapacityRequest,
 } from '@ayahay/http';
 import { TripValidator } from './trip.validator';
 import { ShippingLineService } from '../shipping-line/shipping-line.service';
+
+const TRIP_AVAILABLE_QUERY = Prisma.sql`
+  SELECT 
+    t.id, 
+    MAX(t.departure_date) AS "departureDate",
+    t.reference_number AS "referenceNo",
+    t.ship_id AS "shipId",
+    t.shipping_line_id AS "shippingLineId",
+    t.src_port_id AS "srcPortId",
+    t.dest_port_id AS "destPortId",
+    t.seat_selection AS "seatSelection",
+    t.available_vehicle_capacity AS "availableVehicleCapacity",
+    t.vehicle_capacity AS "vehicleCapacity",
+    t.booking_start_date AS "bookingStartDate",
+    t.booking_cut_off_date AS "bookingCutOffDate",
+    STRING_AGG(tc.cabin_id::TEXT, '|') AS "pipeSeparatedCabinIds",
+    STRING_AGG(tc.adult_fare::TEXT, '|') AS "pipeSeparatedCabinFares",
+    STRING_AGG(tc.available_passenger_capacity::TEXT, '|') AS "pipeSeparatedCabinAvailableCapacities",
+    STRING_AGG(tc.passenger_capacity::TEXT, '|') AS "pipeSeparatedCabinCapacities",
+    STRING_AGG(c.cabin_type_id::TEXT, '|') AS "pipeSeparatedCabinTypeIds",
+    STRING_AGG(c.name::TEXT, '|') AS "pipeSeparatedCabinNames",
+    STRING_AGG(c.recommended_passenger_capacity::TEXT, '|') AS "pipeSeparatedRecommendedCabinCapacities",
+    STRING_AGG(ct.name::TEXT, '|') AS "pipeSeparatedCabinTypeNames",
+    STRING_AGG(ct.description::TEXT, '|') AS "pipeSeparatedCabinTypeDescriptions"
+  FROM ayahay.trip t
+    INNER JOIN ayahay.trip_cabin tc ON t.id = tc.trip_id
+    INNER JOIN ayahay.cabin c ON tc.cabin_id = c.id
+    INNER JOIN ayahay.cabin_type ct ON c.cabin_type_id = ct.id
+`;
 
 @Injectable()
 export class TripService {
@@ -24,6 +54,30 @@ export class TripService {
     private readonly tripMapper: TripMapper,
     private readonly tripValidator: TripValidator
   ) {}
+
+  async getTrips(): Promise<ITrip[]> {
+    const trips = await this.prisma.trip.findMany({
+      include: {
+        srcPort: true,
+        destPort: true,
+        shippingLine: true,
+        ship: {
+          include: {
+            cabins: {
+              include: {
+                cabinType: true,
+              },
+            },
+          },
+        },
+      },
+    });
+    if (!trips) {
+      throw new NotFoundException('Trip Not Found');
+    }
+
+    return trips.map((trip) => this.tripMapper.convertTripToBasicDto(trip));
+  }
 
   async getTrip(
     tripWhereUniqueInput: Prisma.TripWhereUniqueInput, //{} is only temp, TripWhereUniqueInput is not part of referenceNo
@@ -54,29 +108,7 @@ export class TripService {
     dateSelectedPlusAWeek.setDate(dateSelectedPlusAWeek.getDate() + 7);
 
     const trips = await this.prisma.$queryRaw<AvailableTrips[]>`
-      SELECT 
-        t.id, 
-        MAX(t.departure_date) AS "departureDate",
-        t.reference_number AS "referenceNo",
-        t.ship_id AS "shipId",
-        t.shipping_line_id AS "shippingLineId",
-        t.src_port_id AS "srcPortId",
-        t.dest_port_id AS "destPortId",
-        t.seat_selection AS "seatSelection",
-        t.available_vehicle_capacity AS "availableVehicleCapacity",
-        t.vehicle_capacity AS "vehicleCapacity",
-        t.booking_start_date AS "bookingStartDate",
-        t.booking_cut_off_date AS "bookingCutOffDate",
-        STRING_AGG(tc.cabin_id::TEXT, '|') AS "pipeSeparatedCabinIds",
-        STRING_AGG(tc.adult_fare::TEXT, '|') AS "pipeSeparatedCabinFares",
-        STRING_AGG(tc.available_passenger_capacity::TEXT, '|') AS "pipeSeparatedCabinAvailableCapacities",
-        STRING_AGG(tc.passenger_capacity::TEXT, '|') AS "pipeSeparatedCabinCapacities",
-        STRING_AGG(c.cabin_type_id::TEXT, '|') AS "pipeSeparatedCabinTypeIds",
-        STRING_AGG(c.name::TEXT, '|') AS "pipeSeparatedCabinNames",
-        STRING_AGG(c.recommended_passenger_capacity::TEXT, '|') AS "pipeSeparatedRecommendedCabinCapacities"
-      FROM ayahay.trip t
-        INNER JOIN ayahay.trip_cabin tc ON t.id = tc.trip_id
-        INNER JOIN ayahay.cabin c ON tc.cabin_id = c.id
+      ${TRIP_AVAILABLE_QUERY}
       WHERE t.available_vehicle_capacity >= ${Number(vehicleCount)}
         AND t.departure_date >= ${departureDate}::DATE
         AND t.departure_date <= ${dateSelectedPlusAWeek.toISOString()}::DATE + 1 - interval '1 sec'
@@ -128,6 +160,24 @@ export class TripService {
     });
 
     return trips.map((trip) => this.tripMapper.convertTripToDto(trip));
+  }
+
+  async getTripsByDateRange(dates: TripSearchByDateRange) {
+    const { startDate, endDate } = dates;
+
+    const trips = await this.prisma.$queryRaw<AvailableTrips[]>`
+      ${TRIP_AVAILABLE_QUERY}
+      WHERE t.departure_date >= ${startDate}::DATE
+      AND t.departure_date <= ${new Date(
+        endDate
+      ).toISOString()}::DATE + 1 - interval '1 sec'
+ 	    GROUP BY t.id
+      ORDER BY t.departure_date ASC
+    `;
+
+    return trips.map((trip) =>
+      this.tripMapper.convertAvailableTripsToDto(trip)
+    );
   }
 
   async createTrip(data: Prisma.TripCreateInput): Promise<Trip> {
@@ -295,12 +345,16 @@ export class TripService {
       return;
     }
 
+    const capacityDifference = newVehicleCapacity - trip.vehicleCapacity;
+
     await transactionContext.trip.update({
       where: {
         id: trip.id,
       },
       data: {
         vehicleCapacity: newVehicleCapacity,
+        availableVehicleCapacity:
+          trip.availableVehicleCapacity + capacityDifference,
       },
     });
   }
@@ -322,7 +376,7 @@ export class TripService {
       const { cabinId, passengerCapacity } = cabinCapacity;
 
       const tripCabin = trip.availableCabins.find(
-        (tripCabin) => tripCabin.cabinId === cabinId
+        (tripCabin) => tripCabin.cabinId === Number(cabinId)
       );
 
       if (tripCabin.passengerCapacity !== passengerCapacity) {
@@ -331,17 +385,27 @@ export class TripService {
     }
 
     for (const cabinCapacity of cabinCapacitiesToUpdate) {
-      const { cabinId, passengerCapacity } = cabinCapacity;
+      const { cabinId, passengerCapacity: newPassengerCapacity } =
+        cabinCapacity;
+
+      const { availablePassengerCapacity, passengerCapacity } =
+        trip.availableCabins.find(
+          (tripCabin) => tripCabin.cabinId === Number(cabinId)
+        );
+
+      const capacityDifference = newPassengerCapacity - passengerCapacity;
 
       await transactionContext.tripCabin.update({
         where: {
           tripId_cabinId: {
             tripId: trip.id,
-            cabinId: cabinId,
+            cabinId: Number(cabinId),
           },
         },
         data: {
-          passengerCapacity,
+          passengerCapacity: newPassengerCapacity,
+          availablePassengerCapacity:
+            availablePassengerCapacity + capacityDifference,
         },
       });
     }

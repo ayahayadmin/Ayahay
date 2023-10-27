@@ -16,6 +16,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang='en' className={jost.className}>
+      <head>
+        <title>Ayahay Admin</title>
+      </head>
       <body>
         <AuthContextProvider>
           <ConfigProvider

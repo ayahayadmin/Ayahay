@@ -22,8 +22,8 @@ import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import { ITrip } from '@ayahay/models';
 import { RangePickerProps } from 'antd/es/date-picker';
-import { filter, map } from 'lodash';
-import { getAllTrips } from '@/services/trip.service';
+import { map } from 'lodash';
+import { getTripsByDateRange } from '@/services/trip.service';
 import Logout from './auth/Logout';
 import { useLoggedInAccount } from '@ayahay/hooks/auth';
 import { webLinks } from '@/services/nav.service';
@@ -62,6 +62,12 @@ export default function AdminHeader() {
   const pathName = usePathname();
   const router = useRouter();
 
+  const userRole = loggedInAccount && loggedInAccount.role;
+  const headerTabs =
+    userRole === 'SuperAdmin' || userRole === 'Admin'
+      ? webLinks.Admin
+      : webLinks.Staff;
+
   const onPageLoad = () => {
     const params = Object.fromEntries(searchParams.entries());
 
@@ -71,15 +77,16 @@ export default function AdminHeader() {
   useEffect(onPageLoad, []);
 
   useEffect(() => {
-    const trips = filter(getAllTrips(), (trip) => {
-      return (
-        startDate.isSameOrBefore(trip.departureDateIso) &&
-        endDate.isSameOrAfter(trip.departureDateIso)
-      );
-    });
-
-    setTripsData(trips);
+    fetchTrips();
   }, [startDate, endDate]);
+
+  const fetchTrips = async () => {
+    const trips = await getTripsByDateRange(
+      startDate.toISOString(),
+      endDate.toISOString()
+    );
+    setTripsData(trips);
+  };
 
   const onSearch = (value: string) =>
     window.location.assign(`/search?query=${value}`);
@@ -95,11 +102,15 @@ export default function AdminHeader() {
 
   const openNotification = () => {
     const btn = (
-      <Space>
-        <Button type='primary' size='small' onClick={showModal}>
-          Send an Announcement
-        </Button>
-      </Space>
+      <>
+        {userRole !== 'Staff' && (
+          <Space>
+            <Button type='primary' size='small' onClick={showModal}>
+              Send an Announcement
+            </Button>
+          </Space>
+        )}
+      </>
     );
     notif.open({
       message: 'Notifications',
@@ -132,16 +143,11 @@ export default function AdminHeader() {
     }, 3000);
   };
 
-  const headerTabs =
-    loggedInAccount && loggedInAccount.role === 'Admin'
-      ? webLinks.Admin
-      : webLinks.Staff;
-
   return (
     <nav className={styles['nav-container']}>
       <div className={styles['nav-main']}>
-        <Image src={AyahayLogo} alt='Ayahay Logo' height={80} />
-        {loggedInAccount && (
+        <Image src={AyahayLogo} alt='Ayahay' height={80} />
+        {loggedInAccount && userRole !== 'Passenger' && (
           <ul className={styles['nav-links']}>
             <Menu
               mode='horizontal'
@@ -157,7 +163,7 @@ export default function AdminHeader() {
         )}
       </div>
 
-      {loggedInAccount && (
+      {loggedInAccount && userRole !== 'Passenger' && (
         <div className={styles['nav-buttons']}>
           <Search
             placeholder='Search for booking...'

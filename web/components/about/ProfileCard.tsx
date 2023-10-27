@@ -25,10 +25,10 @@ export default function ProfileCard({
         window.open(linkedinUrl, '_blank');
       }}
     >
-      <p>
+      <div>
         <strong>{name}</strong>
-      </p>
-      <p>{position}</p>
+      </div>
+      <div>{position}</div>
     </Card>
   );
 }

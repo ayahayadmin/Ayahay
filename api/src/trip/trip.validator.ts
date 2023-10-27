@@ -11,7 +11,7 @@ export class TripValidator {
 
     const reservedVehicleCapacity =
       trip.vehicleCapacity - trip.availableVehicleCapacity;
-    if (reservedVehicleCapacity < updateTripCapacityRequest.vehicleCapacity) {
+    if (reservedVehicleCapacity > updateTripCapacityRequest.vehicleCapacity) {
       errors[
         'vehicleCapacity'
       ] = `There are ${reservedVehicleCapacity} vehicles reserved for this trip. The new vehicle capacity must be greater than or equal to this number.`;
@@ -22,7 +22,7 @@ export class TripValidator {
         updateTripCapacityRequest.cabinCapacities[i];
 
       const tripCabin = trip.availableCabins.find(
-        (tripCabin) => tripCabin.cabinId === cabinId
+        (tripCabin) => tripCabin.cabinId === Number(cabinId)
       );
       if (tripCabin === undefined) {
         errors[`cabinCapacities[${i}].cabinId`] = 'The cabin does not exist.';
@@ -31,7 +31,7 @@ export class TripValidator {
 
       const reservedPassengerCapacity =
         tripCabin.passengerCapacity - tripCabin.availablePassengerCapacity;
-      if (reservedPassengerCapacity < passengerCapacity) {
+      if (reservedPassengerCapacity > passengerCapacity) {
         errors[
           `cabinCapacities[${i}].passengerCapacity`
         ] = `There are ${reservedPassengerCapacity} passengers reserved for this cabin. The new passenger capacity must be greater than or equal to this number.`;

@@ -17,21 +17,23 @@ export default function PortAutoComplete({
   const [portOptions, setPortOptions] = useState([] as IPort[]);
 
   useEffect(() => {
-    const initializePorts = async () => {
-      const ports = await getPorts();
-      setAllPorts(ports);
-      setPortOptions(ports);
-    };
-
     initializePorts();
   }, []);
+
+  const initializePorts = async () => {
+    const ports = await getPorts();
+    setAllPorts(ports);
+    setPortOptions(ports);
+  };
 
   const onSearchPort = (value: string) => {
     let filteredPorts: IPort[];
     if (!value) {
-      filteredPorts = [];
+      filteredPorts = allPorts;
     } else {
-      filteredPorts = allPorts.filter((port) => port.name.indexOf(value) >= 0);
+      filteredPorts = allPorts.filter(
+        (port) => port.name.toLowerCase().indexOf(value.toLowerCase()) >= 0
+      );
     }
     setPortOptions(filteredPorts);
   };
@@ -44,6 +46,7 @@ export default function PortAutoComplete({
         notFoundContent={null}
         showSearch
         onSearch={onSearchPort}
+        onDropdownVisibleChange={() => onSearchPort('')}
         bordered={false}
         size='large'
         showArrow={false}

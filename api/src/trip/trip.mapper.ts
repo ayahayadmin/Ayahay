@@ -2,9 +2,7 @@ import { Injectable } from '@nestjs/common';
 import {
   AvailableTrips,
   ICabin,
-  IPort,
-  IShip,
-  IShippingLine,
+  ICabinType,
   ITrip,
   ITripCabin,
   ITripVehicleType,
@@ -14,12 +12,14 @@ import { ShippingLineMapper } from '../shipping-line/shipping-line.mapper';
 import { PortMapper } from '../port/port.mapper';
 import { map } from 'lodash';
 import { Prisma } from '@prisma/client';
+import { ShipMapper } from 'src/ship/ship.mapper';
 
 @Injectable()
 export class TripMapper {
   constructor(
     private readonly shippingLineMapper: ShippingLineMapper,
-    private readonly portMapper: PortMapper
+    private readonly portMapper: PortMapper,
+    private readonly shipMapper: ShipMapper
   ) {}
 
   convertTripToBasicDto(trip: any): ITrip {
@@ -27,6 +27,7 @@ export class TripMapper {
       id: trip.id,
       referenceNo: trip.referenceNo,
       shipId: trip.shipId,
+      ship: this.shipMapper.convertShipToDto(trip.ship),
       shippingLineId: trip.shippingLineId,
       shippingLine: this.shippingLineMapper.convertShippingLineToDto(
         trip.shippingLine
@@ -88,12 +89,15 @@ export class TripMapper {
         trip.id,
         trip.pipeSeparatedCabinIds.split('|'),
         trip.shipId,
+        trip.shippingLineId,
         trip.pipeSeparatedCabinTypeIds.split('|'),
         trip.pipeSeparatedCabinNames.split('|'),
         trip.pipeSeparatedRecommendedCabinCapacities.split('|'),
         trip.pipeSeparatedCabinAvailableCapacities.split('|'),
         trip.pipeSeparatedCabinCapacities.split('|'),
-        trip.pipeSeparatedCabinFares.split('|')
+        trip.pipeSeparatedCabinFares.split('|'),
+        trip.pipeSeparatedCabinTypeNames.split('|'),
+        trip.pipeSeparatedCabinTypeDescriptions.split('|')
       ),
       availableVehicleTypes: this.covertPipeSeparatedTripVehicleTypesToDto(
         trip.id,
@@ -110,12 +114,15 @@ export class TripMapper {
     tripId,
     cabinIds,
     shipId,
+    shippingLineId,
     cabinTypeIds,
     cabinNames,
     recommendedCabinCapacities,
     availableCabinCapacities,
     cabinCapacities,
-    adultFares
+    adultFares,
+    cabinTypeNames,
+    cabinTypeDescriptions
   ): ITripCabin[] {
     return map(cabinIds, (cabinId, idx) => {
       return {
@@ -124,9 +131,12 @@ export class TripMapper {
         cabin: this.convertPipeSeparatedCabinsToDto(
           cabinId,
           shipId,
+          shippingLineId,
           cabinTypeIds[idx],
           cabinNames[idx],
-          recommendedCabinCapacities[idx]
+          recommendedCabinCapacities[idx],
+          cabinTypeNames[idx],
+          cabinTypeDescriptions[idx]
         ),
         availablePassengerCapacity: availableCabinCapacities[idx],
         passengerCapacity: cabinCapacities[idx],
@@ -138,16 +148,39 @@ export class TripMapper {
   private convertPipeSeparatedCabinsToDto(
     cabinId,
     shipId,
+    shippingLineId,
     cabinTypeId,
     cabinName,
-    recommendedCabinCapacity
+    recommendedCabinCapacity,
+    cabinTypeName,
+    cabinTypeDescription
   ): ICabin {
     return {
       id: cabinId,
       shipId,
       cabinTypeId,
+      cabinType: this.convertPipeSeparatedCabinTypeToDto(
+        cabinTypeId,
+        shippingLineId,
+        cabinTypeName,
+        cabinTypeDescription
+      ),
       name: cabinName,
       recommendedPassengerCapacity: recommendedCabinCapacity,
+    };
+  }
+
+  private convertPipeSeparatedCabinTypeToDto(
+    cabinTypeId,
+    shippingLineId,
+    cabinTypeName,
+    cabinTypeDescription
+  ): ICabinType {
+    return {
+      id: cabinTypeId,
+      shippingLineId,
+      name: cabinTypeName,
+      description: cabinTypeDescription,
     };
   }
 

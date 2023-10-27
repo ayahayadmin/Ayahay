@@ -2,7 +2,14 @@
 export const accountRelatedCacheKeys = <const>['loggedInAccount'];
 
 // Cached items that will only be invalidated if explicitly called
-export const publicCacheKeys = <const>['shippingLines', 'ports', 'ships'];
+export const publicCacheKeys = <const>[
+  'cabin-types',
+  'shippingLines',
+  'ports',
+  'ships',
+  'shipping-lines',
+  'trips',
+];
 
 export const cacheKeys = <const>[
   ...accountRelatedCacheKeys,

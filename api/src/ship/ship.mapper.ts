@@ -7,7 +7,7 @@ export class ShipMapper {
   constructor(private readonly cabinMapper: CabinMapper) {}
 
   convertShipToDto(ship: any): IShip {
-    const cabins = ship.cabins.map((cabin) =>
+    const cabins = ship.cabins?.map((cabin) =>
       this.cabinMapper.convertCabinToDto(cabin)
     );
 
