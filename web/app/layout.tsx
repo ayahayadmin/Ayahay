@@ -9,6 +9,7 @@ import { Content } from 'antd/es/layout/layout';
 import WebFooter from '@/components/WebFooter';
 import WebSider from '@/components/WebSider';
 import AuthContextProvider from './contexts/AuthContext';
+
 const jost = Jost({ subsets: ['latin'], display: 'swap' });
 
 export default function RootLayout({
@@ -18,6 +19,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang='en' className={jost.className}>
+      <head>
+        <title>Ayahay</title>
+        <meta
+          name='description'
+          content='Hasul nga proseso? Kalas ug oras? Walay kasiguradohan makakuha ug ticket? Book now at Ayahay.com. Kay ang pagsakay dapay, ayahay!'
+        />
+      </head>
       <body>
         <AuthContextProvider>
           <ConfigProvider
