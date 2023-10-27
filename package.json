@@ -18,8 +18,10 @@
     "api:start": "yarn workspace @ayahay/api start:dev",
     "api:init-db": "yarn workspace @ayahay/api db:init-dev",
     "api:reset-db": "yarn workspace @ayahay/api db:reset-dev",
-    "web:start": "yarn workspace @ayahay/web start:dev",
-    "admin:start": "yarn workspace @ayahay/admin start:dev -p 3002"
+    "web:start:dev": "yarn workspace @ayahay/web start:dev",
+    "web:start:prod": "yarn workspace @ayahay/web start:prod",
+    "admin:start:dev": "yarn workspace @ayahay/admin start:dev -p 3002",
+    "admin:start:prod": "yarn workspace @ayahay/admin start:prod -p 3002"
   },
   "packageManager": "yarn@3.6.3"
 }

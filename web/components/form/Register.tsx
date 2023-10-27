@@ -109,7 +109,7 @@ export default function Register({
           ]}
           validateTrigger='onBlur'
         >
-          <Input.Password />
+          <Input.Password placeholder='Re-enter password' />
         </Form.Item>
         <Form.Item
           name='agreement'
@@ -208,7 +208,7 @@ export default function Register({
             },
           ]}
         >
-          <DatePicker disabledDate={disabledDate} />
+          <DatePicker style={{ width: '100%' }} disabledDate={disabledDate} />
         </Form.Item>
         <Form.Item
           label='Address:'

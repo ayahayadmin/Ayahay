@@ -59,8 +59,7 @@ export default function AuthContextProvider({ children }: any) {
       })
       .catch((error) => {
         const errorCode = error.code;
-        const errorMessage = error.message;
-        throw new Error(`register in error`);
+        throw new Error(errorCode);
       });
   }
 
@@ -94,7 +93,7 @@ export default function AuthContextProvider({ children }: any) {
         return true;
       })
       .catch((error) => {
-        throw new Error(`sign in with Google error`);
+        throw new Error(`reset error`);
       });
   }
 

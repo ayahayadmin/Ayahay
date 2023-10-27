@@ -12,8 +12,10 @@ import TripList from './tripList';
 import { redirect, useSearchParams } from 'next/navigation';
 import { useAuthState } from '@/hooks/auth';
 import styles from './page.module.scss';
+import { useLoggedInAccount } from '@ayahay/hooks/auth';
 
 export default function Schedules() {
+  const { loggedInAccount } = useLoggedInAccount();
   const { pending, isSignedIn, user, auth } = useAuthState();
   const searchParams = useSearchParams();
   const [form] = Form.useForm();
@@ -46,8 +48,11 @@ export default function Schedules() {
     return <Spin size='large' className={styles['spinner']} />;
   }
 
+  const allowedRoles = ['SuperAdmin', 'Admin', 'Staff']; //prevent Passengers from accessing
   if (!isSignedIn) {
     redirect('/');
+  } else if (loggedInAccount && !allowedRoles.includes(loggedInAccount.role)) {
+    redirect('/403');
   }
 
   return (

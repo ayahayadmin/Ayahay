@@ -62,6 +62,12 @@ export default function AdminHeader() {
   const pathName = usePathname();
   const router = useRouter();
 
+  const userRole = loggedInAccount && loggedInAccount.role;
+  const headerTabs =
+    userRole === 'SuperAdmin' || userRole === 'Admin'
+      ? webLinks.Admin
+      : webLinks.Staff;
+
   const onPageLoad = () => {
     const params = Object.fromEntries(searchParams.entries());
 
@@ -96,11 +102,15 @@ export default function AdminHeader() {
 
   const openNotification = () => {
     const btn = (
-      <Space>
-        <Button type='primary' size='small' onClick={showModal}>
-          Send an Announcement
-        </Button>
-      </Space>
+      <>
+        {userRole !== 'Staff' && (
+          <Space>
+            <Button type='primary' size='small' onClick={showModal}>
+              Send an Announcement
+            </Button>
+          </Space>
+        )}
+      </>
     );
     notif.open({
       message: 'Notifications',
@@ -133,16 +143,11 @@ export default function AdminHeader() {
     }, 3000);
   };
 
-  const headerTabs =
-    loggedInAccount && loggedInAccount.role === 'Admin'
-      ? webLinks.Admin
-      : webLinks.Staff;
-
   return (
     <nav className={styles['nav-container']}>
       <div className={styles['nav-main']}>
         <Image src={AyahayLogo} alt='Ayahay' height={80} />
-        {loggedInAccount && (
+        {loggedInAccount && userRole !== 'Passenger' && (
           <ul className={styles['nav-links']}>
             <Menu
               mode='horizontal'
@@ -158,7 +163,7 @@ export default function AdminHeader() {
         )}
       </div>
 
-      {loggedInAccount && (
+      {loggedInAccount && userRole !== 'Passenger' && (
         <div className={styles['nav-buttons']}>
           <Search
             placeholder='Search for booking...'

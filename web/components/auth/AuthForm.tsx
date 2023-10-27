@@ -113,13 +113,18 @@ export default function AuthForm() {
       if (uid) {
         setIsRegisterModalOpen(false);
       }
-    } catch (error) {
+    } catch (error: any) {
+      let content = 'Register account error.';
+      const accountExistsError = 'auth/email-already-in-use';
+      if (error.message === accountExistsError) {
+        content = 'Account already exists.';
+      }
+
       message.error({
         type: 'error',
-        content: 'Register account error',
+        content,
         duration: 5,
       });
-      console.error(error);
     }
   };
 
