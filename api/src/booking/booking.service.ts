@@ -71,6 +71,7 @@ export class BookingService {
                 shippingLine: true,
                 srcPort: true,
                 destPort: true,
+                ship: true,
               },
             },
             passenger: true,
