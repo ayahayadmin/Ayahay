@@ -12,8 +12,8 @@ export enum CIVIL_STATUS {
 
 export enum BOOKING_TYPE {
   Single = 'Single Trip',
-  Round = 'Round Trip',
-  Multiple = 'Multiple Trips',
+  // Round = 'Round Trip',
+  // Multiple = 'Multiple Trips',
 }
 
 export enum OCCUPATION {

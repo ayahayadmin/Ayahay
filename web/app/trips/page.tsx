@@ -65,24 +65,24 @@ export default function Trips() {
         <TripSearchQuery />
       </div>
       <div className={styles['main-container']}>
-        <div className={styles['left-container']}>
-          <div className={styles['left-card']}>
-            {/* <div className={styles['cabin-card']}>
-              <CabinFilter name='cabinTypes' label='Cabin Types' />
-            </div> */}
-            <div className={styles['shipping-card']}>
-              <ShippingLineFilter
-                name='shippingLineIds'
-                label='Shipping Lines'
-              />
-            </div>
-          </div>
-        </div>
+        {/*<div className={styles['left-container']}>*/}
+        {/*  <div className={styles['left-card']}>*/}
+        {/*    /!* <div className={styles['cabin-card']}>*/}
+        {/*      <CabinFilter name='cabinTypes' label='Cabin Types' />*/}
+        {/*    </div> *!/*/}
+        {/*    <div className={styles['shipping-card']}>*/}
+        {/*      <ShippingLineFilter*/}
+        {/*        name='shippingLineIds'*/}
+        {/*        label='Shipping Lines'*/}
+        {/*      />*/}
+        {/*    </div>*/}
+        {/*  </div>*/}
+        {/*</div>*/}
         <div className={styles['right-container']}>
           <div className={styles['sort-container']}>
-            <div className={styles['sort-card']}>
-              <TripSortOptions name='sort' label='Sort By' />
-            </div>
+            {/*<div className={styles['sort-card']}>*/}
+            {/*  <TripSortOptions name='sort' label='Sort By' />*/}
+            {/*</div>*/}
           </div>
           <div className={styles['results-card']}>
             <SearchResult searchQuery={searchQuery} />

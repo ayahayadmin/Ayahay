@@ -17,6 +17,7 @@ import { useAuth } from '@/app/contexts/AuthContext';
 import { getMyAccountInformation } from '@ayahay/services/account.service';
 import { useRouter } from 'next/navigation';
 import { useLoggedInAccount } from '@ayahay/hooks/auth';
+import { PassengerPreferences } from '@/../packages/http';
 
 const { useBreakpoint } = Grid;
 
@@ -26,7 +27,6 @@ interface CreateBookingFormProps {
 
 const steps = [
   { title: 'Passenger Information' },
-  { title: 'Passenger Preferences' },
   { title: 'Confirm Booking' },
 ];
 
@@ -53,12 +53,6 @@ export default function CreateBookingForm({
     setCurrentStep(currentStep - 1);
   };
 
-  const initializePreferences = async () => {
-    const preferences = passengers.map((_: any) => ({}));
-    form.setFieldValue('preferences', preferences);
-    nextStep();
-  };
-
   const findSeats = async () => {
     setLoadingMessage(
       'Looking for available seats that match your preferences...'
@@ -70,10 +64,12 @@ export default function CreateBookingForm({
       return;
     }
 
+    const pref = [];
+    passengers.forEach((_) => pref.push({}));
     const tentativeBooking = await createTentativeBooking(
       [trip?.id],
       passengers,
-      preferences,
+      pref,
       vehicles
     );
 
@@ -180,20 +176,20 @@ export default function CreateBookingForm({
         labelPlacement={stepDirection}
       />
       <Spin spinning={loadingMessage?.length > 0} tip={loadingMessage}>
-        <div style={{ display: currentStep === 0 ? 'block' : 'none' }}>
+        <div style={{ display: steps[currentStep].title === 'Passenger Information' ? 'block' : 'none' }}>
           <PassengerInformationForm
             loggedInAccount={loggedInAccount}
-            onNextStep={initializePreferences}
+            onNextStep={findSeats}
             onPreviousStep={previousStep}
           />
         </div>
-        <div style={{ display: currentStep === 1 ? 'block' : 'none' }}>
+        <div style={{ display: steps[currentStep].title === 'Passenger Preferences' ? 'block' : 'none' }}>
           <PassengerPreferencesForm
             onNextStep={findSeats}
             onPreviousStep={previousStep}
           />
         </div>
-        <div style={{ display: currentStep === 2 ? 'block' : 'none' }}>
+        <div style={{ display: steps[currentStep].title === 'Confirm Booking' ? 'block' : 'none' }}>
           <BookingConfirmation
             tentativeBooking={bookingPreview}
             onPreviousStep={previousStep}
