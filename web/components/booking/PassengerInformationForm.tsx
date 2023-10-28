@@ -17,7 +17,7 @@ import {
 import {
   IAccount,
   IPassenger,
-  IVehicle,
+  IVehicle, IVehicleType,
   mockFather,
   mockVehicleTypes,
 } from '@ayahay/models';
@@ -28,6 +28,7 @@ import AddVehiclesModal from '@/components/booking/AddVehiclesModal';
 import { toPassengerFormValue } from '@ayahay/services/form.service';
 import { getMyAccountInformation } from '@ayahay/services/account.service';
 import { useAuth } from '@/app/contexts/AuthContext';
+import {getVehicleTypes} from "@/services/vehicle-type.service";
 
 const { Title } = Typography;
 
@@ -49,6 +50,15 @@ export default function PassengerInformationForm({
   const vehicles = Form.useWatch('vehicles', form);
   const [companionModalOpen, setCompanionModalOpen] = useState(false);
   const [vehicleModalOpen, setVehicleModalOpen] = useState(false);
+  const [vehicleTypes, setVehicleTypes] = useState([] as IVehicleType[]);
+
+  useEffect(() => {
+    fetchVehicleTypes();
+  }, []);
+
+  const fetchVehicleTypes = async () => {
+    setVehicleTypes(await getVehicleTypes());
+  }
 
   useEffect(() => {
     if (loggedInAccount) {
@@ -401,7 +411,7 @@ export default function PassengerInformationForm({
                   <Select
                     disabled={vehicles?.[index]?.id !== undefined}
                     placeholder='Select an option...'
-                    options={mockVehicleTypes.map((vehicleType) => ({
+                    options={vehicleTypes.map((vehicleType) => ({
                       label: vehicleType.name,
                       value: vehicleType.id,
                     }))}

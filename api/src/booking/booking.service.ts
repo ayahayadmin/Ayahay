@@ -181,9 +181,12 @@ export class BookingService {
 
     const paymentItems = this.createPaymentItemsForBooking(
       bookingPassengers,
-      bookingVehicles
+      bookingVehicles,
+      loggedInAccount
     );
 
+    paymentItems.forEach(item => item.price = Math.floor(item.price * 100) / 100)
+    
     const totalPrice = paymentItems
       .map((paymentItem) => paymentItem.price)
       .reduce((priceA, priceB) => priceA + priceB, 0);
@@ -535,7 +538,8 @@ WHERE row <= ${passengerPreferences.length}
 
   private createPaymentItemsForBooking(
     bookingPassengers: IBookingPassenger[],
-    bookingVehicles: IBookingVehicle[]
+    bookingVehicles: IBookingVehicle[],
+    loggedInAccount?: IAccount
   ): IPaymentItem[] {
     const paymentItems: IPaymentItem[] = [];
 
@@ -544,7 +548,7 @@ WHERE row <= ${passengerPreferences.length}
         id: -1,
         bookingId: -1,
         price: bookingPassenger.totalPrice,
-        description: `Adult Fare (${bookingPassenger.cabin.name})`,
+        description: `${bookingPassenger.passenger.discountType || 'Adult'} Fare (${bookingPassenger.cabin.name})`,
       })
     );
 
@@ -560,7 +564,7 @@ WHERE row <= ${passengerPreferences.length}
     paymentItems.push({
       id: -1,
       bookingId: -1,
-      price: this.calculateServiceCharge(bookingPassengers, bookingVehicles),
+      price: this.calculateServiceCharge(bookingPassengers, bookingVehicles, loggedInAccount),
       description: 'Administrative Fee',
     });
 
