@@ -320,7 +320,7 @@ export default function SearchResult({ searchQuery }: SearchResultsProps) {
 
     setTripData(tripData?.availableTrips || []);
     setTotalPages(totalPages);
-    setTotalItems(totalItems);
+    setTotalItems(tripData?.availableTrips ? tripData?.availableTrips.length : 0);
     setLoading(false);
   };
 

@@ -181,9 +181,12 @@ export class BookingService {
 
     const paymentItems = this.createPaymentItemsForBooking(
       bookingPassengers,
-      bookingVehicles
+      bookingVehicles,
+      loggedInAccount
     );
 
+    paymentItems.forEach(item => item.price = Math.floor(item.price * 100) / 100)
+    
     const totalPrice = paymentItems
       .map((paymentItem) => paymentItem.price)
       .reduce((priceA, priceB) => priceA + priceB, 0);
@@ -359,7 +362,7 @@ WHERE row <= ${passengerPreferences.length}
   ): IBookingPassenger | undefined {
     const totalPrice = this.calculateTotalPriceForOnePassenger(
       passenger,
-      bestBooking
+      bestBooking,
     );
 
     // remember the passenger for easier booking for passenger accounts
@@ -476,6 +479,7 @@ WHERE row <= ${passengerPreferences.length}
 
     switch (passenger.discountType) {
       case 'Infant':
+      case 'Driver':
         return 0;
       case 'Student':
         return cabinFeeWithVat - cabinFeeWithVat * 0.2;
@@ -534,7 +538,8 @@ WHERE row <= ${passengerPreferences.length}
 
   private createPaymentItemsForBooking(
     bookingPassengers: IBookingPassenger[],
-    bookingVehicles: IBookingVehicle[]
+    bookingVehicles: IBookingVehicle[],
+    loggedInAccount?: IAccount
   ): IPaymentItem[] {
     const paymentItems: IPaymentItem[] = [];
 
@@ -543,7 +548,7 @@ WHERE row <= ${passengerPreferences.length}
         id: -1,
         bookingId: -1,
         price: bookingPassenger.totalPrice,
-        description: `Adult Fare (${bookingPassenger.cabin.name})`,
+        description: `${bookingPassenger.passenger.discountType || 'Adult'} Fare (${bookingPassenger.cabin.name})`,
       })
     );
 
@@ -559,7 +564,7 @@ WHERE row <= ${passengerPreferences.length}
     paymentItems.push({
       id: -1,
       bookingId: -1,
-      price: this.calculateServiceCharge(bookingPassengers, bookingVehicles),
+      price: this.calculateServiceCharge(bookingPassengers, bookingVehicles, loggedInAccount),
       description: 'Administrative Fee',
     });
 
@@ -568,10 +573,22 @@ WHERE row <= ${passengerPreferences.length}
 
   private calculateServiceCharge(
     bookingPassengers: IBookingPassenger[],
-    bookingVehicles: IBookingVehicle[]
+    bookingVehicles: IBookingVehicle[],
+    loggedInAccount?: IAccount
   ): number {
+    if (
+      loggedInAccount?.role === 'Staff' ||
+      loggedInAccount?.role === 'Admin' ||
+      loggedInAccount?.role === 'SuperAdmin'
+    ) {
+      return 0;
+    }
+
+    const payingPassengerCount = bookingPassengers.filter((bookingPassenger) =>
+      this.isPayingPassenger(bookingPassenger.passenger)
+    ).length;
     const passengersServiceCharge =
-      bookingPassengers?.length * this.AYAHAY_MARKUP_FLAT;
+      payingPassengerCount * this.AYAHAY_MARKUP_FLAT;
 
     const vehiclesTotalPrice = bookingVehicles
       .map((bookingVehicle) => bookingVehicle.totalPrice)
@@ -583,6 +600,13 @@ WHERE row <= ${passengerPreferences.length}
       vehiclesTotalPrice * this.AYAHAY_MARKUP_PERCENT;
 
     return passengersServiceCharge + vehiclesServiceCharge;
+  }
+
+  private isPayingPassenger(passenger: IPassenger) {
+    return !(
+      passenger?.discountType === 'Infant' ||
+      passenger?.discountType === 'Driver'
+    );
   }
 
   private async saveTempBooking(booking: IBooking): Promise<IBooking> {

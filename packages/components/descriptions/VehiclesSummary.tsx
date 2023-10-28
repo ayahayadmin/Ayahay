@@ -117,17 +117,16 @@ export default function VehiclesSummary({
   }, [loggedInAccount, vehicles]);
 
   return (
-    <Skeleton loading={vehicles === undefined} active>
-      {vehicles && vehicles.length > 0 && (
-        <Table
-          columns={vehicleColumns}
-          dataSource={vehicleRows}
-          pagination={false}
-          tableLayout='fixed'
-        ></Table>
-      )}
+    <>
+      <Table
+        columns={vehicleColumns}
+        dataSource={vehicleRows}
+        pagination={false}
+        loading={vehicles === undefined}
+        tableLayout='fixed'
+      ></Table>
       {contextHolder}
-    </Skeleton>
+    </>
   );
 }
 

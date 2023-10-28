@@ -6,95 +6,92 @@ import PassengersSummary from './PassengersSummary';
 import dayjs from 'dayjs';
 import TripSummary from './TripSummary';
 import VehiclesSummary from './VehiclesSummary';
+import PaymentSummary from "./PaymentSummary";
 
 const { useBreakpoint } = Grid;
 const { Title } = Typography;
 
 interface BookingSummaryProps {
   booking?: IBooking;
+  titleLevel: number;
 }
 
-export default function BookingSummary({ booking }: BookingSummaryProps) {
+export default function BookingSummary({ booking, titleLevel }: BookingSummaryProps) {
   const screens = useBreakpoint();
 
   return (
     <Skeleton loading={booking === undefined} active>
-      {booking && booking.createdAtIso?.length > 0 && (
-        <section>
-          <article>
-            <p>
-              Show this QR code to the person in charge to verify your booking
-            </p>
-            <QRCode
-              size={256}
-              style={{ height: 'auto', maxWidth: '100%', width: '100%' }}
-              value={window.location.href}
-              viewBox={`0 0 256 256`}
-            />
-          </article>
+      <div style={{display: 'flex', flexDirection: 'column', gap: '32px'}}>
+        {booking && booking.createdAtIso?.length > 0 && (
+          <section style={{display: 'flex', flexWrap: screens.lg ? 'nowrap' : 'wrap'}}>
+            <article style={{flexGrow: '1'}}>
+              <p>
+                Show this QR code to the person in charge to verify your booking
+              </p>
+              <QRCode
+                size={256}
+                style={{ height: 'auto', maxWidth: '100%', width: '100%' }}
+                value={window.location.href}
+                viewBox={`0 0 256 256`}
+              />
+            </article>
 
-          <article>
-            <Descriptions bordered={screens.sm} column={2}>
-              <Descriptions.Item label='Booking Status'>
-                {PAYMENT_STATUS[booking.status]}
-              </Descriptions.Item>
-              <Descriptions.Item label='Booking Date'>
-                {dayjs(booking.createdAtIso).format('MMMM D, YYYY [at] h:mm A')}
-              </Descriptions.Item>
-              <Descriptions.Item label='Booking Reference No'>
-                {booking.referenceNo}
-              </Descriptions.Item>
-              <Descriptions.Item label='Number of Passengers'>
-                {booking.bookingPassengers?.length}
-              </Descriptions.Item>
-            </Descriptions>
-          </article>
-        </section>
-      )}
-      {booking && booking.bookingPassengers?.[0]?.trip && (
-        <section>
-          <Title level={2}>Trip Details</Title>
-          <TripSummary trip={booking?.bookingPassengers?.[0]?.trip} />
-        </section>
-      )}
-      {booking &&
-        booking.bookingPassengers &&
-        booking.bookingPassengers.length > 0 && (
-          <section>
-            <Title level={2}>Passengers</Title>
-            <PassengersSummary
-              passengers={booking.bookingPassengers}
-              allowCheckIn={booking?.status === 'Success'}
-            />
+            <article style={{flexGrow: '1'}}>
+              <Descriptions
+                bordered={screens.sm}
+                column={1}
+              >
+                <Descriptions.Item label='Booking Status'>
+                  {PAYMENT_STATUS[booking.status]}
+                </Descriptions.Item>
+                <Descriptions.Item label='Booking Date'>
+                  {dayjs(booking.createdAtIso).format('MMMM D, YYYY [at] h:mm A')}
+                </Descriptions.Item>
+                <Descriptions.Item label='Booking Reference No'>
+                  {booking.referenceNo}
+                </Descriptions.Item>
+                <Descriptions.Item label='Number of Passengers'>
+                  {booking.bookingPassengers?.length}
+                </Descriptions.Item>
+              </Descriptions>
+            </article>
           </section>
         )}
-      {booking &&
-        booking.bookingVehicles &&
-        booking.bookingVehicles.length > 0 && (
+        {booking && booking.bookingPassengers?.[0]?.trip && (
           <section>
-            <Title level={2}>Vehicles</Title>
-            <VehiclesSummary
-              vehicles={booking.bookingVehicles}
-              allowCheckIn={booking?.status === 'Success'}
-            />
+            <Title level={titleLevel}>Trip Details</Title>
+            <TripSummary trip={booking?.bookingPassengers?.[0]?.trip} />
           </section>
         )}
-      {booking && booking.paymentItems && (
-        <article id='payment-summary' style={{ maxWidth: '512px' }}>
-          <Title level={2}>Payment Summary</Title>
-
-          <Descriptions bordered column={{ xxl: 1 }}>
-            {booking.paymentItems.map((paymentItem) => (
-              <Descriptions.Item label={paymentItem.description}>
-                ₱{paymentItem.price}
-              </Descriptions.Item>
-            ))}
-            <Descriptions.Item label='Total' style={{ fontWeight: 600 }}>
-              ₱{booking.totalPrice}
-            </Descriptions.Item>
-          </Descriptions>
-        </article>
-      )}
+        {booking &&
+          booking.bookingPassengers &&
+          booking.bookingPassengers.length > 0 && (
+            <section>
+              <Title level={titleLevel}>Passengers</Title>
+              <PassengersSummary
+                passengers={booking.bookingPassengers}
+                allowCheckIn={booking?.status === 'Success'}
+              />
+            </section>
+          )}
+        {booking &&
+          booking.bookingVehicles &&
+          booking.bookingVehicles.length > 0 && (
+            <section>
+              <Title level={titleLevel}>Vehicles</Title>
+              <VehiclesSummary
+                vehicles={booking.bookingVehicles}
+                allowCheckIn={booking?.status === 'Success'}
+              />
+            </section>
+          )}
+        {booking && booking.paymentItems && booking.paymentItems.length > 0 && (
+          <section id='payment-summary'>
+            <Title level={titleLevel}>Payment Summary</Title>
+            <PaymentSummary paymentItems={booking.paymentItems} />
+          </section>
+        )}
+      </div>
     </Skeleton>
   );
 }

@@ -56,7 +56,7 @@ export default function TripSearchQuery({
             >
               <DatePicker
                 className={styles['ant-picker-input']}
-                disabledDate={(current) => current < dayjs().endOf('day')}
+                disabledDate={(current) => current < dayjs().startOf('day')}
                 format='MMM D, YYYY'
                 allowClear={false}
                 bordered={false}

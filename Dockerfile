@@ -5,7 +5,6 @@ WORKDIR /usr/src/app
 COPY . .
 
 RUN yarn set version berry \
-    && yarn plugin import @yarnpkg/plugin-workspace-tools \
 
     # install dev dependencies to generate prisma files and run nest build
     && yarn workspaces focus @ayahay/api \
