@@ -27,13 +27,15 @@ export default function BookingConfirmation({
   return (
     <div>
       <Title level={2}>Confirm Booking</Title>
-      {tentativeBooking && <BookingSummary booking={tentativeBooking} />}
-      {!tentativeBooking && (
-        <p>
-          Something went wrong. Please book again or contact a system
-          administrator if the issue persists.
-        </p>
-      )}
+      <div style={{margin: '32px 0'}}>
+        {tentativeBooking && <BookingSummary booking={tentativeBooking} titleLevel={3}/>}
+        {!tentativeBooking && (
+          <p>
+            Something went wrong. Please book again or contact a system
+            administrator if the issue persists.
+          </p>
+        )}
+      </div>
       <div>
         {tentativeBooking && (
           <Button type='primary' onClick={onClickPay}>

@@ -26,7 +26,7 @@ export default function GetBooking({ params }) {
   return (
     <div className={styles['main-container']}>
       <Title level={1}>Booking Summary</Title>
-      <BookingSummary booking={booking} />
+      <BookingSummary booking={booking} titleLevel={2} />
     </div>
   );
 }

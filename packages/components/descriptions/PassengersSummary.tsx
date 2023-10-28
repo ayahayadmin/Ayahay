@@ -124,17 +124,16 @@ export default function PassengersSummary({
   }, [loggedInAccount, passengers]);
 
   return (
-    <Skeleton loading={passengers === undefined} active>
-      {passengers && passengers.length > 0 && (
-        <Table
-          columns={passengerColumns}
-          dataSource={passengerRows}
-          pagination={false}
-          tableLayout='fixed'
-        ></Table>
-      )}
+    <>
+      <Table
+        columns={passengerColumns}
+        dataSource={passengerRows}
+        pagination={false}
+        loading={passengers === undefined}
+        tableLayout='fixed'
+      ></Table>
       {contextHolder}
-    </Skeleton>
+    </>
   );
 }
 
