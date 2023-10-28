@@ -71,7 +71,6 @@ export class BookingService {
                 shippingLine: true,
                 srcPort: true,
                 destPort: true,
-                ship: true,
               },
             },
             passenger: true,
@@ -360,7 +359,7 @@ WHERE row <= ${passengerPreferences.length}
   ): IBookingPassenger | undefined {
     const totalPrice = this.calculateTotalPriceForOnePassenger(
       passenger,
-      bestBooking
+      bestBooking,
     );
 
     // remember the passenger for easier booking for passenger accounts
@@ -477,6 +476,7 @@ WHERE row <= ${passengerPreferences.length}
 
     switch (passenger.discountType) {
       case 'Infant':
+      case 'Driver':
         return 0;
       case 'Student':
         return cabinFeeWithVat - cabinFeeWithVat * 0.2;
@@ -569,10 +569,22 @@ WHERE row <= ${passengerPreferences.length}
 
   private calculateServiceCharge(
     bookingPassengers: IBookingPassenger[],
-    bookingVehicles: IBookingVehicle[]
+    bookingVehicles: IBookingVehicle[],
+    loggedInAccount?: IAccount
   ): number {
+    if (
+      loggedInAccount?.role === 'Staff' ||
+      loggedInAccount?.role === 'Admin' ||
+      loggedInAccount?.role === 'SuperAdmin'
+    ) {
+      return 0;
+    }
+
+    const payingPassengerCount = bookingPassengers.filter((bookingPassenger) =>
+      this.isPayingPassenger(bookingPassenger.passenger)
+    ).length;
     const passengersServiceCharge =
-      bookingPassengers?.length * this.AYAHAY_MARKUP_FLAT;
+      payingPassengerCount * this.AYAHAY_MARKUP_FLAT;
 
     const vehiclesTotalPrice = bookingVehicles
       .map((bookingVehicle) => bookingVehicle.totalPrice)
@@ -584,6 +596,13 @@ WHERE row <= ${passengerPreferences.length}
       vehiclesTotalPrice * this.AYAHAY_MARKUP_PERCENT;
 
     return passengersServiceCharge + vehiclesServiceCharge;
+  }
+
+  private isPayingPassenger(passenger: IPassenger) {
+    return !(
+      passenger?.discountType === 'Infant' ||
+      passenger?.discountType === 'Driver'
+    );
   }
 
   private async saveTempBooking(booking: IBooking): Promise<IBooking> {

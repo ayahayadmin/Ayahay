@@ -36,6 +36,7 @@ export enum DISCOUNT_TYPE {
   Pwd = 'PWD',
   Child = 'Child',
   Infant = 'Infant',
+  Driver = 'Driver',
 }
 
 export enum PAYMENT_STATUS {

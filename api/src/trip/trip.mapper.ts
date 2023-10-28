@@ -27,7 +27,7 @@ export class TripMapper {
       id: trip.id,
       referenceNo: trip.referenceNo,
       shipId: trip.shipId,
-      ship: this.shipMapper.convertShipToDto(trip.ship),
+      ship: trip.ship ? this.shipMapper.convertShipToDto(trip.ship) : undefined,
       shippingLineId: trip.shippingLineId,
       shippingLine: this.shippingLineMapper.convertShippingLineToDto(
         trip.shippingLine
