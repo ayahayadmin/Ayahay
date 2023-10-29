@@ -1,4 +1,4 @@
-import { Form, Spin, Steps, Grid, notification, Modal } from 'antd';
+import {Form, Spin, Steps, Grid, notification, Modal, Button} from 'antd';
 import styles from './createBookingForm.module.scss';
 import { IAccount, IBooking, IPassenger } from '@ayahay/models';
 import PassengerInformationForm from '@/components/booking/PassengerInformationForm';
@@ -101,7 +101,7 @@ export default function CreateBookingForm({
       return;
     }
 
-    informPaymentInitiation(response.paymentReference);
+    informPaymentInitiation(response.paymentReference, response.redirectUrl);
     window.open(response.redirectUrl);
 
     // we cache saved passengers and vehicles in loggedInAccount. we invalidate this to
@@ -109,7 +109,7 @@ export default function CreateBookingForm({
     invalidateItem('loggedInAccount');
   };
 
-  const informPaymentInitiation = (transactionId: string) => {
+  const informPaymentInitiation = (transactionId: string, redirectUrl: string) => {
     modal.info({
       width: 'min(90vw, 512px)',
       centered: true,
@@ -129,6 +129,7 @@ export default function CreateBookingForm({
           <p>
             <strong>Booking {transactionId.toUpperCase()}</strong>
           </p>
+          <Button type='link' href={redirectUrl} target='_blank'>I was not redirected</Button>
         </div>
       ),
       okText: 'Book Again',
