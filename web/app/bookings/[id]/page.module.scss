@@ -24,4 +24,13 @@
       flex-direction: row;
     }
   }
+
+  @media print {
+    h1 {
+      font-size: 16px;
+    }
+    h2 {
+      font-size: 16px;
+    }
+  }
 }

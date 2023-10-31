@@ -4,7 +4,7 @@ import { PassengerPreferences } from '@ayahay/http';
 
 @Injectable()
 export class BookingValidator {
-  private readonly MAX_PASSENGERS_PER_BOOKING = 10;
+  private readonly MAX_PASSENGERS_PER_BOOKING = 50;
   private readonly MAX_TRIPS_PER_BOOKING = 10;
   private readonly MAX_VEHICLES_PER_BOOKING = 5;
 

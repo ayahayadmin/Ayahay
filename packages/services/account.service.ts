@@ -28,3 +28,11 @@ export async function getMyAccountInformation(): Promise<IAccount | undefined> {
     return undefined;
   }
 }
+
+export function hasPrivilegedAccess(loggedInAccount?: IAccount) {
+  return (
+    loggedInAccount?.role === 'Staff' ||
+    loggedInAccount?.role === 'Admin' ||
+    loggedInAccount?.role === 'SuperAdmin'
+  );
+}

@@ -16,6 +16,7 @@ export default function WebSider() {
       collapsedWidth='0'
       reverseArrow
       id={styles['web-sider']}
+      className='hide-on-print'
     >
       <nav id={styles['web-sider-nav']}>
         <Menu
