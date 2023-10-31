@@ -113,4 +113,8 @@ main {
   .hide-on-print {
     display: none !important;
   }
+
+  .body {
+    min-height: 0;
+  }
 }
