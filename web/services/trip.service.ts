@@ -41,15 +41,6 @@ export async function getAvailableTrips(
     return;
   }
 
-  const dateSelected = new Date(query.departureDate);
-  const dateOffset =
-    dateSelected.getTime() - dateSelected.getTimezoneOffset() * 60000; //to resolve one day off
-
-  query = {
-    ...query,
-    departureDate: new Date(dateOffset).toISOString(),
-  };
-
   const responseData: ITrip[] = await axios
     .get(`${TRIP_API}/available`, { params: { ...query } })
     .then((res) => {
