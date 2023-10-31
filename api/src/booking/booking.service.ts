@@ -43,10 +43,18 @@ export class BookingService {
     private readonly vehicleService: VehicleService
   ) {}
 
-  async getAllBookings(query: BookingSearchQuery): Promise<IBooking[]> {
+  async getAllBookings(): Promise<IBooking[]> {
+    // TO DO: might use SQL query to get paymentItems for particular bookingPassengers and bookingVehicles
     const bookingEntities = await this.prisma.booking.findMany({
-      where: {
-        id: query.id,
+      include: {
+        account: true,
+        passengers: {
+          include: {
+            trip: true,
+            passenger: true,
+          },
+        },
+        paymentItems: true,
       },
     });
 
@@ -185,8 +193,10 @@ export class BookingService {
       loggedInAccount
     );
 
-    paymentItems.forEach(item => item.price = Math.floor(item.price * 100) / 100)
-    
+    paymentItems.forEach(
+      (item) => (item.price = Math.floor(item.price * 100) / 100)
+    );
+
     const totalPrice = paymentItems
       .map((paymentItem) => paymentItem.price)
       .reduce((priceA, priceB) => priceA + priceB, 0);
@@ -362,7 +372,7 @@ WHERE row <= ${passengerPreferences.length}
   ): IBookingPassenger | undefined {
     const totalPrice = this.calculateTotalPriceForOnePassenger(
       passenger,
-      bestBooking,
+      bestBooking
     );
 
     // remember the passenger for easier booking for passenger accounts
@@ -548,7 +558,10 @@ WHERE row <= ${passengerPreferences.length}
         id: -1,
         bookingId: -1,
         price: bookingPassenger.totalPrice,
-        description: `${bookingPassenger.passenger.discountType || 'Adult'} Fare (${bookingPassenger.cabin.name})`,
+        description: `${
+          bookingPassenger.passenger.discountType || 'Adult'
+        } Fare (${bookingPassenger.cabin.name})`,
+        bookingPassengerId: bookingPassenger.id,
       })
     );
 
@@ -558,13 +571,18 @@ WHERE row <= ${passengerPreferences.length}
         bookingId: -1,
         price: bookingVehicle.totalPrice,
         description: `Vehicle Fare (${bookingVehicle.vehicle.vehicleType.name})`,
+        bookingVehicleId: bookingVehicle.id,
       })
     );
 
     paymentItems.push({
       id: -1,
       bookingId: -1,
-      price: this.calculateServiceCharge(bookingPassengers, bookingVehicles, loggedInAccount),
+      price: this.calculateServiceCharge(
+        bookingPassengers,
+        bookingVehicles,
+        loggedInAccount
+      ),
       description: 'Administrative Fee',
     });
 
@@ -686,8 +704,14 @@ WHERE row <= ${passengerPreferences.length}
   ): Promise<IBooking> {
     transactionContext ??= this.prisma;
 
-    await this.saveNewPassengers(booking.bookingPassengers, transactionContext);
-    await this.saveNewVehicles(booking.bookingVehicles, transactionContext);
+    const createdPassengerIds = await this.saveNewPassengers(
+      booking.bookingPassengers,
+      transactionContext
+    );
+    const createdVehicleIds = await this.saveNewVehicles(
+      booking.bookingVehicles,
+      transactionContext
+    );
 
     const bookingToCreate =
       this.bookingMapper.convertBookingToEntityForCreation(booking);
@@ -703,10 +727,10 @@ WHERE row <= ${passengerPreferences.length}
   private async saveNewPassengers(
     bookingPassengers: IBookingPassenger[],
     transactionContext?: PrismaClient
-  ): Promise<void> {
+  ): Promise<number[]> {
     transactionContext ??= this.prisma;
 
-    await Promise.all(
+    const createdPassengerIds = await Promise.all(
       bookingPassengers.map(async ({ passenger }) => {
         // if passenger already has an ID, do nothing
         if (passenger.id > 0) {
@@ -717,8 +741,11 @@ WHERE row <= ${passengerPreferences.length}
           transactionContext
         );
         passenger.id = createdPassenger.id;
+        return createdPassenger.id;
       })
     );
+
+    return createdPassengerIds;
   }
 
   // creates the passengers in booking with ID -1
@@ -726,10 +753,10 @@ WHERE row <= ${passengerPreferences.length}
   private async saveNewVehicles(
     bookingVehicles: IBookingVehicle[],
     transactionContext?: PrismaClient
-  ): Promise<void> {
+  ): Promise<number[]> {
     transactionContext ??= this.prisma;
 
-    await Promise.all(
+    const createdVehicleIds = await Promise.all(
       bookingVehicles.map(async ({ vehicle }) => {
         // if passenger already has an ID, do nothing
         if (vehicle.id > 0) {
@@ -741,8 +768,11 @@ WHERE row <= ${passengerPreferences.length}
           transactionContext
         );
         vehicle.id = createdVehicle.id;
+        return createdVehicle.id;
       })
     );
+
+    return createdVehicleIds;
   }
 
   private async updatePassengerCapacities(
@@ -840,6 +870,30 @@ WHERE row <= ${passengerPreferences.length}
       });
     }
   }
+
+  // TO DO: include bookingPassengerId and bookingVehicleId in paymentItems
+  // private async updatePaymentItemIds(
+  //   passengerAndVehicleIds: number[],
+  //   bookingId: string,
+  //   transactionContext?: PrismaClient
+  // ): Promise<void> {
+  //   transactionContext ??= this.prisma;
+
+  //   const paymentItems = await transactionContext.paymentItem.findMany({
+  //     where: { bookingId },
+  //   });
+
+  //   paymentItems.forEach(async (paymentItem, idx) => {
+  //     await transactionContext.paymentItem.update({
+  //       where: {
+  //         id: paymentItem.id,
+  //       },
+  //       data: {
+  //         bookingPassengerId: passengerAndVehicleIds[idx],
+  //       },
+  //     });
+  //   });
+  // }
 
   public async failBooking(
     id: string,

@@ -147,6 +147,7 @@ CREATE TABLE "booking_passenger" (
     "cabin_id" INTEGER NOT NULL,
     "seat_id" INTEGER,
     "meal" TEXT,
+    "total_price" DOUBLE PRECISION NOT NULL,
     "check_in_date" TIMESTAMP(3),
 
     CONSTRAINT "booking_passenger_pkey" PRIMARY KEY ("id")
@@ -176,6 +177,7 @@ CREATE TABLE "booking_vehicle" (
     "booking_id" TEXT NOT NULL,
     "trip_id" INTEGER NOT NULL,
     "vehicle_id" INTEGER NOT NULL,
+    "total_price" DOUBLE PRECISION NOT NULL,
     "check_in_date" TIMESTAMP(3),
 
     CONSTRAINT "booking_vehicle_pkey" PRIMARY KEY ("id")
@@ -276,6 +278,8 @@ CREATE TABLE "payment_item" (
     "booking_id" TEXT NOT NULL,
     "price" DOUBLE PRECISION NOT NULL,
     "description" TEXT NOT NULL,
+    "booking_passenger_id" INTEGER,
+    "booking_vehicle_id" INTEGER,
 
     CONSTRAINT "payment_item_pkey" PRIMARY KEY ("id")
 );
@@ -414,3 +418,9 @@ ALTER TABLE "account_notification" ADD CONSTRAINT "account_notification_notifica
 
 -- AddForeignKey
 ALTER TABLE "payment_item" ADD CONSTRAINT "payment_item_booking_id_fkey" FOREIGN KEY ("booking_id") REFERENCES "booking"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "payment_item" ADD CONSTRAINT "payment_item_booking_passenger_id_fkey" FOREIGN KEY ("booking_passenger_id") REFERENCES "booking_passenger"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "payment_item" ADD CONSTRAINT "payment_item_booking_vehicle_id_fkey" FOREIGN KEY ("booking_vehicle_id") REFERENCES "booking_vehicle"("id") ON DELETE SET NULL ON UPDATE CASCADE;

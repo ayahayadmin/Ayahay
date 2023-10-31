@@ -15,6 +15,7 @@ import { ShippingLineModule } from './shipping-line/shipping-line.module';
 import { CabinTypeModule } from './cabin-type/cabin-type.module';
 import { VehicleTypeModule } from './vehicle-type/vehicle-type.module';
 import { ShipModule } from './ship/ship.module';
+import { CsvModule } from './csv/csv.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { ShipModule } from './ship/ship.module';
     CabinTypeModule,
     VehicleTypeModule,
     ShipModule,
+    CsvModule,
   ],
 })
 export class AppModule {}

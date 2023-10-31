@@ -7,6 +7,7 @@ import { generateBookingCsv } from '@/services/csv.service';
 import { useAuthState } from '@/hooks/auth';
 import { redirect } from 'next/navigation';
 import { useLoggedInAccount } from '@ayahay/hooks/auth';
+import { IBooking } from '@ayahay/models';
 
 const { Title } = Typography;
 
@@ -36,28 +37,33 @@ export default function DownloadBookings() {
     redirect('/403');
   }
 
-  const onFinish = (formValues: any) => {
+  const onFinish = async (formValues: any) => {
     const monthIso = formValues.month;
     const requestedMonthDate = new Date(monthIso);
     const requestedMonth = requestedMonthDate.getMonth();
     const requestedYear = requestedMonthDate.getFullYear();
 
-    const allBookings = getAllBookings();
+    const allBookings: IBooking[] = await getAllBookings();
     const requestedBookings = allBookings.filter((booking) => {
-      const tripDepartureIso = booking?.trip?.departureDateIso;
-      if (!tripDepartureIso) {
+      const bookingCreatedAtIso = booking.createdAtIso;
+      if (!bookingCreatedAtIso) {
         return false;
       }
-      const tripDepartureDate = new Date(tripDepartureIso);
-      const tripDepartureMonth = tripDepartureDate.getMonth();
-      const tripDepartureYear = tripDepartureDate.getFullYear();
+      const bookingCreatedAtDate = new Date(bookingCreatedAtIso);
+      const bookingCreatedAtMonth = bookingCreatedAtDate.getMonth();
+      const bookingCreatedAtYear = bookingCreatedAtDate.getFullYear();
       return (
-        tripDepartureYear === requestedYear &&
-        tripDepartureMonth === requestedMonth
+        bookingCreatedAtYear === requestedYear &&
+        bookingCreatedAtMonth === requestedMonth
       );
     });
 
-    const url = URL.createObjectURL(generateBookingCsv(requestedBookings));
+    const generateCsv = await generateBookingCsv(requestedBookings);
+
+    if (!generateCsv) {
+      return new Error('CSV Generation Failed');
+    }
+    const url = URL.createObjectURL(generateCsv);
 
     // Create a link to download it
     const downloadLink = document.createElement('a');
