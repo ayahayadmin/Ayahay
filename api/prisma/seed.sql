@@ -225,9 +225,9 @@ INSERT INTO ayahay.shipping_line_schedule
         (SELECT id FROM ayahay.port WHERE "name" = 'Bogo')
     ),
     (
-        'Palompon -> Bogo 6:00 PM',
-        18,
-        00,
+        'Palompon -> Bogo 6:30 AM',
+        06,
+        30,
         60,
         7,
         (SELECT id FROM ayahay.ship WHERE "name" = 'Melrivic 7'),
