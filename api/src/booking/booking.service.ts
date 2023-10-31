@@ -50,7 +50,13 @@ export class BookingService {
         account: true,
         passengers: {
           include: {
-            trip: true,
+            trip: {
+              include: {
+                shippingLine: true,
+                srcPort: true,
+                destPort: true,
+              },
+            },
             passenger: true,
           },
         },
