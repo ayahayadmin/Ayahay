@@ -497,7 +497,7 @@ WHERE row <= ${passengerPreferences.length}
       case 'Pwd':
         const cabinFeeWithoutVat = cabinFeeWithVat / 1.12;
         const vatAmount = cabinFeeWithoutVat * 0.12;
-        return cabinFeeWithVat - cabinFeeWithVat * 0.2 - vatAmount;
+        return cabinFeeWithVat - cabinFeeWithoutVat * 0.2 - vatAmount;
       case 'Child':
         return cabinFeeWithVat * 0.5;
       case undefined:
