@@ -28,7 +28,11 @@ export class TripController {
   ) {}
 
   @Get()
-  async getTrips(): Promise<ITrip[]> {
+  async getTrips(@Query() { tripIds }: { tripIds: string }): Promise<ITrip[]> {
+    if (tripIds?.length > 0) {
+      const idStrSplit = tripIds.split(',');
+      return this.tripService.getTripsByIds(idStrSplit.map((id) => Number(id)));
+    }
     return await this.tripService.getTrips();
   }
 
@@ -37,11 +41,6 @@ export class TripController {
     @Query()
     query: SearchAvailableTrips
   ): Promise<ITrip[]> {
-    if (query.tripIds?.length > 0) {
-      const idStrSplit = query.tripIds.split(',');
-      return this.tripService.getTripsByIds(idStrSplit.map((id) => Number(id)));
-    }
-
     return await this.tripService.getAvailableTrips(query);
   }
 

@@ -26,10 +26,8 @@ export class BookingController {
   @Get()
   @UseGuards(AuthGuard)
   @Roles('Staff', 'Admin')
-  async getAllBookings(
-    @Query() bookingSearchQuery: BookingSearchQuery
-  ): Promise<IBooking[]> {
-    return this.bookingService.getAllBookings(bookingSearchQuery);
+  async getAllBookings(): Promise<IBooking[]> {
+    return await this.bookingService.getAllBookings();
   }
 
   @Get(':id')

@@ -13,7 +13,7 @@ import Link from 'next/link';
 
 export default function WebFooter() {
   return (
-    <Footer id={styles['foot-base']}>
+    <Footer className='hide-on-print' id={styles['foot-base']}>
       <div className={styles['main-container']}>
         <div className={styles['left-sub-container']}>
           <div className={styles['left-col-card']}>

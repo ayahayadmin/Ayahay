@@ -17,7 +17,7 @@ export class BookingMapper {
     private readonly vehicleMapper: VehicleMapper
   ) {}
 
-  convertBookingToBasicDto(booking: Prisma.BookingGetPayload<any>): IBooking {
+  convertBookingToBasicDto(booking): IBooking {
     const {
       id,
       accountId,
@@ -26,6 +26,8 @@ export class BookingMapper {
       totalPrice,
       bookingType,
       createdAt,
+      passengers,
+      paymentItems,
     } = booking;
 
     return {
@@ -36,6 +38,8 @@ export class BookingMapper {
       totalPrice,
       bookingType: bookingType as any,
       createdAtIso: createdAt.toISOString(),
+      bookingPassengers: passengers,
+      paymentItems,
     };
   }
 
@@ -79,6 +83,7 @@ export class BookingMapper {
       seatId: bookingPassenger.seatId,
 
       meal: bookingPassenger.meal,
+      totalPrice: bookingPassenger.totalPrice ?? undefined,
       checkInDate: bookingPassenger.checkInDate ?? undefined,
     };
   }
@@ -92,6 +97,7 @@ export class BookingMapper {
       vehicleId: bookingVehicle.vehicleId,
       vehicle: this.vehicleMapper.convertVehicleToDto(bookingVehicle.vehicle),
 
+      totalPrice: bookingVehicle.totalPrice ?? undefined,
       checkInDate: bookingVehicle.checkInDate ?? undefined,
     };
   }
@@ -136,14 +142,16 @@ export class BookingMapper {
           passengerId: bookingPassenger.passenger.id,
           seatId: bookingPassenger.seatId ?? null,
           cabinId: bookingPassenger.cabinId,
+          totalPrice: bookingPassenger.totalPrice ?? 0,
         } as Prisma.BookingPassengerCreateManyInput)
     );
 
     const bookingVehicleData = booking.bookingVehicles.map(
-      (vehicle) =>
+      (bookingVehicle) =>
         ({
-          tripId: vehicle.tripId,
-          vehicleId: vehicle.vehicle.id,
+          tripId: bookingVehicle.tripId,
+          vehicleId: bookingVehicle.vehicle.id,
+          totalPrice: bookingVehicle.totalPrice ?? 0,
         } as Prisma.BookingVehicleCreateManyInput)
     );
 

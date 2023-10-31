@@ -1,3 +1,5 @@
+import { IBookingPassenger } from './booking-passenger.model';
+import { IBookingVehicle } from './booking-vehicle.model';
 import { IBooking } from './booking.model';
 
 export interface IPaymentItem {
@@ -7,4 +9,9 @@ export interface IPaymentItem {
 
   price: number;
   description: String;
+
+  bookingPassengerId?: number;
+  bookingPassenger?: IBookingPassenger;
+  bookingVehicleId?: number;
+  bookingVehicle?: IBookingVehicle;
 }

@@ -1,6 +1,9 @@
 import { IBooking, ITrip, mockShip, mockShippingLine } from '@ayahay/models';
 // import { generateReferenceNo } from '@ayahay/services/random.service';
 import { addTrips, getTripByReferenceNo } from '@/services/trip.service';
+import { getAuth } from 'firebase/auth';
+import axios from 'axios';
+import { CSV_API } from '@ayahay/constants';
 
 export function processTripCsv(
   file: File,
@@ -209,43 +212,15 @@ function processBookingRow(rowValues: string[]): IBooking {
   return booking;
 }
 
-export function generateBookingCsv(bookings: IBooking[] | any[]): Blob {
-  //there should be no any type
-  const content = bookings
-    .filter(
-      (booking) =>
-        booking.bookingPassengers && booking.bookingPassengers.length > 0
-    )
-    .map((booking) => {
-      return (
-        booking.bookingPassengers &&
-        booking.bookingPassengers
-          .map((bookingPassenger: any) => {
-            return [
-              booking?.trip?.referenceNo ?? '',
-              booking?.trip?.srcPort?.name ?? '',
-              booking?.trip?.destPort?.name ?? '',
-              booking?.trip?.departureDateIso ?? '',
-              booking?.totalPrice,
-              bookingPassenger.referenceNo ?? '',
-              bookingPassenger.passenger?.firstName ?? '',
-              bookingPassenger.passenger?.lastName ?? '',
-              bookingPassenger.passenger?.occupation ?? '',
-              bookingPassenger.passenger?.sex ?? '',
-              bookingPassenger.passenger?.civilStatus ?? '',
-              bookingPassenger.passenger?.birthdayIso ?? '',
-              bookingPassenger.passenger?.address ?? '',
-              bookingPassenger.passenger?.nationality ?? '',
-            ]
-              .map(String) // convert every value to String
-              .map((v) => v.replaceAll('"', '""')) // escape double colons
-              .map((v) => `"${v}"`) // quote it
-              .join(','); // comma-separated;
-          })
-          .join('\r\n')
-      );
-    })
-    .join('\r\n'); // rows starting on new lines
-
-  return new Blob([content], { type: 'text/csv;charset=utf-8;' });
+export async function generateBookingCsv(bookings: IBooking[] | any[]) {
+  const authToken = await getAuth().currentUser?.getIdToken();
+  try {
+    const { data } = await axios.post(`${CSV_API}`, bookings, {
+      headers: { Authorization: `Bearer ${authToken}` },
+    });
+    return new Blob([...data], { type: 'text/csv;charset=utf-8;' });
+  } catch (e) {
+    console.error(e);
+    return undefined;
+  }
 }

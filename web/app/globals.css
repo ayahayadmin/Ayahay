@@ -108,3 +108,9 @@ main {
 .ant-picker-input input {
   font-family: inherit;
 }
+
+@media print {
+  .hide-on-print {
+    display: none !important;
+  }
+}

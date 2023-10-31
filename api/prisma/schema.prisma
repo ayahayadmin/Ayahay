@@ -231,7 +231,10 @@ model BookingPassenger {
   seat Seat? @relation(fields: [seatId], references: [id])
 
   meal String?
+  totalPrice Float @map("total_price")
   checkInDate DateTime? @map("check_in_date")
+
+  paymentItems PaymentItem[]
 
   @@map("booking_passenger")
 }
@@ -268,7 +271,10 @@ model BookingVehicle {
   vehicleId Int @map("vehicle_id")
   vehicle Vehicle @relation(fields: [vehicleId], references: [id])
 
+  totalPrice Float @map("total_price")
   checkInDate DateTime? @map("check_in_date")
+
+  paymentItems PaymentItem[]
 
   @@map("booking_vehicle")
 }
@@ -398,6 +404,11 @@ model PaymentItem {
 
   price Float
   description String
+
+  bookingPassengerId Int? @map("booking_passenger_id")
+  bookingPassenger BookingPassenger? @relation(fields: [bookingPassengerId], references: [id])
+  bookingVehicleId Int? @map("booking_vehicle_id")
+  bookingVehicle BookingVehicle? @relation(fields: [bookingVehicleId], references: [id])
 
   @@map("payment_item")
 }

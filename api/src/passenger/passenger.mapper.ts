@@ -40,6 +40,7 @@ export class PassengerMapper {
       birthday: new Date(passenger.birthdayIso),
       address: passenger.address,
       nationality: passenger.nationality,
+      discountType: passenger.discountType,
       accountId: passenger.accountId,
       account: passenger.accountId
         ? {
