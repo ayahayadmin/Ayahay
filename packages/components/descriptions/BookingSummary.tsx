@@ -180,7 +180,7 @@ export default function BookingSummary({
             </table>
           </section>
         )}
-      <p style={{ textAlign: 'right' }}>Powered by AYAHAY</p>
+      <p style={{ textAlign: 'center' }}>Powered by AYAHAY</p>
     </div>
   );
 
