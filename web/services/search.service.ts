@@ -8,6 +8,12 @@ import {
 } from '@ayahay/constants/default';
 import { forEach } from 'lodash';
 
+const utc = require('dayjs/plugin/utc');
+const timezone = require('dayjs/plugin/timezone'); // dependent on utc plugin
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
 export function initializeSearchFormFromQueryParams(
   form: FormInstance,
   params: { [p: string]: string }
@@ -39,7 +45,11 @@ export function buildUrlQueryParamsFromSearchForm(form: FormInstance): string {
     tripType: form.getFieldValue('tripType'),
     srcPortId: form.getFieldValue('srcPortId')?.toString(),
     destPortId: form.getFieldValue('destPortId')?.toString(),
-    departureDate: form.getFieldValue('departureDate')?.toISOString(),
+    departureDate: form
+      .getFieldValue('departureDate')
+      .tz('Asia/Shanghai')
+      .startOf('date')
+      .toISOString(),
     passengerCount: form.getFieldValue('passengerCount')?.toString(),
     vehicleCount: form.getFieldValue('vehicleCount')?.toString(),
     shippingLineIds: form.getFieldValue('shippingLineIds')?.toString(),
@@ -69,7 +79,11 @@ export function buildSearchQueryFromSearchForm(
     tripType: form.getFieldValue('tripType'),
     srcPortId: form.getFieldValue('srcPortId'),
     destPortId: form.getFieldValue('destPortId'),
-    departureDate: form.getFieldValue('departureDate').toISOString(),
+    departureDate: form
+      .getFieldValue('departureDate')
+      .tz('Asia/Shanghai')
+      .startOf('date')
+      .toISOString(),
     passengerCount: form.getFieldValue('passengerCount'),
     vehicleCount: form.getFieldValue('vehicleCount'),
     shippingLineIds: form.getFieldValue('shippingLineIds'),

@@ -20,6 +20,8 @@ export class CsvService {
       'Nationality',
       'Address',
       'Discount Type',
+      'Origin',
+      'Destination',
       'Trip Date & Time',
       'Rates',
     ]
@@ -64,6 +66,8 @@ export class CsvService {
                   bookingPassenger.passenger?.nationality ?? '',
                   bookingPassenger.passenger?.address ?? '',
                   bookingPassenger.passenger?.discountType ?? 'Adult',
+                  bookingPassenger.trip?.srcPort.name ?? '',
+                  bookingPassenger.trip?.destPort.name ?? '',
                   departureDate ?? '',
                   booking?.paymentItems[idx].price ?? '',
                 ]
