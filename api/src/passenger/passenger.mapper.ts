@@ -34,9 +34,9 @@ export class PassengerMapper {
     return {
       firstName: passenger.firstName,
       lastName: passenger.lastName,
-      occupation: passenger.occupation,
+      occupation: passenger.occupation ?? '',
       sex: passenger.sex,
-      civilStatus: passenger.civilStatus,
+      civilStatus: passenger.civilStatus ?? '',
       birthday: new Date(passenger.birthdayIso),
       address: passenger.address,
       nationality: passenger.nationality,

@@ -15,6 +15,7 @@ import {
   IPaymentItem,
   ITrip,
   IAccount,
+  IShippingLine,
 } from '@ayahay/models';
 import { BookingSearchQuery, PassengerPreferences } from '@ayahay/http';
 import { UtilityService } from '../utility.service';
@@ -119,19 +120,13 @@ export class BookingService {
       throw new NotFoundException();
     }
 
-    if (loggedInAccount === undefined && booking.accountId !== null) {
-      throw new ForbiddenException();
-    }
-
-    if (
-      booking.accountId !== null &&
-      loggedInAccount !== undefined &&
-      loggedInAccount.role === 'Passenger' &&
-      booking.accountId !== loggedInAccount.id
-    ) {
-      throw new ForbiddenException();
-    }
-
+    booking.passengers.sort(
+      (passengerA, passengerB) => passengerA.id - passengerB.id
+    );
+    booking.vehicles.sort((vehicleA, vehicleB) => vehicleA.id - vehicleB.id);
+    booking.paymentItems.sort(
+      (paymentItemA, paymentItemB) => paymentItemA.id - paymentItemB.id
+    );
     return this.bookingMapper.convertBookingToSummary(booking);
   }
 
@@ -381,6 +376,11 @@ WHERE row <= ${passengerPreferences.length}
       bestBooking
     );
 
+    const roundedTotalPrice = this.roundPassengerPriceBasedOnShippingLine(
+      totalPrice,
+      trip.shippingLine
+    );
+
     // remember the passenger for easier booking for passenger accounts
     if (passenger.id === undefined && loggedInAccount?.role === 'Passenger') {
       passenger.buddyId = loggedInAccount.passengerId;
@@ -417,12 +417,12 @@ WHERE row <= ${passengerPreferences.length}
       passengerId: passenger.id,
       passenger,
       meal: preferences.meal,
-      totalPrice,
+      totalPrice: roundedTotalPrice,
       checkInDate: null,
       // since these entities aren't created for temp booking,
       // we set their IDs to null for now
       id: -1,
-      bookingId: -1,
+      bookingId: '',
     };
   }
 
@@ -511,6 +511,18 @@ WHERE row <= ${passengerPreferences.length}
     }
   }
 
+  private roundPassengerPriceBasedOnShippingLine(
+    originalPrice: number,
+    shippingLine: IShippingLine
+  ) {
+    if (shippingLine.name === 'Aznar Shipping') {
+      const wholePrice = Math.floor(originalPrice);
+      return wholePrice - (wholePrice % 5);
+    }
+
+    return originalPrice;
+  }
+
   private createTentativeBookingVehicles(
     trips: ITrip[],
     vehicles: IVehicle[],
@@ -527,7 +539,7 @@ WHERE row <= ${passengerPreferences.length}
       for (const trip of trips) {
         bookingVehicles.push({
           id: -1,
-          bookingId: -1,
+          bookingId: '',
           vehicleId: vehicle.id,
           vehicle: vehicle,
           tripId: trip.id,

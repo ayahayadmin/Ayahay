@@ -12,7 +12,7 @@ import { ICabin } from './cabin.model';
 
 export interface IBookingPassenger {
   id: number;
-  bookingId: number;
+  bookingId: string;
   booking?: IBooking;
   tripId: number;
   trip?: ITrip;
@@ -32,7 +32,7 @@ const today = new Date().toISOString();
 
 export const mockBookingPassenger: IBookingPassenger = {
   id: 1,
-  bookingId: 1,
+  bookingId: '1',
   tripId: 1,
   passengerId: mockPassenger.id,
   passenger: mockPassenger,
@@ -44,7 +44,7 @@ export const mockBookingPassengers: IBookingPassenger[] = [
   mockBookingPassenger,
   {
     id: 2,
-    bookingId: 1,
+    bookingId: '1',
     tripId: 1,
     passengerId: mockFather.id,
     passenger: mockFather,
@@ -54,7 +54,7 @@ export const mockBookingPassengers: IBookingPassenger[] = [
   },
   {
     id: 3,
-    bookingId: 1,
+    bookingId: '1',
     tripId: 1,
     passengerId: mockWife.id,
     passenger: mockWife,
@@ -63,7 +63,7 @@ export const mockBookingPassengers: IBookingPassenger[] = [
   },
   {
     id: 4,
-    bookingId: 1,
+    bookingId: '1',
     tripId: 1,
     passengerId: mockSon.id,
     passenger: mockSon,
@@ -73,7 +73,7 @@ export const mockBookingPassengers: IBookingPassenger[] = [
   },
   {
     id: 5,
-    bookingId: 2,
+    bookingId: '2',
     tripId: 1,
     passengerId: mockFather.id,
     passenger: mockFather,
@@ -83,7 +83,7 @@ export const mockBookingPassengers: IBookingPassenger[] = [
   },
   {
     id: 6,
-    bookingId: 3,
+    bookingId: '3',
     tripId: 1,
     passengerId: mockWife.id,
     passenger: mockWife,
@@ -92,7 +92,7 @@ export const mockBookingPassengers: IBookingPassenger[] = [
   },
   {
     id: 7,
-    bookingId: 4,
+    bookingId: '4',
     tripId: 1,
     passengerId: mockSon.id,
     passenger: mockSon,
@@ -102,7 +102,7 @@ export const mockBookingPassengers: IBookingPassenger[] = [
   },
   {
     id: 8,
-    bookingId: 5,
+    bookingId: '5',
     tripId: 1,
     passengerId: mockWife.id,
     passenger: mockWife,
@@ -111,7 +111,7 @@ export const mockBookingPassengers: IBookingPassenger[] = [
   },
   {
     id: 9,
-    bookingId: 6,
+    bookingId: '6',
     tripId: 1,
     passengerId: mockSon.id,
     passenger: mockSon,
@@ -121,7 +121,7 @@ export const mockBookingPassengers: IBookingPassenger[] = [
   },
   {
     id: 10,
-    bookingId: 6,
+    bookingId: '6',
     tripId: 1,
     passengerId: mockFather.id,
     passenger: mockFather,
