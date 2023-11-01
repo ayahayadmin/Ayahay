@@ -194,6 +194,8 @@ export default function PassengerInformationForm({
     accountBtn?.click();
   };
 
+  const dateFormatList = ['YYYY/MM/DD', 'YYYY/M/D', 'YYYY-MM-DD', 'YYYY-M-D'];
+
   return (
     <>
       <Title level={2}>Passenger Information</Title>
@@ -273,7 +275,7 @@ export default function PassengerInformationForm({
                 >
                   <DatePicker
                     disabled={passengers?.[index]?.id !== undefined}
-                    format='YYYY/MM/DD'
+                    format={dateFormatList}
                     placeholder='YYYY/MM/DD'
                   />
                 </Form.Item>
