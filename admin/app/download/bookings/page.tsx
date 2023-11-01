@@ -53,6 +53,7 @@ export default function DownloadBookings() {
       const bookingCreatedAtMonth = bookingCreatedAtDate.getMonth();
       const bookingCreatedAtYear = bookingCreatedAtDate.getFullYear();
       return (
+        booking.status === 'Success' &&
         bookingCreatedAtYear === requestedYear &&
         bookingCreatedAtMonth === requestedMonth
       );
