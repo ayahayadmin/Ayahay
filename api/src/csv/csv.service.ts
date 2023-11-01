@@ -3,6 +3,7 @@ import { Cabin, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
 import { IBooking } from '@ayahay/models';
 import { Blob } from 'buffer';
+import { round } from 'lodash';
 
 @Injectable()
 export class CsvService {
@@ -69,7 +70,7 @@ export class CsvService {
                   bookingPassenger.trip?.srcPort.name ?? '',
                   bookingPassenger.trip?.destPort.name ?? '',
                   departureDate ?? '',
-                  booking?.paymentItems[idx].price ?? '',
+                  round(bookingPassenger.totalPrice, 2) ?? '',
                 ]
                   .map(String) // convert every value to String
                   .map((v) => v.replace('"', '""')) // escape double colons
