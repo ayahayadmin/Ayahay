@@ -15,6 +15,7 @@ import {
   IPaymentItem,
   ITrip,
   IAccount,
+  IShippingLine,
 } from '@ayahay/models';
 import { BookingSearchQuery, PassengerPreferences } from '@ayahay/http';
 import { UtilityService } from '../utility.service';
@@ -381,6 +382,11 @@ WHERE row <= ${passengerPreferences.length}
       bestBooking
     );
 
+    const roundedTotalPrice = this.roundPassengerPriceBasedOnShippingLine(
+      totalPrice,
+      trip.shippingLine
+    );
+
     // remember the passenger for easier booking for passenger accounts
     if (passenger.id === undefined && loggedInAccount?.role === 'Passenger') {
       passenger.buddyId = loggedInAccount.passengerId;
@@ -417,7 +423,7 @@ WHERE row <= ${passengerPreferences.length}
       passengerId: passenger.id,
       passenger,
       meal: preferences.meal,
-      totalPrice,
+      totalPrice: roundedTotalPrice,
       checkInDate: null,
       // since these entities aren't created for temp booking,
       // we set their IDs to null for now
@@ -509,6 +515,18 @@ WHERE row <= ${passengerPreferences.length}
       case undefined:
         return cabinFeeWithVat;
     }
+  }
+
+  private roundPassengerPriceBasedOnShippingLine(
+    originalPrice: number,
+    shippingLine: IShippingLine
+  ) {
+    if (shippingLine.name === 'Aznar Shipping') {
+      const wholePrice = Math.floor(originalPrice);
+      return wholePrice - (wholePrice % 5);
+    }
+
+    return originalPrice;
   }
 
   private createTentativeBookingVehicles(
