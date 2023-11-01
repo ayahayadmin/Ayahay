@@ -42,7 +42,7 @@ export class CsvService {
           return (
             booking.bookingPassengers &&
             booking.bookingPassengers
-              .map((bookingPassenger: any, idx) => {
+              .map((bookingPassenger: any) => {
                 const name =
                   bookingPassenger.passenger.firstName +
                   ' ' +
