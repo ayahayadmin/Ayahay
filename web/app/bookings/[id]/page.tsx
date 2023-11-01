@@ -50,6 +50,10 @@ export default function GetBooking({ params }) {
 
     try {
       await checkInPassenger(booking.id, bookingPassengerId);
+      api.success({
+        message: 'Check In Success',
+        description: 'The selected passenger has checked in successfully.',
+      });
     } catch (e) {
       handleCheckInError(e);
     }
@@ -64,6 +68,10 @@ export default function GetBooking({ params }) {
 
     try {
       await checkInVehicle(booking.id, bookingVehicleId);
+      api.success({
+        message: 'Check In Success',
+        description: 'The selected vehicle has checked in successfully.',
+      });
     } catch (e) {
       handleCheckInError(e);
     }
@@ -81,6 +89,7 @@ export default function GetBooking({ params }) {
         onCheckInPassenger={checkInBookingPassenger}
         onCheckInVehicle={checkInBookingVehicle}
       />
+      {contextHolder}
     </div>
   );
 }

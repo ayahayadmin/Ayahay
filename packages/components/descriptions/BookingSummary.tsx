@@ -168,14 +168,17 @@ export default function BookingSummary({
             <p>Pax {booking.bookingPassengers.length} NAC</p>
             <table style={{ tableLayout: 'fixed', width: '100%' }}>
               <tbody>
-                {booking.bookingPassengers.map((bookingPassenger) => (
+                {booking.bookingPassengers.map((bookingPassenger, idx) => (
                   <tr key={bookingPassenger.id}>
                     <td>
                       {bookingPassenger.passenger?.firstName}&nbsp;
                       {bookingPassenger.passenger?.lastName}
                     </td>
                     <td>
-                      {bookingPassenger.passenger?.discountType ?? 'Adult'}
+                      ₱
+                      {booking.paymentItems &&
+                        booking.paymentItems[idx] &&
+                        booking.paymentItems[idx].price}
                     </td>
                   </tr>
                 ))}

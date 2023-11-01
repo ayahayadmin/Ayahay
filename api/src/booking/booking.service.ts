@@ -120,6 +120,13 @@ export class BookingService {
       throw new NotFoundException();
     }
 
+    booking.passengers.sort(
+      (passengerA, passengerB) => passengerA.id - passengerB.id
+    );
+    booking.vehicles.sort((vehicleA, vehicleB) => vehicleA.id - vehicleB.id);
+    booking.paymentItems.sort(
+      (paymentItemA, paymentItemB) => paymentItemA.id - paymentItemB.id
+    );
     return this.bookingMapper.convertBookingToSummary(booking);
   }
 
