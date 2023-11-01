@@ -53,7 +53,7 @@ export class CsvService {
                   bookingPassenger.passenger.birthday
                 );
                 const departureDate = this.changeDateFormat(
-                  bookingPassenger.trip?.departureDate,
+                  bookingPassenger.trip?.departureDateIso,
                   true
                 );
 

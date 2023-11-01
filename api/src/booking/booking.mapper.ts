@@ -17,6 +17,7 @@ export class BookingMapper {
     private readonly vehicleMapper: VehicleMapper
   ) {}
 
+  // TO DO: improve conversion booking to DTO
   convertBookingToBasicDto(booking): IBooking {
     const {
       id,
@@ -38,7 +39,15 @@ export class BookingMapper {
       totalPrice,
       bookingType: bookingType as any,
       createdAtIso: createdAt.toISOString(),
-      bookingPassengers: passengers,
+      bookingPassengers: passengers?.map((passenger) => {
+        return {
+          ...passenger,
+          trip: {
+            ...passenger.trip,
+            departureDateIso: passenger.trip.departureDate.toISOString(),
+          },
+        };
+      }),
       paymentItems,
     };
   }
