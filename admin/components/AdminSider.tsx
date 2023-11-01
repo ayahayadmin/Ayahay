@@ -12,8 +12,9 @@ export default function AdminSider() {
   const pathName = usePathname();
   const router = useRouter();
 
+  const userRole = loggedInAccount && loggedInAccount.role;
   const headerTabs =
-    loggedInAccount && loggedInAccount.role === 'Admin'
+    userRole === 'SuperAdmin' || userRole === 'Admin'
       ? webLinks.Admin
       : webLinks.Staff;
 

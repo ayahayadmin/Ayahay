@@ -4,6 +4,10 @@ export const webLinks = {
       label: 'Trips',
       key: 'trips',
     },
+    {
+      label: 'Download Bookings',
+      key: 'download/bookings',
+    },
   ],
   Admin: [
     {

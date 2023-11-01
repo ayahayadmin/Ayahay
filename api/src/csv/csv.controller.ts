@@ -20,7 +20,7 @@ export class CsvController {
 
   @Post()
   @UseGuards(AuthGuard)
-  @Roles('SuperAdmin', 'Admin')
+  @Roles('SuperAdmin', 'Admin', 'Staff')
   async generateBookingCsv(@Body() bookings: any[]) {
     return await this.csvService.generateBookingCsv(bookings);
   }

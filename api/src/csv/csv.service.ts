@@ -99,6 +99,8 @@ export class CsvService {
 
   private changeDateFormat(date: string, withTime = false) {
     const newDate = new Date(date);
+    newDate.setHours(newDate.getHours() + 8); // to handle UTC+8
+
     const month = newDate.getMonth() + 1;
     const newDateFormat =
       newDate.getFullYear() + '-' + month + '-' + newDate.getDate();
