@@ -194,7 +194,16 @@ export default function PassengerInformationForm({
     accountBtn?.click();
   };
 
-  const dateFormatList = ['YYYY/MM/DD', 'YYYY/M/D', 'YYYY-MM-DD', 'YYYY-M-D'];
+  const dateFormatList = [
+    'YYYY/MM/DD',
+    'YYYY/M/D',
+    'YYYY/MM/D',
+    'YYYY/M/DD',
+    'YYYY-MM-DD',
+    'YYYY-M-D',
+    'YYYY-MM-D',
+    'YYYY-M-DD',
+  ];
 
   return (
     <>
