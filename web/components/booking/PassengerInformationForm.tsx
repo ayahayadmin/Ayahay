@@ -17,7 +17,8 @@ import {
 import {
   IAccount,
   IPassenger,
-  IVehicle, IVehicleType,
+  IVehicle,
+  IVehicleType,
   mockFather,
   mockVehicleTypes,
 } from '@ayahay/models';
@@ -28,7 +29,7 @@ import AddVehiclesModal from '@/components/booking/AddVehiclesModal';
 import { toPassengerFormValue } from '@ayahay/services/form.service';
 import { getMyAccountInformation } from '@ayahay/services/account.service';
 import { useAuth } from '@/app/contexts/AuthContext';
-import {getVehicleTypes} from "@/services/vehicle-type.service";
+import { getVehicleTypes } from '@/services/vehicle-type.service';
 
 const { Title } = Typography;
 
@@ -58,7 +59,7 @@ export default function PassengerInformationForm({
 
   const fetchVehicleTypes = async () => {
     setVehicleTypes(await getVehicleTypes());
-  }
+  };
 
   useEffect(() => {
     if (loggedInAccount) {
@@ -160,9 +161,9 @@ export default function PassengerInformationForm({
     const fieldNamesToValidate = [
       'firstName',
       'lastName',
-      'occupation',
+      // 'occupation',
       'sex',
-      'civilStatus',
+      // 'civilStatus',
       'birthdayIso',
       'address',
       'nationality',
@@ -245,7 +246,7 @@ export default function PassengerInformationForm({
                   colon={false}
                   rules={[{ required: true, message: 'Missing sex' }]}
                 />
-                <EnumRadio
+                {/* <EnumRadio
                   _enum={OCCUPATION}
                   disabled={passengers?.[index]?.id !== undefined}
                   {...restField}
@@ -262,7 +263,7 @@ export default function PassengerInformationForm({
                   label='Civil Status'
                   colon={false}
                   rules={[{ required: true, message: 'Missing civil status' }]}
-                />
+                /> */}
                 <Form.Item
                   {...restField}
                   name={[name, 'birthdayIso']}
