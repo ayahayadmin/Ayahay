@@ -4,7 +4,7 @@ import { ITrip } from './trip.model';
 
 export interface IBookingVehicle {
   id: number;
-  bookingId: number;
+  bookingId: string;
   booking?: IBooking;
   tripId: number;
   trip?: ITrip;

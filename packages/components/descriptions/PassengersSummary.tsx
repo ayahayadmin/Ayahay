@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Skeleton, Grid, Button, notification, Badge } from 'antd';
+import { Button, Badge } from 'antd';
 import { IBookingPassenger } from '@ayahay/models';
 import { DISCOUNT_TYPE } from '@ayahay/constants/enum';
 import Table, { ColumnsType } from 'antd/es/table';
 import { useLoggedInAccount } from '@ayahay/hooks/auth';
-import { checkInPassenger } from '@ayahay/services/booking.service';
 import dayjs from 'dayjs';
 import 'dayjs/plugin/relativeTime';
 
@@ -13,7 +12,7 @@ dayjs.extend(relativeTime);
 
 interface PassengersSummaryProps {
   passengers?: IBookingPassenger[];
-  allowCheckIn: boolean;
+  onCheckInPassenger?: (bookingPassengerId: number) => Promise<void>;
 }
 
 const passengerColumnsWithoutActions: ColumnsType<PassengerInformation> = [
@@ -36,9 +35,8 @@ const passengerColumnsWithoutActions: ColumnsType<PassengerInformation> = [
 ];
 export default function PassengersSummary({
   passengers,
-  allowCheckIn,
+  onCheckInPassenger,
 }: PassengersSummaryProps) {
-  const [api, contextHolder] = notification.useNotification();
   const { loggedInAccount } = useLoggedInAccount();
   const [passengerColumns, setPassengerColumns] = useState<
     ColumnsType<PassengerInformation>
@@ -46,30 +44,6 @@ export default function PassengersSummary({
   const [passengerRows, setPassengerRows] = useState<PassengerInformation[]>(
     []
   );
-
-  const onCheckIn = async (passenger: PassengerInformation) => {
-    try {
-      await checkInPassenger(passenger.bookingId, passenger.key);
-      const updatedPassengerRows = passengerRows.map((oldPassenger) => {
-        if (oldPassenger.key === passenger.key) {
-          oldPassenger.checkInDate = new Date().toISOString();
-          return oldPassenger;
-        }
-        return oldPassenger;
-      });
-      setPassengerRows(updatedPassengerRows);
-
-      api.success({
-        message: 'Check In Success',
-        description: 'The selected passenger has checked in successfully.',
-      });
-    } catch (e) {
-      api.error({
-        message: 'Check In Failed',
-        description: 'The selected passenger has already checked in.',
-      });
-    }
-  };
 
   useEffect(() => {
     if (passengers === undefined) {
@@ -93,11 +67,7 @@ export default function PassengersSummary({
       }))
     );
 
-    if (
-      !allowCheckIn ||
-      loggedInAccount === undefined ||
-      loggedInAccount.role === 'Passenger'
-    ) {
+    if (onCheckInPassenger === undefined) {
       return;
     }
 
@@ -108,7 +78,10 @@ export default function PassengersSummary({
         render: (_, passenger) => {
           if (passenger.checkInDate === undefined) {
             return (
-              <Button type='primary' onClick={() => onCheckIn(passenger)}>
+              <Button
+                type='primary'
+                onClick={() => onCheckInPassenger(passenger.key)}
+              >
                 Check In
               </Button>
             );
@@ -124,22 +97,19 @@ export default function PassengersSummary({
   }, [loggedInAccount, passengers]);
 
   return (
-    <>
-      <Table
-        columns={passengerColumns}
-        dataSource={passengerRows}
-        pagination={false}
-        loading={passengers === undefined}
-        tableLayout='fixed'
-      ></Table>
-      {contextHolder}
-    </>
+    <Table
+      columns={passengerColumns}
+      dataSource={passengerRows}
+      pagination={false}
+      loading={passengers === undefined}
+      tableLayout='fixed'
+    ></Table>
   );
 }
 
 interface PassengerInformation {
   key: number;
-  bookingId: number;
+  bookingId: string;
   name: string;
   discountType: DISCOUNT_TYPE | 'Adult';
   cabinTypeName: string;

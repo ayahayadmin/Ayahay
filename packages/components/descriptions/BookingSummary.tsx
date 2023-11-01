@@ -8,7 +8,6 @@ import TripSummary from './TripSummary';
 import VehiclesSummary from './VehiclesSummary';
 import PaymentSummary from './PaymentSummary';
 import { PrinterOutlined } from '@ant-design/icons';
-import AyahayLogo from '/public/assets/ayahay-logo.png';
 
 const { useBreakpoint } = Grid;
 const { Title } = Typography;
@@ -17,12 +16,16 @@ interface BookingSummaryProps {
   booking?: IBooking;
   titleLevel: 1 | 2 | 3 | 4 | 5;
   hasPrivilegedAccess?: boolean;
+  onCheckInPassenger?: (bookingPassengerId: number) => Promise<void>;
+  onCheckInVehicle?: (bookingVehicleId: number) => Promise<void>;
 }
 
 export default function BookingSummary({
   booking,
   titleLevel,
   hasPrivilegedAccess,
+  onCheckInPassenger,
+  onCheckInVehicle,
 }: BookingSummaryProps) {
   const screens = useBreakpoint();
   const [isPrinting, setIsPrinting] = useState(false);
@@ -108,7 +111,7 @@ export default function BookingSummary({
             <Title level={titleLevel}>Passengers</Title>
             <PassengersSummary
               passengers={booking.bookingPassengers}
-              allowCheckIn={booking?.status === 'Success'}
+              onCheckInPassenger={onCheckInPassenger}
             />
           </section>
         )}
@@ -119,7 +122,7 @@ export default function BookingSummary({
             <Title level={titleLevel}>Vehicles</Title>
             <VehiclesSummary
               vehicles={booking.bookingVehicles}
-              allowCheckIn={booking?.status === 'Success'}
+              onCheckInVehicle={onCheckInVehicle}
             />
           </section>
         )}
@@ -166,7 +169,7 @@ export default function BookingSummary({
             <table style={{ tableLayout: 'fixed', width: '100%' }}>
               <tbody>
                 {booking.bookingPassengers.map((bookingPassenger) => (
-                  <tr>
+                  <tr key={bookingPassenger.id}>
                     <td>
                       {bookingPassenger.passenger?.firstName}&nbsp;
                       {bookingPassenger.passenger?.lastName}

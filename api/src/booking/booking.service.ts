@@ -120,19 +120,6 @@ export class BookingService {
       throw new NotFoundException();
     }
 
-    if (loggedInAccount === undefined && booking.accountId !== null) {
-      throw new ForbiddenException();
-    }
-
-    if (
-      booking.accountId !== null &&
-      loggedInAccount !== undefined &&
-      loggedInAccount.role === 'Passenger' &&
-      booking.accountId !== loggedInAccount.id
-    ) {
-      throw new ForbiddenException();
-    }
-
     return this.bookingMapper.convertBookingToSummary(booking);
   }
 
@@ -428,7 +415,7 @@ WHERE row <= ${passengerPreferences.length}
       // since these entities aren't created for temp booking,
       // we set their IDs to null for now
       id: -1,
-      bookingId: -1,
+      bookingId: '',
     };
   }
 
@@ -545,7 +532,7 @@ WHERE row <= ${passengerPreferences.length}
       for (const trip of trips) {
         bookingVehicles.push({
           id: -1,
-          bookingId: -1,
+          bookingId: '',
           vehicleId: vehicle.id,
           vehicle: vehicle,
           tripId: trip.id,

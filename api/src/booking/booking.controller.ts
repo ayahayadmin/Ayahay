@@ -73,8 +73,6 @@ export class BookingController {
   async deleteBooking(@Param('id') id: string) {}
 
   @Patch(':bookingId/passengers/:bookingPassengerId/check-in')
-  @UseGuards(AuthGuard)
-  @Roles('Staff', 'Admin', 'SuperAdmin')
   async checkInPassenger(
     @Param('bookingId') bookingId: string,
     @Param('bookingPassengerId') bookingPassengerId: number
@@ -83,8 +81,6 @@ export class BookingController {
   }
 
   @Patch(':bookingId/vehicles/:bookingVehicleId/check-in')
-  @UseGuards(AuthGuard)
-  @Roles('Staff', 'Admin', 'SuperAdmin')
   async checkInVehicle(
     @Param('bookingId') bookingId: string,
     @Param('bookingVehicleId') bookingVehicleId: number

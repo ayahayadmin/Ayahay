@@ -3,7 +3,7 @@ import axios from 'axios';
 import { BOOKING_API } from '@ayahay/constants';
 
 export async function checkInPassenger(
-  bookingId: number,
+  bookingId: string,
   bookingPassengerId: number
 ): Promise<void> {
   const authToken = await getAuth().currentUser?.getIdToken();
@@ -18,7 +18,7 @@ export async function checkInPassenger(
 }
 
 export async function checkInVehicle(
-  bookingId: number,
+  bookingId: string,
   bookingVehicleId: number
 ): Promise<void> {
   const authToken = await getAuth().currentUser?.getIdToken();
