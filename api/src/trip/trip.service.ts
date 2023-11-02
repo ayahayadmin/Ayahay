@@ -110,7 +110,7 @@ export class TripService {
     const trips = await this.prisma.$queryRaw<AvailableTrips[]>`
       ${TRIP_AVAILABLE_QUERY}
       WHERE t.available_vehicle_capacity >= ${Number(vehicleCount)}
-        AND t.departure_date >= ${departureDate}::DATE
+        AND t.departure_date > ${departureDate}::TIMESTAMP
         AND t.departure_date <= ${dateSelectedPlusAWeek.toISOString()}::DATE + 1 - interval '1 sec'
         AND t.src_port_id = ${Number(srcPortId)}
         AND t.dest_port_id = ${Number(destPortId)}

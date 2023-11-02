@@ -25,6 +25,7 @@ export class CsvService {
       'Destination',
       'Trip Date & Time',
       'Rates',
+      'Checked-in',
     ]
       .map((v) => v.replace('"', '""'))
       .map((v) => `"${v}"`)
@@ -71,6 +72,7 @@ export class CsvService {
                   bookingPassenger.trip?.destPort.name ?? '',
                   departureDate ?? '',
                   round(bookingPassenger.totalPrice, 2) ?? '',
+                  bookingPassenger.checkInDate ? 'Yes' : 'No',
                 ]
                   .map(String) // convert every value to String
                   .map((v) => v.replace('"', '""')) // escape double colons
