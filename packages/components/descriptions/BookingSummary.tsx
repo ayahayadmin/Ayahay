@@ -46,6 +46,20 @@ export default function BookingSummary({
     }
   };
 
+  const getUserAction = () => {
+    if (booking === undefined) {
+      return '';
+    }
+
+    switch (booking.status) {
+      case 'Pending':
+        return 'The QR code will be available after your payment has been processed.';
+      case 'Success':
+        return 'Show this QR code to the person in charge to verify your booking';
+    }
+    return '';
+  };
+
   const completeBookingSummary = (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
       {booking && booking.createdAtIso?.length > 0 && (
@@ -56,17 +70,15 @@ export default function BookingSummary({
           }}
         >
           <article style={{ flexGrow: '1' }}>
-            <p>
-              Show this QR code to the person in charge to verify your booking
-            </p>
+            <p>{getUserAction()}</p>
             <QRCode
               value={window.location.href}
               size={screens.sm ? 256 : 192}
               viewBox={`0 0 256 256`}
               type='svg'
+              status={booking.status === 'Success' ? 'active' : 'loading'}
             />
           </article>
-
           <article style={{ flexGrow: '1', position: 'relative' }}>
             <Descriptions
               bordered={screens.sm}
@@ -86,15 +98,17 @@ export default function BookingSummary({
                 {booking.bookingPassengers?.length}
               </Descriptions.Item>
             </Descriptions>
-            <Button
-              className='hide-on-print'
-              type='primary'
-              onClick={() => onClickPrint()}
-              style={{ position: 'absolute', bottom: 0 }}
-            >
-              <PrinterOutlined rev={undefined} />
-              Print
-            </Button>
+            {booking.status === 'Success' && (
+              <Button
+                className='hide-on-print'
+                type='primary'
+                onClick={() => onClickPrint()}
+                style={{ position: 'absolute', bottom: 0 }}
+              >
+                <PrinterOutlined rev={undefined} />
+                Print
+              </Button>
+            )}
           </article>
         </section>
       )}
@@ -168,18 +182,13 @@ export default function BookingSummary({
             <p>Pax {booking.bookingPassengers.length} NAC</p>
             <table style={{ tableLayout: 'fixed', width: '100%' }}>
               <tbody>
-                {booking.bookingPassengers.map((bookingPassenger, idx) => (
+                {booking.bookingPassengers.map((bookingPassenger) => (
                   <tr key={bookingPassenger.id}>
                     <td>
                       {bookingPassenger.passenger?.firstName}&nbsp;
                       {bookingPassenger.passenger?.lastName}
                     </td>
-                    <td>
-                      ₱
-                      {booking.paymentItems &&
-                        booking.paymentItems[idx] &&
-                        booking.paymentItems[idx].price}
-                    </td>
+                    <td>₱{bookingPassenger.totalPrice}</td>
                   </tr>
                 ))}
               </tbody>
