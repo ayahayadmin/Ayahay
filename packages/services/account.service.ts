@@ -17,7 +17,7 @@ export async function getMyAccountInformation(): Promise<IAccount | undefined> {
   }
 
   try {
-    const { data } = await axios.get(`${ACCOUNT_API}/me`, {
+    const { data } = await axios.get(`${ACCOUNT_API}/mine`, {
       headers: { Authorization: `Bearer ${authToken}` },
     });
 

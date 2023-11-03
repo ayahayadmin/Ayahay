@@ -257,24 +257,6 @@ export default function PassengerInformationForm({
                   colon={false}
                   rules={[{ required: true, message: 'Missing sex' }]}
                 />
-                {/* <EnumRadio
-                  _enum={OCCUPATION}
-                  disabled={passengers?.[index]?.id !== undefined}
-                  {...restField}
-                  name={[name, 'occupation']}
-                  label='Occupation'
-                  colon={false}
-                  rules={[{ required: true, message: 'Missing occupation' }]}
-                />
-                <EnumRadio
-                  _enum={CIVIL_STATUS}
-                  disabled={passengers?.[index]?.id !== undefined}
-                  {...restField}
-                  name={[name, 'civilStatus']}
-                  label='Civil Status'
-                  colon={false}
-                  rules={[{ required: true, message: 'Missing civil status' }]}
-                /> */}
                 <Form.Item
                   {...restField}
                   name={[name, 'birthdayIso']}
@@ -321,11 +303,17 @@ export default function PassengerInformationForm({
                     colon={false}
                   />
                 )}
-                <Button onClick={() => remove(name)}>Remove Passenger</Button>
+                <Button style={{ float: 'right' }} onClick={() => remove(name)}>
+                  Remove Passenger
+                </Button>
               </div>
             ))}
 
-            <Button type='dashed' onClick={() => add({})} block>
+            <Button
+              type='dashed'
+              onClick={() => add({ nationality: 'Filipino' })}
+              block
+            >
               Add Companion
             </Button>
             {loggedInAccount &&

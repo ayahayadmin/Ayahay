@@ -19,7 +19,7 @@ import { AllowUnverifiedPassengers } from 'src/decorator/verified.decorator';
 export class AccountController {
   constructor(private accountService: AccountService) {}
 
-  @Get('me')
+  @Get('mine')
   @Roles('Passenger', 'Staff', 'Admin', 'SuperAdmin')
   @AllowUnverifiedPassengers()
   async getMyAccountInformation(@Request() req): Promise<IAccount> {

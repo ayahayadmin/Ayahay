@@ -12,9 +12,8 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { BookingService } from './booking.service';
-import { IAccount, IBooking, IPassenger, IVehicle } from '@ayahay/models';
+import { IBooking, IPassenger, IVehicle } from '@ayahay/models';
 import { PassengerPreferences } from '@ayahay/http';
-import { BookingSearchQuery } from '@ayahay/http';
 import { AuthGuard } from 'src/guard/auth.guard';
 import { Roles } from 'src/decorator/roles.decorator';
 import { AllowUnauthenticated } from '../decorator/authenticated.decorator';
@@ -28,6 +27,21 @@ export class BookingController {
   @Roles('Staff', 'Admin')
   async getAllBookings(): Promise<IBooking[]> {
     return await this.bookingService.getAllBookings();
+  }
+
+  @Get('public')
+  async getPublicBookings(
+    @Query('ids') commaSeparatedBookingIds: string
+  ): Promise<IBooking[]> {
+    const bookingIds = commaSeparatedBookingIds.split(',');
+    return this.bookingService.getPublicBookings(bookingIds);
+  }
+
+  @Get('mine')
+  @UseGuards(AuthGuard)
+  @Roles('Passenger')
+  async getMyBookings(@Request() req): Promise<IBooking[]> {
+    return this.bookingService.getMyBookings(req.user);
   }
 
   @Get(':id')
