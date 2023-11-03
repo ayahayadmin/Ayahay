@@ -9,6 +9,7 @@ export const publicCacheKeys = <const>[
   'ships',
   'shipping-lines',
   'trips',
+  'saved-bookings',
 ];
 
 export const cacheKeys = <const>[

@@ -1,23 +1,19 @@
-import {Form, Spin, Steps, Grid, notification, Modal, Button} from 'antd';
+import { Form, Spin, Steps, Grid, notification, Modal, Button } from 'antd';
 import styles from './createBookingForm.module.scss';
-import { IAccount, IBooking, IPassenger } from '@ayahay/models';
+import { IBooking } from '@ayahay/models';
 import PassengerInformationForm from '@/components/booking/PassengerInformationForm';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import PassengerPreferencesForm from '@/components/booking/PassengerPreferencesForm';
 import {
   createTentativeBooking,
-  getBookingById,
+  saveBookingInBrowser,
 } from '@/services/booking.service';
 import BookingConfirmation from '@/components/booking/BookingConfirmation';
 import { useTripFromSearchParams } from '@/hooks/trip';
 import { startPaymentForBooking } from '@/services/payment.service';
 import { InfoCircleOutlined } from '@ant-design/icons';
 import { invalidateItem } from '@ayahay/services/cache.service';
-import { useAuth } from '@/app/contexts/AuthContext';
-import { getMyAccountInformation } from '@ayahay/services/account.service';
-import { useRouter } from 'next/navigation';
 import { useLoggedInAccount } from '@ayahay/hooks/auth';
-import { PassengerPreferences } from '@/../packages/http';
 
 const { useBreakpoint } = Grid;
 
@@ -101,6 +97,9 @@ export default function CreateBookingForm({
       return;
     }
 
+    if (loggedInAccount === undefined) {
+      saveBookingInBrowser(response.paymentReference);
+    }
     informPaymentInitiation(response.paymentReference, response.redirectUrl);
     window.open(response.redirectUrl);
 
@@ -109,7 +108,10 @@ export default function CreateBookingForm({
     invalidateItem('loggedInAccount');
   };
 
-  const informPaymentInitiation = (transactionId: string, redirectUrl: string) => {
+  const informPaymentInitiation = (
+    transactionId: string,
+    redirectUrl: string
+  ) => {
     modal.info({
       width: 'min(90vw, 512px)',
       centered: true,
@@ -129,7 +131,9 @@ export default function CreateBookingForm({
           <p>
             <strong>Booking {transactionId.toUpperCase()}</strong>
           </p>
-          <Button type='link' href={redirectUrl} target='_blank'>I was not redirected</Button>
+          <Button type='link' href={redirectUrl} target='_blank'>
+            I was not redirected
+          </Button>
         </div>
       ),
       okText: 'Book Again',
@@ -164,7 +168,7 @@ export default function CreateBookingForm({
       form={form}
       id={styles['create-booking-form']}
       initialValues={{
-        passengers: [{}],
+        passengers: [{ nationality: 'Filipino' }],
         vehicles: [],
         preferences: [],
       }}
@@ -177,20 +181,39 @@ export default function CreateBookingForm({
         labelPlacement={stepDirection}
       />
       <Spin spinning={loadingMessage?.length > 0} tip={loadingMessage}>
-        <div style={{ display: steps[currentStep].title === 'Passenger Information' ? 'block' : 'none' }}>
+        <div
+          style={{
+            display:
+              steps[currentStep].title === 'Passenger Information'
+                ? 'block'
+                : 'none',
+          }}
+        >
           <PassengerInformationForm
             loggedInAccount={loggedInAccount}
             onNextStep={findSeats}
             onPreviousStep={previousStep}
           />
         </div>
-        <div style={{ display: steps[currentStep].title === 'Passenger Preferences' ? 'block' : 'none' }}>
+        <div
+          style={{
+            display:
+              steps[currentStep].title === 'Passenger Preferences'
+                ? 'block'
+                : 'none',
+          }}
+        >
           <PassengerPreferencesForm
             onNextStep={findSeats}
             onPreviousStep={previousStep}
           />
         </div>
-        <div style={{ display: steps[currentStep].title === 'Confirm Booking' ? 'block' : 'none' }}>
+        <div
+          style={{
+            display:
+              steps[currentStep].title === 'Confirm Booking' ? 'block' : 'none',
+          }}
+        >
           <BookingConfirmation
             tentativeBooking={bookingPreview}
             onPreviousStep={previousStep}

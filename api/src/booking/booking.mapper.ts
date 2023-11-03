@@ -44,7 +44,7 @@ export class BookingMapper {
           ...passenger,
           trip: {
             ...passenger.trip,
-            departureDateIso: passenger.trip.departureDate.toISOString(),
+            departureDateIso: passenger.trip?.departureDate?.toISOString(),
           },
         };
       }),

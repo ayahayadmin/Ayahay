@@ -1,9 +1,7 @@
 import { IBooking, ITrip, mockShip, mockShippingLine } from '@ayahay/models';
 // import { generateReferenceNo } from '@ayahay/services/random.service';
 import { addTrips, getTripByReferenceNo } from '@/services/trip.service';
-import { getAuth } from 'firebase/auth';
-import axios from 'axios';
-import { CSV_API } from '@ayahay/constants';
+import { round } from 'lodash';
 
 export function processTripCsv(
   file: File,
@@ -212,15 +210,109 @@ function processBookingRow(rowValues: string[]): IBooking {
   return booking;
 }
 
-export async function generateBookingCsv(bookings: IBooking[] | any[]) {
-  const authToken = await getAuth().currentUser?.getIdToken();
-  try {
-    const { data } = await axios.post(`${CSV_API}`, bookings, {
-      headers: { Authorization: `Bearer ${authToken}` },
-    });
-    return new Blob([...data], { type: 'text/csv;charset=utf-8;' });
-  } catch (e) {
-    console.error(e);
-    return undefined;
+export async function generateBookingCsv(
+  bookings: IBooking[] | any[]
+): Promise<Blob> {
+  //there should be no any type
+  const headers = [
+    'Names',
+    'Birth Date',
+    'Age',
+    'Sex',
+    // 'Ticket No.',
+    'Nationality',
+    'Address',
+    'Discount Type',
+    'Origin',
+    'Destination',
+    'Trip Date & Time',
+    'Rates',
+    'Checked-in',
+  ]
+    .map((v) => v.replace('"', '""'))
+    .map((v) => `"${v}"`)
+    .join(',')
+    .concat('\r\n');
+
+  const content = [headers];
+  content.push(
+    bookings
+      .filter(
+        (booking) =>
+          booking.bookingPassengers && booking.bookingPassengers.length > 0
+      )
+      .map((booking) => {
+        return (
+          booking.bookingPassengers &&
+          booking.bookingPassengers
+            .map((bookingPassenger: any) => {
+              const name =
+                bookingPassenger.passenger.firstName +
+                ' ' +
+                bookingPassenger.passenger.lastName;
+              const birthDate = changeDateFormat(
+                bookingPassenger.passenger.birthday
+              );
+              const age = computeAge(bookingPassenger.passenger.birthday);
+              const departureDate = changeDateFormat(
+                bookingPassenger.trip?.departureDateIso,
+                true
+              );
+
+              return [
+                name ?? '',
+                birthDate ?? '',
+                age ?? '',
+                bookingPassenger.passenger?.sex ?? '',
+                // booking?.referenceNo ?? '',
+                bookingPassenger.passenger?.nationality ?? '',
+                bookingPassenger.passenger?.address ?? '',
+                bookingPassenger.passenger?.discountType ?? 'Adult',
+                bookingPassenger.trip?.srcPort.name ?? '',
+                bookingPassenger.trip?.destPort.name ?? '',
+                departureDate ?? '',
+                round(bookingPassenger.totalPrice, 2) ?? '',
+                bookingPassenger.checkInDate ? 'Yes' : 'No',
+              ]
+                .map(String) // convert every value to String
+                .map((v) => v.replace('"', '""')) // escape double colons
+                .map((v) => `"${v}"`) // quote it
+                .join(','); // comma-separated;
+            })
+            .join('\r\n')
+        );
+      })
+      .join('\r\n') // rows starting on new lines
+  );
+
+  return new Blob([...content], { type: 'text/csv;charset=utf-8;' });
+}
+
+function computeAge(birthday: string) {
+  var today = new Date();
+  var birthDate = new Date(birthday);
+  var age = today.getFullYear() - birthDate.getFullYear();
+  var m = today.getMonth() - birthDate.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
   }
+  return age;
+}
+
+function changeDateFormat(date: string, withTime = false) {
+  const newDate = new Date(date);
+  newDate.setHours(newDate.getHours() + 8); // to handle UTC+8
+
+  const month = newDate.getMonth() + 1;
+  const newDateFormat =
+    newDate.getFullYear() + '-' + month + '-' + newDate.getDate();
+
+  let time;
+  if (withTime) {
+    time = newDate.toLocaleTimeString(undefined, {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  }
+  return withTime ? newDateFormat + ' at ' + time : newDateFormat;
 }

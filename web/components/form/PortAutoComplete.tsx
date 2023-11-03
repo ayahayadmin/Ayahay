@@ -50,6 +50,7 @@ export default function PortAutoComplete({
         bordered={false}
         size='large'
         showArrow={false}
+        allowClear={true}
       >
         {portOptions
           .filter((port) => !(excludePortId && port.id === +excludePortId))

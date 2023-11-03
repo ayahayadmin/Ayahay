@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Booking, Prisma, PrismaClient, TempBooking } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
 import {
   IBooking,
@@ -17,7 +17,7 @@ import {
   IAccount,
   IShippingLine,
 } from '@ayahay/models';
-import { BookingSearchQuery, PassengerPreferences } from '@ayahay/http';
+import { PassengerPreferences } from '@ayahay/http';
 import { UtilityService } from '../utility.service';
 import { TripService } from '../trip/trip.service';
 import { BookingMapper } from './booking.mapper';
@@ -43,6 +43,61 @@ export class BookingService {
     private readonly passengerService: PassengerService,
     private readonly vehicleService: VehicleService
   ) {}
+
+  async getMyBookings(loggedInAccount?: IAccount): Promise<IBooking[]> {
+    if (loggedInAccount === undefined) {
+      return [];
+    }
+
+    const myBookingEntities = await this.prisma.booking.findMany({
+      where: {
+        accountId: loggedInAccount.id,
+      },
+      include: {
+        passengers: {
+          include: {
+            trip: {
+              include: {
+                srcPort: true,
+                destPort: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return myBookingEntities.map((bookingEntity) =>
+      this.bookingMapper.convertBookingToBasicDto(bookingEntity)
+    );
+  }
+
+  async getPublicBookings(bookingIds: string[]): Promise<IBooking[]> {
+    const publicBookingEntities = await this.prisma.booking.findMany({
+      where: {
+        accountId: null,
+        id: {
+          in: bookingIds,
+        },
+      },
+      include: {
+        passengers: {
+          include: {
+            trip: {
+              include: {
+                srcPort: true,
+                destPort: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return publicBookingEntities.map((bookingEntity) =>
+      this.bookingMapper.convertBookingToBasicDto(bookingEntity)
+    );
+  }
 
   async getAllBookings(): Promise<IBooking[]> {
     // TO DO: might use SQL query to get paymentItems for particular bookingPassengers and bookingVehicles
@@ -496,6 +551,7 @@ WHERE row <= ${passengerPreferences.length}
     switch (passenger.discountType) {
       case 'Infant':
       case 'Driver':
+      case 'Passes':
         return 0;
       case 'Student':
         return cabinFeeWithVat - cabinFeeWithVat * 0.2;
@@ -641,7 +697,8 @@ WHERE row <= ${passengerPreferences.length}
   private isPayingPassenger(passenger: IPassenger) {
     return !(
       passenger?.discountType === 'Infant' ||
-      passenger?.discountType === 'Driver'
+      passenger?.discountType === 'Driver' ||
+      passenger?.discountType === 'Passes'
     );
   }
 
