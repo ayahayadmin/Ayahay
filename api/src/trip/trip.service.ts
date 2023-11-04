@@ -167,10 +167,8 @@ export class TripService {
 
     const trips = await this.prisma.$queryRaw<AvailableTrips[]>`
       ${TRIP_AVAILABLE_QUERY}
-      WHERE t.departure_date >= ${startDate}::DATE
-      AND t.departure_date <= ${new Date(
-        endDate
-      ).toISOString()}::DATE + 1 - interval '1 sec'
+      WHERE t.departure_date > ${startDate}::TIMESTAMP
+      AND t.departure_date <= ${endDate}::TIMESTAMP
  	    GROUP BY t.id
       ORDER BY t.departure_date ASC
     `;

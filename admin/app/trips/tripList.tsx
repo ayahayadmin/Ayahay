@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { ITrip } from '@ayahay/models/trip.model';
-import { split } from 'lodash';
-import { getTime } from '@/services/search.service';
 import { Button, DatePicker, Dropdown, MenuProps, Skeleton } from 'antd';
 import { useRouter } from 'next/navigation';
 import { IShippingLine } from '@ayahay/models/shipping-line.model';
@@ -15,6 +13,11 @@ import { PlusCircleOutlined } from '@ant-design/icons';
 import { useLoggedInAccount } from '@ayahay/hooks/auth';
 import Table, { ColumnsType } from 'antd/es/table';
 import CabinAndVehicleEditCapacity from '@/components/form/CabinAndVehicleEditCapacity';
+import {
+  getFullDate,
+  getLocaleTimeString,
+} from '@ayahay/services/date.service';
+import { DATE_FORMAT_LIST, DATE_PLACEHOLDER } from '@ayahay/constants';
 
 const { RangePicker } = DatePicker;
 dayjs.extend(isSameOrBefore);
@@ -54,15 +57,15 @@ const columns: ColumnsType<ITrip> = [
   },
   {
     title: 'Departure Date',
-    key: 'departureDate',
+    key: 'departureDateIso',
     dataIndex: 'departureDateIso',
-    render: (text: string) => <span>{split(text, 'T')[0]}</span>,
-  },
-  {
-    title: 'Departure Time',
-    key: 'departureTime',
-    dataIndex: 'departureDateIso',
-    render: (text: string) => <span>{getTime(text)}</span>,
+    render: (departureDate: string) => (
+      <div>
+        <span>{getFullDate(departureDate)}</span>
+        <br></br>
+        <span>{getLocaleTimeString(departureDate)}</span>
+      </div>
+    ),
   },
   {
     title: 'Capacities',
@@ -123,7 +126,9 @@ export default function TripList() {
           defaultValue={[startDate, endDate]}
           disabledDate={disabledDate}
           onChange={onChange}
-          style={{ float: 'left' }}
+          style={{ float: 'left', minWidth: '20%', margin: '10px 0px' }}
+          format={DATE_FORMAT_LIST}
+          placeholder={[DATE_PLACEHOLDER, DATE_PLACEHOLDER]}
         />
 
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>

@@ -21,9 +21,18 @@ import { useLoggedInAccount } from '@ayahay/hooks/auth';
 import Table, { ColumnsType } from 'antd/es/table';
 import { getTripInformation } from '@/services/search.service';
 import { TripRatesModal } from '@/components/modal/TripRatesModal';
-import { BarChartOutlined, StockOutlined } from '@ant-design/icons';
+import {
+  ArrowRightOutlined,
+  BarChartOutlined,
+  StockOutlined,
+} from '@ant-design/icons';
 import { DashboardTrips } from '@ayahay/http';
 import { buildPaxAndVehicleBookedData } from '@/services/dashboard.service';
+import { DATE_FORMAT_LIST, DATE_PLACEHOLDER } from '@ayahay/constants';
+import {
+  getFullDate,
+  getLocaleTimeString,
+} from '@ayahay/services/date.service';
 
 const { Title } = Typography;
 const { RangePicker } = DatePicker;
@@ -39,89 +48,40 @@ const rangePresets: TimeRangePickerProps['presets'] = [
 
 const columns: ColumnsType<DashboardTrips> = [
   {
-    title: 'Origin',
-    key: 'srcPort',
+    title: 'Route',
+    key: 'srcDestPort',
     render: (text: string, record: DashboardTrips) => (
-      <span>{record.srcPort!.name}</span>
+      <span>
+        {record.srcPort!.name} <ArrowRightOutlined rev={undefined} />
+        &nbsp;
+        {record.destPort!.name}
+      </span>
     ),
-  },
-  {
-    title: 'Destination',
-    key: 'destPort',
-    render: (text: string, record: DashboardTrips) => (
-      <span>{record.destPort!.name}</span>
-    ),
+    align: 'center',
   },
   {
     title: 'Departure Date',
     key: 'departureDateIso',
     dataIndex: 'departureDateIso',
-    render: (text: string) => <span>{dayjs(text).format('MMMM D, YYYY')}</span>,
-  },
-  {
-    title: 'Vessel',
-    key: 'shipName',
-    render: (text: string, record: DashboardTrips) => (
-      <span>{record.ship?.name}</span>
+    render: (departureDate: string) => (
+      <div>
+        <span>{getFullDate(departureDate)}</span>
+        <br></br>
+        <span>{getLocaleTimeString(departureDate)}</span>
+      </div>
     ),
+    align: 'center',
   },
   {
-    title: 'Pax Capacity',
-    key: 'passengerCapacities',
-    dataIndex: 'passengerCapacities',
-  },
-  {
-    title: 'Vehicle Capacity',
-    key: 'vehicleCapacity',
-    dataIndex: 'vehicleCapacity',
-  },
-  {
-    title: 'Pax Booked',
-    key: 'passengerBooked',
+    title: 'Pax Onboarded',
+    key: 'paxOnboardedOverBooked',
     render: (text: string, record: DashboardTrips) => (
-      <span>{record.passengerCapacities - record.availableCapacities}</span>
+      <div>
+        <span>{record.checkedInPassengerCount ?? 0}</span>/
+        <span>{record.passengerCapacities - record.availableCapacities}</span>
+      </div>
     ),
-  },
-  {
-    title: 'Vehicle Booked',
-    key: 'vehicleBooked',
-    render: (text: string, record: DashboardTrips) => (
-      <span>{record.vehicleCapacity - record.availableVehicleCapacity}</span>
-    ),
-  },
-  {
-    title: 'Onboarded Pax',
-    key: 'checkedInPax',
-    render: (text: string, record: DashboardTrips) => (
-      <span>{record.checkedInPassengerCount ?? 0}</span>
-    ),
-  },
-  {
-    title: 'Onboarded Vehicle',
-    key: 'checkedInVehicle',
-    render: (text: string, record: DashboardTrips) => (
-      <span>{record.checkedInVehicleCount ?? 0}</span>
-    ),
-  },
-  {
-    title: 'Rate',
-    key: 'fare',
-    render: (text: string, record: DashboardTrips) => (
-      <Popover
-        title={<Title level={2}>Rates</Title>}
-        content={
-          <TripRatesModal
-            passengerRates={record.passengerRates}
-            vehicleRates={record.vehicleRates}
-          />
-        }
-        trigger='click'
-      >
-        <Button type='text'>
-          <StockOutlined rev={undefined} />
-        </Button>
-      </Popover>
-    ),
+    align: 'center',
   },
 ];
 const PAGE_SIZE = 10;
@@ -148,10 +108,10 @@ export default function Dashboard() {
     ) {
       return;
     }
-    const tripInfo = await getTripInformation({
-      startDate,
-      endDate,
-    });
+    const tripInfo = await getTripInformation(
+      startDate.toISOString(),
+      endDate.toISOString()
+    );
     setTripInfo(tripInfo);
     setLoading(false);
   };
@@ -187,7 +147,9 @@ export default function Dashboard() {
           presets={rangePresets}
           disabledDate={disabledDate}
           onChange={onChange}
-          style={{ margin: '10px 0px' }}
+          format={DATE_FORMAT_LIST}
+          placeholder={[DATE_PLACEHOLDER, DATE_PLACEHOLDER]}
+          className={styles['range-picker']}
         />
         <Skeleton
           loading={loading}
