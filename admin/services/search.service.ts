@@ -47,7 +47,8 @@ export function getTime(date: string) {
 
 // Get Trip Information is for the Admin Dashboard
 export async function getTripInformation(
-  query: any
+  startDate: string,
+  endDate: string
 ): Promise<DashboardTrips[] | undefined> {
   const authToken = await getAuth().currentUser?.getIdToken();
 
@@ -58,22 +59,12 @@ export async function getTripInformation(
     return;
   }
 
-  const startDateSelected = new Date(query.startDate);
-  const endDateSelected = new Date(query.endDate);
-  const startDateOffset =
-    startDateSelected.getTime() - startDateSelected.getTimezoneOffset() * 60000; //to resolve one day off
-  const endDateOffset =
-    endDateSelected.getTime() - endDateSelected.getTimezoneOffset() * 60000; //to resolve one day off
-
-  query = {
-    ...query,
-    startDate: new Date(startDateOffset).toISOString(),
-    endDate: new Date(endDateOffset).toISOString(),
-  };
-
   return await axios
     .get(`${SEARCH_API}/trip-table`, {
-      params: { ...query },
+      params: {
+        startDate,
+        endDate,
+      },
       headers: { Authorization: `Bearer ${authToken}` },
     })
     .then((res) => {

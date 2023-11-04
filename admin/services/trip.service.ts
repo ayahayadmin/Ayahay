@@ -37,13 +37,9 @@ export async function getTrip(tripId: number): Promise<ITrip> {
 }
 
 export async function getTripsByDateRange(startDate: string, endDate: string) {
-  const dateSelected = new Date(startDate);
-  const startDateOffset =
-    dateSelected.getTime() - dateSelected.getTimezoneOffset() * 60000; //to resolve one day off
-
   const result: ITrip[] = await axios
     .get(`${TRIP_API}/to-edit`, {
-      params: { startDate: new Date(startDateOffset).toISOString(), endDate },
+      params: { startDate, endDate },
     })
     .then((res) => {
       return Promise.all(

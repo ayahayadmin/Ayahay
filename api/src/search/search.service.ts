@@ -104,8 +104,8 @@ export class SearchService {
           vehicle_capacity AS "vehicleCapacity"
         FROM ayahay.trip
         WHERE
-          departure_date >= ${startDate}::DATE
-          AND departure_date <= ${endDate}::DATE + 1 - interval '1 sec'
+          departure_date > ${startDate}::TIMESTAMP
+          AND departure_date <= ${endDate}::TIMESTAMP
       ), checked_in_passenger_count_per_trip AS (
         SELECT 
           trip_id,
