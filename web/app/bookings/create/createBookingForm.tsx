@@ -168,7 +168,7 @@ export default function CreateBookingForm({
       form={form}
       id={styles['create-booking-form']}
       initialValues={{
-        passengers: [{ nationality: 'Filipino' }],
+        passengers: [{ nationality: 'Filipino', discountType: undefined }],
         vehicles: [],
         preferences: [],
       }}
