@@ -4,19 +4,26 @@ import React from 'react';
 interface EnumProps {
   _enum: any;
   disabled?: boolean;
+  nullChoiceLabel?: string;
 }
 
 export default function EnumRadio({
   _enum,
   disabled,
+  nullChoiceLabel,
   ...formItemProps
 }: EnumProps & FormItemProps) {
   return (
     <Form.Item {...formItemProps}>
       <Radio.Group disabled={disabled}>
+        {nullChoiceLabel && (
+          <Radio value={undefined} key={-1}>
+            {nullChoiceLabel}
+          </Radio>
+        )}
         {Object.keys(_enum).map((enumKey) => (
-          <Radio value={enumKey} key={enumKey}>
-            {_enum[enumKey]}
+          <Radio value={_enum[enumKey]} key={enumKey}>
+            {enumKey}
           </Radio>
         ))}
       </Radio.Group>

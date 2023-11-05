@@ -556,7 +556,7 @@ WHERE row <= ${passengerPreferences.length}
       case 'Student':
         return cabinFeeWithVat - cabinFeeWithVat * 0.2;
       case 'Senior':
-      case 'Pwd':
+      case 'PWD':
         const cabinFeeWithoutVat = cabinFeeWithVat / 1.12;
         const vatAmount = cabinFeeWithoutVat * 0.12;
         return cabinFeeWithVat - cabinFeeWithoutVat * 0.2 - vatAmount;

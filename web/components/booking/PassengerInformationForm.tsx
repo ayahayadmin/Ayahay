@@ -4,32 +4,22 @@ import {
   Divider,
   Form,
   Input,
+  InputNumber,
   Select,
   Typography,
 } from 'antd';
 import React, { useEffect, useState } from 'react';
-import {
-  CIVIL_STATUS,
-  DISCOUNT_TYPE,
-  OCCUPATION,
-  SEX,
-} from '@ayahay/constants/enum';
-import {
-  IAccount,
-  IPassenger,
-  IVehicle,
-  IVehicleType,
-  mockFather,
-  mockVehicleTypes,
-} from '@ayahay/models';
+import { DISCOUNT_TYPE, SEX } from '@ayahay/constants/enum';
+import { IAccount, IPassenger, IVehicle, IVehicleType } from '@ayahay/models';
 import EnumRadio from '@/components/form/EnumRadio';
 import AddCompanionsModal from '@/components/booking/AddCompanionsModal';
-import EnumSelect from '@/components/form/EnumSelect';
 import AddVehiclesModal from '@/components/booking/AddVehiclesModal';
 import { toPassengerFormValue } from '@ayahay/services/form.service';
-import { getMyAccountInformation } from '@ayahay/services/account.service';
-import { useAuth } from '@/app/contexts/AuthContext';
 import { getVehicleTypes } from '@/services/vehicle-type.service';
+import { DATE_FORMAT_LIST, DATE_PLACEHOLDER } from '@ayahay/constants';
+import { computeAge, computeBirthday } from '@ayahay/services/date.service';
+import dayjs from 'dayjs';
+import { RangePickerProps } from 'antd/es/date-picker';
 
 const { Title } = Typography;
 
@@ -165,8 +155,10 @@ export default function PassengerInformationForm({
       'sex',
       // 'civilStatus',
       'birthdayIso',
+      'age',
       'address',
       'nationality',
+      'discountType',
     ];
 
     try {
@@ -194,16 +186,9 @@ export default function PassengerInformationForm({
     accountBtn?.click();
   };
 
-  const dateFormatList = [
-    'YYYY/MM/DD',
-    'YYYY/M/D',
-    'YYYY/MM/D',
-    'YYYY/M/DD',
-    'YYYY-MM-DD',
-    'YYYY-M-D',
-    'YYYY-MM-D',
-    'YYYY-M-DD',
-  ];
+  const disabledDate: RangePickerProps['disabledDate'] = (current) => {
+    return current > dayjs().endOf('day');
+  };
 
   return (
     <>
@@ -262,12 +247,73 @@ export default function PassengerInformationForm({
                   name={[name, 'birthdayIso']}
                   label='Date of Birth'
                   colon={false}
-                  rules={[{ required: true, message: 'Missing date of birth' }]}
+                  rules={[
+                    ({ setFields, setFieldValue }) => ({
+                      async validator(_, value) {
+                        if (value) {
+                          const age = computeAge(value);
+                          setFieldValue(['passengers', name, 'age'], age);
+                          setFields([
+                            { name: ['passengers', name, 'age'], errors: [] },
+                          ]);
+                          return Promise.resolve();
+                        }
+
+                        return Promise.reject(
+                          new Error('Missing date of birth')
+                        );
+                      },
+                    }),
+                  ]}
                 >
                   <DatePicker
                     disabled={passengers?.[index]?.id !== undefined}
-                    format={dateFormatList}
-                    placeholder='YYYY/MM/DD'
+                    format={DATE_FORMAT_LIST}
+                    placeholder={DATE_PLACEHOLDER}
+                    style={{ minWidth: '20%' }}
+                    disabledDate={disabledDate}
+                  />
+                </Form.Item>
+                <Form.Item
+                  {...restField}
+                  name={[name, 'age']}
+                  label='Age'
+                  colon={false}
+                  rules={[
+                    ({ getFieldValue, setFields, setFieldValue }) => ({
+                      validator(_, value) {
+                        if (value !== undefined) {
+                          const inputtedBirthday = getFieldValue([
+                            'passengers',
+                            name,
+                            'birthdayIso',
+                          ]);
+                          const birthday = computeBirthday(
+                            value,
+                            inputtedBirthday
+                          );
+                          setFieldValue(
+                            ['passengers', name, 'birthdayIso'],
+                            dayjs(birthday)
+                          );
+                          setFields([
+                            {
+                              name: ['passengers', name, 'birthdayIso'],
+                              errors: [],
+                            },
+                          ]);
+                          return Promise.resolve();
+                        }
+
+                        return Promise.reject(new Error('Missing age'));
+                      },
+                    }),
+                  ]}
+                >
+                  <InputNumber
+                    disabled={passengers?.[index]?.id !== undefined}
+                    min={0}
+                    placeholder='Age'
                   />
                 </Form.Item>
                 <Form.Item
@@ -297,13 +343,18 @@ export default function PassengerInformationForm({
                 {loggedInAccount && loggedInAccount.role !== 'Passenger' && (
                   <EnumRadio
                     _enum={DISCOUNT_TYPE}
+                    nullChoiceLabel={'Adult'}
                     {...restField}
                     name={[name, 'discountType']}
                     label='Discount Type'
                     colon={false}
                   />
                 )}
-                <Button style={{ float: 'right' }} onClick={() => remove(name)}>
+                <Button
+                  danger
+                  style={{ float: 'right' }}
+                  onClick={() => remove(name)}
+                >
                   Remove Passenger
                 </Button>
               </div>
@@ -311,7 +362,9 @@ export default function PassengerInformationForm({
 
             <Button
               type='dashed'
-              onClick={() => add({ nationality: 'Filipino' })}
+              onClick={() =>
+                add({ nationality: 'Filipino', discountType: undefined })
+              }
               block
             >
               Add Companion
@@ -437,7 +490,13 @@ export default function PassengerInformationForm({
                     placeholder='Official Receipt URL'
                   />
                 </Form.Item>
-                <Button onClick={() => remove(name)}>Remove Vehicle</Button>
+                <Button
+                  danger
+                  style={{ float: 'right' }}
+                  onClick={() => remove(name)}
+                >
+                  Remove Vehicle
+                </Button>
               </div>
             ))}
 

@@ -33,7 +33,7 @@ export enum ACCOUNT_ROLE {
 export enum DISCOUNT_TYPE {
   Student = 'Student',
   Senior = 'Senior',
-  Pwd = 'PWD',
+  PWD = 'PWD',
   Child = 'Child',
   Infant = 'Infant',
   Driver = 'Driver',
