@@ -12,10 +12,10 @@ import TripList from './tripList';
 import { redirect, useSearchParams } from 'next/navigation';
 import { useAuthState } from '@/hooks/auth';
 import styles from './page.module.scss';
-import { useLoggedInAccount } from '@ayahay/hooks/auth';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function Schedules() {
-  const { loggedInAccount } = useLoggedInAccount();
+  const { loggedInAccount } = useAuth();
   const { pending, isSignedIn, user, auth } = useAuthState();
   const searchParams = useSearchParams();
   const [form] = Form.useForm();

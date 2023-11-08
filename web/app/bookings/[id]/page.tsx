@@ -6,18 +6,18 @@ import { getBookingById } from '@/services/booking.service';
 import { hasPrivilegedAccess as _hasPrivilegedAccess } from '@ayahay/services/account.service';
 import { IBooking } from '@ayahay/models/booking.model';
 import { notification, Typography } from 'antd';
-import { useLoggedInAccount } from '@ayahay/hooks/auth';
 import {
   checkInPassenger,
   checkInVehicle,
 } from '@ayahay/services/booking.service';
 import { getAxiosError } from '@ayahay/services/error.service';
+import { useAuth } from '@/app/contexts/AuthContext';
 
 const { Title } = Typography;
 
 export default function GetBooking({ params }) {
   const [api, contextHolder] = notification.useNotification();
-  const { loggedInAccount } = useLoggedInAccount();
+  const { loggedInAccount } = useAuth();
   const [booking, setBooking] = useState<IBooking | undefined>();
   const [hasPrivilegedAccess, setHasPrivilegedAccess] = useState(false);
 
@@ -28,6 +28,9 @@ export default function GetBooking({ params }) {
   };
 
   useEffect(() => {
+    if (loggedInAccount === null) {
+      return;
+    }
     loadBooking();
     setHasPrivilegedAccess(_hasPrivilegedAccess(loggedInAccount));
   }, [loggedInAccount]);

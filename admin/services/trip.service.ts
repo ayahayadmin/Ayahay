@@ -4,13 +4,13 @@ import {
   CreateTripsFromSchedulesRequest,
   UpdateTripCapacityRequest,
 } from '@ayahay/http';
-import { getAuth } from 'firebase/auth';
 import axios from 'axios';
 import { cacheItem, fetchItem } from '@ayahay/services/cache.service';
 import dayjs from 'dayjs';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import { mapTripResponseData } from '@ayahay/services/trip.service';
+import { firebase } from '@/app/utils/initFirebase';
 
 dayjs.extend(isSameOrBefore);
 dayjs.extend(isSameOrAfter);
@@ -69,7 +69,7 @@ export async function getTripByReferenceNo(
 export async function createTripsFromSchedules(
   request: CreateTripsFromSchedulesRequest
 ): Promise<any | undefined> {
-  const authToken = await getAuth().currentUser?.getIdToken();
+  const authToken = await firebase.currentUser?.getIdToken();
 
   try {
     await axios.post<IShippingLineSchedule[]>(
@@ -88,7 +88,7 @@ export async function updateTripCabinCapacity(
   tripId: number,
   request: UpdateTripCapacityRequest
 ) {
-  const authToken = await getAuth().currentUser?.getIdToken();
+  const authToken = await firebase.currentUser?.getIdToken();
 
   try {
     await axios.patch(`${TRIP_API}/${tripId}/capacity`, request, {

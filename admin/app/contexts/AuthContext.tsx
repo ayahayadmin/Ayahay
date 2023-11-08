@@ -1,19 +1,21 @@
 import {
-  getAuth,
+  User,
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signOut,
 } from 'firebase/auth';
-import { createContext, useContext } from 'react';
-import { initFirebase } from '../utils/initFirebase';
-import { useAuthState } from 'react-firebase-hooks/auth';
+import { createContext, useContext, useEffect, useState } from 'react';
+import { firebase } from '../utils/initFirebase';
+import { useIdToken } from 'react-firebase-hooks/auth';
 import { accountRelatedCacheKeys } from '@ayahay/constants';
 import { invalidateItem } from '@ayahay/services/cache.service';
+import { IAccount } from '@ayahay/models';
+import { getAccountInformation } from '@ayahay/services/account.service';
 
-initFirebase();
-export const auth = getAuth();
 const AuthContext = createContext({
-  currentUser: null,
+  currentUser: null as User | undefined | null,
+  // loggedInAccount is null if it's loading
+  loggedInAccount: null as IAccount | undefined | null,
   signIn: (email: string, password: string) => Promise,
   logout: () => Promise,
   resetPassword: (email: string) => Promise,
@@ -22,10 +24,29 @@ const AuthContext = createContext({
 export const useAuth = () => useContext(AuthContext);
 
 export default function AuthContextProvider({ children }: any) {
-  const [currentUser, loading] = useAuthState(auth);
+  const [currentUser, loading] = useIdToken(firebase);
+  const [loggedInAccount, setLoggedInAccount] = useState<
+    IAccount | undefined | null
+  >(null);
+
+  useEffect(() => {
+    if (loading) {
+      return;
+    }
+    fetchAccountInformation();
+  }, [currentUser, loading]);
+
+  const fetchAccountInformation = async () => {
+    if (currentUser) {
+      // force refresh so that user claims (with role) is always updated on login
+      await currentUser.getIdToken(true);
+    }
+    const myAccountInformation = await getAccountInformation(currentUser);
+    setLoggedInAccount(myAccountInformation);
+  };
 
   function signIn(email: string, password: string): Promise<string> {
-    return signInWithEmailAndPassword(auth, email, password)
+    return signInWithEmailAndPassword(firebase, email, password)
       .then((userCredential) => {
         // Signed in
         const user = userCredential.user;
@@ -38,7 +59,7 @@ export default function AuthContextProvider({ children }: any) {
   }
 
   function resetPassword(email: string) {
-    return sendPasswordResetEmail(auth, email, {
+    return sendPasswordResetEmail(firebase, email, {
       url: process.env.NEXT_PUBLIC_ADMIN_URL ?? 'https://www.admin.ayahay.com',
     })
       .then((res) => {
@@ -52,7 +73,7 @@ export default function AuthContextProvider({ children }: any) {
   }
 
   function logout() {
-    return signOut(auth)
+    return signOut(firebase)
       .then(() => {
         // Sign-out successful.
         for (const accountRelatedCacheKey of accountRelatedCacheKeys) {
@@ -66,6 +87,7 @@ export default function AuthContextProvider({ children }: any) {
 
   const value = {
     currentUser,
+    loggedInAccount,
     signIn,
     logout,
     resetPassword,

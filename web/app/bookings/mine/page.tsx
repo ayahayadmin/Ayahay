@@ -4,11 +4,11 @@ import {
   getMyBookings,
   getSavedBookingsInBrowser,
 } from '@/services/booking.service';
-import { useLoggedInAccount } from '@ayahay/hooks/auth';
 import { IBooking } from '@ayahay/models';
-import { Button, Typography } from 'antd';
+import { Button, Pagination, Typography } from 'antd';
 import Table, { ColumnsType } from 'antd/es/table';
 import { useEffect, useState } from 'react';
+import { useAuth } from '@/app/contexts/AuthContext';
 
 const { Title } = Typography;
 
@@ -62,13 +62,26 @@ const bookingColumns: ColumnsType<IBooking> = [
 ];
 
 export default function MyBookings() {
-  const { loggedInAccount } = useLoggedInAccount();
+  const { loggedInAccount } = useAuth();
   const [myBookings, setMyBookings] = useState<IBooking[] | undefined>();
+  const [myBookingsTotal, setMyBookingsTotal] = useState<number>(0);
   const [savedBookings, setSavedBookings] = useState<IBooking[] | undefined>();
 
-  const loadMyBookings = async () => {
-    const _myBookings = await getMyBookings();
-    setMyBookings(_myBookings);
+  const resetMyBookingsTable = () => {
+    setMyBookings([]);
+    setMyBookingsTotal(0);
+  };
+
+  const loadMyBookings = async (page: number) => {
+    const myBookingsPaginated = await getMyBookings({ page });
+
+    if (myBookingsPaginated === undefined) {
+      resetMyBookingsTable();
+      return;
+    }
+
+    setMyBookings(myBookingsPaginated.data);
+    setMyBookingsTotal(myBookingsPaginated.total);
   };
 
   const loadSavedBookings = async () => {
@@ -76,15 +89,22 @@ export default function MyBookings() {
     setSavedBookings(savedBookingsInBrowser);
   };
 
+  const onPageChange = async (page: number, _: number) => {
+    loadMyBookings(page);
+  };
+
   useEffect(() => {
     loadSavedBookings();
   }, []);
 
   useEffect(() => {
-    if (loggedInAccount === undefined) {
+    if (loggedInAccount === null) {
       return;
+    } else if (loggedInAccount === undefined) {
+      resetMyBookingsTable();
+    } else {
+      loadMyBookings(1);
     }
-    loadMyBookings();
   }, [loggedInAccount]);
 
   return (
@@ -98,6 +118,11 @@ export default function MyBookings() {
           loading={myBookings === undefined}
           tableLayout='fixed'
           rowKey={(booking) => booking.id}
+        />
+        <Pagination
+          onChange={onPageChange}
+          total={myBookingsTotal}
+          pageSize={10}
         />
       </section>
       <section>

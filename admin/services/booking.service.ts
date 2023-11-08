@@ -1,9 +1,9 @@
+import { firebase } from '@/app/utils/initFirebase';
 import { BOOKING_API } from '@ayahay/constants';
 import axios from 'axios';
-import { getAuth } from 'firebase/auth';
 
 export async function getAllBookings() {
-  const authToken = await getAuth().currentUser?.getIdToken();
+  const authToken = await firebase.currentUser?.getIdToken();
   try {
     const { data } = await axios.get(`${BOOKING_API}`, {
       headers: { Authorization: `Bearer ${authToken}` },

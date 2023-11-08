@@ -17,7 +17,6 @@ import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import styles from './page.module.scss';
 import { useAuthState } from '@/hooks/auth';
 import { redirect } from 'next/navigation';
-import { useLoggedInAccount } from '@ayahay/hooks/auth';
 import Table, { ColumnsType } from 'antd/es/table';
 import { getTripInformation } from '@/services/search.service';
 import { TripRatesModal } from '@/components/modal/TripRatesModal';
@@ -28,6 +27,7 @@ import {
 } from '@ant-design/icons';
 import { DashboardTrips } from '@ayahay/http';
 import { buildPaxAndVehicleBookedData } from '@/services/dashboard.service';
+import { useAuth } from '../contexts/AuthContext';
 import { DATE_FORMAT_LIST, DATE_PLACEHOLDER } from '@ayahay/constants';
 import {
   getFullDate,
@@ -87,7 +87,7 @@ const columns: ColumnsType<DashboardTrips> = [
 const PAGE_SIZE = 10;
 
 export default function Dashboard() {
-  const { loggedInAccount } = useLoggedInAccount();
+  const { loggedInAccount } = useAuth();
   const { pending, isSignedIn, user, auth } = useAuthState();
   const dateToday = dayjs();
   const [startDate, setStartDate] = useState(dateToday.startOf('day') as Dayjs);

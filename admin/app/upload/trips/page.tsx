@@ -7,14 +7,14 @@ import { processTripCsv } from '@/services/csv.service';
 import { ITrip } from '@ayahay/models';
 import { addTrips } from '@/services/trip.service';
 import { useAuthState } from '@/hooks/auth';
-import { useLoggedInAccount } from '@ayahay/hooks/auth';
 import { redirect } from 'next/navigation';
+import { useAuth } from '@/app/contexts/AuthContext';
 
 const { Title } = Typography;
 const { Dragger } = Upload;
 
 export default function UploadTrips() {
-  const { loggedInAccount } = useLoggedInAccount();
+  const { loggedInAccount } = useAuth();
   const { pending, isSignedIn, user, auth } = useAuthState();
 
   if (pending) {

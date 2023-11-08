@@ -125,6 +125,7 @@ export default function BookingSummary({
             <Title level={titleLevel}>Passengers</Title>
             <PassengersSummary
               passengers={booking.bookingPassengers}
+              hasPrivilegedAccess={hasPrivilegedAccess}
               onCheckInPassenger={onCheckInPassenger}
             />
           </section>
@@ -136,6 +137,7 @@ export default function BookingSummary({
             <Title level={titleLevel}>Vehicles</Title>
             <VehiclesSummary
               vehicles={booking.bookingVehicles}
+              hasPrivilegedAccess={hasPrivilegedAccess}
               onCheckInVehicle={onCheckInVehicle}
             />
           </section>

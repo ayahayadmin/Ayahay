@@ -52,7 +52,6 @@ export default function BookingList({ params }: any) {
   const [queryFilter, setQueryFilter] = useState([]);
 
   const onFinish = (values: any) => {
-    console.log('Received values of form: ', values);
     if (isEmpty(values.queries)) {
       setPassengersData(allPassengersData);
       return;

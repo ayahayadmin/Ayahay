@@ -6,8 +6,8 @@ import { getAllBookings } from '@/services/booking.service';
 import { generateBookingCsv } from '@/services/csv.service';
 import { useAuthState } from '@/hooks/auth';
 import { redirect } from 'next/navigation';
-import { useLoggedInAccount } from '@ayahay/hooks/auth';
 import { IBooking } from '@ayahay/models';
+import { useAuth } from '@/app/contexts/AuthContext';
 
 const { Title } = Typography;
 
@@ -23,7 +23,7 @@ for (let monthDiff = 0; monthDiff < 3; monthDiff++) {
 }
 
 export default function DownloadBookings() {
-  const { loggedInAccount } = useLoggedInAccount();
+  const { loggedInAccount } = useAuth();
   const { pending, isSignedIn, user, auth } = useAuthState();
 
   if (pending) {

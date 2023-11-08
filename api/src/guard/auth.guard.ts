@@ -51,37 +51,11 @@ export class AuthGuard implements CanActivate {
     return admin
       .auth()
       .verifyIdToken(token)
-      .then((decodedToken) => {
-        return decodedToken;
-      })
+      .then((decodedToken) => decodedToken)
       .catch((error) => {
         this.logger.error(`Decrypt token failed: ${error}`);
         throw new Error(error);
       });
-  }
-
-  private async getAccount(uid: string): Promise<IAccount> {
-    return (await this.prisma.account.findUnique({
-      where: {
-        id: uid,
-      },
-    })) as IAccount;
-  }
-
-  private async createAccount(uid: string, email: string) {
-    const requestBody = {
-      id: uid,
-      email,
-      role: 'Passenger',
-    };
-
-    try {
-      return (await this.prisma.account.create({
-        data: requestBody,
-      })) as IAccount;
-    } catch {
-      throw new InternalServerErrorException();
-    }
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -101,16 +75,19 @@ export class AuthGuard implements CanActivate {
     let isEmailVerified = false;
     let email = '';
     let uid = '';
+    let role = '';
 
     try {
       const {
         email: _email,
         uid: _uid,
         email_verified,
+        role: _role,
       } = await this.decryptToken(token);
       email = _email;
       uid = _uid;
       isEmailVerified = email_verified;
+      role = _role;
     } catch (e: any) {
       if (shouldBeAuthenticated === false) {
         return true;
@@ -118,13 +95,12 @@ export class AuthGuard implements CanActivate {
       throw new UnauthorizedException();
     }
 
-    let account = await this.getAccount(uid);
-
-    if (!account) {
-      account = await this.createAccount(uid, email);
-    }
-
-    request['user'] = account;
+    request['user'] = {
+      id: uid,
+      role,
+      email,
+      token,
+    };
 
     if (shouldBeAuthenticated === false) {
       return true;
@@ -135,7 +111,7 @@ export class AuthGuard implements CanActivate {
       [context.getHandler(), context.getClass()]
     );
 
-    if (requiredRoles && !includes(requiredRoles, account.role)) {
+    if (requiredRoles && !includes(requiredRoles, role)) {
       throw new ForbiddenException('Insufficient access');
     }
 
@@ -143,7 +119,7 @@ export class AuthGuard implements CanActivate {
       return true;
     }
 
-    if (account.role === 'Passenger' && !isEmailVerified) {
+    if (role === 'Passenger' && !isEmailVerified) {
       throw new ForbiddenException('Unverified email');
     }
 
@@ -155,6 +131,3 @@ export class AuthGuard implements CanActivate {
     return type === 'Bearer' ? token : undefined;
   }
 }
-
-//TO DO:
-// - Might delete auth.controller, service, module?

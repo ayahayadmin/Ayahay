@@ -13,7 +13,7 @@ import { useTripFromSearchParams } from '@/hooks/trip';
 import { startPaymentForBooking } from '@/services/payment.service';
 import { InfoCircleOutlined } from '@ant-design/icons';
 import { invalidateItem } from '@ayahay/services/cache.service';
-import { useLoggedInAccount } from '@ayahay/hooks/auth';
+import { useAuth } from '@/app/contexts/AuthContext';
 
 const { useBreakpoint } = Grid;
 
@@ -29,7 +29,7 @@ const steps = [
 export default function CreateBookingForm({
   onComplete,
 }: CreateBookingFormProps) {
-  const { loggedInAccount } = useLoggedInAccount();
+  const { loggedInAccount } = useAuth();
   const { trip } = useTripFromSearchParams();
   const screens = useBreakpoint();
   const [modal, contextHolder] = Modal.useModal();
@@ -97,15 +97,11 @@ export default function CreateBookingForm({
       return;
     }
 
-    if (loggedInAccount === undefined) {
+    if (!loggedInAccount) {
       saveBookingInBrowser(response.paymentReference);
     }
     informPaymentInitiation(response.paymentReference, response.redirectUrl);
     window.open(response.redirectUrl);
-
-    // we cache saved passengers and vehicles in loggedInAccount. we invalidate this to
-    // ensure that the fetched data will include the passengers & vehicles created from this booking
-    invalidateItem('loggedInAccount');
   };
 
   const informPaymentInitiation = (
@@ -190,7 +186,6 @@ export default function CreateBookingForm({
           }}
         >
           <PassengerInformationForm
-            loggedInAccount={loggedInAccount}
             onNextStep={findSeats}
             onPreviousStep={previousStep}
           />

@@ -194,8 +194,6 @@ export class TripService {
       (field) => !data.hasOwnProperty(field)
     );
 
-    console.log(missingFields);
-
     if (missingFields.length) {
       throw new BadRequestException(
         `The following fields are required: ${missingFields.join(', ')}`

@@ -2,14 +2,11 @@
 import React, { useState } from 'react';
 import { Avatar, Button, Dropdown, MenuProps } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
-import Link from 'next/link';
 import { useAuth } from '@/app/contexts/AuthContext';
-import { useLoggedInAccount } from '@ayahay/hooks/auth';
 import { useAuthState } from '@/hooks/auth';
 
 export default function Logout() {
-  const { currentUser, logout } = useAuth();
-  const { loggedInAccount } = useLoggedInAccount();
+  const { currentUser, loggedInAccount, logout } = useAuth();
   const { pending } = useAuthState();
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
