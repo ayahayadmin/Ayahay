@@ -17,7 +17,11 @@ import {
   IAccount,
   IShippingLine,
 } from '@ayahay/models';
-import { PassengerPreferences } from '@ayahay/http';
+import {
+  PaginatedRequest,
+  PaginatedResponse,
+  PassengerPreferences,
+} from '@ayahay/http';
 import { UtilityService } from '../utility.service';
 import { TripService } from '../trip/trip.service';
 import { BookingMapper } from './booking.mapper';
@@ -44,10 +48,16 @@ export class BookingService {
     private readonly vehicleService: VehicleService
   ) {}
 
-  async getMyBookings(loggedInAccount?: IAccount): Promise<IBooking[]> {
+  async getMyBookings(
+    pagination: PaginatedRequest,
+    loggedInAccount?: IAccount
+  ): Promise<PaginatedResponse<IBooking>> {
     if (loggedInAccount === undefined) {
-      return [];
+      throw new ForbiddenException();
     }
+
+    const itemsPerPage = 10;
+    const skip = (pagination.page - 1) * itemsPerPage;
 
     const myBookingEntities = await this.prisma.booking.findMany({
       where: {
@@ -65,11 +75,26 @@ export class BookingService {
           },
         },
       },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      take: itemsPerPage,
+      skip,
     });
 
-    return myBookingEntities.map((bookingEntity) =>
+    const myBookingsCount = await this.prisma.booking.count({
+      where: {
+        accountId: loggedInAccount.id,
+      },
+    });
+    const bookings = myBookingEntities.map((bookingEntity) =>
       this.bookingMapper.convertBookingToBasicDto(bookingEntity)
     );
+
+    return {
+      total: myBookingsCount,
+      data: bookings,
+    };
   }
 
   async getPublicBookings(bookingIds: string[]): Promise<IBooking[]> {
@@ -173,6 +198,18 @@ export class BookingService {
 
     if (booking === null) {
       throw new NotFoundException();
+    }
+
+    if (loggedInAccount === undefined && booking.accountId !== null) {
+      throw new ForbiddenException();
+    }
+    if (
+      booking.accountId !== null &&
+      loggedInAccount !== undefined &&
+      loggedInAccount.role === 'Passenger' &&
+      booking.accountId !== loggedInAccount.id
+    ) {
+      throw new ForbiddenException();
     }
 
     booking.passengers.sort(

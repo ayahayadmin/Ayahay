@@ -1,14 +1,13 @@
 import { PAYMENT_API } from '@ayahay/constants/api';
-import { IBooking } from '@ayahay/models';
-import axios, { AxiosResponse } from 'axios';
+import axios from 'axios';
 import { PaymentInitiationResponse } from '@ayahay/http';
-import { getAuth } from 'firebase/auth';
+import { firebase } from '@/app/utils/initFirebase';
 
 // TODO: should return void when payment flow is finalized
 export async function startPaymentForBooking(
   tentativeBookingId: number
 ): Promise<PaymentInitiationResponse | undefined> {
-  const authToken = await getAuth().currentUser?.getIdToken();
+  const authToken = await firebase.currentUser?.getIdToken();
 
   try {
     const { data: response } = await axios.post<PaymentInitiationResponse>(

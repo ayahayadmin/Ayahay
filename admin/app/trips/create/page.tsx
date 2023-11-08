@@ -4,15 +4,15 @@ import { IShippingLineSchedule } from '@ayahay/models';
 import { getSchedulesOfShippingLine } from '@/services/shipping-line.service';
 import { Spin, Typography } from 'antd';
 import CreateTripsFromScheduleForm from './createTripsFromScheduleForm';
-import { useLoggedInAccount } from '@ayahay/hooks/auth';
 import { useAuthState } from '@/hooks/auth';
 import styles from './page.module.scss';
 import { redirect } from 'next/navigation';
+import { useAuth } from '@/app/contexts/AuthContext';
 
 const { Title } = Typography;
 
 export default function CreateTripsFromSchedulesPage() {
-  const { loggedInAccount } = useLoggedInAccount();
+  const { loggedInAccount } = useAuth();
   const { pending, isSignedIn } = useAuthState();
   const [schedules, setSchedules] = useState<IShippingLineSchedule[]>([]);
 

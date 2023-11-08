@@ -20,10 +20,9 @@ export class AccountController {
   constructor(private accountService: AccountService) {}
 
   @Get('mine')
-  @Roles('Passenger', 'Staff', 'Admin', 'SuperAdmin')
   @AllowUnverifiedPassengers()
   async getMyAccountInformation(@Request() req): Promise<IAccount> {
-    return this.accountService.getMyAccountInformation(req.user.id);
+    return this.accountService.getMyAccountInformation(req.user);
   }
 
   @Get(':accountId')

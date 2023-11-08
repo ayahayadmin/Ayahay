@@ -3,7 +3,6 @@ import { Button, Badge } from 'antd';
 import { IBookingPassenger } from '@ayahay/models';
 import { DISCOUNT_TYPE } from '@ayahay/constants/enum';
 import Table, { ColumnsType } from 'antd/es/table';
-import { useLoggedInAccount } from '@ayahay/hooks/auth';
 import dayjs from 'dayjs';
 import 'dayjs/plugin/relativeTime';
 
@@ -12,6 +11,7 @@ dayjs.extend(relativeTime);
 
 interface PassengersSummaryProps {
   passengers?: IBookingPassenger[];
+  hasPrivilegedAccess?: boolean;
   onCheckInPassenger?: (bookingPassengerId: number) => Promise<void>;
 }
 
@@ -33,11 +33,12 @@ const passengerColumnsWithoutActions: ColumnsType<PassengerInformation> = [
     key: 'cabinTypeName',
   },
 ];
+
 export default function PassengersSummary({
   passengers,
+  hasPrivilegedAccess,
   onCheckInPassenger,
 }: PassengersSummaryProps) {
-  const { loggedInAccount } = useLoggedInAccount();
   const [passengerColumns, setPassengerColumns] = useState<
     ColumnsType<PassengerInformation>
   >(passengerColumnsWithoutActions);
@@ -67,7 +68,7 @@ export default function PassengersSummary({
       }))
     );
 
-    if (onCheckInPassenger === undefined) {
+    if (onCheckInPassenger === undefined || !hasPrivilegedAccess) {
       return;
     }
 
@@ -94,7 +95,7 @@ export default function PassengersSummary({
         },
       },
     ]);
-  }, [loggedInAccount, passengers]);
+  }, [passengers]);
 
   return (
     <Table

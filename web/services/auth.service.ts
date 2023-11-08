@@ -1,4 +1,4 @@
-import { AUTH_API } from '@ayahay/constants';
+import { ACCOUNT_ROLE, AUTH_API } from '@ayahay/constants';
 import axios from 'axios';
 
 export async function verifyToken(token: string) {

@@ -10,9 +10,9 @@ import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import { getTripsByDateRange } from '@/services/trip.service';
 import { PlusCircleOutlined } from '@ant-design/icons';
-import { useLoggedInAccount } from '@ayahay/hooks/auth';
 import Table, { ColumnsType } from 'antd/es/table';
 import CabinAndVehicleEditCapacity from '@/components/form/CabinAndVehicleEditCapacity';
+import { useAuth } from '../contexts/AuthContext';
 import {
   getFullDate,
   getLocaleTimeString,
@@ -84,7 +84,7 @@ const columns: ColumnsType<ITrip> = [
 const PAGE_SIZE = 10;
 
 export default function TripList() {
-  const { loggedInAccount } = useLoggedInAccount();
+  const { loggedInAccount } = useAuth();
   const dateToday = dayjs();
   const [tripsData, setTripsData] = useState([] as ITrip[]);
   const [startDate, setStartDate] = useState(dateToday.startOf('day') as Dayjs);

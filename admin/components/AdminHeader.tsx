@@ -25,8 +25,8 @@ import { RangePickerProps } from 'antd/es/date-picker';
 import { map } from 'lodash';
 import { getTripsByDateRange } from '@/services/trip.service';
 import Logout from './auth/Logout';
-import { useLoggedInAccount } from '@ayahay/hooks/auth';
 import { webLinks } from '@/services/nav.service';
+import { useAuth } from '@/app/contexts/AuthContext';
 
 const { Search } = Input;
 const { RangePicker } = DatePicker;
@@ -47,7 +47,7 @@ const popoverContent = (onSearch: any, query: string, setQuery: any) => {
 };
 
 export default function AdminHeader() {
-  const { loggedInAccount } = useLoggedInAccount();
+  const { loggedInAccount } = useAuth();
   const searchParams = useSearchParams();
   const [query, setQuery] = useState('');
   const [notif, notifContextHolder] = notification.useNotification();
@@ -139,7 +139,6 @@ export default function AdminHeader() {
         type: 'success',
         content: 'Announcement Posted!',
       });
-      console.log('Success:', values);
     }, 3000);
   };
 

@@ -1,4 +1,5 @@
 import { initializeApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
 
 const config = {
   apiKey: process.env.NEXT_PUBLIC_FB_API_KEY,
@@ -10,8 +11,5 @@ const config = {
   measurementId: process.env.NEXT_PUBLIC_FB_MEASUREMENT_ID,
 };
 
-export const app = initializeApp(config);
-
-export const initFirebase = () => {
-  return app;
-};
+export const firebaseApp = initializeApp(config);
+export const firebase = getAuth(firebaseApp);

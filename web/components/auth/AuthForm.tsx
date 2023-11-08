@@ -5,23 +5,23 @@ import { UserOutlined } from '@ant-design/icons';
 import { LoginForm, RegisterForm } from '@ayahay/models';
 import Link from 'next/link';
 import { useAuth } from '@/app/contexts/AuthContext';
-import { User, getAuth } from 'firebase/auth';
+import { User } from 'firebase/auth';
 import Register from '../form/Register';
 import Login from '../form/Login';
 import ForgotPassword from '../form/ForgotPassword';
-import { useLoggedInAccount } from '@ayahay/hooks/auth';
+import { firebase } from '@/app/utils/initFirebase';
 
 export default function AuthForm() {
-  const auth = getAuth();
   const {
     currentUser,
+    loggedInAccount,
+    loading,
     emailVerification,
     logout,
     register,
     resetPassword,
     signIn,
   } = useAuth();
-  const { loggedInAccount } = useLoggedInAccount();
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
@@ -69,7 +69,6 @@ export default function AuthForm() {
   };
 
   const onFinishLogin = async (values: LoginForm) => {
-    console.log('Received values of form: ', values);
     const { email, password } = values;
     try {
       await signIn(email, password);
@@ -85,7 +84,6 @@ export default function AuthForm() {
   };
 
   const onFinishReset = async (values: LoginForm) => {
-    console.log('Received values of reset: ', values);
     const { email } = values;
     const result = await resetPassword(email);
     if (result) {
@@ -106,11 +104,10 @@ export default function AuthForm() {
   };
 
   const onFinishRegister = async (values: RegisterForm) => {
-    console.log('Received values of register: ', values);
     const { email, password } = values;
     try {
-      const uid = await register(email, password, values);
-      if (uid) {
+      const token = await register(email, password, values);
+      if (token) {
         setIsRegisterModalOpen(false);
       }
     } catch (error: any) {
@@ -176,10 +173,12 @@ export default function AuthForm() {
     },
   ];
 
-  const label = currentUser
+  const label = loading
+    ? 'Loading...'
+    : currentUser
     ? `Welcome, ${
         loggedInAccount?.passenger?.firstName ??
-        loggedInAccount?.email.split('@')[0]
+        currentUser.email?.split('@')[0]
       }`
     : 'Log In';
   return (
@@ -239,17 +238,17 @@ export default function AuthForm() {
         footer={null}
         destroyOnClose={true}
       >
-        {auth.currentUser?.emailVerified ? (
+        {firebase.currentUser?.emailVerified ? (
           <div>
-            <span>{auth.currentUser?.email} is verified</span>
+            <span>{firebase.currentUser?.email} is verified</span>
           </div>
         ) : (
           <div>
             <span>
-              {auth.currentUser?.email} is not yet verified, please{' '}
+              {firebase.currentUser?.email} is not yet verified, please{' '}
               <Link
                 href='/'
-                onClick={() => verifyEmail(auth.currentUser!)}
+                onClick={() => verifyEmail(firebase.currentUser!)}
                 style={{ textDecoration: 'underline' }}
               >
                 verify email now

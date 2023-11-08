@@ -23,8 +23,6 @@ export function saveProfile(values: BasicProfile) {
     role,
   });
 
-  console.log(profilesMock);
-
   return {
     firstName,
     lastName,

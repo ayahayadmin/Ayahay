@@ -13,14 +13,22 @@ import {
 } from '@nestjs/common';
 import { BookingService } from './booking.service';
 import { IBooking, IPassenger, IVehicle } from '@ayahay/models';
-import { PassengerPreferences } from '@ayahay/http';
+import {
+  PaginatedRequest,
+  PaginatedResponse,
+  PassengerPreferences,
+} from '@ayahay/http';
 import { AuthGuard } from 'src/guard/auth.guard';
 import { Roles } from 'src/decorator/roles.decorator';
 import { AllowUnauthenticated } from '../decorator/authenticated.decorator';
+import { AccountService } from '../account/account.service';
 
 @Controller('bookings')
 export class BookingController {
-  constructor(private bookingService: BookingService) {}
+  constructor(
+    private readonly bookingService: BookingService,
+    private readonly accountService: AccountService
+  ) {}
 
   @Get()
   @UseGuards(AuthGuard)
@@ -39,9 +47,11 @@ export class BookingController {
 
   @Get('mine')
   @UseGuards(AuthGuard)
-  @Roles('Passenger')
-  async getMyBookings(@Request() req): Promise<IBooking[]> {
-    return this.bookingService.getMyBookings(req.user);
+  async getMyBookings(
+    @Request() req,
+    @Query() pagination: PaginatedRequest
+  ): Promise<PaginatedResponse<IBooking>> {
+    return this.bookingService.getMyBookings(pagination, req.user);
   }
 
   @Get(':id')
@@ -67,12 +77,16 @@ export class BookingController {
       vehicles,
     }: CreateTempBookingRequest
   ): Promise<IBooking> {
+    const loggedInAccount = req.user
+      ? await this.accountService.getMyAccountInformation(req.user)
+      : undefined;
+
     return this.bookingService.createTentativeBooking(
       tripIds,
       passengers,
       passengerPreferences,
       vehicles,
-      req.user
+      loggedInAccount
     );
   }
 
@@ -87,6 +101,8 @@ export class BookingController {
   async deleteBooking(@Param('id') id: string) {}
 
   @Patch(':bookingId/passengers/:bookingPassengerId/check-in')
+  @UseGuards(AuthGuard)
+  @Roles('Staff', 'Admin', 'SuperAdmin')
   async checkInPassenger(
     @Param('bookingId') bookingId: string,
     @Param('bookingPassengerId') bookingPassengerId: number
@@ -95,6 +111,8 @@ export class BookingController {
   }
 
   @Patch(':bookingId/vehicles/:bookingVehicleId/check-in')
+  @UseGuards(AuthGuard)
+  @Roles('Staff', 'Admin', 'SuperAdmin')
   async checkInVehicle(
     @Param('bookingId') bookingId: string,
     @Param('bookingVehicleId') bookingVehicleId: number

@@ -2,11 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { Button, Badge } from 'antd';
 import { IBookingVehicle } from '@ayahay/models';
 import Table, { ColumnsType } from 'antd/es/table';
-import { useLoggedInAccount } from '@ayahay/hooks/auth';
 import dayjs from 'dayjs';
 
 interface VehiclesSummaryProps {
   vehicles?: IBookingVehicle[];
+  hasPrivilegedAccess?: boolean;
   onCheckInVehicle?: (bookingVehicleId: number) => Promise<void>;
 }
 
@@ -31,9 +31,9 @@ const vehicleColumnsWithoutActions: ColumnsType<VehicleInformation> = [
 
 export default function VehiclesSummary({
   vehicles,
+  hasPrivilegedAccess,
   onCheckInVehicle,
 }: VehiclesSummaryProps) {
-  const { loggedInAccount } = useLoggedInAccount();
   const [vehicleColumns, setVehicleColumns] = useState<
     ColumnsType<VehicleInformation>
   >(vehicleColumnsWithoutActions);
@@ -56,7 +56,7 @@ export default function VehiclesSummary({
       }))
     );
 
-    if (onCheckInVehicle === undefined) {
+    if (onCheckInVehicle === undefined || !hasPrivilegedAccess) {
       return;
     }
 
@@ -87,7 +87,7 @@ export default function VehiclesSummary({
 
   useEffect(() => {
     initializeData();
-  }, [loggedInAccount, vehicles]);
+  }, [vehicles]);
 
   return (
     <Table

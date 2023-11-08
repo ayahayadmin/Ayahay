@@ -6,9 +6,10 @@ import { LoginForm } from '@ayahay/models';
 import styles from './Auth.module.scss';
 import { useAuthState } from '@/hooks/auth';
 import { useRouter } from 'next/navigation';
+import { firebase } from '@/app/utils/initFirebase';
 
 export default function Login() {
-  const { pending, isSignedIn, user, auth } = useAuthState();
+  const { pending, isSignedIn } = useAuthState();
   const { resetPassword, signIn } = useAuth();
   const router = useRouter();
   const [error, setError] = useState('');
@@ -23,7 +24,6 @@ export default function Login() {
   }
 
   const onFinishLogin = async (values: LoginForm) => {
-    console.log('Received values of form: ', values);
     const { email, password } = values;
     try {
       await signIn(email, password);
@@ -39,7 +39,6 @@ export default function Login() {
   };
 
   const onFinishReset = async (values: LoginForm) => {
-    console.log('Received values of reset: ', values);
     const { email } = values;
     const result = await resetPassword(email);
     if (result) {

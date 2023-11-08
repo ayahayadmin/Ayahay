@@ -1,10 +1,14 @@
 import { IBooking, IPassenger, IVehicle } from '@ayahay/models';
-import { PassengerPreferences } from '@ayahay/http';
+import {
+  PaginatedRequest,
+  PaginatedResponse,
+  PassengerPreferences,
+} from '@ayahay/http';
 import axios from 'axios';
 import { BOOKING_API } from '@ayahay/constants/api';
-import { getAuth } from 'firebase/auth';
 import { getVehicleType } from '@/services/vehicle-type.service';
 import { cacheItem, fetchItem } from '@ayahay/services/cache.service';
+import { firebase } from '@/app/utils/initFirebase';
 
 export async function createTentativeBooking(
   tripIds: number[],
@@ -12,7 +16,7 @@ export async function createTentativeBooking(
   passengerPreferences: PassengerPreferences[],
   vehicles: IVehicle[]
 ): Promise<IBooking | undefined> {
-  const authToken = await getAuth().currentUser?.getIdToken();
+  const authToken = await firebase.currentUser?.getIdToken();
 
   for (const vehicle of vehicles) {
     // TODO: remove these after file upload has been properly implemented
@@ -44,7 +48,7 @@ export async function createTentativeBooking(
 export async function getBookingById(
   bookingId: string
 ): Promise<IBooking | undefined> {
-  const authToken = await getAuth().currentUser?.getIdToken();
+  const authToken = await firebase.currentUser?.getIdToken();
 
   try {
     const { data: booking } = await axios.get<IBooking>(
@@ -61,22 +65,26 @@ export async function getBookingById(
   }
 }
 
-export async function getMyBookings(): Promise<IBooking[]> {
-  const authToken = await getAuth().currentUser?.getIdToken();
+export async function getMyBookings(
+  pagination: PaginatedRequest
+): Promise<PaginatedResponse<IBooking> | undefined> {
+  const authToken = await firebase.currentUser?.getIdToken();
   if (authToken === undefined) {
-    return [];
+    return undefined;
   }
 
+  const query = new URLSearchParams(pagination as any).toString();
+
   try {
-    const { data: bookings } = await axios.get<IBooking[]>(
-      `${BOOKING_API}/mine`,
+    const { data: bookings } = await axios.get<PaginatedResponse<IBooking>>(
+      `${BOOKING_API}/mine?${query}`,
       { headers: { Authorization: `Bearer ${authToken}` } }
     );
 
     return bookings;
   } catch (e) {
     console.error(e);
-    return [];
+    return undefined;
   }
 }
 
@@ -99,7 +107,7 @@ export async function getSavedBookingsInBrowser(): Promise<IBooking[]> {
   }
 }
 
-export async function saveBookingInBrowser(bookingId: string): Promise<void> {
+export function saveBookingInBrowser(bookingId: string): void {
   const savedBookingIds = fetchItem<string[]>('saved-bookings') ?? [];
   savedBookingIds.push(bookingId);
   const oneMonthInMinutes = 60 * 24 * 30;

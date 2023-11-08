@@ -4,7 +4,7 @@ import axios from 'axios';
 import { SEARCH_API } from '@ayahay/constants';
 import { getPort } from '@ayahay/services/port.service';
 import { getShip } from '@ayahay/services/ship.service';
-import { getAuth } from 'firebase/auth';
+import { firebase } from '@/app/utils/initFirebase';
 
 export function initializeAdminSearchFormFromQueryParams(
   form: FormInstance,
@@ -50,7 +50,7 @@ export async function getTripInformation(
   startDate: string,
   endDate: string
 ): Promise<DashboardTrips[] | undefined> {
-  const authToken = await getAuth().currentUser?.getIdToken();
+  const authToken = await firebase.currentUser?.getIdToken();
 
   // Every page refresh, fireabse token is undefined,
   // we set an if condition to prevent passing an undefined

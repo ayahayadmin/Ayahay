@@ -5,10 +5,10 @@ import { webLinks } from '@/services/nav.service';
 import React from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import styles from './AdminSider.module.scss';
-import { useLoggedInAccount } from '@ayahay/hooks/auth';
+import { useAuth } from '@/app/contexts/AuthContext';
 
 export default function AdminSider() {
-  const { loggedInAccount } = useLoggedInAccount();
+  const { loggedInAccount } = useAuth();
   const pathName = usePathname();
   const router = useRouter();
 

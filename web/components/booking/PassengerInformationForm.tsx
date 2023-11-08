@@ -16,6 +16,7 @@ import AddCompanionsModal from '@/components/booking/AddCompanionsModal';
 import AddVehiclesModal from '@/components/booking/AddVehiclesModal';
 import { toPassengerFormValue } from '@ayahay/services/form.service';
 import { getVehicleTypes } from '@/services/vehicle-type.service';
+import { useAuth } from '@/app/contexts/AuthContext';
 import { DATE_FORMAT_LIST, DATE_PLACEHOLDER } from '@ayahay/constants';
 import { computeAge, computeBirthday } from '@ayahay/services/date.service';
 import dayjs from 'dayjs';
@@ -24,7 +25,6 @@ import { RangePickerProps } from 'antd/es/date-picker';
 const { Title } = Typography;
 
 interface PassengerInformationFormProps {
-  loggedInAccount?: IAccount;
   onNextStep?: () => void;
   onPreviousStep?: () => void;
 }
@@ -32,10 +32,11 @@ interface PassengerInformationFormProps {
 const yearToday = new Date().getFullYear();
 
 export default function PassengerInformationForm({
-  loggedInAccount,
   onNextStep,
   onPreviousStep,
 }: PassengerInformationFormProps) {
+  const { loggedInAccount } = useAuth();
+  
   const form = Form.useFormInstance();
   const passengers = Form.useWatch('passengers', form);
   const vehicles = Form.useWatch('vehicles', form);
@@ -52,6 +53,10 @@ export default function PassengerInformationForm({
   };
 
   useEffect(() => {
+    if (loggedInAccount === null) {
+        return;
+    }
+    
     if (loggedInAccount) {
       insertPassengerAtFirstIndex(loggedInAccount.passenger);
     } else {

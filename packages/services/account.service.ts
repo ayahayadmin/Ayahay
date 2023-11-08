@@ -1,20 +1,17 @@
 import { IAccount } from '@ayahay/models';
-import { getAuth } from 'firebase/auth';
 import { cacheItem, fetchItem } from '@ayahay/services/cache.service';
 import axios from 'axios';
 import { ACCOUNT_API } from '@ayahay/constants';
+import { User } from '@firebase/auth';
 
-export async function getMyAccountInformation(): Promise<IAccount | undefined> {
-  const authToken = await getAuth().currentUser?.getIdToken();
-
-  if (authToken === undefined) {
+export async function getAccountInformation(
+  user: User | undefined | null
+): Promise<IAccount | undefined> {
+  if (!user) {
     return undefined;
   }
 
-  const cachedAccountInformation = fetchItem<IAccount>('loggedInAccount');
-  if (cachedAccountInformation !== undefined) {
-    return cachedAccountInformation;
-  }
+  const authToken = await user.getIdToken();
 
   try {
     const { data } = await axios.get(`${ACCOUNT_API}/mine`, {

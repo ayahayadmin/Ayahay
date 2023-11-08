@@ -1,12 +1,12 @@
 import { IShippingLineSchedule } from '@ayahay/models';
 import axios from 'axios';
 import { SHIPPING_LINE_API } from '@ayahay/constants';
-import { getAuth } from 'firebase/auth';
+import { firebase } from '@/app/utils/initFirebase';
 
 export async function getSchedulesOfShippingLine(): Promise<
   IShippingLineSchedule[] | undefined
 > {
-  const authToken = await getAuth().currentUser?.getIdToken();
+  const authToken = await firebase.currentUser?.getIdToken();
 
   // TODO: get shipping line id from account information
   const shippingLineId = 1;

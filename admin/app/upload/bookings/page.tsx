@@ -6,14 +6,14 @@ import { message, Button, Upload, Typography, Spin } from 'antd';
 import { processBookingCsv } from '@/services/csv.service';
 import { IBooking } from '@ayahay/models';
 import { useAuthState } from '@/hooks/auth';
-import { useLoggedInAccount } from '@ayahay/hooks/auth';
 import { redirect } from 'next/navigation';
+import { useAuth } from '@/app/contexts/AuthContext';
 
 const { Title } = Typography;
 const { Dragger } = Upload;
 
 export default function UploadBookings() {
-  const { loggedInAccount } = useLoggedInAccount();
+  const { loggedInAccount } = useAuth();
   const { pending, isSignedIn, user, auth } = useAuthState();
 
   if (pending) {
