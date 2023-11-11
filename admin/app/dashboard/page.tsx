@@ -84,7 +84,9 @@ const columns: ColumnsType<DashboardTrips> = [
     align: 'center',
   },
 ];
+
 const PAGE_SIZE = 10;
+const allowedRoles = ['Staff', 'SuperAdmin', 'Admin'];
 
 export default function Dashboard() {
   const { loggedInAccount } = useAuth();
@@ -120,7 +122,6 @@ export default function Dashboard() {
     return <Spin size='large' className={styles['spinner']} />;
   }
 
-  const allowedRoles = ['SuperAdmin', 'Admin'];
   if (!isSignedIn) {
     redirect('/');
   } else if (loggedInAccount && !allowedRoles.includes(loggedInAccount.role)) {

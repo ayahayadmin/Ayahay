@@ -10,7 +10,7 @@ import {
 } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { DISCOUNT_TYPE, SEX } from '@ayahay/constants/enum';
-import { IAccount, IPassenger, IVehicle, IVehicleType } from '@ayahay/models';
+import { IPassenger, IVehicle, IVehicleType } from '@ayahay/models';
 import EnumRadio from '@/components/form/EnumRadio';
 import AddCompanionsModal from '@/components/booking/AddCompanionsModal';
 import AddVehiclesModal from '@/components/booking/AddVehiclesModal';
@@ -35,8 +35,8 @@ export default function PassengerInformationForm({
   onNextStep,
   onPreviousStep,
 }: PassengerInformationFormProps) {
-  const { loggedInAccount } = useAuth();
-  
+  const { loggedInAccount, hasPrivilegedAccess } = useAuth();
+
   const form = Form.useFormInstance();
   const passengers = Form.useWatch('passengers', form);
   const vehicles = Form.useWatch('vehicles', form);
@@ -54,9 +54,9 @@ export default function PassengerInformationForm({
 
   useEffect(() => {
     if (loggedInAccount === null) {
-        return;
+      return;
     }
-    
+
     if (loggedInAccount) {
       insertPassengerAtFirstIndex(loggedInAccount.passenger);
     } else {
@@ -257,9 +257,18 @@ export default function PassengerInformationForm({
                       async validator(_, value) {
                         if (value) {
                           const age = computeAge(value);
+                          const discountType = getDiscountTypeFromAge(age);
                           setFieldValue(['passengers', name, 'age'], age);
+                          setFieldValue(
+                            ['passengers', name, 'discountType'],
+                            discountType
+                          );
                           setFields([
                             { name: ['passengers', name, 'age'], errors: [] },
+                            {
+                              name: ['passengers', name, 'discountType'],
+                              errors: [],
+                            },
                           ]);
                           return Promise.resolve();
                         }
@@ -279,48 +288,60 @@ export default function PassengerInformationForm({
                     disabledDate={disabledDate}
                   />
                 </Form.Item>
-                <Form.Item
-                  {...restField}
-                  name={[name, 'age']}
-                  label='Age'
-                  colon={false}
-                  rules={[
-                    ({ getFieldValue, setFields, setFieldValue }) => ({
-                      validator(_, value) {
-                        if (value !== undefined) {
-                          const inputtedBirthday = getFieldValue([
-                            'passengers',
-                            name,
-                            'birthdayIso',
-                          ]);
-                          const birthday = computeBirthday(
-                            value,
-                            inputtedBirthday
-                          );
-                          setFieldValue(
-                            ['passengers', name, 'birthdayIso'],
-                            dayjs(birthday)
-                          );
-                          setFields([
-                            {
-                              name: ['passengers', name, 'birthdayIso'],
-                              errors: [],
-                            },
-                          ]);
-                          return Promise.resolve();
-                        }
+                {hasPrivilegedAccess && (
+                  <Form.Item
+                    {...restField}
+                    name={[name, 'age']}
+                    label='Age'
+                    colon={false}
+                    rules={[
+                      ({ getFieldValue, setFields, setFieldValue }) => ({
+                        validator(_, value) {
+                          if (value !== undefined) {
+                            const discountType = getDiscountTypeFromAge(value);
+                            const inputtedBirthday = getFieldValue([
+                              'passengers',
+                              name,
+                              'birthdayIso',
+                            ]);
+                            const birthday = computeBirthday(
+                              value,
+                              inputtedBirthday
+                            );
+                            setFieldValue(
+                              ['passengers', name, 'birthdayIso'],
+                              dayjs(birthday)
+                            );
+                            setFieldValue(
+                              ['passengers', name, 'discountType'],
+                              discountType
+                            );
 
-                        return Promise.reject(new Error('Missing age'));
-                      },
-                    }),
-                  ]}
-                >
-                  <InputNumber
-                    disabled={passengers?.[index]?.id !== undefined}
-                    min={0}
-                    placeholder='Age'
-                  />
-                </Form.Item>
+                            setFields([
+                              {
+                                name: ['passengers', name, 'birthdayIso'],
+                                errors: [],
+                              },
+                              {
+                                name: ['passengers', name, 'discountType'],
+                                errors: [],
+                              },
+                            ]);
+                            return Promise.resolve();
+                          }
+
+                          return Promise.reject(new Error('Missing age'));
+                        },
+                      }),
+                    ]}
+                  >
+                    <InputNumber
+                      disabled={passengers?.[index]?.id !== undefined}
+                      min={0}
+                      placeholder='Age'
+                    />
+                  </Form.Item>
+                )}
                 <Form.Item
                   {...restField}
                   name={[name, 'address']}
@@ -345,7 +366,7 @@ export default function PassengerInformationForm({
                     placeholder='Filipino, Chinese, American, etc.'
                   />
                 </Form.Item>
-                {loggedInAccount && loggedInAccount.role !== 'Passenger' && (
+                {hasPrivilegedAccess && (
                   <EnumRadio
                     _enum={DISCOUNT_TYPE}
                     nullChoiceLabel={'Adult'}
@@ -540,3 +561,23 @@ export default function PassengerInformationForm({
     </>
   );
 }
+
+const getDiscountTypeFromAge = (age: number): DISCOUNT_TYPE | undefined => {
+  if (age >= 60) {
+    return DISCOUNT_TYPE.Senior;
+  }
+
+  if (age >= 18) {
+    return undefined;
+  }
+
+  if (age >= 12) {
+    return DISCOUNT_TYPE.Student;
+  }
+
+  if (age >= 3) {
+    return DISCOUNT_TYPE.Child;
+  }
+
+  return DISCOUNT_TYPE.Infant;
+};

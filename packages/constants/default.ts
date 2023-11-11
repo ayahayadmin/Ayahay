@@ -11,5 +11,6 @@ export const DATE_FORMAT_LIST = [
   'MM-D-YYYY',
   'M-DD-YYYY',
   'M-D-YYYY',
+  'YYYY',
 ];
 export const DATE_PLACEHOLDER = DATE_FORMAT_LIST[0];
