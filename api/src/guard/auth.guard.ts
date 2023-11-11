@@ -3,14 +3,11 @@ import {
   ExecutionContext,
   ForbiddenException,
   Injectable,
-  InternalServerErrorException,
   Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { initFirebase } from 'src/utils/initFirebase';
 import admin from 'firebase-admin';
-import { IAccount } from '@ayahay/models';
 import { includes } from 'lodash';
 import { Request } from 'express';
 import { ACCOUNT_ROLE } from '@ayahay/constants';
@@ -47,7 +44,6 @@ export class AuthGuard implements CanActivate {
   private readonly logger = new Logger(AuthGuard.name);
 
   private decryptToken(token: string): Promise<any> {
-    initFirebase();
     return admin
       .auth()
       .verifyIdToken(token)

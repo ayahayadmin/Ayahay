@@ -33,7 +33,7 @@ export class SearchController {
   }
 
   @Get('trip-table')
-  @Roles('Admin', 'SuperAdmin')
+  @Roles('Staff', 'Admin', 'SuperAdmin')
   async getTrips(@Query() query: any): Promise<DashboardTrips[]> {
     return await this.searchService.getTrips(query);
   }

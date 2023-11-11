@@ -6,9 +6,4 @@ import { ACCOUNT_ROLE } from '@ayahay/constants';
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
-
-  @Post()
-  decryptToken(@Body() body: { token: string }): Promise<DecodedIdToken> {
-    return this.authService.decryptToken(body);
-  }
 }

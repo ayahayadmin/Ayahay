@@ -193,6 +193,10 @@ export default function BookingSummary({
                     <td>₱{bookingPassenger.totalPrice}</td>
                   </tr>
                 ))}
+                <tr>
+                  <td>Total</td>
+                  <td>₱${booking.totalPrice}</td>
+                </tr>
               </tbody>
             </table>
           </section>

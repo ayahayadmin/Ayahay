@@ -11,7 +11,6 @@ import {
 import { createContext, useContext, useEffect, useState } from 'react';
 import { firebase } from '../utils/initFirebase';
 import { useIdToken } from 'react-firebase-hooks/auth';
-import { verifyToken } from '@/services/auth.service';
 import { invalidateItem } from '@ayahay/services/cache.service';
 import { accountRelatedCacheKeys } from '@ayahay/constants';
 import { IAccount, RegisterForm } from '@ayahay/models';
@@ -25,13 +24,14 @@ const AuthContext = createContext({
   currentUser: null as User | undefined | null,
   // loggedInAccount is null if it's loading
   loggedInAccount: null as IAccount | undefined | null,
+  hasPrivilegedAccess: false,
   loading: true,
   register: (email: string, password: string, values: RegisterForm) => Promise,
   signIn: (email: string, password: string) => Promise,
   signInWithGoogle: () => Promise,
   logout: () => Promise,
   resetPassword: (email: string) => Promise,
-  emailVerification: (user: User) => Promise<void>,
+  emailVerification: (user: User) => Promise,
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -41,6 +41,7 @@ export default function AuthContextProvider({ children }: any) {
   const [loggedInAccount, setLoggedInAccount] = useState<
     IAccount | undefined | null
   >(null);
+  const [hasPrivilegedAccess, setHasPrivilegedAccess] = useState(false);
 
   useEffect(() => {
     if (loading) {
@@ -51,11 +52,18 @@ export default function AuthContextProvider({ children }: any) {
 
   const fetchAccountInformation = async () => {
     if (currentUser) {
-        // force refresh so that user claims (with role) is always updated on login
-        await currentUser.getIdToken(true);
+      // force refresh so that user claims (with role) is always updated on login
+      await currentUser.getIdToken(true);
     }
     const myAccountInformation = await getAccountInformation(currentUser);
     setLoggedInAccount(myAccountInformation);
+
+    const _hasPrivilegedAccess =
+      myAccountInformation?.role === 'Staff' ||
+      myAccountInformation?.role === 'Admin' ||
+      myAccountInformation?.role === 'SuperAdmin';
+
+    setHasPrivilegedAccess(_hasPrivilegedAccess);
   };
 
   function register(email: string, password: string, values: RegisterForm) {
@@ -66,10 +74,8 @@ export default function AuthContextProvider({ children }: any) {
         console.log(`success register`);
 
         const token = await user.getIdToken();
-        const data = await verifyToken(token);
-        const { uid } = data;
 
-        const mappedPassenger = mapPassengerToDto(uid, values);
+        const mappedPassenger = mapPassengerToDto(user.uid, values);
         await createPassenger(token, mappedPassenger);
 
         await emailVerification(user);
@@ -99,7 +105,7 @@ export default function AuthContextProvider({ children }: any) {
 
   function signInWithGoogle() {
     const provider = new GoogleAuthProvider();
-    return signInWithPopup(auth, provider);
+    return signInWithPopup(firebase, provider);
   }
 
   function resetPassword(email: string) {
@@ -136,6 +142,7 @@ export default function AuthContextProvider({ children }: any) {
   const value = {
     currentUser,
     loggedInAccount,
+    hasPrivilegedAccess,
     loading,
     register,
     signIn,

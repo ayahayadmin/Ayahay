@@ -3,7 +3,6 @@ import styles from './page.module.scss';
 import React, { useEffect, useState } from 'react';
 import BookingSummary from '@ayahay/components/descriptions/BookingSummary';
 import { getBookingById } from '@/services/booking.service';
-import { hasPrivilegedAccess as _hasPrivilegedAccess } from '@ayahay/services/account.service';
 import { IBooking } from '@ayahay/models/booking.model';
 import { notification, Typography } from 'antd';
 import {
@@ -17,9 +16,8 @@ const { Title } = Typography;
 
 export default function GetBooking({ params }) {
   const [api, contextHolder] = notification.useNotification();
-  const { loggedInAccount } = useAuth();
+  const { loggedInAccount, hasPrivilegedAccess } = useAuth();
   const [booking, setBooking] = useState<IBooking | undefined>();
-  const [hasPrivilegedAccess, setHasPrivilegedAccess] = useState(false);
 
   const loadBooking = async () => {
     const bookingId = params.id;
@@ -32,7 +30,6 @@ export default function GetBooking({ params }) {
       return;
     }
     loadBooking();
-    setHasPrivilegedAccess(_hasPrivilegedAccess(loggedInAccount));
   }, [loggedInAccount]);
 
   const handleCheckInError = (e) => {
