@@ -195,7 +195,7 @@ export default function BookingSummary({
                 ))}
                 <tr>
                   <td>Total</td>
-                  <td>₱${booking.totalPrice}</td>
+                  <td>₱{booking.totalPrice}</td>
                 </tr>
               </tbody>
             </table>
