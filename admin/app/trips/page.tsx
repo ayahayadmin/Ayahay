@@ -10,24 +10,41 @@ import { useCallback, useEffect, useState } from 'react';
 import { AdminSearchQuery } from '@ayahay/http';
 import TripList from './tripList';
 import { redirect, useSearchParams } from 'next/navigation';
-import { useAuthState } from '@/hooks/auth';
+import { useAuthGuard, useAuthState } from '@/hooks/auth';
 import styles from './page.module.scss';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function Schedules() {
+  useAuthGuard(['Staff', 'Admin', 'SuperAdmin']);
   const { loggedInAccount } = useAuth();
-  const { pending, isSignedIn, user, auth } = useAuthState();
   const searchParams = useSearchParams();
   const [form] = Form.useForm();
   const [searchQuery, setSearchQuery] = useState({} as AdminSearchQuery);
+  const [hasAdminPrivileges, setHasAdminPrivileges] = useState(false);
 
   const onPageLoad = () => {
+    if (loggedInAccount === null) {
+      return;
+    }
     const params = Object.fromEntries(searchParams.entries());
     initializeAdminSearchFormFromQueryParams(form, params);
     debounceSearch();
   };
 
   useEffect(onPageLoad, []);
+
+  useEffect(() => {
+    if (loggedInAccount === null) {
+      return;
+    }
+
+    const _hasAdminPrivileges = loggedInAccount?.role !== 'Staff';
+    setHasAdminPrivileges(_hasAdminPrivileges);
+
+    if (!_hasAdminPrivileges) {
+      return;
+    }
+  }, [loggedInAccount]);
 
   const debounceSearch = useCallback(debounce(performSearch, 300), []);
 
@@ -44,17 +61,6 @@ export default function Schedules() {
     window.history.replaceState({ path: updatedUrl }, '', updatedUrl);
   };
 
-  if (pending) {
-    return <Spin size='large' className={styles['spinner']} />;
-  }
-
-  const allowedRoles = ['SuperAdmin', 'Admin', 'Staff']; //prevent Passengers from accessing
-  if (!isSignedIn) {
-    redirect('/');
-  } else if (loggedInAccount && !allowedRoles.includes(loggedInAccount.role)) {
-    redirect('/403');
-  }
-
   return (
     <Form
       form={form}
@@ -62,7 +68,7 @@ export default function Schedules() {
       onFinish={(_) => debounceSearch()}
     >
       <div className={styles['main-container']}>
-        <TripList />
+        <TripList hasAdminPrivileges={hasAdminPrivileges} />
         {/* <BookingList /> */}
         {/* <div className={styles.chart}>
           <PieChart data={data} />

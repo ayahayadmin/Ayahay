@@ -26,6 +26,7 @@ export default function AdminSider() {
           collapsedWidth='0'
           reverseArrow
           id={styles['admin-sider']}
+          className='hide-on-print'
         >
           <nav id={styles['admin-sider-nav']}>
             <Menu

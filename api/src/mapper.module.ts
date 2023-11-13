@@ -10,6 +10,7 @@ import { CabinMapper } from './cabin/cabin.mapper';
 import { PaymentMapper } from './payment/payment.mapper';
 import { SearchMapper } from './search/search.mapper';
 import { ShipMapper } from './ship/ship.mapper';
+import { ReportingMapper } from './reporting/reporting.mapper';
 
 @Module({
   providers: [
@@ -24,6 +25,7 @@ import { ShipMapper } from './ship/ship.mapper';
     PaymentMapper,
     SearchMapper,
     ShipMapper,
+    ReportingMapper,
   ],
   exports: [
     TripMapper,
@@ -37,6 +39,7 @@ import { ShipMapper } from './ship/ship.mapper';
     PaymentMapper,
     SearchMapper,
     ShipMapper,
+    ReportingMapper,
   ],
 })
 export class MapperModule {}

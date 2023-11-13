@@ -68,6 +68,20 @@ const columns: ColumnsType<ITrip> = [
     ),
   },
   {
+    title: 'Manifest',
+    render: (_, record: ITrip) => (
+      <Button
+        type='primary'
+        href={`/trips/${record.id}/manifest`}
+        target='_blank'
+      >
+        View
+      </Button>
+    ),
+  },
+];
+const adminOnlyColumns = [
+  {
     title: 'Capacities',
     key: 'editCapacities',
     render: (text: string, record: ITrip) => (
@@ -83,14 +97,16 @@ const columns: ColumnsType<ITrip> = [
 ];
 const PAGE_SIZE = 10;
 
-export default function TripList() {
-  const { loggedInAccount } = useAuth();
+interface TripListProps {
+  hasAdminPrivileges: boolean;
+}
+
+export default function TripList({ hasAdminPrivileges }: TripListProps) {
   const dateToday = dayjs();
   const [tripsData, setTripsData] = useState([] as ITrip[]);
   const [startDate, setStartDate] = useState(dateToday.startOf('day') as Dayjs);
   const [endDate, setEndDate] = useState(dateToday.endOf('day') as Dayjs);
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
 
   useEffect(() => {
     fetchTrips();
@@ -115,10 +131,6 @@ export default function TripList() {
     setEndDate(dayjs(dateString[1]).endOf('day'));
   };
 
-  const allowedRoles = ['Admin', 'SuperAdmin'];
-  const isRoleAllowed =
-    loggedInAccount && allowedRoles.includes(loggedInAccount?.role);
-
   return (
     <div>
       <div>
@@ -132,7 +144,7 @@ export default function TripList() {
         />
 
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-          {isRoleAllowed && (
+          {hasAdminPrivileges && (
             <Dropdown menu={{ items }} trigger={['click']}>
               <Button
                 type='primary'
@@ -156,7 +168,9 @@ export default function TripList() {
         >
           {tripsData && (
             <Table
-              columns={isRoleAllowed ? columns : columns.slice(0, -1)} // don't include change capacity column if user is unauthorized
+              columns={
+                hasAdminPrivileges ? [...columns, ...adminOnlyColumns] : columns
+              }
               dataSource={tripsData}
               pagination={false}
             ></Table>

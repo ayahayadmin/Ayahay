@@ -143,7 +143,7 @@ export default function AdminHeader() {
   };
 
   return (
-    <nav className={styles['nav-container']}>
+    <nav className={`hide-on-print ${styles['nav-container']}`}>
       <div className={styles['nav-main']}>
         <Image src={AyahayLogo} alt='Ayahay' height={80} />
         {loggedInAccount && userRole !== 'Passenger' && (

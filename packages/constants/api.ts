@@ -13,3 +13,4 @@ export const SHIPPING_LINE_API = `${BASE_URL}/shipping-lines`;
 export const SHIPS_API = `${BASE_URL}/ships`;
 export const TRIP_API = `${BASE_URL}/trips`;
 export const VEHICLE_TYPES_API = `${BASE_URL}/vehicle-types`;
+export const REPORTING_API = `${BASE_URL}/reporting`;
