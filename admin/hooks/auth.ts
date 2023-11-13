@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { User } from 'firebase/auth';
 import { firebase } from '@/app/utils/initFirebase';
+import { redirect } from 'next/navigation';
+import { useAuth } from '@/app/contexts/AuthContext';
 
 interface IAuth {
   isSignedIn: boolean;
@@ -23,4 +25,20 @@ export function useAuthState() {
   }, []);
 
   return { firebase, ...authState };
+}
+
+export function useAuthGuard(roles: string[]) {
+  const { loggedInAccount } = useAuth();
+
+  useEffect(() => {
+    if (loggedInAccount === null) {
+      return;
+    }
+
+    if (loggedInAccount === undefined) {
+      redirect('/');
+    } else if (loggedInAccount && !roles.includes(loggedInAccount.role)) {
+      redirect('/403');
+    }
+  }, [loggedInAccount]);
 }

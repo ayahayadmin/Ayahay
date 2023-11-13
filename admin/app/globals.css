@@ -90,7 +90,7 @@ a {
   text-decoration: none;
 }
 
-body {
+.body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -107,4 +107,14 @@ main {
 
 .ant-picker-input input {
   font-family: inherit;
+}
+
+@media print {
+  .hide-on-print {
+    display: none !important;
+  }
+
+  .body {
+    min-height: 0;
+  }
 }
