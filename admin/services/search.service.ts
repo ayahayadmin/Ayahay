@@ -1,10 +1,16 @@
 import { FormInstance } from 'antd';
-import { AdminSearchQuery, DashboardTrips } from '@ayahay/http';
+import {
+  AdminSearchQuery,
+  DashboardTrips,
+  TripSearchByDateRange,
+} from '@ayahay/http';
 import axios from 'axios';
 import { SEARCH_API } from '@ayahay/constants';
 import { getPort } from '@ayahay/services/port.service';
 import { getShip } from '@ayahay/services/ship.service';
 import { firebase } from '@/app/utils/initFirebase';
+import { isEmpty } from 'lodash';
+import dayjs from 'dayjs';
 
 export function initializeAdminSearchFormFromQueryParams(
   form: FormInstance,
@@ -12,6 +18,22 @@ export function initializeAdminSearchFormFromQueryParams(
 ) {
   form.setFieldsValue({
     cabinTypes: params.cabinTypes?.split(','),
+  });
+}
+
+export function initializeRangePickerFormFromQueryParams(
+  form: FormInstance,
+  params: { [p: string]: string }
+) {
+  const startDate = !isEmpty(params)
+    ? dayjs(params.startDate)
+    : dayjs().startOf('day');
+  const endDate = !isEmpty(params)
+    ? dayjs(params.endDate)
+    : dayjs().endOf('day');
+
+  form.setFieldsValue({
+    dateRange: [startDate, endDate],
   });
 }
 
@@ -41,6 +63,34 @@ export function buildAdminSearchQueryFromSearchForm(
   return searchQuery;
 }
 
+export function buildUrlQueryParamsFromRangePickerForm(form: FormInstance) {
+  if (form.getFieldValue('dateRange') === null) {
+    return;
+  }
+
+  const searchQuery: Record<string, string> = {
+    startDate: form.getFieldValue('dateRange')[0].startOf('day').toISOString(),
+    endDate: form.getFieldValue('dateRange')[1].endOf('day').toISOString(),
+  };
+
+  return new URLSearchParams(searchQuery).toString();
+}
+
+export function buildSearchQueryFromRangePickerForm(
+  form: FormInstance
+): TripSearchByDateRange | undefined {
+  if (form.getFieldValue('dateRange') === null) {
+    return;
+  }
+
+  const searchQuery: TripSearchByDateRange = {
+    startDate: form.getFieldValue('dateRange')[0].startOf('day').toISOString(),
+    endDate: form.getFieldValue('dateRange')[1].endOf('day').toISOString(),
+  };
+
+  return searchQuery;
+}
+
 export function getTime(date: string) {
   return new Date(date).toLocaleTimeString('en-US');
 }
@@ -60,7 +110,7 @@ export async function getTripInformation(
   }
 
   return await axios
-    .get(`${SEARCH_API}/trip-table`, {
+    .get(`${SEARCH_API}/dashboard`, {
       params: {
         startDate,
         endDate,

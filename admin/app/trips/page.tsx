@@ -1,33 +1,48 @@
 'use client';
 import {
-  buildAdminSearchQueryFromSearchForm,
-  buildUrlQueryParamsFromAdminSearchForm,
-  initializeAdminSearchFormFromQueryParams,
+  buildSearchQueryFromRangePickerForm,
+  buildUrlQueryParamsFromRangePickerForm,
+  initializeRangePickerFormFromQueryParams,
 } from '@/services/search.service';
-import { Form, Spin } from 'antd';
+import { Button, DatePicker, Dropdown, Form, MenuProps } from 'antd';
 import { debounce } from 'lodash';
 import { useCallback, useEffect, useState } from 'react';
-import { AdminSearchQuery } from '@ayahay/http';
+import { TripSearchByDateRange } from '@ayahay/http';
 import TripList from './tripList';
-import { redirect, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useAuthGuard, useAuthState } from '@/hooks/auth';
 import styles from './page.module.scss';
 import { useAuth } from '../contexts/AuthContext';
+import dayjs from 'dayjs';
+import { RangePickerProps } from 'antd/es/date-picker';
+import { DATE_FORMAT_LIST, DATE_PLACEHOLDER } from '@ayahay/constants';
+import { PlusCircleOutlined } from '@ant-design/icons';
+
+const { RangePicker } = DatePicker;
+const items: MenuProps['items'] = [
+  {
+    label: <a href='/trips/create'>From Schedules</a>,
+    key: '0',
+  },
+  {
+    label: <a href='/upload/trips'>From CSV</a>,
+    key: '1',
+  },
+];
 
 export default function Schedules() {
   useAuthGuard(['Staff', 'Admin', 'SuperAdmin']);
   const { loggedInAccount } = useAuth();
-  const searchParams = useSearchParams();
   const [form] = Form.useForm();
-  const [searchQuery, setSearchQuery] = useState({} as AdminSearchQuery);
+  const searchParams = useSearchParams();
+  const [searchQuery, setSearchQuery] = useState(
+    {} as TripSearchByDateRange | undefined
+  );
   const [hasAdminPrivileges, setHasAdminPrivileges] = useState(false);
 
   const onPageLoad = () => {
-    if (loggedInAccount === null) {
-      return;
-    }
     const params = Object.fromEntries(searchParams.entries());
-    initializeAdminSearchFormFromQueryParams(form, params);
+    initializeRangePickerFormFromQueryParams(form, params);
     debounceSearch();
   };
 
@@ -49,26 +64,59 @@ export default function Schedules() {
   const debounceSearch = useCallback(debounce(performSearch, 300), []);
 
   function performSearch() {
-    const query = buildAdminSearchQueryFromSearchForm(form);
+    const query = buildSearchQueryFromRangePickerForm(form);
     setSearchQuery(query);
     updateUrl();
-    console.log(searchQuery);
   }
 
   const updateUrl = () => {
-    const updatedQueryParams = buildUrlQueryParamsFromAdminSearchForm(form);
+    const updatedQueryParams = buildUrlQueryParamsFromRangePickerForm(form);
     const updatedUrl = `${window.location.origin}${window.location.pathname}?${updatedQueryParams}`;
     window.history.replaceState({ path: updatedUrl }, '', updatedUrl);
   };
 
+  const disabledDate: RangePickerProps['disabledDate'] = (current) => {
+    const lastYear = dayjs().subtract(1, 'year');
+    return lastYear && current < lastYear.startOf('day');
+  };
+
   return (
-    <Form
-      form={form}
-      onValuesChange={(_, __) => debounceSearch()}
-      onFinish={(_) => debounceSearch()}
-    >
-      <div className={styles['main-container']}>
-        <TripList hasAdminPrivileges={hasAdminPrivileges} />
+    <div className={styles['main-container']}>
+      <Form
+        form={form}
+        initialValues={{ dateRange: [dayjs(), dayjs()] }}
+        onValuesChange={(_, __) => debounceSearch()}
+      >
+        <div className={styles['form-item']}>
+          <Form.Item name='dateRange' label='Date Range'>
+            <RangePicker
+              disabledDate={disabledDate}
+              format={DATE_FORMAT_LIST}
+              placeholder={[DATE_PLACEHOLDER, DATE_PLACEHOLDER]}
+              className={styles['range-picker']}
+            />
+          </Form.Item>
+
+          <div className={styles['create-button']}>
+            {hasAdminPrivileges && (
+              <Dropdown menu={{ items }} trigger={['click']}>
+                <Button
+                  type='primary'
+                  icon={<PlusCircleOutlined rev={undefined} />}
+                >
+                  Create Trip
+                </Button>
+              </Dropdown>
+            )}
+          </div>
+        </div>
+      </Form>
+
+      <div>
+        <TripList
+          searchQuery={searchQuery}
+          hasAdminPrivileges={hasAdminPrivileges}
+        />
         {/* <BookingList /> */}
         {/* <div className={styles.chart}>
           <PieChart data={data} />
@@ -82,6 +130,6 @@ export default function Schedules() {
         <CabinFilter name='cabinTypes' label='Cabin Types' />
         <TripResults searchQuery={searchQuery} /> */}
       </div>
-    </Form>
+    </div>
   );
 }

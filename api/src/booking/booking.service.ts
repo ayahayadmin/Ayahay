@@ -589,6 +589,7 @@ WHERE row <= ${passengerPreferences.length}
       case 'Infant':
       case 'Driver':
       case 'Passes':
+      case 'Helper':
         return 0;
       case 'Student':
         return cabinFeeWithVat - cabinFeeWithVat * 0.2;
@@ -735,7 +736,8 @@ WHERE row <= ${passengerPreferences.length}
     return !(
       passenger?.discountType === 'Infant' ||
       passenger?.discountType === 'Driver' ||
-      passenger?.discountType === 'Passes'
+      passenger?.discountType === 'Passes' ||
+      passenger?.discountType === 'Helper'
     );
   }
 
