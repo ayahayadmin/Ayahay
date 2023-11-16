@@ -1,11 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { map, sum } from 'lodash';
-import { TripInformation } from './search.service';
-import { DashboardTrips, PassengerRates, VehicleRates } from '@ayahay/http';
+import {
+  DashboardTrips,
+  PassengerRates,
+  TripInformation,
+  VehicleRates,
+} from '@ayahay/http';
 
 @Injectable()
 export class SearchMapper {
-  convertTripTableToDto(trip: TripInformation): DashboardTrips {
+  convertTripForDashboardTrips(trip: TripInformation): DashboardTrips {
     return {
       id: trip.id,
       srcPortId: Number(trip.srcPortId),

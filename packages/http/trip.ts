@@ -24,6 +24,28 @@ export interface UpdateTripCapacityRequest {
   cabinCapacities: { cabinId: number; passengerCapacity: number }[];
 }
 
+export interface TripInformation {
+  id: number;
+  srcPortId: number;
+  destPortId: number;
+  departureDate: Date;
+  shipId: number;
+  availableVehicleCapacity: number;
+  vehicleCapacity: number;
+  trip_id: number;
+  checkedInPassengerCount: number | null;
+  checkedInVehicleCount: number | null;
+
+  pipeSeparatedCabinTypeIds: string;
+  pipeSeparatedCabinNames: string;
+  pipeSeparatedCabinFares: string;
+  pipeSeparatedCabinAvailableCapacities: string;
+  pipeSeparatedCabinCapacities: string;
+  pipeSeparatedVehicleTypeIds: string;
+  pipeSeparatedVehicleFares: string;
+  pipeSeparatedVehicleNames: string;
+}
+
 export interface DashboardTrips {
   id: number;
   srcPortId: number;

@@ -1,38 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import { ITrip } from '@ayahay/models/trip.model';
-import { Button, DatePicker, Dropdown, MenuProps, Skeleton } from 'antd';
-import { useRouter } from 'next/navigation';
+import { Button, Skeleton } from 'antd';
 import { IShippingLine } from '@ayahay/models/shipping-line.model';
 import { IPort } from '@ayahay/models/port.model';
-import dayjs, { Dayjs } from 'dayjs';
-import { RangePickerProps } from 'antd/es/date-picker';
+import dayjs from 'dayjs';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import { getTripsByDateRange } from '@/services/trip.service';
-import { PlusCircleOutlined } from '@ant-design/icons';
 import Table, { ColumnsType } from 'antd/es/table';
 import CabinAndVehicleEditCapacity from '@/components/form/CabinAndVehicleEditCapacity';
-import { useAuth } from '../contexts/AuthContext';
 import {
   getFullDate,
   getLocaleTimeString,
 } from '@ayahay/services/date.service';
-import { DATE_FORMAT_LIST, DATE_PLACEHOLDER } from '@ayahay/constants';
+import { TripSearchByDateRange } from '@ayahay/http';
+import { isEmpty } from 'lodash';
 
-const { RangePicker } = DatePicker;
 dayjs.extend(isSameOrBefore);
 dayjs.extend(isSameOrAfter);
-
-const items: MenuProps['items'] = [
-  {
-    label: <a href='/trips/create'>From Schedules</a>,
-    key: '0',
-  },
-  {
-    label: <a href='/upload/trips'>From CSV</a>,
-    key: '1',
-  },
-];
 
 const columns: ColumnsType<ITrip> = [
   {
@@ -80,6 +65,7 @@ const columns: ColumnsType<ITrip> = [
     ),
   },
 ];
+
 const adminOnlyColumns = [
   {
     title: 'Capacities',
@@ -95,88 +81,56 @@ const adminOnlyColumns = [
     ),
   },
 ];
-const PAGE_SIZE = 10;
 
 interface TripListProps {
+  searchQuery: TripSearchByDateRange | undefined;
   hasAdminPrivileges: boolean;
 }
 
-export default function TripList({ hasAdminPrivileges }: TripListProps) {
-  const dateToday = dayjs();
+export default function TripList({
+  searchQuery,
+  hasAdminPrivileges,
+}: TripListProps) {
   const [tripsData, setTripsData] = useState([] as ITrip[]);
-  const [startDate, setStartDate] = useState(dateToday.startOf('day') as Dayjs);
-  const [endDate, setEndDate] = useState(dateToday.endOf('day') as Dayjs);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     fetchTrips();
-  }, [startDate, endDate]);
+  }, [searchQuery]);
 
   const fetchTrips = async () => {
     setLoading(true);
+    // if no startDate and endDate was provided
+    if (isEmpty(searchQuery)) {
+      return;
+    }
     const trips = await getTripsByDateRange(
-      startDate.toISOString(),
-      endDate.toISOString()
+      searchQuery.startDate,
+      searchQuery.endDate
     );
     setTripsData(trips);
     setLoading(false);
   };
 
-  const disabledDate: RangePickerProps['disabledDate'] = (current) => {
-    return current && current < dayjs().startOf('day');
-  };
-
-  const onChange: RangePickerProps['onChange'] = (date, dateString) => {
-    setStartDate(dayjs(dateString[0]).startOf('day'));
-    setEndDate(dayjs(dateString[1]).endOf('day'));
-  };
-
   return (
-    <div>
-      <div>
-        <RangePicker
-          defaultValue={[startDate, endDate]}
-          disabledDate={disabledDate}
-          onChange={onChange}
-          style={{ float: 'left', minWidth: '20%', margin: '10px 0px' }}
-          format={DATE_FORMAT_LIST}
-          placeholder={[DATE_PLACEHOLDER, DATE_PLACEHOLDER]}
-        />
-
-        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-          {hasAdminPrivileges && (
-            <Dropdown menu={{ items }} trigger={['click']}>
-              <Button
-                type='primary'
-                icon={<PlusCircleOutlined rev={undefined} />}
-              >
-                Create Trip
-              </Button>
-            </Dropdown>
-          )}
-        </div>
-      </div>
-      <div style={{ marginTop: 10 }}>
-        <Skeleton
-          loading={loading}
-          active
-          title={false}
-          paragraph={{
-            rows: 5,
-            width: ['98%', '98%', '98%', '98%', '98%'],
-          }}
-        >
-          {tripsData && (
-            <Table
-              columns={
-                hasAdminPrivileges ? [...columns, ...adminOnlyColumns] : columns
-              }
-              dataSource={tripsData}
-              pagination={false}
-            ></Table>
-          )}
-        </Skeleton>
-      </div>
-    </div>
+    <Skeleton
+      loading={loading}
+      active
+      title={false}
+      paragraph={{
+        rows: 5,
+        width: ['98%', '98%', '98%', '98%', '98%'],
+      }}
+    >
+      {tripsData && (
+        <Table
+          columns={
+            hasAdminPrivileges ? [...columns, ...adminOnlyColumns] : columns
+          }
+          dataSource={tripsData}
+          pagination={false}
+        ></Table>
+      )}
+    </Skeleton>
   );
 }

@@ -6,29 +6,11 @@ import {
 import { Booking, Prisma, Trip } from '@prisma/client';
 import { PrismaService } from 'src/prisma.service';
 import { SearchMapper } from './search.mapper';
-import { DashboardTrips } from '@ayahay/http';
-
-export interface TripInformation {
-  id: number;
-  srcPortId: number;
-  destPortId: number;
-  departureDate: Date;
-  shipId: number;
-  availableVehicleCapacity: number;
-  vehicleCapacity: number;
-  trip_id: number;
-  checkedInPassengerCount: number | null;
-  checkedInVehicleCount: number | null;
-
-  pipeSeparatedCabinTypeIds: string;
-  pipeSeparatedCabinNames: string;
-  pipeSeparatedCabinFares: string;
-  pipeSeparatedCabinAvailableCapacities: string;
-  pipeSeparatedCabinCapacities: string;
-  pipeSeparatedVehicleTypeIds: string;
-  pipeSeparatedVehicleFares: string;
-  pipeSeparatedVehicleNames: string;
-}
+import {
+  DashboardTrips,
+  TripInformation,
+  TripSearchByDateRange,
+} from '@ayahay/http';
 
 @Injectable()
 export class SearchService {
@@ -89,7 +71,9 @@ export class SearchService {
     return trips;
   }
 
-  async getTrips(query: any): Promise<DashboardTrips[]> {
+  async getDashboardTrips(
+    query: TripSearchByDateRange
+  ): Promise<DashboardTrips[]> {
     const { startDate, endDate } = query;
 
     const trips = await this.prisma.$queryRaw<TripInformation[]>`
@@ -157,6 +141,8 @@ export class SearchService {
       ORDER BY t."departureDate" ASC;
     `;
 
-    return trips.map((trip) => this.searchMapper.convertTripTableToDto(trip));
+    return trips.map((trip) =>
+      this.searchMapper.convertTripForDashboardTrips(trip)
+    );
   }
 }

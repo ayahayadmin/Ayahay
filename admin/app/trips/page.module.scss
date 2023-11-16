@@ -4,6 +4,20 @@
   @media (max-width: 1023px) {
     padding: 24px 5vw;
   }
+
+  .form-item {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .range-picker {
+    min-width: 20%;
+  }
+
+  .create-button {
+    display: flex;
+    justify-content: flex-end;
+  }
 }
 
 .spinner {
