@@ -15,42 +15,45 @@ import EnumRadio from '@/components/form/EnumRadio';
 import AddCompanionsModal from '@/components/booking/AddCompanionsModal';
 import AddVehiclesModal from '@/components/booking/AddVehiclesModal';
 import { toPassengerFormValue } from '@ayahay/services/form.service';
-import { getVehicleTypes } from '@/services/vehicle-type.service';
 import { useAuth } from '@/app/contexts/AuthContext';
 import { DATE_FORMAT_LIST, DATE_PLACEHOLDER } from '@ayahay/constants';
 import { computeAge, computeBirthday } from '@ayahay/services/date.service';
 import dayjs from 'dayjs';
 import { RangePickerProps } from 'antd/es/date-picker';
 
-const { Title } = Typography;
+const { Text, Title } = Typography;
 
 interface PassengerInformationFormProps {
+  availableVehicleTypes: IVehicleType[];
   onNextStep?: () => void;
   onPreviousStep?: () => void;
 }
 
-const yearToday = new Date().getFullYear();
+const passengerFieldsToValidate = [
+  'firstName',
+  'lastName',
+  'sex',
+  'birthdayIso',
+  'age',
+  'address',
+  'nationality',
+  'discountType',
+];
+
+const vehicleFieldsToValidate = ['plateNo', 'modelName', 'vehicleTypeId'];
 
 export default function PassengerInformationForm({
+  availableVehicleTypes,
   onNextStep,
   onPreviousStep,
 }: PassengerInformationFormProps) {
   const { loggedInAccount, hasPrivilegedAccess } = useAuth();
 
   const form = Form.useFormInstance();
-  const passengers = Form.useWatch('passengers', form);
-  const vehicles = Form.useWatch('vehicles', form);
+  const passengers = Form.useWatch<any[]>('passengers', form);
+  const vehicles = Form.useWatch<any[]>('vehicles', form);
   const [companionModalOpen, setCompanionModalOpen] = useState(false);
   const [vehicleModalOpen, setVehicleModalOpen] = useState(false);
-  const [vehicleTypes, setVehicleTypes] = useState([] as IVehicleType[]);
-
-  useEffect(() => {
-    fetchVehicleTypes();
-  }, []);
-
-  const fetchVehicleTypes = async () => {
-    setVehicleTypes(await getVehicleTypes());
-  };
 
   useEffect(() => {
     if (loggedInAccount === null) {
@@ -153,28 +156,22 @@ export default function PassengerInformationForm({
   };
 
   const validateFieldsInCurrentStep = async () => {
-    const fieldNamesToValidate = [
-      'firstName',
-      'lastName',
-      // 'occupation',
-      'sex',
-      // 'civilStatus',
-      'birthdayIso',
-      'age',
-      'address',
-      'nationality',
-      'discountType',
-    ];
-
+    if (passengers === undefined || vehicles === undefined) {
+      return;
+    }
     try {
-      const passengerList: any[] = passengers ?? [];
-      const fieldNames = fieldNamesToValidate;
-      const namePaths: (string | number)[][] = [];
-      passengerList.forEach((_, index) => {
-        fieldNames.forEach((fieldName) =>
+      const namePaths: (string | number)[][] = [['passengers'], ['vehicles']];
+      passengers.forEach((_, index) => {
+        passengerFieldsToValidate.forEach((fieldName) =>
           namePaths.push(['passengers', index, fieldName])
         );
       });
+      vehicles.forEach((_, index) => {
+        vehicleFieldsToValidate.forEach((fieldName) =>
+          namePaths.push(['vehicles', index, fieldName])
+        );
+      });
+
       await form.validateFields(namePaths);
 
       if (onNextStep) {
@@ -195,6 +192,21 @@ export default function PassengerInformationForm({
     return current > dayjs().endOf('day');
   };
 
+  const atLeastOnePassengerOrVehicleValidator = (
+    _: any,
+    __: any
+  ): Promise<void> => {
+    if (passengers === undefined || vehicles === undefined) {
+      return Promise.reject();
+    }
+
+    if (passengers.length === 0 && vehicles.length === 0) {
+      return Promise.reject();
+    }
+
+    return Promise.resolve();
+  };
+
   return (
     <>
       <Title level={2}>Passenger Information</Title>
@@ -207,7 +219,15 @@ export default function PassengerInformationForm({
           Have an account? Log in to book faster.
         </Button>
       )}
-      <Form.List name='passengers'>
+      <Form.List
+        name='passengers'
+        rules={[
+          {
+            message: 'Please add a passenger',
+            validator: atLeastOnePassengerOrVehicleValidator,
+          },
+        ]}
+      >
         {(fields, { add, remove }) => (
           <>
             {fields.map(({ key, name, ...restField }, index) => (
@@ -253,18 +273,26 @@ export default function PassengerInformationForm({
                   label='Date of Birth'
                   colon={false}
                   rules={[
+                    { required: true, message: 'Missing Date of Birth' },
                     ({ setFields, setFieldValue }) => ({
                       async validator(_, value) {
                         if (value) {
                           const age = computeAge(value);
-                          const discountType = getDiscountTypeFromAge(age);
                           setFieldValue(['passengers', name, 'age'], age);
+                          setFields([
+                            { name: ['passengers', name, 'age'], errors: [] },
+                          ]);
+
+                          if (!hasPrivilegedAccess) {
+                            return;
+                          }
+
+                          const discountType = getDiscountTypeFromAge(age);
                           setFieldValue(
                             ['passengers', name, 'discountType'],
                             discountType
                           );
                           setFields([
-                            { name: ['passengers', name, 'age'], errors: [] },
                             {
                               name: ['passengers', name, 'discountType'],
                               errors: [],
@@ -273,9 +301,7 @@ export default function PassengerInformationForm({
                           return Promise.resolve();
                         }
 
-                        return Promise.reject(
-                          new Error('Missing date of birth')
-                        );
+                        return Promise.reject();
                       },
                     }),
                   ]}
@@ -386,6 +412,14 @@ export default function PassengerInformationForm({
               </div>
             ))}
 
+            {passengers?.length === 0 && vehicles?.length === 0 && (
+              <p>
+                <Text type='danger'>
+                  At least one passenger or vehicle is required.
+                </Text>{' '}
+              </p>
+            )}
+
             <Button
               type='dashed'
               onClick={() =>
@@ -421,7 +455,15 @@ export default function PassengerInformationForm({
           </>
         )}
       </Form.List>
-      <Form.List name='vehicles'>
+      <Form.List
+        name='vehicles'
+        rules={[
+          {
+            message: 'Please add a vehicle',
+            validator: atLeastOnePassengerOrVehicleValidator,
+          },
+        ]}
+      >
         {(fields, { add, remove }) => (
           <>
             {fields.map(({ key, name, ...restField }, index) => (
@@ -453,30 +495,6 @@ export default function PassengerInformationForm({
                 </Form.Item>
                 <Form.Item
                   {...restField}
-                  name={[name, 'modelYear']}
-                  label='Model Year Manufactured'
-                  colon={false}
-                  rules={[
-                    {
-                      required: true,
-                      message: 'Missing model year manufactured',
-                    },
-                  ]}
-                >
-                  <Select
-                    disabled={vehicles?.[index]?.id !== undefined}
-                    placeholder='Select an option...'
-                    options={Array.from(
-                      { length: 50 },
-                      (_, i) => yearToday - i
-                    ).map((year) => ({
-                      value: year,
-                      label: year,
-                    }))}
-                  />
-                </Form.Item>
-                <Form.Item
-                  {...restField}
                   name={[name, 'vehicleTypeId']}
                   label='Model Body'
                   colon={false}
@@ -488,9 +506,14 @@ export default function PassengerInformationForm({
                   ]}
                 >
                   <Select
+                    showSearch
+                    optionFilterProp='children'
+                    filterOption={(input, option) =>
+                      option.label.toLowerCase().includes(input.toLowerCase())
+                    }
                     disabled={vehicles?.[index]?.id !== undefined}
                     placeholder='Select an option...'
-                    options={vehicleTypes.map((vehicleType) => ({
+                    options={availableVehicleTypes.map((vehicleType) => ({
                       label: vehicleType.name,
                       value: vehicleType.id,
                     }))}

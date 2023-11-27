@@ -12,15 +12,10 @@ import {
 } from 'lodash';
 import styles from './page.module.scss';
 import { useEffect, useState } from 'react';
-import { ISeat } from '@ayahay/models/seat.model';
+import { ISeat, IBookingPassenger } from '@ayahay/models';
 import { Modal, Select } from 'antd';
-import { mockShips } from '@ayahay/models/ship.model';
-import { mockTrip } from '@ayahay/models/trip.model';
+import { mockShips, mockTrip, mockBookingPassengers } from '@ayahay/mocks';
 import { getAllBookingsOfTrip } from '@/services/booking.service';
-import {
-  IBookingPassenger,
-  mockBookingPassengers,
-} from '@ayahay/models/booking-passenger.model';
 import { ICabin } from '@ayahay/models/cabin.model';
 
 interface PassengerInfo {

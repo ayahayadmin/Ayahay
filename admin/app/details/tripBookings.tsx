@@ -1,8 +1,5 @@
-import {
-  IPassenger,
-  mockBookingPassengers,
-  mockPassengers,
-} from '@/../packages/models';
+import { IPassenger } from '@ayahay/models';
+import { mockBookingPassengers, mockPassengers } from '@ayahay/mocks';
 import { getAllBookingsOfTrip } from '@/services/booking.service';
 import { Table } from 'antd';
 import { find } from 'lodash';

@@ -1,6 +1,7 @@
 'use client';
 import { getTime } from '@/services/search.service';
-import { ITrip, mockTrips } from '@ayahay/models/trip.model';
+import { ITrip } from '@ayahay/models';
+import { mockTrips } from '@ayahay/mocks';
 import { Button } from 'antd';
 import { find, join, split } from 'lodash';
 import React, { useEffect, useState } from 'react';

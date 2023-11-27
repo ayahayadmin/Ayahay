@@ -1,4 +1,5 @@
-import { IBooking, ITrip, mockShip, mockShippingLine } from '@ayahay/models';
+import { IBooking, ITrip } from '@ayahay/models';
+import { mockShip, mockShippingLine } from '@ayahay/mocks';
 // import { generateReferenceNo } from '@ayahay/services/random.service';
 import { addTrips, getTripByReferenceNo } from '@/services/trip.service';
 import { round } from 'lodash';

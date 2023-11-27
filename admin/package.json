@@ -15,6 +15,7 @@
     "@ayahay/constants": "^0.1.0",
     "@ayahay/hooks": "^0.1.0",
     "@ayahay/http": "^0.1.0",
+    "@ayahay/mocks": "^0.1.0",
     "@ayahay/models": "^0.1.0",
     "@ayahay/services": "^0.1.0",
     "@types/lodash": "^4.14.191",

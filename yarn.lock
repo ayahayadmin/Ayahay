@@ -143,6 +143,7 @@ __metadata:
     "@ayahay/constants": ^0.1.0
     "@ayahay/hooks": ^0.1.0
     "@ayahay/http": ^0.1.0
+    "@ayahay/mocks": ^0.1.0
     "@ayahay/models": ^0.1.0
     "@ayahay/services": ^0.1.0
     "@types/lodash": ^4.14.191
@@ -245,6 +246,15 @@ __metadata:
 "@ayahay/http@^0.1.0, @ayahay/http@workspace:packages/http":
   version: 0.0.0-use.local
   resolution: "@ayahay/http@workspace:packages/http"
+  dependencies:
+    "@ayahay/constants": "*"
+    "@ayahay/models": "*"
+  languageName: unknown
+  linkType: soft
+
+"@ayahay/mocks@^0.1.0, @ayahay/mocks@workspace:packages/mocks":
+  version: 0.0.0-use.local
+  resolution: "@ayahay/mocks@workspace:packages/mocks"
   dependencies:
     "@ayahay/constants": "*"
     "@ayahay/models": "*"
