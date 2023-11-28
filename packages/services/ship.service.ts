@@ -9,8 +9,10 @@ export async function getShips(): Promise<IShip[] | undefined> {
     return cachedShips;
   }
 
+  // TODO: get shipping line id from account information
+  const shippingLineId = 1;
   try {
-    const { data } = await axios.get(`${SHIPS_API}`);
+    const { data } = await axios.get(`${SHIPS_API}/${shippingLineId}`);
     cacheItem('ships', data);
     return data;
   } catch (e) {

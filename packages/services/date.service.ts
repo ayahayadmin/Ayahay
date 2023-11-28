@@ -1,13 +1,20 @@
-export function getFullDate(date: string): string {
+import { MONTHS } from '@ayahay/constants';
+
+export function getFullDate(date: string, monthName?: boolean): string {
   const newDate = new Date(date);
-  return (
-    newDate.getMonth() +
-    1 +
-    '/' +
-    newDate.getDate() +
-    '/' +
-    newDate.getFullYear()
-  );
+
+  return monthName
+    ? MONTHS[newDate.getMonth()] +
+        ' ' +
+        newDate.getDate() +
+        ', ' +
+        newDate.getFullYear()
+    : newDate.getMonth() +
+        1 +
+        '/' +
+        newDate.getDate() +
+        '/' +
+        newDate.getFullYear();
 }
 
 export function getLocaleTimeString(date: string): string {

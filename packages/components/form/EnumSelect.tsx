@@ -1,4 +1,4 @@
-import { Form, FormItemProps, Radio, Select } from 'antd';
+import { Form, FormItemProps, Select } from 'antd';
 import React from 'react';
 
 interface EnumProps {

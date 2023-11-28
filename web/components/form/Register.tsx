@@ -1,5 +1,5 @@
 import { Button, Checkbox, DatePicker, Form, Input, Steps } from 'antd';
-import EnumSelect from './EnumSelect';
+import EnumSelect from '@ayahay/components/form/EnumSelect';
 import { CIVIL_STATUS, OCCUPATION, SEX } from '@ayahay/constants';
 import { buttonStyle, buttonsStyle } from './Login';
 import { useState } from 'react';
