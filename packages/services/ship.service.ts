@@ -1,6 +1,6 @@
 import { SHIPS_API } from '@ayahay/constants';
 import { IShip } from '@ayahay/models';
-import axios from 'axios';
+import axios from './axios';
 import { cacheItem, fetchItem } from './cache.service';
 
 export async function getShips(): Promise<IShip[] | undefined> {

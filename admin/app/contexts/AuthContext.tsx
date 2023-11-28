@@ -8,7 +8,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { firebase } from '../utils/initFirebase';
 import { useIdToken } from 'react-firebase-hooks/auth';
 import { accountRelatedCacheKeys } from '@ayahay/constants';
-import { invalidateItem } from '@ayahay/services/cache.service';
+import { cacheItem, invalidateItem } from '@ayahay/services/cache.service';
 import { IAccount } from '@ayahay/models';
 import { getAccountInformation } from '@ayahay/services/account.service';
 
@@ -39,10 +39,14 @@ export default function AuthContextProvider({ children }: any) {
   const fetchAccountInformation = async () => {
     if (currentUser) {
       // force refresh so that user claims (with role) is always updated on login
-      await currentUser.getIdToken(true);
+      const jwt = await currentUser.getIdToken(true);
+      cacheItem('jwt', jwt);
+      const myAccountInformation = await getAccountInformation();
+      setLoggedInAccount(myAccountInformation);
+    } else {
+      invalidateItem('jwt');
+      setLoggedInAccount(undefined);
     }
-    const myAccountInformation = await getAccountInformation(currentUser);
-    setLoggedInAccount(myAccountInformation);
   };
 
   function signIn(email: string, password: string): Promise<string> {

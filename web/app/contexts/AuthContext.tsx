@@ -11,7 +11,7 @@ import {
 import { createContext, useContext, useEffect, useState } from 'react';
 import { firebase } from '../utils/initFirebase';
 import { useIdToken } from 'react-firebase-hooks/auth';
-import { invalidateItem } from '@ayahay/services/cache.service';
+import { cacheItem, invalidateItem } from '@ayahay/services/cache.service';
 import { accountRelatedCacheKeys } from '@ayahay/constants';
 import { IAccount, RegisterForm } from '@ayahay/models';
 import {
@@ -53,17 +53,21 @@ export default function AuthContextProvider({ children }: any) {
   const fetchAccountInformation = async () => {
     if (currentUser) {
       // force refresh so that user claims (with role) is always updated on login
-      await currentUser.getIdToken(true);
+      const jwt = await currentUser.getIdToken(true);
+      cacheItem('jwt', jwt);
+      const myAccountInformation = await getAccountInformation();
+      setLoggedInAccount(myAccountInformation);
+
+      const _hasPrivilegedAccess =
+        myAccountInformation?.role === 'Staff' ||
+        myAccountInformation?.role === 'Admin' ||
+        myAccountInformation?.role === 'SuperAdmin';
+      setHasPrivilegedAccess(_hasPrivilegedAccess);
+    } else {
+      invalidateItem('jwt');
+      setLoggedInAccount(undefined);
+      setHasPrivilegedAccess(false);
     }
-    const myAccountInformation = await getAccountInformation(currentUser);
-    setLoggedInAccount(myAccountInformation);
-
-    const _hasPrivilegedAccess =
-      myAccountInformation?.role === 'Staff' ||
-      myAccountInformation?.role === 'Admin' ||
-      myAccountInformation?.role === 'SuperAdmin';
-
-    setHasPrivilegedAccess(_hasPrivilegedAccess);
   };
 
   function register(email: string, password: string, values: RegisterForm) {

@@ -1,4 +1,5 @@
 import { ITrip } from './trip.model';
+import { IAccountNotification } from './account-notification.model';
 
 export interface INotification {
   id: number;

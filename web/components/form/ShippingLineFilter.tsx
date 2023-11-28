@@ -1,6 +1,6 @@
 import { Form, FormItemProps, Select } from 'antd';
 import React, { useEffect, useState } from 'react';
-import { getShippingLines } from '@/services/shipping-line.service';
+import { getShippingLines } from '@ayahay/services/shipping-line.service';
 import { IShippingLine } from '@ayahay/models';
 
 const { Option } = Select;
@@ -17,7 +17,7 @@ export default function ShippingLineFilter({
 
   useEffect(() => {
     const initializeShippingLines = async () => {
-      const shippingLines = await getShippingLines();
+      const shippingLines = (await getShippingLines()) ?? [];
       setAllShippingLines(shippingLines);
       setShippingLineOptions(shippingLines);
     };

@@ -4,13 +4,12 @@ import {
   CreateTripsFromSchedulesRequest,
   UpdateTripCapacityRequest,
 } from '@ayahay/http';
-import axios from 'axios';
+import axios from '@ayahay/services/axios';
 import { cacheItem, fetchItem } from '@ayahay/services/cache.service';
 import dayjs from 'dayjs';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import { mapTripResponseData } from '@ayahay/services/trip.service';
-import { firebase } from '@/app/utils/initFirebase';
 
 dayjs.extend(isSameOrBefore);
 dayjs.extend(isSameOrAfter);
@@ -69,13 +68,10 @@ export async function getTripByReferenceNo(
 export async function createTripsFromSchedules(
   request: CreateTripsFromSchedulesRequest
 ): Promise<any | undefined> {
-  const authToken = await firebase.currentUser?.getIdToken();
-
   try {
     await axios.post<IShippingLineSchedule[]>(
       `${TRIP_API}/from-schedules`,
-      request,
-      { headers: { Authorization: `Bearer ${authToken}` } }
+      request
     );
   } catch (e: any) {
     return e;
@@ -88,12 +84,8 @@ export async function updateTripCabinCapacity(
   tripId: number,
   request: UpdateTripCapacityRequest
 ) {
-  const authToken = await firebase.currentUser?.getIdToken();
-
   try {
-    await axios.patch(`${TRIP_API}/${tripId}/capacity`, request, {
-      headers: { Authorization: `Bearer ${authToken}` },
-    });
+    await axios.patch(`${TRIP_API}/${tripId}/capacity`, request);
   } catch (e: any) {
     return e;
   }

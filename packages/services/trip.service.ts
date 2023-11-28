@@ -1,5 +1,5 @@
 import { ITrip } from '@ayahay/models';
-import { getPort } from '@ayahay/services/port.service';
+import { getPort } from './port.service';
 import { getShippingLine } from './shipping-line.service';
 
 export function mapTripResponseData(responseData: ITrip) {

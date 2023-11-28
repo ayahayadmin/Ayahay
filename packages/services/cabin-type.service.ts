@@ -1,6 +1,6 @@
 import { CABIN_TYPES_API } from '@ayahay/constants';
 import { ICabinType } from '@ayahay/models';
-import axios from 'axios';
+import axios from './axios';
 import { cacheItem, fetchItem } from './cache.service';
 
 export async function getCabinTypes(): Promise<ICabinType[] | undefined> {

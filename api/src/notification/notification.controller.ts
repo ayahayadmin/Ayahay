@@ -1,0 +1,43 @@
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  Request,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
+import { NotificationService } from './notification.service';
+import { AllowUnauthenticated } from '../decorator/authenticated.decorator';
+import { AuthGuard } from '../guard/auth.guard';
+import { PaginatedRequest } from '@ayahay/http';
+import { INotification } from '@ayahay/models';
+import { Roles } from '../decorator/roles.decorator';
+
+@Controller('notifications')
+export class NotificationController {
+  constructor(private notificationService: NotificationService) {}
+
+  @Get('mine')
+  @UseGuards(AuthGuard)
+  @AllowUnauthenticated()
+  async getMyNotifications(
+    @Request() req,
+    @Query() pagination: PaginatedRequest
+  ): Promise<INotification[]> {
+    return this.notificationService.getMyNotifications(
+      pagination,
+      req.user?.id
+    );
+  }
+
+  @Post('public')
+  @UseGuards(AuthGuard)
+  @Roles('Admin', 'SuperAdmin')
+  async createAnnouncement(@Body() notification: INotification): Promise<void> {
+    return this.notificationService.createAnnouncement(notification);
+  }
+}

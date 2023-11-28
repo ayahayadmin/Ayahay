@@ -1,6 +1,6 @@
 import { SHIPPING_LINE_API } from '@ayahay/constants';
 import { IShippingLine } from '@ayahay/models';
-import axios from 'axios';
+import axios from './axios';
 import { cacheItem, fetchItem } from './cache.service';
 
 export async function getShippingLines(): Promise<IShippingLine[] | undefined> {

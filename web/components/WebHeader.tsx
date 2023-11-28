@@ -3,25 +3,17 @@ import React from 'react';
 import Image from 'next/image';
 import styles from './WebHeader.module.scss';
 import AyahayLogo from '/public/assets/ayahay-logo.png';
-import { Button, Menu, notification } from 'antd';
-import { BellOutlined } from '@ant-design/icons';
+import { Menu } from 'antd';
+import Notifications from '@ayahay/components/Notifications';
 import { webLinks } from '@/services/nav.service';
 import AuthForm from '@/components/auth/AuthForm';
 import { usePathname, useRouter } from 'next/navigation';
+import { useAuth } from '@/app/contexts/AuthContext';
 
 export default function WebHeader() {
+  const { loggedInAccount } = useAuth();
   const pathName = usePathname();
   const router = useRouter();
-  const [api, contextHolder] = notification.useNotification();
-
-  const openNotification = () => {
-    api.open({
-      message: 'Notifications',
-      description:
-        'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
-      duration: 0,
-    });
-  };
 
   return (
     <nav className={`hide-on-print ${styles['nav-container']}`}>
@@ -42,10 +34,12 @@ export default function WebHeader() {
       </div>
 
       <div className={styles['nav-buttons']}>
-        {contextHolder}
-        <Button type='text' onClick={openNotification} size='large'>
-          <BellOutlined style={{ fontSize: '18px' }} rev={undefined} />
-        </Button>
+        <Notifications
+          hasAdminPrivileges={
+            loggedInAccount?.role === 'Admin' ||
+            loggedInAccount?.role === 'SuperAdmin'
+          }
+        />
         <AuthForm />
       </div>
     </nav>
