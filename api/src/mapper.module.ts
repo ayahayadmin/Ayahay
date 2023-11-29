@@ -11,6 +11,7 @@ import { PaymentMapper } from './payment/payment.mapper';
 import { SearchMapper } from './search/search.mapper';
 import { ShipMapper } from './ship/ship.mapper';
 import { ReportingMapper } from './reporting/reporting.mapper';
+import { NotificationMapper } from './notification/notification.mapper';
 
 @Module({
   providers: [
@@ -26,6 +27,7 @@ import { ReportingMapper } from './reporting/reporting.mapper';
     SearchMapper,
     ShipMapper,
     ReportingMapper,
+    NotificationMapper,
   ],
   exports: [
     TripMapper,
@@ -40,6 +42,7 @@ import { ReportingMapper } from './reporting/reporting.mapper';
     SearchMapper,
     ShipMapper,
     ReportingMapper,
+    NotificationMapper,
   ],
 })
 export class MapperModule {}

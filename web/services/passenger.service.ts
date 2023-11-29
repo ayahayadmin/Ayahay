@@ -1,7 +1,6 @@
 import { PASSENGER_API } from '@ayahay/constants';
 import { IPassenger, RegisterForm } from '@ayahay/models';
-import axios from 'axios';
-import { random } from 'lodash';
+import axios from '@ayahay/services/axios';
 
 export function mapPassengerToDto(
   uid: string,

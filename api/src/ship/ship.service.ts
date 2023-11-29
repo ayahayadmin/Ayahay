@@ -6,7 +6,11 @@ import { IShip } from '@ayahay/models';
 export class ShipService {
   constructor(private prisma: PrismaService) {}
 
-  async getShips(): Promise<IShip[]> {
-    return await this.prisma.ship.findMany({});
+  async getShipsOfShippingLine(shippingLineId: number): Promise<IShip[]> {
+    return await this.prisma.ship.findMany({
+      where: {
+        shippingLineId,
+      },
+    });
   }
 }

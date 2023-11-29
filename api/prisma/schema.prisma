@@ -190,6 +190,7 @@ model Port {
   id Int @default(autoincrement()) @id
 
   name String
+  code String
 
   tripsSrc Trip[] @relation("srcPort")
   tripsDest Trip[] @relation("destPort")

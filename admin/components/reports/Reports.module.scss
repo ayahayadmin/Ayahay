@@ -1,0 +1,19 @@
+.center-div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.font-style {
+  font-family: sans-serif;
+}
+
+.cell-border {
+  border: 0.001px solid black;
+  border-color: '#454545';
+}
+
+.td-text-wrap {
+  text-align: left;
+  word-wrap: break-word;
+}

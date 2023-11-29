@@ -2,11 +2,40 @@ import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { ReportingService } from './reporting.service';
 import { AuthGuard } from 'src/guard/auth.guard';
 import { Roles } from 'src/decorator/roles.decorator';
-import { TripManifest } from '@ayahay/http';
+import {
+  TripReport,
+  TripManifest,
+  TripSearchByDateRange,
+  PortsByShip,
+  PerVesselReport,
+} from '@ayahay/http';
 
 @Controller('reporting')
 export class ReportingController {
   constructor(private reportingService: ReportingService) {}
+
+  @Get('trips/:id/reporting')
+  @UseGuards(AuthGuard)
+  @Roles('Admin', 'SuperAdmin')
+  async getTripsReporting(@Param('id') tripId: string): Promise<TripReport> {
+    return this.reportingService.getTripsReporting(Number(tripId));
+  }
+
+  @Get('ports')
+  @UseGuards(AuthGuard)
+  @Roles('Admin', 'SuperAdmin')
+  async getPortsByShip(
+    @Query() dates: TripSearchByDateRange
+  ): Promise<PortsByShip[]> {
+    return this.reportingService.getPortsByShip(dates);
+  }
+
+  @Get('trips/ships')
+  @UseGuards(AuthGuard)
+  @Roles('Admin', 'SuperAdmin')
+  async getTripsByShip(@Query() data: PortsByShip): Promise<PerVesselReport[]> {
+    return this.reportingService.getTripsByShip(data);
+  }
 
   @Get('trips/:id/manifest')
   @UseGuards(AuthGuard)

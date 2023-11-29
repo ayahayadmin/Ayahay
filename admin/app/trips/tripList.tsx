@@ -68,6 +68,18 @@ const columns: ColumnsType<ITrip> = [
 
 const adminOnlyColumns = [
   {
+    title: 'Reporting',
+    render: (_, record: ITrip) => (
+      <Button
+        type='primary'
+        href={`/trips/${record.id}/reporting`}
+        target='_blank'
+      >
+        Generate
+      </Button>
+    ),
+  },
+  {
     title: 'Capacities',
     key: 'editCapacities',
     render: (text: string, record: ITrip) => (

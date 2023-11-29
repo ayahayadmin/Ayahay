@@ -14,3 +14,18 @@ export const DATE_FORMAT_LIST = [
   'YYYY',
 ];
 export const DATE_PLACEHOLDER = DATE_FORMAT_LIST[0];
+
+export const MONTHS = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+];

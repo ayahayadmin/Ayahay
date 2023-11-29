@@ -12,6 +12,7 @@ import { ColumnsType } from 'antd/es/table';
 import { useEffect, useState } from 'react';
 import styles from './page.module.scss';
 import { isEmpty } from 'lodash';
+import { useAuth } from '../contexts/AuthContext';
 
 const columns: ColumnsType<DashboardTrips> = [
   {
@@ -57,12 +58,13 @@ interface DashboardTableProps {
 }
 
 export default function DashboardTable({ searchQuery }: DashboardTableProps) {
+  const { loggedInAccount } = useAuth();
   const [loading, setLoading] = useState(false);
   const [tripInfo, setTripInfo] = useState([] as DashboardTrips[] | undefined);
 
   useEffect(() => {
     getTripInfo();
-  }, [searchQuery]);
+  }, [loggedInAccount, searchQuery]);
 
   const getTripInfo = async () => {
     setLoading(true);

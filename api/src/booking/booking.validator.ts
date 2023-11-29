@@ -17,6 +17,14 @@ export class BookingValidator {
   ): string[] {
     const errorMessages: string[] = [];
 
+    if (trips.length === 0) {
+        errorMessages.push('A booking must have at least one trip.');
+    }
+
+    if (passengers.length === 0 && vehicles.length === 0) {
+        errorMessages.push('A booking must have at least one passenger or vehicle.');
+    }
+
     if (trips.length > this.MAX_TRIPS_PER_BOOKING) {
       errorMessages.push(
         `Number of trips for one booking exceeded the maximum of ${this.MAX_TRIPS_PER_BOOKING}`
@@ -48,6 +56,7 @@ export class BookingValidator {
     );
 
     // TODO: check if vehicle types are supported by all trips
+    // TODO: check if any required field from passenger/vehicle is missing
 
     return errorMessages;
   }

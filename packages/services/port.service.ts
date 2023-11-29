@@ -1,6 +1,6 @@
 import { PORTS_API } from '@ayahay/constants';
 import { IPort } from '@ayahay/models';
-import axios from 'axios';
+import axios from './axios';
 import { cacheItem, fetchItem } from './cache.service';
 
 export async function getPorts(): Promise<IPort[] | undefined> {

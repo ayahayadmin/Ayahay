@@ -5,5 +5,6 @@ export * from './trip';
 export * from './types';
 export * from './vehicle-type';
 export * from './error';
+export * from './reporting';
 export * from './pagination';
 export * from './reporting';

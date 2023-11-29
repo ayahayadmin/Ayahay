@@ -18,3 +18,5 @@ export * from './trip-cabin.model';
 export * from './trip-vehicle-type.model';
 export * from './vehicle-type.model';
 export * from './payment-item.model';
+export * from './notification.model';
+export * from './account-notification.model';

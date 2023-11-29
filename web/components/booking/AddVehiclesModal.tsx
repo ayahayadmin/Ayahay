@@ -22,7 +22,7 @@ export default function AddVehiclesModal({
 
   const options = vehicles?.map((vehicle, index) => ({
     value: index,
-    label: `${vehicle.modelName} ${vehicle.modelYear} ${vehicle.plateNo}`,
+    label: `${vehicle.modelName} ${vehicle.plateNo}`,
   }));
 
   const onOkModal = () => {

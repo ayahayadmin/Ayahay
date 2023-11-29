@@ -1,22 +1,11 @@
 import { IAccount } from '@ayahay/models';
-import { cacheItem, fetchItem } from '@ayahay/services/cache.service';
-import axios from 'axios';
+import { cacheItem } from './cache.service';
+import axios from './axios';
 import { ACCOUNT_API } from '@ayahay/constants';
-import { User } from '@firebase/auth';
 
-export async function getAccountInformation(
-  user: User | undefined | null
-): Promise<IAccount | undefined> {
-  if (!user) {
-    return undefined;
-  }
-
-  const authToken = await user.getIdToken();
-
+export async function getAccountInformation(): Promise<IAccount | undefined> {
   try {
-    const { data } = await axios.get(`${ACCOUNT_API}/mine`, {
-      headers: { Authorization: `Bearer ${authToken}` },
-    });
+    const { data } = await axios.get(`${ACCOUNT_API}/mine`);
 
     cacheItem('loggedInAccount', data);
     return data;

@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
 import { ShipService } from './ship.service';
 import { IShip } from '@ayahay/models';
 
@@ -6,8 +6,10 @@ import { IShip } from '@ayahay/models';
 export class ShipController {
   constructor(private shipService: ShipService) {}
 
-  @Get()
-  async getShips(): Promise<IShip[]> {
-    return await this.shipService.getShips();
+  @Get(':id')
+  async getShipsOfShippingLine(
+    @Param('id') shippingLineId: number
+  ): Promise<IShip[]> {
+    return await this.shipService.getShipsOfShippingLine(shippingLineId);
   }
 }

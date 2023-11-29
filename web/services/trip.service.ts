@@ -6,10 +6,10 @@ import {
   TripData,
 } from '@ayahay/models';
 import { ceil, forEach, isEmpty } from 'lodash';
-import axios from 'axios';
+import axios from '@ayahay/services/axios';
 import { TRIP_API } from '@ayahay/constants/api';
-import { getPort } from './port.service';
-import { getShippingLine } from './shipping-line.service';
+import { getPort } from '@ayahay/services/port.service';
+import { getShippingLine } from '@ayahay/services/shipping-line.service';
 
 export async function getTrip(tripId: number): Promise<ITrip | undefined> {
   if (tripId === undefined) {

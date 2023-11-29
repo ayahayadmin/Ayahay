@@ -741,6 +741,25 @@ WHERE row <= ${passengerPreferences.length}
     );
   }
 
+  calculateServiceChargeForPassenger(
+    passenger: IPassenger | any,
+    role: string
+  ): number {
+    if (role === 'Staff' || role === 'Admin' || role === 'SuperAdmin') {
+      return 0;
+    }
+
+    return this.isPayingPassenger(passenger) ? 50 : 0;
+  }
+
+  calculateServiceChargeForVehicle(vehicleFare: number, role: string): number {
+    if (role === 'Staff' || role === 'Admin' || role === 'SuperAdmin') {
+      return 0;
+    }
+
+    return vehicleFare * this.AYAHAY_MARKUP_PERCENT;
+  }
+
   private async saveTempBooking(booking: IBooking): Promise<IBooking> {
     const tempBookingToCreate =
       this.bookingMapper.convertBookingToTempBookingEntityForCreation(booking);

@@ -4,13 +4,12 @@ import {
   DashboardTrips,
   TripSearchByDateRange,
 } from '@ayahay/http';
-import axios from 'axios';
+import axios from '@ayahay/services/axios';
 import { SEARCH_API } from '@ayahay/constants';
 import { getPort } from '@ayahay/services/port.service';
 import { getShip } from '@ayahay/services/ship.service';
-import { firebase } from '@/app/utils/initFirebase';
-import { isEmpty } from 'lodash';
 import dayjs from 'dayjs';
+import { isEmpty } from 'lodash';
 
 export function initializeAdminSearchFormFromQueryParams(
   form: FormInstance,
@@ -100,22 +99,12 @@ export async function getTripInformation(
   startDate: string,
   endDate: string
 ): Promise<DashboardTrips[] | undefined> {
-  const authToken = await firebase.currentUser?.getIdToken();
-
-  // Every page refresh, fireabse token is undefined,
-  // we set an if condition to prevent passing an undefined
-  // token to the API (it'll cause an error)
-  if (!authToken) {
-    return;
-  }
-
-  return await axios
+  return axios
     .get(`${SEARCH_API}/dashboard`, {
       params: {
         startDate,
         endDate,
       },
-      headers: { Authorization: `Bearer ${authToken}` },
     })
     .then((res) => {
       return Promise.all(

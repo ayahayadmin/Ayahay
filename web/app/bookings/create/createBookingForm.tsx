@@ -186,6 +186,9 @@ export default function CreateBookingForm({
           }}
         >
           <PassengerInformationForm
+            availableVehicleTypes={trip?.availableVehicleTypes.map(
+              (tripVehicleType) => tripVehicleType.vehicleType
+            )}
             onNextStep={findSeats}
             onPreviousStep={previousStep}
           />
