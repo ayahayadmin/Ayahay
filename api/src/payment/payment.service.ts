@@ -66,15 +66,12 @@ export class PaymentService {
   }
 
   private shouldSkipPaymentFlow(loggedInAccount?: IAccount): boolean {
-    const isPaymentGatewayConfigured =
-      process.env.PAYMENT_GATEWAY_URL !== undefined;
-
     const isStaffOrAdmin =
       loggedInAccount && loggedInAccount.role !== 'Passenger';
 
     const isLocalEnvironment = process.env.NODE_ENV === 'local';
 
-    return !isPaymentGatewayConfigured || isStaffOrAdmin || isLocalEnvironment;
+    return isStaffOrAdmin || isLocalEnvironment;
   }
 
   private async skipPaymentFlow(
