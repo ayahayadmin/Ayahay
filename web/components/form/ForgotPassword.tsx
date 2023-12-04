@@ -1,5 +1,5 @@
 import { Button, Form, Input } from 'antd';
-import { buttonStyle, buttonsStyle } from './Login';
+import { buttonStyle } from './Login';
 
 interface ForgotPasswordProps {
   onFinishReset: (values: any) => Promise<void>;
@@ -33,7 +33,7 @@ export default function ForgotPassword({
         <Input placeholder='Enter email' />
       </Form.Item>
 
-      <Form.Item style={buttonsStyle}>
+      <Form.Item>
         <Button key='back' onClick={onClickBack} style={buttonStyle}>
           Back
         </Button>

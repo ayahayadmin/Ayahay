@@ -5,15 +5,9 @@ interface LoginProps {
   onClickReset: () => void;
 }
 
-export const buttonsStyle = {
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-};
-
 export const buttonStyle = {
-  marginLeft: '4vw',
-  marginRight: '4vw',
+  width: '100%',
+  height: '35px',
 };
 
 export default function Login({ onFinishLogin, onClickReset }: LoginProps) {
@@ -47,12 +41,12 @@ export default function Login({ onFinishLogin, onClickReset }: LoginProps) {
         <Input.Password type='password' placeholder='Enter password' />
       </Form.Item>
       <Form.Item>
-        <a className='login-form-forgot' onClick={onClickReset}>
+        <Button type='link' onClick={onClickReset} style={{ padding: 0 }}>
           Forgot password?
-        </a>
+        </Button>
       </Form.Item>
 
-      <Form.Item style={buttonsStyle}>
+      <Form.Item>
         <Button type='primary' htmlType='submit' style={buttonStyle}>
           Log in
         </Button>

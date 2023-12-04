@@ -1,11 +1,12 @@
 import {
+  FacebookAuthProvider,
   GoogleAuthProvider,
   User,
   createUserWithEmailAndPassword,
   sendEmailVerification,
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
-  signInWithPopup,
+  signInWithRedirect,
   signOut,
 } from 'firebase/auth';
 import { createContext, useContext, useEffect, useState } from 'react';
@@ -29,6 +30,7 @@ const AuthContext = createContext({
   register: (email: string, password: string, values: RegisterForm) => Promise,
   signIn: (email: string, password: string) => Promise,
   signInWithGoogle: () => Promise,
+  signInWithFacebook: () => Promise,
   logout: () => Promise,
   resetPassword: (email: string) => Promise,
   emailVerification: (user: User) => Promise,
@@ -109,7 +111,12 @@ export default function AuthContextProvider({ children }: any) {
 
   function signInWithGoogle() {
     const provider = new GoogleAuthProvider();
-    return signInWithPopup(firebase, provider);
+    return signInWithRedirect(firebase, provider);
+  }
+
+  function signInWithFacebook() {
+    const provider = new FacebookAuthProvider();
+    return signInWithRedirect(firebase, provider);
   }
 
   function resetPassword(email: string) {
@@ -152,6 +159,7 @@ export default function AuthContextProvider({ children }: any) {
     signIn,
     logout,
     signInWithGoogle,
+    signInWithFacebook,
     resetPassword,
     emailVerification,
   };
