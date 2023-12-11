@@ -12,10 +12,11 @@ import { MOPBreakdown } from './SummarySalesPerVessel';
 interface SummarySalesPerVoyageProps {
   data: ITripReport;
   status: string;
+  vesselName: string;
 }
 
 const SummarySalesPerVoyage = forwardRef(function (
-  { data, status }: SummarySalesPerVoyageProps,
+  { data, status, vesselName }: SummarySalesPerVoyageProps,
   ref
 ) {
   const { loggedInAccount } = useAuth();
@@ -94,7 +95,7 @@ const SummarySalesPerVoyage = forwardRef(function (
           }}
         >
           <div>
-            <p>VESSEL NAME: {data.ship.name}</p>
+            <p>VESSEL NAME: {vesselName}</p>
             <p>VOYAGE: {data.id}</p>
             <p>
               ROUTE: {data.srcPort.name} to {data.destPort.name}
@@ -140,7 +141,7 @@ const SummarySalesPerVoyage = forwardRef(function (
             </thead>
             <tbody>
               <tr>
-                <td>{data.ship.name}</td>
+                <td>{vesselName}</td>
                 <td>
                   {data.srcPort.code}-{data.destPort.code}/WT:&nbsp;
                   {getFullDate(data.departureDate, true)}

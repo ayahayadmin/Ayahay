@@ -37,12 +37,27 @@ const columns: ColumnsType<PortsByShip> = [
     align: 'center',
   },
   {
-    title: 'Reporting',
+    title: 'Per Trip Reporting',
     render: (_, record: PortsByShip) => {
       return (
         <Button
           type='primary'
           href={`/reporting/ship?shipId=${record.shipId}&srcPortId=${record.srcPortId}&destPortId=${record.destPortId}&startDate=${record.startDate}&endDate=${record.endDate}`}
+          target='_blank'
+        >
+          Generate
+        </Button>
+      );
+    },
+    align: 'center',
+  },
+  {
+    title: 'Per Vessel Reporting',
+    render: (_, record: PortsByShip) => {
+      return (
+        <Button
+          type='primary'
+          href={`/reporting/ship?shipId=${record.shipId}&startDate=${record.startDate}&endDate=${record.endDate}&reportType=all`}
           target='_blank'
         >
           Generate

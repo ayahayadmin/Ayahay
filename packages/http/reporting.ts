@@ -1,11 +1,10 @@
 import { OPERATION_COSTS } from '@ayahay/constants';
 import { IPort, IShip, IShippingLine } from '@ayahay/models';
 
-// TODO: Minimize payload
 export interface TripReport {
   id: number;
   shipId: number;
-  ship: IShip;
+  shipName: string;
   shippingLineId: number;
   shippingLine: IShippingLine;
   srcPortId: number;

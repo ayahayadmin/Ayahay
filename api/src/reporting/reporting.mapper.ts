@@ -1,22 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import { ShippingLineMapper } from '../shipping-line/shipping-line.mapper';
 import { PortMapper } from '../port/port.mapper';
-import { ShipMapper } from '../ship/ship.mapper';
 import { PortsByShip, TripManifest } from '@ayahay/http';
 
 @Injectable()
 export class ReportingMapper {
   constructor(
     private readonly shippingLineMapper: ShippingLineMapper,
-    private readonly portMapper: PortMapper,
-    private readonly shipMapper: ShipMapper
+    private readonly portMapper: PortMapper
   ) {}
 
   convertTripsForReporting(trip) {
     return {
       id: trip.id,
       shipId: trip.shipId,
-      ship: this.shipMapper.convertShipToDto(trip.ship),
+      shipName: trip.ship.name,
       shippingLineId: trip.shippingLineId,
       shippingLine: this.shippingLineMapper.convertShippingLineToDto(
         trip.shippingLine
