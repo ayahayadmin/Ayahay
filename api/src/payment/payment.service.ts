@@ -97,10 +97,10 @@ export class PaymentService {
     transactionId: string,
     request: DragonpayPaymentInitiationRequest
   ): Promise<DragonpayPaymentInitiationResponse> {
-    const dragonpayInitiationUrl = `${process.env.PAYMENT_GATEWAY_URL}/api/collect/v1/${transactionId}/post`;
+    const dragonpayInitiationUrl = `${process.env.DRAGONPAY_URL}/api/collect/v1/${transactionId}/post`;
 
-    const merchantId = process.env.PAYMENT_GATEWAY_MERCHANT_ID;
-    const password = process.env.PAYMENT_GATEWAY_PASSWORD;
+    const merchantId = process.env.DRAGONPAY_MERCHANT_ID;
+    const password = process.env.DRAGONPAY_PASSWORD;
 
     try {
       const { data } = await axios.post<DragonpayPaymentInitiationResponse>(
@@ -195,7 +195,7 @@ export class PaymentService {
 
     const expectedDigest = createHash('sha1')
       .update(
-        `${transactionId}:${referenceNo}:${status}:${message}:${process.env.PAYMENT_GATEWAY_PASSWORD}`
+        `${transactionId}:${referenceNo}:${status}:${message}:${process.env.DRAGONPAY_PASSWORD}`
       )
       .digest('hex');
 
