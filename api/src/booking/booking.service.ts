@@ -793,38 +793,22 @@ WHERE row <= ${passengerPreferences.length}
     }
 
     // TODO: check if seats are available
-    const bookingPassengers =
-      tempBooking.passengersJson as any[] as IBookingPassenger[];
-    const bookingVehicles =
-      tempBooking.vehiclesJson as any[] as IBookingVehicle[];
-    const paymentItems =
-      tempBooking.paymentItemsJson as any[] as IPaymentItem[];
 
-    const bookingToCreate: IBooking = {
-      id: tempBooking.paymentReference,
-      accountId: tempBooking.accountId,
-
-      referenceNo: tempBooking.paymentReference.substring(0, 6).toUpperCase(),
-      status: status as any,
-      totalPrice: tempBooking.totalPrice,
-      bookingType: tempBooking.bookingType as any,
-      createdAtIso: new Date().toISOString(),
-
-      bookingPassengers,
-      bookingVehicles,
-      paymentItems,
-    };
+    const bookingToCreate = this.bookingMapper.convertTempBookingToBooking(
+      tempBooking,
+      status
+    );
 
     await this.saveBooking(bookingToCreate, transactionContext);
 
     await this.updatePassengerCapacities(
-      bookingPassengers,
+      bookingToCreate.bookingPassengers,
       'decrement',
       transactionContext
     );
 
     await this.updateVehicleCapacities(
-      bookingVehicles,
+      bookingToCreate.bookingVehicles,
       'decrement',
       transactionContext
     );

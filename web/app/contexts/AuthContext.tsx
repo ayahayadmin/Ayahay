@@ -15,11 +15,11 @@ import { useIdToken } from 'react-firebase-hooks/auth';
 import { cacheItem, invalidateItem } from '@ayahay/services/cache.service';
 import { accountRelatedCacheKeys } from '@ayahay/constants';
 import { IAccount, RegisterForm } from '@ayahay/models';
+import { mapPassengerToDto } from '@/services/passenger.service';
 import {
-  createPassenger,
-  mapPassengerToDto,
-} from '@/services/passenger.service';
-import { getAccountInformation } from '@ayahay/services/account.service';
+  getAccountInformation,
+  createPassengerAccount,
+} from '@ayahay/services/account.service';
 
 const AuthContext = createContext({
   currentUser: null as User | undefined | null,
@@ -82,7 +82,7 @@ export default function AuthContextProvider({ children }: any) {
         const token = await user.getIdToken();
 
         const mappedPassenger = mapPassengerToDto(user.uid, values);
-        await createPassenger(token, mappedPassenger);
+        await createPassengerAccount(token, mappedPassenger);
 
         await emailVerification(user);
 
