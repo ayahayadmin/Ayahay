@@ -206,11 +206,13 @@ model Booking {
   account Account? @relation(fields: [accountId], references: [id])
 
   referenceNo String @map("reference_no")
-  status String
+  bookingStatus String @map("booking_status")
+  paymentStatus String @map("payment_status")
   totalPrice Float @map("total_price")
   bookingType String @map("booking_type")
   contactEmail String? @map("contact_email")
   createdAt DateTime @map("created_at")
+  failureCancellationRemarks String? @map("failure_cancellation_remarks")
 
   passengers BookingPassenger[]
   vehicles BookingVehicle[]

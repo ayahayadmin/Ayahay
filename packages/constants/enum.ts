@@ -41,6 +41,13 @@ export enum DISCOUNT_TYPE {
   Helper = 'Helper',
 }
 
+export enum BOOKING_STATUS {
+  Requested = 'Booking Requested',
+  Confirmed = 'Booking Confirmed',
+  Failed = 'Booking Failed',
+  Cancelled = 'Booking Cancelled'
+}
+
 export enum PAYMENT_STATUS {
   Pending = 'Waiting For Payment',
   Failed = 'Payment Failed',

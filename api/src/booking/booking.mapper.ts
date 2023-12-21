@@ -28,7 +28,8 @@ export class BookingMapper {
       id,
       accountId,
       referenceNo,
-      status,
+      bookingStatus,
+      paymentStatus,
       totalPrice,
       bookingType,
       contactEmail,
@@ -41,7 +42,8 @@ export class BookingMapper {
       id,
       accountId,
       referenceNo,
-      status: status as any,
+      bookingStatus: bookingStatus as any,
+      paymentStatus: paymentStatus as any,
       totalPrice,
       bookingType: bookingType as any,
       contactEmail,
@@ -68,7 +70,8 @@ export class BookingMapper {
       bookingType: booking.bookingType,
       contactEmail: booking.contactEmail,
       createdAtIso: booking.createdAt.toISOString(),
-      status: booking.status,
+      bookingStatus: booking.bookingStatus,
+      paymentStatus: booking.paymentStatus,
       totalPrice: booking.totalPrice,
 
       bookingPassengers: booking.passengers.map((bookingPassenger) =>
@@ -148,7 +151,11 @@ export class BookingMapper {
     };
   }
 
-  convertTempBookingToBooking(tempBooking: any, status: string): IBooking {
+  convertTempBookingToBooking(
+    tempBooking: any,
+    bookingStatus: string,
+    paymentStatus: string
+  ): IBooking {
     const bookingPassengers =
       tempBooking.passengersJson as any[] as IBookingPassenger[];
     const bookingVehicles =
@@ -161,7 +168,8 @@ export class BookingMapper {
       accountId: tempBooking.accountId,
 
       referenceNo: tempBooking.paymentReference.substring(0, 6).toUpperCase(),
-      status: status as any,
+      bookingStatus: bookingStatus as any,
+      paymentStatus: paymentStatus as any,
       totalPrice: tempBooking.totalPrice,
       bookingType: tempBooking.bookingType as any,
       contactEmail: tempBooking.contactEmail,
@@ -211,7 +219,8 @@ export class BookingMapper {
         id: booking.id,
         accountId: booking.accountId,
         referenceNo: booking.referenceNo,
-        status: booking.status,
+        bookingStatus: booking.bookingStatus,
+        paymentStatus: booking.paymentStatus,
         totalPrice: booking.totalPrice,
         bookingType: booking.bookingType,
         contactEmail: booking.contactEmail,
