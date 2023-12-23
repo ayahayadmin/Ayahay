@@ -89,7 +89,11 @@ export default function CreateBookingForm({
   const payBooking = async (tentativeBookingId: number): Promise<void> => {
     setLoadingMessage('Initiating payment...');
 
-    const response = await startPaymentForBooking(tentativeBookingId);
+    const contactEmail = form.getFieldValue('contactEmail');
+    const response = await startPaymentForBooking(
+      tentativeBookingId,
+      contactEmail
+    );
 
     setLoadingMessage('');
     if (response === undefined) {
