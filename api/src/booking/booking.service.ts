@@ -688,7 +688,10 @@ export class BookingService {
     );
   }
 
-  async checkInPassenger(bookingId: string, bookingPassengerId: number) {
+  async checkInPassenger(
+    bookingId: string,
+    bookingPassengerId: number
+  ): Promise<void> {
     const bookingPassenger = await this.prisma.bookingPassenger.findFirst({
       where: {
         id: bookingPassengerId,
@@ -714,7 +717,10 @@ export class BookingService {
     });
   }
 
-  async checkInVehicle(bookingId: string, bookingVehicleId: number) {
+  async checkInVehicle(
+    bookingId: string,
+    bookingVehicleId: number
+  ): Promise<void> {
     const bookingVehicle = await this.prisma.bookingVehicle.findFirst({
       where: {
         id: bookingVehicleId,
@@ -737,6 +743,53 @@ export class BookingService {
       data: {
         checkInDate: new Date(),
       },
+    });
+  }
+
+  async cancelBooking(bookingId: string, remarks: string): Promise<void> {
+    const booking = await this.prisma.booking.findUnique({
+      where: {
+        id: bookingId,
+      },
+      include: {
+        passengers: true,
+        vehicles: true,
+      },
+    });
+
+    if (booking === null) {
+      throw new NotFoundException();
+    }
+
+    const cancellableStatuses = ['Requested', 'Confirmed'];
+    if (!cancellableStatuses.includes(booking.bookingStatus)) {
+      throw new BadRequestException(
+        `Booking on status ${booking.bookingStatus} cannot be cancelled`
+      );
+    }
+
+    await this.prisma.$transaction(async (transactionContext) => {
+      await transactionContext.booking.update({
+        where: {
+          id: bookingId,
+        },
+        data: {
+          bookingStatus: 'Cancelled',
+          failureCancellationRemarks: remarks,
+        },
+      });
+
+      await this.bookingReservationService.updatePassengerCapacities(
+        booking.passengers as any,
+        'increment',
+        transactionContext as any
+      );
+
+      await this.bookingReservationService.updateVehicleCapacities(
+        booking.vehicles as any,
+        'increment',
+        transactionContext as any
+      );
     });
   }
 }
