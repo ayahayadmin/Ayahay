@@ -7,7 +7,7 @@ import {
   getFullDate,
   getLocaleTimeString,
 } from '@ayahay/services/date.service';
-import { useAuth } from '../../app/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import styles from './Reports.module.scss';
 import { three_columns_grid, two_columns_grid } from './DailySalesReport';
 import { OPERATION_COSTS } from '@ayahay/constants';

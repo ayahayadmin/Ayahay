@@ -7,7 +7,7 @@ import { generateBookingCsv } from '@/services/csv.service';
 import { useAuthState } from '@/hooks/auth';
 import { redirect } from 'next/navigation';
 import { IBooking } from '@ayahay/models';
-import { useAuth } from '@/app/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 const { Title } = Typography;
 

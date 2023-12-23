@@ -7,7 +7,7 @@ import CreateTripsFromScheduleForm from './createTripsFromScheduleForm';
 import { useAuthState } from '@/hooks/auth';
 import styles from './page.module.scss';
 import { redirect } from 'next/navigation';
-import { useAuth } from '@/app/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 const { Title } = Typography;
 

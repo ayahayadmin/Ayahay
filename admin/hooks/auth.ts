@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { User } from 'firebase/auth';
-import { firebase } from '@/app/utils/initFirebase';
+import { firebase } from '@/utils/initFirebase';
 import { redirect } from 'next/navigation';
-import { useAuth } from '@/app/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface IAuth {
   isSignedIn: boolean;

@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Avatar, Button, Dropdown, MenuProps } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
-import { useAuth } from '@/app/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useAuthState } from '@/hooks/auth';
 
 export default function Logout() {

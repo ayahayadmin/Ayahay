@@ -11,7 +11,7 @@ import {
 import { Button, Form, Select, Typography } from 'antd';
 import { DownloadOutlined } from '@ant-design/icons';
 import { useAuthGuard } from '@/hooks/auth';
-import { useAuth } from '@/app/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import DailySalesReport from '@/components/reports/DailySalesReport';
 import jsPDF from 'jspdf';
 import SummarySalesPerVoyage from '@/components/reports/SummarySalesPerVoyage';
