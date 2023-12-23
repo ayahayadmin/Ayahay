@@ -113,7 +113,7 @@ export class BookingController {
   @Roles('Staff', 'Admin', 'SuperAdmin')
   async cancelBooking(
     @Param('bookingId') bookingId: string,
-    @Body() remarks: string
+    @Body('remarks') remarks: string
   ) {
     return this.bookingService.cancelBooking(bookingId, remarks);
   }

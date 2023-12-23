@@ -6,6 +6,7 @@ import { getBookingById } from '@/services/booking.service';
 import { IBooking } from '@ayahay/models/booking.model';
 import { notification, Typography } from 'antd';
 import {
+  cancelBooking,
   checkInPassenger,
   checkInVehicle,
 } from '@ayahay/services/booking.service';
@@ -32,17 +33,35 @@ export default function GetBooking({ params }) {
     loadBooking();
   }, [loggedInAccount]);
 
-  const handleCheckInError = (e) => {
+  const onCancelBooking = async (remarks: string): Promise<void> => {
+    if (booking === undefined) {
+      return;
+    }
+
+    try {
+      await cancelBooking(booking.id, remarks);
+      api.success({
+        message: 'Booking Cancellation Success',
+        description: 'The booking has been cancelled successfully.',
+      });
+      loadBooking();
+    } catch (e) {
+      handleAxiosError(e, 'Cancellation Failed');
+    }
+  };
+
+  const handleAxiosError = (e: any, errorTitle: string) => {
     const axiosError = getAxiosError(e);
     // not an HTTP error
     const errorMessage = axiosError
       ? axiosError.message
       : 'Something went wrong.';
     api.error({
-      message: 'Check In Failed',
+      message: errorTitle,
       description: errorMessage,
     });
   };
+
   const checkInBookingPassenger = async (bookingPassengerId: number) => {
     if (booking === undefined) {
       return;
@@ -54,11 +73,10 @@ export default function GetBooking({ params }) {
         message: 'Check In Success',
         description: 'The selected passenger has checked in successfully.',
       });
+      loadBooking();
     } catch (e) {
-      handleCheckInError(e);
+      handleAxiosError(e, 'Check In Failed');
     }
-
-    loadBooking();
   };
 
   const checkInBookingVehicle = async (bookingVehicleId: number) => {
@@ -72,11 +90,10 @@ export default function GetBooking({ params }) {
         message: 'Check In Success',
         description: 'The selected vehicle has checked in successfully.',
       });
+      loadBooking();
     } catch (e) {
-      handleCheckInError(e);
+      handleAxiosError(e, 'Check In Failed');
     }
-
-    loadBooking();
   };
 
   return (
@@ -86,6 +103,7 @@ export default function GetBooking({ params }) {
         booking={booking}
         titleLevel={2}
         hasPrivilegedAccess={hasPrivilegedAccess}
+        onCancelBooking={onCancelBooking}
         onCheckInPassenger={checkInBookingPassenger}
         onCheckInVehicle={checkInBookingVehicle}
       />
