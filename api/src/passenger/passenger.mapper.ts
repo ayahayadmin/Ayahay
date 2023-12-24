@@ -7,7 +7,6 @@ export class PassengerMapper {
   convertPassengerToDto(passenger: any, withBuddies?: boolean): IPassenger {
     return {
       id: passenger.id,
-      accountId: passenger.accountId,
       buddyId: passenger.buddyId,
 
       firstName: passenger.firstName,
@@ -41,11 +40,10 @@ export class PassengerMapper {
       address: passenger.address,
       nationality: passenger.nationality,
       discountType: passenger.discountType,
-      accountId: passenger.accountId,
-      account: passenger.accountId
+      account: passenger.account
         ? {
             connect: {
-              id: passenger.accountId,
+              id: passenger.account.id,
             },
           }
         : undefined,

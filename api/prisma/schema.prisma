@@ -209,6 +209,7 @@ model Booking {
   status String
   totalPrice Float @map("total_price")
   bookingType String @map("booking_type")
+  contactEmail String? @map("contact_email")
   createdAt DateTime @map("created_at")
 
   passengers BookingPassenger[]
@@ -244,7 +245,6 @@ model Passenger {
   id Int @default(autoincrement()) @id
   buddyId Int? @map("buddy_id")
   buddy Passenger? @relation("PassengerBuddies", fields: [buddyId], references: [id])
-  accountId String? @map("account_id")
   account Account?
 
   firstName String @map("first_name")
@@ -306,6 +306,7 @@ model TempBooking {
   totalPrice Float @map("total_price")
   bookingType String @map("booking_type")
   paymentReference String? @map("payment_reference")
+  contactEmail String? @map("contact_email")
   createdAt DateTime @map("created_at")
 
   passengersJson Json @map("passengers_json")

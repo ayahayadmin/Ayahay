@@ -19,7 +19,6 @@ export function mapPassengerToDto(
 
   return {
     id: -1,
-    accountId: uid,
     firstName,
     lastName,
     occupation,
@@ -29,16 +28,4 @@ export function mapPassengerToDto(
     address,
     nationality,
   };
-}
-
-export async function createPassenger(token: string, passenger: IPassenger) {
-  try {
-    const { data } = await axios.post(`${PASSENGER_API}`, passenger, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    return data;
-  } catch (e) {
-    console.error(e);
-    return undefined;
-  }
 }

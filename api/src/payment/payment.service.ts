@@ -23,6 +23,7 @@ export class PaymentService {
 
   async startPaymentFlow(
     tempBookingId: number,
+    email?: string,
     loggedInAccount?: IAccount
   ): Promise<PaymentInitiationResponse> {
     const tempBooking = await this.prisma.tempBooking.findUnique({
@@ -37,6 +38,7 @@ export class PaymentService {
     }
 
     const paymentReference = uuidv4();
+    const contactEmail: string | undefined = loggedInAccount?.email ?? email;
 
     if (this.shouldSkipPaymentFlow(loggedInAccount)) {
       return this.skipPaymentFlow(
@@ -50,8 +52,8 @@ export class PaymentService {
       await this.initiateTransactionWithPaymentGateway(paymentReference, {
         Amount: tempBooking.totalPrice,
         Currency: 'PHP',
-        Description: 'Test Transaction',
-        Email: 'it@ayahay.com',
+        Description: `Booking ${paymentReference}`,
+        Email: contactEmail ?? 'your-email@example.com',
       } as DragonpayPaymentInitiationRequest);
 
     if (paymentGatewayResponse.Status === 'F') {
@@ -61,7 +63,8 @@ export class PaymentService {
     return this.onSuccessfulPaymentInitiation(
       tempBookingId,
       paymentReference,
-      paymentGatewayResponse.Url
+      paymentGatewayResponse.Url,
+      contactEmail
     );
   }
 
@@ -122,7 +125,8 @@ export class PaymentService {
   private async onSuccessfulPaymentInitiation(
     tempBookingId: number,
     paymentReference: string,
-    redirectUrl: string
+    redirectUrl: string,
+    contactEmail?: string
   ): Promise<PaymentInitiationResponse> {
     await this.prisma.tempBooking.update({
       where: {
@@ -130,6 +134,7 @@ export class PaymentService {
       },
       data: {
         paymentReference,
+        contactEmail,
       },
     });
 
