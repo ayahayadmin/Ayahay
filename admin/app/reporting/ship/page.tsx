@@ -48,6 +48,7 @@ export default function ReportingPage() {
             data={data}
             startDate={params.startDate}
             endDate={params.endDate}
+            reportType={params.reportType}
             ref={summarySalesPerVesselRef}
           />
         )}

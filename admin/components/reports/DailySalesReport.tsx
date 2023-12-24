@@ -9,6 +9,7 @@ import styles from './Reports.module.scss';
 
 interface DailySalesReportProps {
   data: ITripReport;
+  vesselName: string;
 }
 
 export const two_columns_grid = {
@@ -22,8 +23,14 @@ export const three_columns_grid = {
   gridTemplateColumns: '1fr 1fr 1fr',
 };
 
+function padZeroes(num: any, size: number) {
+  num = num.toString();
+  while (num.length < size) num = '0' + num;
+  return num;
+}
+
 const DailySalesReport = forwardRef(function (
-  { data }: DailySalesReportProps,
+  { data, vesselName }: DailySalesReportProps,
   ref
 ) {
   const { loggedInAccount } = useAuth();
@@ -72,7 +79,7 @@ const DailySalesReport = forwardRef(function (
           }}
         >
           <div>
-            <p>VESSEL NAME: {data.ship.name}</p>
+            <p>VESSEL NAME: {vesselName}</p>
             <p>
               ROUTE: {data.srcPort.name} to {data.destPort.name}
             </p>
@@ -115,12 +122,12 @@ const DailySalesReport = forwardRef(function (
                 <th>Discount</th>
                 <th>Ticket Cost</th>
                 <th>Transaction Fee</th>
-                <th>Fare</th>
+                <th>Total Fare</th>
                 <th>Payment Status</th>
               </tr>
             </thead>
             <tbody>
-              {data.passengers.map((passenger) => {
+              {data.passengers.map((passenger, idx) => {
                 totalTicketCost += passenger.ticketCost;
                 totalAdminFee += passenger.adminFee;
                 totalFare += passenger.fare;
@@ -128,14 +135,14 @@ const DailySalesReport = forwardRef(function (
 
                 return (
                   <tr>
-                    <td>{data.ship.name}</td>
+                    <td>{vesselName}</td>
                     <td>
                       {paymentStatus === 'PayMongo'
                         ? 'Ayahay'
                         : data.srcPort.name}
                     </td>
                     <td>{passenger.teller}</td>
-                    <td>{passenger.ticketReferenceNo}</td>
+                    <td>{padZeroes(idx + 1, 4)}</td>
                     <td>
                       {data.srcPort.code}-{data.destPort.code}/WT:&nbsp;
                       {getFullDate(data.departureDate, true)}

@@ -18,11 +18,13 @@ export class BookingValidator {
     const errorMessages: string[] = [];
 
     if (trips.length === 0) {
-        errorMessages.push('A booking must have at least one trip.');
+      errorMessages.push('A booking must have at least one trip.');
     }
 
     if (passengers.length === 0 && vehicles.length === 0) {
-        errorMessages.push('A booking must have at least one passenger or vehicle.');
+      errorMessages.push(
+        'A booking must have at least one passenger or vehicle.'
+      );
     }
 
     if (trips.length > this.MAX_TRIPS_PER_BOOKING) {
@@ -98,7 +100,7 @@ export class BookingValidator {
     // TODO: fetch passengers with ID from DB, validate they're buddies with logged in passenger
 
     const errorMessages: string[] = [];
-    if (buddy.accountId !== undefined) {
+    if (buddy.account !== undefined) {
       errorMessages.push('Travel Buddies cannot be linked to an account.');
     }
 
@@ -121,7 +123,7 @@ export class BookingValidator {
     passenger: IPassenger,
     accountId?: string
   ): boolean {
-    return passenger.accountId === accountId;
+    return passenger.account?.id === accountId;
   }
 
   private hasBuddy(passenger: IPassenger): boolean {

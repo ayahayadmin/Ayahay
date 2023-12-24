@@ -19,6 +19,8 @@ import ProfitAndLossStatement from '@/components/reports/ProfitAndLossStatement'
 import Disbursements from '@/components/form/Disbursements';
 import dayjs from 'dayjs';
 import CargoDailySalesReport from '@/components/reports/CargoDailySalesReport';
+import { IShip } from '@ayahay/models';
+import { getShips } from '@ayahay/services/ship.service';
 
 const { Title } = Typography;
 
@@ -34,9 +36,11 @@ export default function TripReportingPage({ params }: any) {
   const cargoDailySalesReportRef = useRef();
   const summarySalesPerVoyageRef = useRef();
   const profitAndLossStatementRef = useRef();
+  const [ships, setShips] = useState<IShip[] | undefined>();
   const [tripsReporting, setTripsReporting] = useState<
     ITripReport | undefined
   >();
+  const [vesselName, setVesselName] = useState<string | undefined>();
   const [status, setStatus] = useState(STATUS.ON_TIME);
   const [disbursements, setDisbursements] = useState<
     IDisbursement[] | undefined
@@ -49,14 +53,23 @@ export default function TripReportingPage({ params }: any) {
     }
     const tripId = params.id;
     fetchTripsReporting(tripId);
+    fetchShips();
   }, [loggedInAccount]);
 
   const fetchTripsReporting = async (tripId: number): Promise<void> => {
     setTripsReporting(await getTripsReporting(tripId));
   };
 
-  const handleChange = (value: string) => {
+  const fetchShips = async (): Promise<void> => {
+    setShips(await getShips());
+  };
+
+  const handleStatusChange = (value: string) => {
     setStatus(STATUS[value as keyof typeof STATUS]);
+  };
+
+  const handleVesselNameChange = (value: string) => {
+    setVesselName(value);
   };
 
   const handleDownloadDailySales = async () => {
@@ -110,6 +123,15 @@ export default function TripReportingPage({ params }: any) {
 
   return (
     <div style={{ padding: '32px' }}>
+      Vessel Name:&nbsp;
+      <Select
+        options={ships?.map((ship) => ({
+          value: ship.name,
+          label: ship.name,
+        }))}
+        onChange={handleVesselNameChange}
+        style={{ minWidth: '20%' }}
+      />
       <Title level={1} style={{ fontSize: 25 }}>
         Passenger Daily Sales Report
       </Title>
@@ -117,16 +139,20 @@ export default function TripReportingPage({ params }: any) {
         type='primary'
         htmlType='submit'
         loading={tripsReporting === undefined}
+        disabled={vesselName === undefined}
         onClick={handleDownloadDailySales}
       >
         <DownloadOutlined rev={undefined} /> Download
       </Button>
       <div style={{ display: 'none' }}>
-        {tripsReporting && (
-          <DailySalesReport data={tripsReporting} ref={dailySalesReportRef} />
+        {tripsReporting && vesselName && (
+          <DailySalesReport
+            data={tripsReporting}
+            vesselName={vesselName}
+            ref={dailySalesReportRef}
+          />
         )}
       </div>
-
       <Title level={1} style={{ fontSize: 25 }}>
         Cargo Daily Sales Report
       </Title>
@@ -134,19 +160,20 @@ export default function TripReportingPage({ params }: any) {
         type='primary'
         htmlType='submit'
         loading={tripsReporting === undefined}
+        disabled={vesselName === undefined}
         onClick={handleDownloadCargoDailySales}
       >
         <DownloadOutlined rev={undefined} /> Download
       </Button>
       <div style={{ display: 'none' }}>
-        {tripsReporting && (
+        {tripsReporting && vesselName && (
           <CargoDailySalesReport
             data={tripsReporting}
+            vesselName={vesselName}
             ref={cargoDailySalesReportRef}
           />
         )}
       </div>
-
       <Title level={1} style={{ fontSize: 25 }}>
         Summary Sales Per Voyage
       </Title>
@@ -157,7 +184,7 @@ export default function TripReportingPage({ params }: any) {
             value: enumKey,
             label: STATUS[enumKey as keyof typeof STATUS],
           }))}
-          onChange={handleChange}
+          onChange={handleStatusChange}
           defaultValue={STATUS.ON_TIME}
           style={{ minWidth: '20%' }}
         />
@@ -166,20 +193,21 @@ export default function TripReportingPage({ params }: any) {
         type='primary'
         htmlType='submit'
         loading={tripsReporting === undefined}
+        disabled={vesselName === undefined}
         onClick={handleDownloadSummarySalesPerVoyage}
       >
         <DownloadOutlined rev={undefined} /> Download
       </Button>
       <div style={{ display: 'none' }}>
-        {tripsReporting && (
+        {tripsReporting && vesselName && (
           <SummarySalesPerVoyage
             data={tripsReporting}
             status={status}
+            vesselName={vesselName}
             ref={summarySalesPerVoyageRef}
           />
         )}
       </div>
-
       <Title level={1} style={{ fontSize: 25 }}>
         Profit and Loss Statement
       </Title>
@@ -196,7 +224,6 @@ export default function TripReportingPage({ params }: any) {
           </Button>
         </div>
       </Form>
-
       <Button
         type='primary'
         htmlType='submit'
@@ -206,11 +233,11 @@ export default function TripReportingPage({ params }: any) {
       >
         <DownloadOutlined rev={undefined} /> Download
       </Button>
-
       <div style={{ display: 'none' }}>
-        {tripsReporting && disbursements && expenses && (
+        {tripsReporting && vesselName && disbursements && expenses && (
           <ProfitAndLossStatement
             data={tripsReporting}
+            vesselName={vesselName}
             disbursements={disbursements}
             expenses={expenses}
             ref={profitAndLossStatementRef}

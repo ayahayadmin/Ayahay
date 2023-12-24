@@ -90,9 +90,9 @@ export default function Login() {
             />
           </Form.Item>
           <Form.Item>
-            <a className='login-form-forgot' onClick={onClickReset}>
+            <Button type='link' onClick={onClickReset} style={{ padding: 0 }}>
               Forgot password?
-            </a>
+            </Button>
           </Form.Item>
 
           {error && <span>{error}</span>}

@@ -8,7 +8,6 @@ import { IAccount } from './account.model';
 
 export interface IPassenger {
   id: number;
-  accountId?: string;
   account?: IAccount;
   buddyId?: number;
   buddy?: IPassenger;

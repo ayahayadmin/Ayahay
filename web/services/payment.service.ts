@@ -4,11 +4,13 @@ import { PaymentInitiationResponse } from '@ayahay/http';
 
 // TODO: should return void when payment flow is finalized
 export async function startPaymentForBooking(
-  tentativeBookingId: number
+  tentativeBookingId: number,
+  contactEmail?: string
 ): Promise<PaymentInitiationResponse | undefined> {
   try {
     const { data: response } = await axios.post<PaymentInitiationResponse>(
-      `${PAYMENT_API}/booking/${tentativeBookingId}`
+      `${PAYMENT_API}/booking/${tentativeBookingId}`,
+      contactEmail ? { email: contactEmail } : undefined
     );
     return response;
   } catch (e) {

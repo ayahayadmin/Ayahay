@@ -1,5 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { IBooking, IBookingPassenger, IBookingVehicle } from '@ayahay/models';
+import {
+  IBooking,
+  IBookingPassenger,
+  IBookingVehicle,
+  IPaymentItem,
+} from '@ayahay/models';
 import { Prisma } from '@prisma/client';
 import { TripMapper } from 'src/trip/trip.mapper';
 import { PassengerMapper } from '../passenger/passenger.mapper';
@@ -26,6 +31,7 @@ export class BookingMapper {
       status,
       totalPrice,
       bookingType,
+      contactEmail,
       createdAt,
       passengers,
       paymentItems,
@@ -38,6 +44,7 @@ export class BookingMapper {
       status: status as any,
       totalPrice,
       bookingType: bookingType as any,
+      contactEmail,
       createdAtIso: createdAt.toISOString(),
       bookingPassengers: passengers?.map((passenger) => {
         return {
@@ -59,6 +66,7 @@ export class BookingMapper {
 
       referenceNo: booking.referenceNo,
       bookingType: booking.bookingType,
+      contactEmail: booking.contactEmail,
       createdAtIso: booking.createdAt.toISOString(),
       status: booking.status,
       totalPrice: booking.totalPrice,
@@ -139,6 +147,32 @@ export class BookingMapper {
       },
     };
   }
+
+  convertTempBookingToBooking(tempBooking: any, status: string): IBooking {
+    const bookingPassengers =
+      tempBooking.passengersJson as any[] as IBookingPassenger[];
+    const bookingVehicles =
+      tempBooking.vehiclesJson as any[] as IBookingVehicle[];
+    const paymentItems =
+      tempBooking.paymentItemsJson as any[] as IPaymentItem[];
+
+    return {
+      id: tempBooking.paymentReference,
+      accountId: tempBooking.accountId,
+
+      referenceNo: tempBooking.paymentReference.substring(0, 6).toUpperCase(),
+      status: status as any,
+      totalPrice: tempBooking.totalPrice,
+      bookingType: tempBooking.bookingType as any,
+      contactEmail: tempBooking.contactEmail,
+      createdAtIso: new Date().toISOString(),
+
+      bookingPassengers,
+      bookingVehicles,
+      paymentItems,
+    };
+  }
+
   convertBookingToEntityForCreation(
     booking: IBooking
   ): Prisma.BookingCreateArgs {
@@ -180,6 +214,7 @@ export class BookingMapper {
         status: booking.status,
         totalPrice: booking.totalPrice,
         bookingType: booking.bookingType,
+        contactEmail: booking.contactEmail,
         createdAt: booking.createdAtIso,
         passengers: {
           createMany: {

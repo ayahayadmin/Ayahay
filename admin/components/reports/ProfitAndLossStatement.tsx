@@ -14,12 +14,13 @@ import { OPERATION_COSTS } from '@ayahay/constants';
 
 interface ProfitAndLossStatementProps {
   data: ITripReport;
+  vesselName: string;
   disbursements: IDisbursement[];
   expenses: any;
 }
 
 const ProfitAndLossStatement = forwardRef(function (
-  { expenses, data, disbursements }: ProfitAndLossStatementProps,
+  { expenses, data, disbursements, vesselName }: ProfitAndLossStatementProps,
   ref
 ) {
   const { loggedInAccount } = useAuth();
@@ -87,7 +88,7 @@ const ProfitAndLossStatement = forwardRef(function (
           }}
         >
           <div>
-            <p>VESSEL NAME: {data.ship.name}</p>
+            <p>VESSEL NAME: {vesselName}</p>
             <p>VOYAGE: {data.id}</p>
             <p>
               ROUTE: {data.srcPort.name} to {data.destPort.name}
@@ -132,7 +133,7 @@ const ProfitAndLossStatement = forwardRef(function (
             </thead>
             <tbody>
               <tr>
-                <td>{data.ship.name}</td>
+                <td>{vesselName}</td>
                 {/* will still discuss what if there are more than 1 teller in a trip */}
                 <td>{data.passengers[0]?.teller}</td>
                 <td>
@@ -147,7 +148,7 @@ const ProfitAndLossStatement = forwardRef(function (
                 <td>{totalTicketCost - totalRefund}</td>
               </tr>
               <tr>
-                <td>{data.ship.name}</td>
+                <td>{vesselName}</td>
                 {/* will still discuss what if there are more than 1 teller in a trip */}
                 <td>{data.passengers[0]?.teller}</td>
                 <td>

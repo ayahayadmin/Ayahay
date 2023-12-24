@@ -13,6 +13,7 @@ interface SummarySalesPerVoyageProps {
   data: IPerVesselReport[];
   startDate: string;
   endDate: string;
+  reportType?: string;
 }
 
 export interface MOPBreakdown {
@@ -29,7 +30,7 @@ export interface MOPBreakdown {
 }
 
 const SummarySalesPerVessel = forwardRef(function (
-  { data, startDate, endDate }: SummarySalesPerVoyageProps,
+  { data, startDate, endDate, reportType }: SummarySalesPerVoyageProps,
   ref
 ) {
   const { loggedInAccount } = useAuth();
@@ -87,10 +88,13 @@ const SummarySalesPerVessel = forwardRef(function (
           }}
         >
           <div>
-            <p>VESSEL NAME: {first(data)?.ship.name}</p>
-            <p>
-              ROUTE: {first(data)?.srcPort.name} to {first(data)?.destPort.name}
-            </p>
+            <p>VESSEL NAME: {first(data)?.shipName}</p>
+            {reportType === undefined && (
+              <p>
+                ROUTE: {first(data)?.srcPort.name} to&nbsp;
+                {first(data)?.destPort.name}
+              </p>
+            )}
             <p>
               SCHEDULE: {getFullDate(startDate, true)} to&nbsp;
               {getFullDate(endDate, true)}

@@ -132,8 +132,8 @@ export class ReportingService {
       where: {
         AND: [
           { shipId: +shipId },
-          { srcPortId: +srcPortId },
-          { destPortId: +destPortId },
+          { srcPortId: isNaN(srcPortId) ? undefined : +srcPortId },
+          { destPortId: isNaN(destPortId) ? undefined : +destPortId },
           {
             departureDate: {
               gte: new Date(startDate).toISOString(),

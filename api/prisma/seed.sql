@@ -1,5 +1,3 @@
-ALTER TABLE ayahay.passenger ADD CONSTRAINT "passenger_account_id_fkey" FOREIGN KEY ("account_id") REFERENCES ayahay.account (id) ON DELETE SET NULL ON UPDATE CASCADE;
-
 INSERT INTO ayahay.port
     ("name", "code")
     VALUES

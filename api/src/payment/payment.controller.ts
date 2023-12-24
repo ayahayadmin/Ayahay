@@ -20,9 +20,14 @@ export class PaymentController {
   @AllowUnauthenticated()
   async payBooking(
     @Request() req,
-    @Param('id') tempBookingId: string
+    @Param('id') tempBookingId: string,
+    @Body('email') email?: string
   ): Promise<PaymentInitiationResponse> {
-    return this.paymentService.startPaymentFlow(+tempBookingId, req.user);
+    return this.paymentService.startPaymentFlow(
+      +tempBookingId,
+      email,
+      req.user
+    );
   }
 
   @Post('postback/dpay')

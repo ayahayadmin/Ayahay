@@ -1,7 +1,11 @@
 'use client';
 import React, { useState } from 'react';
 import { Avatar, Button, Dropdown, MenuProps, Modal, message } from 'antd';
-import { UserOutlined } from '@ant-design/icons';
+import {
+  FacebookFilled,
+  GoogleOutlined,
+  UserOutlined,
+} from '@ant-design/icons';
 import { LoginForm, RegisterForm } from '@ayahay/models';
 import Link from 'next/link';
 import { useAuth } from '@/app/contexts/AuthContext';
@@ -10,6 +14,7 @@ import Register from '../form/Register';
 import Login from '../form/Login';
 import ForgotPassword from '../form/ForgotPassword';
 import { firebase } from '@/app/utils/initFirebase';
+import styles from './AuthForm.module.scss';
 
 export default function AuthForm() {
   const {
@@ -21,6 +26,8 @@ export default function AuthForm() {
     register,
     resetPassword,
     signIn,
+    signInWithFacebook,
+    signInWithGoogle,
   } = useAuth();
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
@@ -125,6 +132,34 @@ export default function AuthForm() {
     }
   };
 
+  const onGoogleSSOLogin = async () => {
+    try {
+      await signInWithGoogle();
+      setIsLoginModalOpen(false);
+    } catch (error) {
+      message.error({
+        type: 'error',
+        content: 'Something went wrong.',
+        duration: 5,
+      });
+      console.error(error);
+    }
+  };
+
+  const onFacebookSSOLogin = async () => {
+    try {
+      await signInWithFacebook();
+      setIsLoginModalOpen(false);
+    } catch (error) {
+      message.error({
+        type: 'error',
+        content: 'Something went wrong.',
+        duration: 5,
+      });
+      console.error(error);
+    }
+  };
+
   const onClickReset = () => {
     setIsLoginModalOpen(false);
     setIsResetModalOpen(true);
@@ -177,6 +212,7 @@ export default function AuthForm() {
     ? 'Loading...'
     : currentUser
     ? `Welcome, ${
+        currentUser.displayName ??
         loggedInAccount?.passenger?.firstName ??
         currentUser.email?.split('@')[0]
       }`
@@ -205,6 +241,20 @@ export default function AuthForm() {
         <Button type='link' onClick={onClickRegister} style={{ padding: 0 }}>
           Register now!
         </Button>
+        <div className={styles['text']}>Log in with</div>
+        <div className={styles['sso-buttons']}>
+          <GoogleOutlined
+            rev={undefined}
+            className={styles['sso-button']}
+            onClick={onGoogleSSOLogin}
+          />
+          <FacebookFilled
+            rev={undefined}
+            className={styles['sso-button']}
+            onClick={onFacebookSSOLogin}
+          />
+        </div>
+        <div style={{ textAlign: 'center' }}>or</div>
         <Login onFinishLogin={onFinishLogin} onClickReset={onClickReset} />
       </Modal>
       <Modal

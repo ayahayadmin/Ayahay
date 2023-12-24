@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
-import { IAccount } from '@ayahay/models';
+import { IAccount, IPassenger } from '@ayahay/models';
 import { AccountMapper } from './account.mapper';
 import { AuthService } from 'src/auth/auth.service';
 import { isEmpty } from 'lodash';
@@ -102,5 +102,23 @@ export class AccountService {
     } catch {
       throw new InternalServerErrorException();
     }
+  }
+
+  async createPassengerAccount(
+    loggedInAccount: any,
+    passenger: IPassenger
+  ): Promise<void> {
+    if (loggedInAccount === undefined) {
+      return;
+    }
+
+    loggedInAccount.passenger = passenger;
+    loggedInAccount.role = 'Passenger';
+
+    const accountEntity =
+      this.accountMapper.convertAccountToEntityForCreation(loggedInAccount);
+    await this.prisma.account.create({ data: accountEntity });
+
+    return;
   }
 }

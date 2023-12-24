@@ -1,7 +1,7 @@
 import { Button, Checkbox, DatePicker, Form, Input, Steps } from 'antd';
 import EnumSelect from '@ayahay/components/form/EnumSelect';
 import { CIVIL_STATUS, OCCUPATION, SEX } from '@ayahay/constants';
-import { buttonStyle, buttonsStyle } from './Login';
+import { buttonStyle } from './Login';
 import { useState } from 'react';
 import { InfoCircleOutlined, UserOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
@@ -128,7 +128,7 @@ export default function Register({
             Agree with the <a href=''>Terms of Service</a>
           </Checkbox>
         </Form.Item>
-        <Form.Item style={buttonsStyle}>
+        <Form.Item>
           <Button key='back' onClick={onClickBack} style={buttonStyle}>
             Back
           </Button>
@@ -234,7 +234,7 @@ export default function Register({
         >
           <Input placeholder='Enter nationality' />
         </Form.Item>
-        <Form.Item style={buttonsStyle}>
+        <Form.Item>
           <Button key='back' onClick={previousStep} style={buttonStyle}>
             Back
           </Button>
