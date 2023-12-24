@@ -24,7 +24,7 @@ for (let monthDiff = 0; monthDiff < 3; monthDiff++) {
 
 export default function DownloadBookings() {
   const { loggedInAccount } = useAuth();
-  const { pending, isSignedIn, user, auth } = useAuthState();
+  const { pending, isSignedIn } = useAuthState();
 
   if (pending) {
     return <Spin size='large' className={styles['spinner']} />;
@@ -53,7 +53,7 @@ export default function DownloadBookings() {
       const bookingCreatedAtMonth = bookingCreatedAtDate.getMonth();
       const bookingCreatedAtYear = bookingCreatedAtDate.getFullYear();
       return (
-        booking.status === 'Success' &&
+        booking.bookingStatus === 'Confirmed' &&
         bookingCreatedAtYear === requestedYear &&
         bookingCreatedAtMonth === requestedMonth
       );
