@@ -22,19 +22,19 @@ export class SearchMapper {
       checkedInVehicleCount: Number(trip.checkedInVehicleCount),
       availableCapacities: sum(
         trip.pipeSeparatedCabinAvailableCapacities
-          .split('|')
+          ?.split('|')
           .map((n) => Number(n))
       ),
       passengerCapacities: sum(
-        trip.pipeSeparatedCabinCapacities.split('|').map((n) => Number(n))
+        trip.pipeSeparatedCabinCapacities?.split('|').map((n) => Number(n))
       ),
       passengerRates: this.convertCabinTypeFares(
-        trip.pipeSeparatedCabinNames.split('|'),
-        trip.pipeSeparatedCabinFares.split('|')
+        trip.pipeSeparatedCabinNames?.split('|'),
+        trip.pipeSeparatedCabinFares?.split('|')
       ),
       vehicleRates: this.convertVehicleTypeFares(
-        trip.pipeSeparatedVehicleNames.split('|'),
-        trip.pipeSeparatedVehicleFares.split('|')
+        trip.pipeSeparatedVehicleNames?.split('|'),
+        trip.pipeSeparatedVehicleFares?.split('|')
       ),
     };
   }
