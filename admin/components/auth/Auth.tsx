@@ -1,12 +1,12 @@
 'use client';
 import React, { useState } from 'react';
-import { useAuth } from '@/app/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button, Form, Input, Modal, Spin, message } from 'antd';
 import { LoginForm } from '@ayahay/models';
 import styles from './Auth.module.scss';
 import { useAuthState } from '@/hooks/auth';
 import { useRouter } from 'next/navigation';
-import { firebase } from '@/app/utils/initFirebase';
+import { firebase } from '@/utils/initFirebase';
 
 export default function Login() {
   const { pending, isSignedIn } = useAuthState();

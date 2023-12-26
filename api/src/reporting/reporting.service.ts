@@ -8,14 +8,14 @@ import {
   PerVesselReport,
 } from '@ayahay/http';
 import { ReportingMapper } from './reporting.mapper';
-import { BookingService } from 'src/booking/booking.service';
+import { BookingPricingService } from '../booking/booking-pricing.service';
 
 @Injectable()
 export class ReportingService {
   constructor(
     private prisma: PrismaService,
     private readonly reportingMapper: ReportingMapper,
-    private readonly bookingService: BookingService
+    private readonly bookingPricingService: BookingPricingService
   ) {}
 
   async getTripsReporting(tripId: number): Promise<TripReport> {
@@ -81,10 +81,11 @@ export class ReportingService {
     return {
       ...this.reportingMapper.convertTripsForReporting(trip),
       passengers: trip.passengers.map((passenger) => {
-        const adminFee = this.bookingService.calculateServiceChargeForPassenger(
-          passenger.passenger,
-          passenger.booking.account.role
-        );
+        const adminFee =
+          this.bookingPricingService.calculateServiceChargeForPassenger(
+            passenger.passenger,
+            passenger.booking.account.role
+          );
 
         return this.reportingMapper.convertTripPassengersForReporting(
           passenger,
@@ -95,7 +96,7 @@ export class ReportingService {
         const vehicleFare =
           trip.availableVehicleTypes[vehicle.vehicle.vehicleTypeId - 1].fare; // temporary
         const vehicleAdminFee =
-          this.bookingService.calculateServiceChargeForVehicle(
+          this.bookingPricingService.calculateServiceChargeForVehicle(
             vehicleFare,
             vehicle.booking.account.role
           );
@@ -176,10 +177,11 @@ export class ReportingService {
       let passengers = [];
 
       trip.passengers.forEach((passenger) => {
-        const adminFee = this.bookingService.calculateServiceChargeForPassenger(
-          passenger.passenger,
-          passenger.booking.account.role
-        );
+        const adminFee =
+          this.bookingPricingService.calculateServiceChargeForPassenger(
+            passenger.passenger,
+            passenger.booking.account.role
+          );
 
         const { cabinPassengerArr, noShowArr } =
           this.reportingMapper.convertTripPassengersToCabinPassenger(

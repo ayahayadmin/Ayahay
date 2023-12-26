@@ -7,7 +7,7 @@ import { getTripManifest } from '@/services/reporting.service';
 import { FloatButton, Skeleton } from 'antd';
 import { PrinterOutlined } from '@ant-design/icons';
 import { useAuthGuard } from '@/hooks/auth';
-import { useAuth } from '@/app/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function TripManifestPage({ params }: any) {
   const { loggedInAccount } = useAuth();

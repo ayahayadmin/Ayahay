@@ -12,7 +12,7 @@ import { ColumnsType } from 'antd/es/table';
 import { useEffect, useState } from 'react';
 import styles from './page.module.scss';
 import { isEmpty } from 'lodash';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 const columns: ColumnsType<DashboardTrips> = [
   {

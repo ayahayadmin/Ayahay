@@ -1,6 +1,16 @@
-import { Descriptions, Skeleton, Typography, Grid, QRCode, Button } from 'antd';
+import {
+  Descriptions,
+  Skeleton,
+  Typography,
+  Grid,
+  QRCode,
+  Button,
+  Modal,
+  Input,
+  Form,
+} from 'antd';
 import { IBooking } from '@ayahay/models/booking.model';
-import { PAYMENT_STATUS } from '@ayahay/constants';
+import { BOOKING_STATUS, PAYMENT_STATUS } from '@ayahay/constants';
 import React, { useEffect, useState } from 'react';
 import PassengersSummary from './PassengersSummary';
 import dayjs from 'dayjs';
@@ -8,6 +18,7 @@ import TripSummary from './TripSummary';
 import VehiclesSummary from './VehiclesSummary';
 import PaymentSummary from './PaymentSummary';
 import { PrinterOutlined } from '@ant-design/icons';
+import BookingCancellationModal from '@ayahay/web/components/booking/BookingCancellationModal';
 
 const { useBreakpoint } = Grid;
 const { Title } = Typography;
@@ -16,6 +27,7 @@ interface BookingSummaryProps {
   booking?: IBooking;
   titleLevel: 1 | 2 | 3 | 4 | 5;
   hasPrivilegedAccess?: boolean;
+  onCancelBooking?: (remarks: string) => Promise<void>;
   onCheckInPassenger?: (bookingPassengerId: number) => Promise<void>;
   onCheckInVehicle?: (bookingVehicleId: number) => Promise<void>;
 }
@@ -24,11 +36,13 @@ export default function BookingSummary({
   booking,
   titleLevel,
   hasPrivilegedAccess,
+  onCancelBooking,
   onCheckInPassenger,
   onCheckInVehicle,
 }: BookingSummaryProps) {
   const screens = useBreakpoint();
   const [isPrinting, setIsPrinting] = useState(false);
+  const [isCancellationModalOpen, setIsCancellationModalOpen] = useState(false);
 
   useEffect(() => {
     if (isPrinting) {
@@ -46,12 +60,17 @@ export default function BookingSummary({
     }
   };
 
+  const onClickCancel = (remarks: string) => {
+    setIsCancellationModalOpen(false);
+    onCancelBooking && onCancelBooking(remarks);
+  };
+
   const getUserAction = () => {
     if (booking === undefined) {
       return '';
     }
 
-    switch (booking.status) {
+    switch (booking.paymentStatus) {
       case 'Pending':
         return 'The QR code will be available after your payment has been processed.';
       case 'Success':
@@ -59,6 +78,40 @@ export default function BookingSummary({
     }
     return '';
   };
+
+  const showCancelBookingButton =
+    (booking?.bookingStatus === 'Confirmed' ||
+      booking?.bookingStatus === 'Requested') &&
+    onCancelBooking;
+
+  const adminBookingActions = (
+    <div>
+      <Button
+        className='hide-on-print'
+        type='primary'
+        onClick={() => onClickPrint()}
+      >
+        <PrinterOutlined rev={undefined} />
+        Print
+      </Button>
+      {showCancelBookingButton && (
+        <Button
+          className='hide-on-print'
+          type='default'
+          onClick={() => setIsCancellationModalOpen(true)}
+        >
+          Void
+        </Button>
+      )}
+      {showCancelBookingButton && (
+        <BookingCancellationModal
+          open={isCancellationModalOpen}
+          onConfirmCancellation={(remarks) => onClickCancel(remarks)}
+          onCancel={() => setIsCancellationModalOpen(false)}
+        ></BookingCancellationModal>
+      )}
+    </div>
+  );
 
   const completeBookingSummary = (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
@@ -69,16 +122,18 @@ export default function BookingSummary({
             flexWrap: screens.lg ? 'nowrap' : 'wrap',
           }}
         >
-          <article style={{ flexGrow: '1' }}>
-            <p>{getUserAction()}</p>
-            <QRCode
-              value={window.location.href}
-              size={screens.sm ? 256 : 192}
-              viewBox={`0 0 256 256`}
-              type='svg'
-              status={booking.status === 'Success' ? 'active' : 'loading'}
-            />
-          </article>
+          {booking?.bookingStatus === 'Confirmed' && (
+            <article style={{ flexGrow: '1' }}>
+              <p>{getUserAction()}</p>
+              <QRCode
+                value={window.location.href}
+                size={screens.sm ? 256 : 192}
+                viewBox={`0 0 256 256`}
+                type='svg'
+              />
+              {adminBookingActions}
+            </article>
+          )}
           <article style={{ flexGrow: '1', position: 'relative' }}>
             <Descriptions
               bordered={screens.sm}
@@ -86,7 +141,10 @@ export default function BookingSummary({
               style={{ marginBottom: 40 }}
             >
               <Descriptions.Item label='Booking Status'>
-                {PAYMENT_STATUS[booking.status]}
+                {BOOKING_STATUS[booking.bookingStatus]}
+              </Descriptions.Item>
+              <Descriptions.Item label='Payment Status'>
+                {PAYMENT_STATUS[booking.paymentStatus]}
               </Descriptions.Item>
               <Descriptions.Item label='Booking Date'>
                 {dayjs(booking.createdAtIso).format('MMMM D, YYYY [at] h:mm A')}
@@ -98,17 +156,6 @@ export default function BookingSummary({
                 {booking.bookingPassengers?.length}
               </Descriptions.Item>
             </Descriptions>
-            {booking.status === 'Success' && (
-              <Button
-                className='hide-on-print'
-                type='primary'
-                onClick={() => onClickPrint()}
-                style={{ position: 'absolute', bottom: 0 }}
-              >
-                <PrinterOutlined rev={undefined} />
-                Print
-              </Button>
-            )}
           </article>
         </section>
       )}

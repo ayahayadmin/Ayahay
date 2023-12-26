@@ -12,7 +12,7 @@ import TripList from './tripList';
 import { useSearchParams } from 'next/navigation';
 import { useAuthGuard, useAuthState } from '@/hooks/auth';
 import styles from './page.module.scss';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import dayjs from 'dayjs';
 import { RangePickerProps } from 'antd/es/date-picker';
 import { DATE_FORMAT_LIST, DATE_PLACEHOLDER } from '@ayahay/constants';

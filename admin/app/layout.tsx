@@ -3,7 +3,7 @@ import './globals.css';
 import AdminHeader from '@/components/AdminHeader';
 import { Jost } from 'next/font/google';
 import { App, ConfigProvider, Layout } from 'antd';
-import AuthContextProvider from './contexts/AuthContext';
+import AuthContextProvider from '../contexts/AuthContext';
 import AdminSider from '@/components/AdminSider';
 import { Content } from 'antd/es/layout/layout';
 

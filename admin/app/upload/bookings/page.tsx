@@ -7,7 +7,7 @@ import { processBookingCsv } from '@/services/csv.service';
 import { IBooking } from '@ayahay/models';
 import { useAuthState } from '@/hooks/auth';
 import { redirect } from 'next/navigation';
-import { useAuth } from '@/app/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 const { Title } = Typography;
 const { Dragger } = Upload;

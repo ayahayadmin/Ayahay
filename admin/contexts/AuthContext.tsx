@@ -5,7 +5,7 @@ import {
   signOut,
 } from 'firebase/auth';
 import { createContext, useContext, useEffect, useState } from 'react';
-import { firebase } from '../utils/initFirebase';
+import { firebase } from '@/utils/initFirebase';
 import { useIdToken } from 'react-firebase-hooks/auth';
 import { accountRelatedCacheKeys } from '@ayahay/constants';
 import { cacheItem, invalidateItem } from '@ayahay/services/cache.service';
