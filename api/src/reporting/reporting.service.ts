@@ -219,6 +219,13 @@ export class ReportingService {
         srcPort: true,
         destPort: true,
         passengers: {
+          where: {
+            booking: {
+              bookingStatus: {
+                in: ['Confirmed', 'Requested'],
+              },
+            },
+          },
           include: {
             passenger: true,
           },
