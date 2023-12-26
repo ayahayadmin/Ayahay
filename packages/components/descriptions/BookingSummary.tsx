@@ -1,14 +1,4 @@
-import {
-  Descriptions,
-  Skeleton,
-  Typography,
-  Grid,
-  QRCode,
-  Button,
-  Modal,
-  Input,
-  Form,
-} from 'antd';
+import { Descriptions, Skeleton, Typography, Grid, QRCode, Button } from 'antd';
 import { IBooking } from '@ayahay/models/booking.model';
 import { BOOKING_STATUS, PAYMENT_STATUS } from '@ayahay/constants';
 import React, { useEffect, useState } from 'react';
@@ -82,10 +72,11 @@ export default function BookingSummary({
   const showCancelBookingButton =
     (booking?.bookingStatus === 'Confirmed' ||
       booking?.bookingStatus === 'Requested') &&
+    hasPrivilegedAccess &&
     onCancelBooking;
 
-  const adminBookingActions = (
-    <div>
+  const bookingActions = (
+    <div style={{ display: 'flex', gap: '8px' }}>
       <Button
         className='hide-on-print'
         type='primary'
@@ -131,7 +122,6 @@ export default function BookingSummary({
                 viewBox={`0 0 256 256`}
                 type='svg'
               />
-              {adminBookingActions}
             </article>
           )}
           <article style={{ flexGrow: '1', position: 'relative' }}>
@@ -156,6 +146,8 @@ export default function BookingSummary({
                 {booking.bookingPassengers?.length}
               </Descriptions.Item>
             </Descriptions>
+
+            {bookingActions}
           </article>
         </section>
       )}
