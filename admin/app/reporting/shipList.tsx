@@ -8,7 +8,7 @@ import { getPortsByShip } from '@/services/reporting.service';
 import { PortsByShip, TripSearchByDateRange } from '@ayahay/http';
 import { isEmpty } from 'lodash';
 import { ArrowRightOutlined } from '@ant-design/icons';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 const columns: ColumnsType<PortsByShip> = [
   {

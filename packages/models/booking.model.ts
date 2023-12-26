@@ -1,6 +1,6 @@
 import { IBookingPassenger } from './booking-passenger.model';
 import { IBookingVehicle } from './booking-vehicle.model';
-import { PAYMENT_STATUS, BOOKING_TYPE } from '@ayahay/constants/enum';
+import { PAYMENT_STATUS, BOOKING_TYPE, BOOKING_STATUS } from '@ayahay/constants/enum';
 import { IPaymentItem } from './payment-item.model';
 import { IAccount } from './account.model';
 
@@ -10,7 +10,8 @@ export interface IBooking {
   account?: IAccount;
 
   referenceNo: string;
-  status: keyof typeof PAYMENT_STATUS;
+  bookingStatus: keyof typeof BOOKING_STATUS;
+  paymentStatus: keyof typeof PAYMENT_STATUS;
   totalPrice: number;
   bookingType: keyof typeof BOOKING_TYPE;
   /**
@@ -21,6 +22,11 @@ export interface IBooking {
    */
   contactEmail?: string;
   createdAtIso: string;
+  /**
+   * if booking status is failed or cancelled,
+   * remarks (e.g. reason, actions) are saved here
+   */
+  failureCancellationRemarks?: string;
 
   bookingPassengers?: IBookingPassenger[];
   bookingVehicles?: IBookingVehicle[];

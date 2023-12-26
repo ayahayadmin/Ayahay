@@ -9,7 +9,7 @@ import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import Logout from './auth/Logout';
 import { webLinks } from '@/services/nav.service';
-import { useAuth } from '@/app/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import Notifications from '@ayahay/components/Notifications';
 
 const { Search } = Input;

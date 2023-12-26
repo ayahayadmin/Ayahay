@@ -3,7 +3,7 @@ import {
   getFullDate,
   getLocaleTimeString,
 } from '@ayahay/services/date.service';
-import { useAuth } from '../../app/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { forwardRef } from 'react';
 import styles from './Reports.module.scss';
 

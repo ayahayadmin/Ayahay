@@ -1,12 +1,10 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
   Param,
   Patch,
   Post,
-  Put,
   Query,
   Request,
   UseGuards,
@@ -90,16 +88,6 @@ export class BookingController {
     );
   }
 
-  @Put(':id')
-  @UseGuards(AuthGuard)
-  @Roles('Passenger', 'Staff', 'Admin')
-  async updateBooking(@Param('id') id: string) {}
-
-  @Delete(':id')
-  @UseGuards(AuthGuard)
-  @Roles('Passenger', 'Staff', 'Admin')
-  async deleteBooking(@Param('id') id: string) {}
-
   @Patch(':bookingId/passengers/:bookingPassengerId/check-in')
   @UseGuards(AuthGuard)
   @Roles('Staff', 'Admin', 'SuperAdmin')
@@ -118,6 +106,16 @@ export class BookingController {
     @Param('bookingVehicleId') bookingVehicleId: number
   ) {
     return this.bookingService.checkInVehicle(bookingId, bookingVehicleId);
+  }
+
+  @Patch(':bookingId/cancel')
+  @UseGuards(AuthGuard)
+  @Roles('Staff', 'Admin', 'SuperAdmin')
+  async cancelBooking(
+    @Param('bookingId') bookingId: string,
+    @Body('remarks') remarks: string
+  ) {
+    return this.bookingService.cancelBooking(bookingId, remarks);
   }
 }
 

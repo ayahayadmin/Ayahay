@@ -8,7 +8,7 @@ import { ITrip } from '@ayahay/models';
 import { addTrips } from '@/services/trip.service';
 import { useAuthState } from '@/hooks/auth';
 import { redirect } from 'next/navigation';
-import { useAuth } from '@/app/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 const { Title } = Typography;
 const { Dragger } = Upload;

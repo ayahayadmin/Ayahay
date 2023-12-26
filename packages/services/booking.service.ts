@@ -1,6 +1,15 @@
 import axios from './axios';
 import { BOOKING_API } from '@ayahay/constants';
 
+export async function cancelBooking(
+  bookingId: string,
+  remarks: string
+): Promise<void> {
+  return axios.patch(`${BOOKING_API}/${bookingId}/cancel`, {
+    remarks,
+  });
+}
+
 export async function checkInPassenger(
   bookingId: string,
   bookingPassengerId: number
