@@ -263,7 +263,8 @@ export class PaymentService {
         id: transactionId,
       },
       data: {
-        status: 'Success',
+        bookingStatus: 'Confirmed',
+        paymentStatus: 'Success',
       },
     });
   }
