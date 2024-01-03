@@ -8,13 +8,13 @@ import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import { getTripsByDateRange } from '@/services/trip.service';
 import Table, { ColumnsType } from 'antd/es/table';
-import CabinAndVehicleEditCapacity from '@/components/form/CabinAndVehicleEditCapacity';
 import {
   getFullDate,
   getLocaleTimeString,
 } from '@ayahay/services/date.service';
 import { TripSearchByDateRange } from '@ayahay/http';
 import { isEmpty } from 'lodash';
+import EditCapacity from '@/components/form/EditCapacity';
 
 dayjs.extend(isSameOrBefore);
 dayjs.extend(isSameOrAfter);
@@ -83,13 +83,11 @@ const adminOnlyColumns = [
     title: 'Capacities',
     key: 'editCapacities',
     render: (text: string, record: ITrip) => (
-      <div>
-        <CabinAndVehicleEditCapacity
-          tripId={record.id}
-          cabins={record.availableCabins}
-          vehicleCapacity={record.vehicleCapacity}
-        />
-      </div>
+      <EditCapacity
+        tripId={record.id}
+        cabins={record.availableCabins}
+        vehicleCapacity={record.vehicleCapacity}
+      />
     ),
   },
 ];

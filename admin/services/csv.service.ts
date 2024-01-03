@@ -1,8 +1,7 @@
 import { IBooking, ITrip } from '@ayahay/models';
 import { mockShip, mockShippingLine } from '@ayahay/mocks';
-// import { generateReferenceNo } from '@ayahay/services/random.service';
 import { addTrips, getTripByReferenceNo } from '@/services/trip.service';
-import { round } from 'lodash';
+import { isEmpty, round } from 'lodash';
 
 export function processTripCsv(
   file: File,
@@ -229,6 +228,7 @@ export async function generateBookingCsv(
     'Trip Date & Time',
     'Rates',
     'Checked-in',
+    'Payment',
   ]
     .map((v) => v.replace('"', '""'))
     .map((v) => `"${v}"`)
@@ -243,6 +243,10 @@ export async function generateBookingCsv(
           booking.bookingPassengers && booking.bookingPassengers.length > 0
       )
       .map((booking) => {
+        const payment =
+          isEmpty(booking.account) || booking.account.role === 'Passenger'
+            ? 'Ayahay'
+            : 'OTC';
         return (
           booking.bookingPassengers &&
           booking.bookingPassengers
@@ -274,6 +278,7 @@ export async function generateBookingCsv(
                 departureDate ?? '',
                 round(bookingPassenger.totalPrice, 2) ?? '',
                 bookingPassenger.checkInDate ? 'Yes' : 'No',
+                payment,
               ]
                 .map(String) // convert every value to String
                 .map((v) => v.replace('"', '""')) // escape double colons

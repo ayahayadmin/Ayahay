@@ -94,9 +94,11 @@ export class SearchService {
         SELECT 
           trip_id,
           COUNT(*) AS "checkedInPassengerCount"
-        FROM ayahay.booking_passenger
+        FROM ayahay.booking_passenger bp
+          INNER JOIN ayahay.booking b ON bp.booking_id = b.id
         WHERE 
-          check_in_date IS NOT NULL
+          b.booking_status = 'Confirmed'
+          AND bp.check_in_date IS NOT NULL
           AND trip_id IN (SELECT id FROM trips_matching_query)
         GROUP BY trip_id
       ), checked_in_vehicle_count_per_trip AS (
