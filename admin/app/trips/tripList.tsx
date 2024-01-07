@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ITrip } from '@ayahay/models/trip.model';
-import { Button, Skeleton } from 'antd';
+import { Button, Dropdown, Skeleton, Space } from 'antd';
 import { IShippingLine } from '@ayahay/models/shipping-line.model';
 import { IPort } from '@ayahay/models/port.model';
 import dayjs from 'dayjs';
@@ -8,103 +8,154 @@ import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import { getTripsByDateRange } from '@/services/trip.service';
 import Table, { ColumnsType } from 'antd/es/table';
-import CabinAndVehicleEditCapacity from '@/components/form/CabinAndVehicleEditCapacity';
 import {
   getFullDate,
   getLocaleTimeString,
 } from '@ayahay/services/date.service';
 import { TripSearchByDateRange } from '@ayahay/http';
 import { isEmpty } from 'lodash';
+import EditCapacity from '@/components/form/EditCapacity';
+import { DownOutlined } from '@ant-design/icons';
 
 dayjs.extend(isSameOrBefore);
 dayjs.extend(isSameOrAfter);
 
-const columns: ColumnsType<ITrip> = [
-  {
-    key: 'logo',
-    dataIndex: 'shippingLine',
-    render: (text: IShippingLine) => (
-      <img src='/assets/aznar-logo.png' alt={`${text.name} Logo`} height={80} />
-    ),
-    align: 'center',
-  },
-  {
-    title: 'Origin',
-    key: 'srcPort',
-    dataIndex: 'srcPort',
-    render: (text: IPort) => <span>{text.name}</span>,
-  },
-  {
-    title: 'Destination',
-    key: 'destPort',
-    dataIndex: 'destPort',
-    render: (text: IPort) => <span>{text.name}</span>,
-  },
-  {
-    title: 'Departure Date',
-    key: 'departureDateIso',
-    dataIndex: 'departureDateIso',
-    render: (departureDate: string) => (
-      <div>
-        <span>{getFullDate(departureDate)}</span>
-        <br></br>
-        <span>{getLocaleTimeString(departureDate)}</span>
-      </div>
-    ),
-  },
-  {
-    title: 'Manifest',
-    render: (_, record: ITrip) => (
-      <Button
-        type='primary'
-        href={`/trips/${record.id}/manifest`}
-        target='_blank'
-      >
-        View
-      </Button>
-    ),
-  },
-];
-
-const adminOnlyColumns = [
-  {
-    title: 'Reporting',
-    render: (_, record: ITrip) => (
-      <Button
-        type='primary'
-        href={`/trips/${record.id}/reporting`}
-        target='_blank'
-      >
-        Generate
-      </Button>
-    ),
-  },
-  {
-    title: 'Capacities',
-    key: 'editCapacities',
-    render: (text: string, record: ITrip) => (
-      <div>
-        <CabinAndVehicleEditCapacity
-          tripId={record.id}
-          cabins={record.availableCabins}
-          vehicleCapacity={record.vehicleCapacity}
-        />
-      </div>
-    ),
-  },
-];
-
 interface TripListProps {
   searchQuery: TripSearchByDateRange | undefined;
   hasAdminPrivileges: boolean;
+  onSetTripAsArrived: (tripId: number) => Promise<void>;
 }
+
+const tripActions = (trip: ITrip): any[] => {
+  const actions: any[] = [
+    {
+      label: (
+        <a href={`/trips/${trip.id}/manifest`} target='_blank'>
+          View manifest
+        </a>
+      ),
+      key: 'view-manifest',
+    },
+  ];
+
+  if (trip.status === 'Awaiting') {
+    actions.push(
+      ...[
+        {
+          label: 'Set status to Arrived',
+          key: `set-arrived`,
+        },
+      ]
+    );
+  }
+
+  return actions;
+};
+
+const tripAdminActions = (trip: ITrip): any[] => [
+  {
+    label: (
+      <a href={`/trips/${trip.id}/reporting`} target='_blank'>
+        Generate reports
+      </a>
+    ),
+    key: 'generate-reports',
+  },
+];
 
 export default function TripList({
   searchQuery,
   hasAdminPrivileges,
+  onSetTripAsArrived,
 }: TripListProps) {
   const [tripsData, setTripsData] = useState([] as ITrip[]);
   const [loading, setLoading] = useState(false);
+
+  const onClickSetTripAsArrived = async (tripId: number) => {
+    await onSetTripAsArrived(tripId);
+    fetchTrips();
+  };
+
+  const columns: ColumnsType<ITrip> = [
+    {
+      key: 'logo',
+      dataIndex: 'shippingLine',
+      render: (text: IShippingLine) => (
+        <img
+          src='/assets/aznar-logo.png'
+          alt={`${text.name} Logo`}
+          height={80}
+        />
+      ),
+      align: 'center',
+    },
+    {
+      title: 'Origin',
+      key: 'srcPort',
+      dataIndex: 'srcPort',
+      render: (text: IPort) => <span>{text.name}</span>,
+    },
+    {
+      title: 'Destination',
+      key: 'destPort',
+      dataIndex: 'destPort',
+      render: (text: IPort) => <span>{text.name}</span>,
+    },
+    {
+      title: 'Departure Date',
+      key: 'departureDateIso',
+      dataIndex: 'departureDateIso',
+      render: (departureDate: string) => (
+        <div>
+          <span>{getFullDate(departureDate)}</span>
+          <br></br>
+          <span>{getLocaleTimeString(departureDate)}</span>
+        </div>
+      ),
+    },
+    { title: 'Status', key: 'status', dataIndex: 'status' },
+    {
+      title: '',
+      render: (_, trip: ITrip) => (
+        <Dropdown
+          trigger={['click']}
+          menu={{
+            items: hasAdminPrivileges
+              ? [...tripActions(trip), ...tripAdminActions(trip)]
+              : tripActions(trip),
+            onClick: ({ key }) => {
+              if (key === 'set-arrived') {
+                onClickSetTripAsArrived(trip.id);
+              }
+            },
+          }}
+        >
+          <Button>
+            <Space>
+              Actions
+              <DownOutlined />
+            </Space>
+          </Button>
+        </Dropdown>
+      ),
+    },
+  ];
+
+  const adminOnlyColumns = [
+    {
+      title: 'Capacities',
+      key: 'editCapacities',
+      render: (text: string, record: ITrip) => (
+        <div>
+          <EditCapacity
+            tripId={record.id}
+            cabins={record.availableCabins}
+            vehicleCapacity={record.vehicleCapacity}
+          />
+        </div>
+      ),
+    },
+  ];
 
   useEffect(() => {
     fetchTrips();

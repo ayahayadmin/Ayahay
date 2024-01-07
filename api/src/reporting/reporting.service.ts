@@ -80,18 +80,20 @@ export class ReportingService {
 
     return {
       ...this.reportingMapper.convertTripsForReporting(trip),
-      passengers: trip.passengers.map((passenger) => {
-        const adminFee =
-          this.bookingPricingService.calculateServiceChargeForPassenger(
-            passenger.passenger,
-            passenger.booking.account.role
-          );
+      passengers: trip.passengers
+        .filter((passenger) => passenger.booking.bookingStatus === 'Confirmed')
+        .map((passenger) => {
+          const adminFee =
+            this.bookingPricingService.calculateServiceChargeForPassenger(
+              passenger.passenger,
+              passenger.booking.account.role
+            );
 
-        return this.reportingMapper.convertTripPassengersForReporting(
-          passenger,
-          adminFee
-        );
-      }),
+          return this.reportingMapper.convertTripPassengersForReporting(
+            passenger,
+            adminFee
+          );
+        }),
       vehicles: trip.vehicles.map((vehicle) => {
         const vehicleFare =
           trip.availableVehicleTypes[vehicle.vehicle.vehicleTypeId - 1].fare; // temporary
@@ -176,30 +178,32 @@ export class ReportingService {
       let noShowBreakdown = [];
       let passengers = [];
 
-      trip.passengers.forEach((passenger) => {
-        const adminFee =
-          this.bookingPricingService.calculateServiceChargeForPassenger(
-            passenger.passenger,
-            passenger.booking.account.role
-          );
+      trip.passengers
+        .filter((passenger) => passenger.booking.bookingStatus === 'Confirmed')
+        .forEach((passenger) => {
+          const adminFee =
+            this.bookingPricingService.calculateServiceChargeForPassenger(
+              passenger.passenger,
+              passenger.booking.account.role
+            );
 
-        const { cabinPassengerArr, noShowArr } =
-          this.reportingMapper.convertTripPassengersToCabinPassenger(
-            passenger,
-            adminFee,
-            cabinPassengerBreakdown,
-            noShowBreakdown
-          );
-        cabinPassengerBreakdown = cabinPassengerArr;
-        noShowBreakdown = noShowArr;
+          const { cabinPassengerArr, noShowArr } =
+            this.reportingMapper.convertTripPassengersToCabinPassenger(
+              passenger,
+              adminFee,
+              cabinPassengerBreakdown,
+              noShowBreakdown
+            );
+          cabinPassengerBreakdown = cabinPassengerArr;
+          noShowBreakdown = noShowArr;
 
-        passengers.push(
-          this.reportingMapper.convertTripPassengersForReporting(
-            passenger,
-            adminFee
-          )
-        );
-      });
+          passengers.push(
+            this.reportingMapper.convertTripPassengersForReporting(
+              passenger,
+              adminFee
+            )
+          );
+        });
 
       return {
         ...this.reportingMapper.convertTripsForReporting(trip),
@@ -219,6 +223,13 @@ export class ReportingService {
         srcPort: true,
         destPort: true,
         passengers: {
+          where: {
+            booking: {
+              bookingStatus: {
+                in: ['Confirmed', 'Requested'],
+              },
+            },
+          },
           include: {
             passenger: true,
           },

@@ -72,6 +72,7 @@ export class AuthGuard implements CanActivate {
     let email = '';
     let uid = '';
     let role = '';
+    let shippingLineId = undefined;
 
     try {
       const {
@@ -79,11 +80,13 @@ export class AuthGuard implements CanActivate {
         uid: _uid,
         email_verified,
         role: _role,
+        shippingLineId: _shippingLineId,
       } = await this.decryptToken(token);
       email = _email;
       uid = _uid;
       isEmailVerified = email_verified;
       role = _role;
+      shippingLineId = _shippingLineId;
     } catch (e: any) {
       if (shouldBeAuthenticated === false) {
         return true;
@@ -96,6 +99,7 @@ export class AuthGuard implements CanActivate {
       role,
       email,
       token,
+      shippingLineId,
     };
 
     if (shouldBeAuthenticated === false) {

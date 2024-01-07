@@ -5,6 +5,10 @@ export const webLinks = {
       key: 'trips',
     },
     {
+      label: 'Vessels',
+      key: 'ships',
+    },
+    {
       label: 'Dashboard',
       key: 'dashboard',
     },
@@ -17,6 +21,10 @@ export const webLinks = {
     {
       label: 'Trips',
       key: 'trips',
+    },
+    {
+      label: 'Vessels',
+      key: 'ships',
     },
     {
       label: 'Dashboard',

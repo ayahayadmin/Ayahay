@@ -1,4 +1,5 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
+import { IAccount } from '@ayahay/models';
 
 @Injectable()
 export class UtilityService {
@@ -24,5 +25,20 @@ export class UtilityService {
     }
 
     return result;
+  }
+
+  verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
+    shippingLineRestrictedEntity: { shippingLineId: number },
+    loggedInAccount: IAccount
+  ) {
+    if (loggedInAccount.role === 'SuperAdmin') {
+      return;
+    }
+    if (
+      loggedInAccount.shippingLineId !==
+      shippingLineRestrictedEntity.shippingLineId
+    ) {
+      throw new ForbiddenException();
+    }
   }
 }

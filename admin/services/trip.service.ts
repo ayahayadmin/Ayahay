@@ -92,3 +92,7 @@ export async function updateTripCabinCapacity(
 
   return undefined;
 }
+
+export async function setTripAsArrived(tripId: number): Promise<void> {
+  return axios.patch(`${TRIP_API}/${tripId}/arrived`);
+}

@@ -26,7 +26,9 @@ export class ReportingMapper {
       departureDate: trip.departureDate.toISOString(),
       totalPassengers: trip.passengers.length,
       totalBoardedPassengers: trip.passengers.filter(
-        (passenger) => passenger.checkInDate
+        (passenger) =>
+          passenger.checkInDate &&
+          passenger.booking.bookingStatus === 'Confirmed'
       ).length,
     };
   }

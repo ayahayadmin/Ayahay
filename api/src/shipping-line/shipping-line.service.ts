@@ -1,6 +1,15 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
-import { IShippingLine, IShippingLineSchedule, ITrip } from '@ayahay/models';
+import {
+  IAccount,
+  IShippingLine,
+  IShippingLineSchedule,
+  ITrip,
+} from '@ayahay/models';
 import { CreateTripsFromSchedulesRequest } from '@ayahay/http';
 import { ShippingLineMapper } from './shipping-line.mapper';
 import { UtilityService } from '../utility.service';
@@ -18,8 +27,13 @@ export class ShippingLineService {
   }
 
   async getSchedulesOfShippingLine(
-    shippingLineId: number
+    shippingLineId: number,
+    loggedInAccount: IAccount
   ): Promise<IShippingLineSchedule[]> {
+    this.utilityService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
+      { shippingLineId },
+      loggedInAccount
+    );
     const shippingLineScheduleEntities =
       await this.prisma.shippingLineSchedule.findMany({
         where: {
@@ -58,7 +72,8 @@ export class ShippingLineService {
   }
 
   async convertSchedulesToTrips(
-    createTripsFromSchedulesRequest: CreateTripsFromSchedulesRequest
+    createTripsFromSchedulesRequest: CreateTripsFromSchedulesRequest,
+    loggedInAccount: IAccount
   ): Promise<ITrip[]> {
     const scheduleIds = createTripsFromSchedulesRequest.schedules.map(
       (schedule) => schedule.scheduleId
@@ -82,6 +97,13 @@ export class ShippingLineService {
     if (scheduleEntities.length !== scheduleIds.length) {
       throw new BadRequestException('One or more schedules is invalid');
     }
+
+    scheduleEntities.forEach((schedule) =>
+      this.utilityService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
+        schedule,
+        loggedInAccount
+      )
+    );
 
     const trips: ITrip[] = [];
     for (const schedule of scheduleEntities) {

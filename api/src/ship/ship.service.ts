@@ -1,10 +1,22 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
-import { IShip } from '@ayahay/models';
+import { IAccount, IShip, IVoyage } from '@ayahay/models';
+import { ShipMapper } from './ship.mapper';
+import { PrismaClient } from '@prisma/client';
+import { PaginatedRequest, PaginatedResponse } from '@ayahay/http';
+import { UtilityService } from '../utility.service';
 
 @Injectable()
 export class ShipService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private utilityService: UtilityService,
+    private shipMapper: ShipMapper
+  ) {}
 
   async getShipsOfShippingLine(shippingLineId: number): Promise<IShip[]> {
     return await this.prisma.ship.findMany({
@@ -12,5 +24,235 @@ export class ShipService {
         shippingLineId,
       },
     });
+  }
+
+  async getShipsOfMyShippingLine(loggedInAccount: IAccount): Promise<IShip[]> {
+    const ships =
+      loggedInAccount.role === 'SuperAdmin'
+        ? await this.prisma.ship.findMany()
+        : await this.prisma.ship.findMany({
+            where: {
+              shippingLineId: loggedInAccount.shippingLineId,
+            },
+          });
+
+    return ships.map((ship) => this.shipMapper.convertShipToDto(ship));
+  }
+
+  async createVoyageForTrip(
+    trip: any,
+    transactionContext?: PrismaClient
+  ): Promise<void> {
+    transactionContext ??= this.prisma;
+    const tripDate = trip.departureDate.toLocaleString('en-US', {
+      timeZone: 'Asia/Shanghai',
+    });
+
+    await transactionContext.voyage.create({
+      data: {
+        shipId: trip.shipId,
+        tripId: trip.id,
+        number: await this.getNextVoyageNumber(trip.shipId),
+        date: new Date(),
+        remarks: `${trip.srcPort?.code} -> ${trip.destPort?.code} ${tripDate}`,
+      },
+    });
+  }
+
+  private async getNextVoyageNumber(shipId: number): Promise<number> {
+    const mostRecentVoyage = await this.prisma.voyage.findFirst({
+      where: {
+        shipId,
+      },
+      orderBy: {
+        date: 'desc',
+      },
+    });
+
+    if (mostRecentVoyage === null) {
+      return 1;
+    }
+
+    const mostRecentDryDock = await this.prisma.dryDock.findFirst({
+      where: {
+        shipId,
+      },
+      orderBy: {
+        date: 'desc',
+      },
+    });
+
+    if (mostRecentDryDock === null) {
+      return mostRecentVoyage.number + 1;
+    }
+
+    if (mostRecentVoyage.date < mostRecentDryDock.date) {
+      // we reset voyage number to 1 after maintenance
+      return 1;
+    }
+
+    return mostRecentVoyage.number + 1;
+  }
+
+  async createManualVoyage(
+    shipId: number,
+    remarks: string,
+    loggedInAccount: IAccount,
+    transactionContext?: PrismaClient
+  ): Promise<void> {
+    transactionContext ??= this.prisma;
+
+    await this.verifyLoggedInUserShippingLineOwnsShip(
+      shipId,
+      loggedInAccount,
+      transactionContext
+    );
+
+    await transactionContext.voyage.create({
+      data: {
+        shipId,
+        number: await this.getNextVoyageNumber(shipId),
+        date: new Date(),
+        remarks,
+      },
+    });
+  }
+
+  private async verifyLoggedInUserShippingLineOwnsShip(
+    shipId: number,
+    loggedInAccount: IAccount,
+    transactionContext: PrismaClient
+  ): Promise<void> {
+    const ship = await transactionContext.ship.findUnique({
+      where: {
+        id: shipId,
+      },
+    });
+
+    if (ship === null) {
+      throw new NotFoundException();
+    }
+
+    this.utilityService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
+      ship,
+      loggedInAccount
+    );
+  }
+
+  async createDryDock(
+    shipId: number,
+    loggedInAccount: IAccount
+  ): Promise<void> {
+    await this.verifyLoggedInUserShippingLineOwnsShip(
+      shipId,
+      loggedInAccount,
+      this.prisma
+    );
+
+    await this.prisma.dryDock.create({
+      data: {
+        shipId,
+        date: new Date(),
+      },
+    });
+  }
+
+  async getVoyages(
+    shipId: number,
+    afterLastMaintenance: boolean,
+    pagination: PaginatedRequest,
+    loggedInAccount: IAccount
+  ): Promise<PaginatedResponse<IVoyage>> {
+    await this.verifyLoggedInUserShippingLineOwnsShip(
+      shipId,
+      loggedInAccount,
+      this.prisma
+    );
+    const itemsPerPage = 10;
+    const skip = (pagination.page - 1) * itemsPerPage;
+
+    const mostRecentDryDock = await this.prisma.dryDock.findFirst({
+      where: {
+        shipId,
+      },
+      orderBy: {
+        date: 'desc',
+      },
+    });
+
+    // if never started dry dock, show no voyages before last maintenance
+    if (mostRecentDryDock === null && !afterLastMaintenance) {
+      return {
+        total: 0,
+        data: [],
+      };
+    }
+
+    const where =
+      mostRecentDryDock === null
+        ? {
+            shipId,
+          }
+        : {
+            shipId,
+            date: afterLastMaintenance
+              ? {
+                  gt: mostRecentDryDock.date,
+                }
+              : {
+                  lt: mostRecentDryDock.date,
+                },
+          };
+    const voyages = await this.prisma.voyage.findMany({
+      where,
+      orderBy: {
+        date: 'desc',
+      },
+      take: itemsPerPage,
+      skip,
+    });
+
+    const voyageTotalCount = await this.prisma.voyage.count({
+      where,
+    });
+
+    return {
+      total: voyageTotalCount,
+      data: voyages.map((voyage) => this.shipMapper.convertVoyageToDto(voyage)),
+    };
+  }
+
+  async getDryDocks(
+    shipId: number,
+    pagination: PaginatedRequest,
+    loggedInAccount: IAccount
+  ) {
+    await this.verifyLoggedInUserShippingLineOwnsShip(
+      shipId,
+      loggedInAccount,
+      this.prisma
+    );
+    const itemsPerPage = 10;
+    const skip = (pagination.page - 1) * itemsPerPage;
+
+    const dryDocks = await this.prisma.dryDock.findMany({
+      where: { shipId },
+      orderBy: {
+        date: 'desc',
+      },
+      take: itemsPerPage,
+      skip,
+    });
+
+    const dryDockTotalCount = await this.prisma.dryDock.count({
+      where: { shipId },
+    });
+
+    return {
+      total: dryDockTotalCount,
+      data: dryDocks.map((dryDock) =>
+        this.shipMapper.convertDryDockToDto(dryDock)
+      ),
+    };
   }
 }

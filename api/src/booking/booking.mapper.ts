@@ -27,6 +27,7 @@ export class BookingMapper {
     const {
       id,
       accountId,
+      account,
       referenceNo,
       bookingStatus,
       paymentStatus,
@@ -41,6 +42,7 @@ export class BookingMapper {
     return {
       id,
       accountId,
+      account,
       referenceNo,
       bookingStatus: bookingStatus as any,
       paymentStatus: paymentStatus as any,

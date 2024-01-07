@@ -6,7 +6,12 @@ import {
 } from '@nestjs/common';
 import { Prisma, PrismaClient, Trip } from '@prisma/client';
 import { PrismaService } from 'src/prisma.service';
-import { AvailableTrips, ITrip, SearchAvailableTrips } from '@ayahay/models';
+import {
+  AvailableTrips,
+  IAccount,
+  ITrip,
+  SearchAvailableTrips,
+} from '@ayahay/models';
 import { TripMapper } from './trip.mapper';
 import { isEmpty } from 'lodash';
 import {
@@ -16,6 +21,8 @@ import {
 } from '@ayahay/http';
 import { TripValidator } from './trip.validator';
 import { ShippingLineService } from '../shipping-line/shipping-line.service';
+import { ShipService } from '../ship/ship.service';
+import { UtilityService } from '../utility.service';
 
 const TRIP_AVAILABLE_QUERY = Prisma.sql`
   SELECT 
@@ -26,6 +33,7 @@ const TRIP_AVAILABLE_QUERY = Prisma.sql`
     t.shipping_line_id AS "shippingLineId",
     t.src_port_id AS "srcPortId",
     t.dest_port_id AS "destPortId",
+    t.status AS "status",
     t.seat_selection AS "seatSelection",
     t.available_vehicle_capacity AS "availableVehicleCapacity",
     t.vehicle_capacity AS "vehicleCapacity",
@@ -49,8 +57,10 @@ const TRIP_AVAILABLE_QUERY = Prisma.sql`
 @Injectable()
 export class TripService {
   constructor(
-    private readonly shippingLineService: ShippingLineService,
     private readonly prisma: PrismaService,
+    private readonly shippingLineService: ShippingLineService,
+    private readonly shipService: ShipService,
+    private readonly utilityService: UtilityService,
     private readonly tripMapper: TripMapper,
     private readonly tripValidator: TripValidator
   ) {}
@@ -210,11 +220,13 @@ export class TripService {
   }
 
   async createTripsFromSchedules(
-    createTripsFromSchedulesRequest: CreateTripsFromSchedulesRequest
+    createTripsFromSchedulesRequest: CreateTripsFromSchedulesRequest,
+    loggedInAccount: IAccount
   ): Promise<void> {
     const tripsToCreate =
       await this.shippingLineService.convertSchedulesToTrips(
-        createTripsFromSchedulesRequest
+        createTripsFromSchedulesRequest,
+        loggedInAccount
       );
 
     const tripReferenceNos: string[] = [];
@@ -290,9 +302,10 @@ export class TripService {
     });
   }
 
-  public async updateTripCapacities(
+  async updateTripCapacities(
     tripId: number,
-    updateTripCapacityRequest: UpdateTripCapacityRequest
+    updateTripCapacityRequest: UpdateTripCapacityRequest,
+    loggedInAccount: IAccount
   ): Promise<void> {
     const trip = await this.prisma.trip.findUnique({
       where: {
@@ -303,9 +316,14 @@ export class TripService {
       },
     });
 
-    if (trip === undefined) {
+    if (trip === null) {
       throw new NotFoundException();
     }
+
+    this.utilityService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
+      trip,
+      loggedInAccount
+    );
 
     const errors = await this.tripValidator.validateUpdateTripCapacityRequest(
       trip,
@@ -405,5 +423,99 @@ export class TripService {
         },
       });
     }
+  }
+
+  async cancelTrip(
+    tripId: number,
+    reason: string,
+    loggedInAccount: IAccount
+  ): Promise<void> {
+    const tripToCancel = await this.prisma.trip.findUnique({
+      where: {
+        id: tripId,
+      },
+      include: {
+        srcPort: true,
+        destPort: true,
+      },
+    });
+
+    if (tripToCancel === null) {
+      throw new NotFoundException();
+    }
+
+    this.utilityService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
+      tripToCancel,
+      loggedInAccount
+    );
+
+    if (tripToCancel.status !== 'Awaiting') {
+      throw new BadRequestException(
+        'Cannot cancel a cancelled or arrived trip.'
+      );
+    }
+
+    await this.prisma.$transaction(async (transactionContext) => {
+      await transactionContext.trip.update({
+        where: {
+          id: tripId,
+        },
+        data: {
+          status: 'Cancelled',
+          cancellationReason: reason,
+        },
+      });
+
+      await this.shipService.createVoyageForTrip(
+        tripToCancel,
+        transactionContext as any
+      );
+    });
+  }
+
+  async setTripAsArrived(
+    tripId: number,
+    loggedInAccount: IAccount
+  ): Promise<void> {
+    const tripToUpdate = await this.prisma.trip.findUnique({
+      where: {
+        id: tripId,
+      },
+      include: {
+        srcPort: true,
+        destPort: true,
+      },
+    });
+
+    if (tripToUpdate === null) {
+      throw new NotFoundException();
+    }
+
+    this.utilityService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
+      tripToUpdate,
+      loggedInAccount
+    );
+
+    if (tripToUpdate.status !== 'Awaiting') {
+      throw new BadRequestException(
+        'Cannot set a cancelled or arrived trip as arrived.'
+      );
+    }
+
+    await this.prisma.$transaction(async (transactionContext) => {
+      await transactionContext.trip.update({
+        where: {
+          id: tripId,
+        },
+        data: {
+          status: 'Arrived',
+        },
+      });
+
+      await this.shipService.createVoyageForTrip(
+        tripToUpdate,
+        transactionContext as any
+      );
+    });
   }
 }

@@ -1,5 +1,7 @@
 import { ICabin } from './cabin.model';
 import { IShippingLine } from './shipping-line.model';
+import { IVoyage } from './voyage.model';
+import { IDryDock } from './dry-dock';
 
 export interface IShip {
   id: number;
@@ -8,4 +10,6 @@ export interface IShip {
   shippingLine?: IShippingLine;
   recommendedVehicleCapacity: number;
   cabins?: ICabin[];
+  voyages?: IVoyage[];
+  dryDocks?: IDryDock[];
 }

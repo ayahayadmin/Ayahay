@@ -37,6 +37,7 @@ export class TripMapper {
       destPortId: trip.destPortId,
       destPort: this.portMapper.convertPortToDto(trip.destPort),
 
+      status: trip.status as any,
       departureDateIso: trip.departureDate.toISOString(),
       seatSelection: trip.seatSelection,
       availableVehicleCapacity: trip.availableVehicleCapacity,
@@ -79,6 +80,7 @@ export class TripMapper {
       shippingLineId: Number(trip.shippingLineId),
       srcPortId: Number(trip.srcPortId),
       destPortId: Number(trip.destPortId),
+      status: trip.status as any,
       seatSelection: Boolean(trip.seatSelection),
       availableVehicleCapacity: Number(trip.availableVehicleCapacity),
       vehicleCapacity: Number(trip.vehicleCapacity),
@@ -244,6 +246,7 @@ export class TripMapper {
       srcPortId: trip.srcPortId,
       destPortId: trip.destPortId,
 
+      status: trip.status,
       departureDate: new Date(trip.departureDateIso),
       referenceNo: trip.referenceNo,
       availableVehicleCapacity: trip.vehicleCapacity,

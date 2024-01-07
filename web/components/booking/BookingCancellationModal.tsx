@@ -14,7 +14,7 @@ import { useForm } from 'antd/es/form/Form';
 
 const { Title } = Typography;
 
-interface AddCompanionsModalProps {
+interface BookingCancellationModalProps {
   onConfirmCancellation: (cancellationReason: string) => void;
 }
 
@@ -22,7 +22,7 @@ export default function BookingCancellationModal({
   onConfirmCancellation,
   onOk,
   ...modalProps
-}: AddCompanionsModalProps & ModalProps) {
+}: BookingCancellationModalProps & ModalProps) {
   const [form] = useForm();
 
   const onOkModal = async () => {

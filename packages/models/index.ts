@@ -20,3 +20,5 @@ export * from './vehicle-type.model';
 export * from './payment-item.model';
 export * from './notification.model';
 export * from './account-notification.model';
+export * from './voyage.model';
+export * from './dry-dock';
