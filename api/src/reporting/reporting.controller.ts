@@ -8,6 +8,7 @@ import {
   TripSearchByDateRange,
   PortsByShip,
   PerVesselReport,
+  BillOfLading,
 } from '@ayahay/http';
 
 @Controller('reporting')
@@ -42,5 +43,10 @@ export class ReportingController {
   @Roles('Staff', 'Admin', 'SuperAdmin')
   async getManifest(@Param('id') tripId: string): Promise<TripManifest> {
     return this.reportingService.getTripManifest(Number(tripId));
+  }
+
+  @Get(':id/bol')
+  async getBillOfLading(@Param('id') bookingId: string): Promise<BillOfLading> {
+    return this.reportingService.getBillOfLading(bookingId);
   }
 }
