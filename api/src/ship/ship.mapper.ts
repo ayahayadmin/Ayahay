@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { IShip } from '@ayahay/models';
+import { IDryDock, IShip, IVoyage } from '@ayahay/models';
 import { CabinMapper } from '../cabin/cabin.mapper';
 
 @Injectable()
@@ -17,6 +17,27 @@ export class ShipMapper {
       shippingLineId: ship.shippingLineId,
       recommendedVehicleCapacity: ship.recommendedVehicleCapacity,
       cabins,
+    };
+  }
+
+  convertVoyageToDto(voyage: any): IVoyage {
+    return {
+      id: voyage.id,
+      shipId: voyage.shipId,
+      tripId: voyage.tripId,
+
+      number: voyage.number,
+      dateIso: voyage.date.toISOString(),
+      remarks: voyage.remarks,
+    };
+  }
+
+  convertDryDockToDto(dryDock: any): IDryDock {
+    return {
+      id: dryDock.id,
+      shipId: dryDock.shipId,
+
+      dateIso: dryDock.date.toISOString(),
     };
   }
 }

@@ -112,9 +112,10 @@ export class ShippingLineMapper {
       shippingLineId: schedule.shippingLineId,
       srcPortId: schedule.srcPortId,
       destPortId: schedule.destPortId,
+
+      status: 'Awaiting',
       availableVehicleCapacity: schedule.ship.recommendedVehicleCapacity,
       vehicleCapacity: schedule.ship.recommendedVehicleCapacity,
-
       bookingCutOffDateIso: '',
       bookingStartDateIso: '',
       departureDateIso: '',

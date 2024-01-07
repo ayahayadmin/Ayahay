@@ -60,10 +60,15 @@ export class AccountService {
     // useClaims and account table role (i.e. a Passenger might have been
     // upgraded to Staff/Admin, so we want to set the new role in FB as well)
     // This is just a workaround, will be removed in the future
-    if (isEmpty(userClaims) || userClaims.role !== myAccountEntityRole) {
+    if (
+      isEmpty(userClaims) ||
+      userClaims.role !== myAccountEntityRole ||
+      userClaims.shippingLineId !== myAccountEntity.shippingLineId
+    ) {
       await this.authService.setUserClaims({
         token,
         role: myAccountEntityRole,
+        shippingLineId: myAccountEntity.shippingLineId,
       });
     }
 
@@ -72,7 +77,7 @@ export class AccountService {
     );
   }
 
-  public async getAccountById(accountId: string): Promise<IAccount> {
+  async getAccountById(accountId: string): Promise<IAccount> {
     const accountEntity = await this.prisma.account.findUnique({
       where: {
         id: accountId,
@@ -87,9 +92,7 @@ export class AccountService {
       : null;
   }
 
-  public async createAccount(
-    data: Prisma.AccountCreateInput
-  ): Promise<IAccount> {
+  async createAccount(data: Prisma.AccountCreateInput): Promise<IAccount> {
     try {
       const loggedInAccount: IAccount = await this.getAccountById(data.id);
       if (loggedInAccount && loggedInAccount.role === 'Passenger') {

@@ -1,4 +1,5 @@
 import {
+  Request,
   Body,
   Controller,
   Get,
@@ -74,10 +75,12 @@ export class TripController {
   @UseGuards(AuthGuard)
   @Roles('Admin', 'SuperAdmin')
   async createTripsFromSchedules(
-    @Body() createTripsFromSchedulesRequest: CreateTripsFromSchedulesRequest
+    @Body() createTripsFromSchedulesRequest: CreateTripsFromSchedulesRequest,
+    @Request() req
   ): Promise<void> {
     return this.tripService.createTripsFromSchedules(
-      createTripsFromSchedulesRequest
+      createTripsFromSchedulesRequest,
+      req.user
     );
   }
 
@@ -86,11 +89,34 @@ export class TripController {
   @Roles('Admin', 'SuperAdmin')
   async updateTripCabinCapacity(
     @Param('tripId') tripId: number,
-    @Body() updateTripCapacityRequest: UpdateTripCapacityRequest
+    @Body() updateTripCapacityRequest: UpdateTripCapacityRequest,
+    @Request() req
   ): Promise<void> {
     return await this.tripService.updateTripCapacities(
       tripId,
-      updateTripCapacityRequest
+      updateTripCapacityRequest,
+      req.user
     );
+  }
+
+  @Patch(':tripId/cancel')
+  @UseGuards(AuthGuard)
+  @Roles('Admin', 'SuperAdmin')
+  async cancelTrip(
+    @Param('tripId') tripId: number,
+    @Query('reason') reason: string,
+    @Request() req
+  ): Promise<void> {
+    return this.tripService.cancelTrip(tripId, reason, req.user);
+  }
+
+  @Patch(':tripId/arrived')
+  @UseGuards(AuthGuard)
+  @Roles('Staff', 'Admin', 'SuperAdmin')
+  async setTripAsArrived(
+    @Param('tripId') tripId: number,
+    @Request() req
+  ): Promise<void> {
+    return this.tripService.setTripAsArrived(tripId, req.user);
   }
 }

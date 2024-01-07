@@ -4,7 +4,14 @@ import {
   buildUrlQueryParamsFromRangePickerForm,
   initializeRangePickerFormFromQueryParams,
 } from '@/services/search.service';
-import { Button, DatePicker, Dropdown, Form, MenuProps } from 'antd';
+import {
+  Button,
+  DatePicker,
+  Dropdown,
+  Form,
+  MenuProps,
+  notification,
+} from 'antd';
 import { debounce } from 'lodash';
 import { useCallback, useEffect, useState } from 'react';
 import { TripSearchByDateRange } from '@ayahay/http';
@@ -17,6 +24,8 @@ import dayjs from 'dayjs';
 import { RangePickerProps } from 'antd/es/date-picker';
 import { DATE_FORMAT_LIST, DATE_PLACEHOLDER } from '@ayahay/constants';
 import { PlusCircleOutlined } from '@ant-design/icons';
+import { setTripAsArrived } from '@/services/trip.service';
+import { getAxiosError } from '@ayahay/services/error.service';
 
 const { RangePicker } = DatePicker;
 const items: MenuProps['items'] = [
@@ -32,6 +41,7 @@ const items: MenuProps['items'] = [
 
 export default function Schedules() {
   useAuthGuard(['Staff', 'Admin', 'SuperAdmin']);
+  const [api, contextHolder] = notification.useNotification();
   const { loggedInAccount } = useAuth();
   const [form] = Form.useForm();
   const searchParams = useSearchParams();
@@ -44,6 +54,21 @@ export default function Schedules() {
     const params = Object.fromEntries(searchParams.entries());
     initializeRangePickerFormFromQueryParams(form, params);
     debounceSearch();
+  };
+
+  const onSetTripAsArrived = async (tripId: number) => {
+    try {
+      await setTripAsArrived(tripId);
+      api.success({
+        message: 'Set Status Success',
+        description: 'The status of the selected trip has been set to Arrived.',
+      });
+    } catch (e) {
+      api.error({
+        message: 'Set Status Failed',
+        description: 'Something went wrong.',
+      });
+    }
   };
 
   useEffect(onPageLoad, []);
@@ -116,7 +141,9 @@ export default function Schedules() {
         <TripList
           searchQuery={searchQuery}
           hasAdminPrivileges={hasAdminPrivileges}
+          onSetTripAsArrived={onSetTripAsArrived}
         />
+        {contextHolder}
         {/* <BookingList /> */}
         {/* <div className={styles.chart}>
           <PieChart data={data} />

@@ -21,7 +21,9 @@ model Trip {
   srcPort Port @relation("srcPort", fields: [srcPortId], references: [id])
   destPortId Int @map("dest_port_id")
   destPort Port @relation("destPort", fields: [destPortId], references: [id])
+  voyage Voyage?
 
+  status String
   departureDate DateTime @map("departure_date")
   referenceNo String @map("reference_number")
   seatSelection Boolean @map("seat_selection") @default(false)
@@ -29,6 +31,7 @@ model Trip {
   vehicleCapacity Int @map("vehicle_capacity")
   bookingStartDate DateTime @map("booking_start_date")
   bookingCutOffDate DateTime @map("booking_cut_off_date")
+  cancellationReason String? @map("cancellation_reason")
 
   passengers BookingPassenger[]
   vehicles BookingVehicle[]
@@ -78,6 +81,8 @@ model Ship {
   cabins Cabin[]
   trips Trip[]
   schedules ShippingLineSchedule[]
+  voyages Voyage[]
+  dryDocks DryDock[]
 
   @@map("ship")
 }
@@ -415,4 +420,28 @@ model PaymentItem {
   bookingVehicle BookingVehicle? @relation(fields: [bookingVehicleId], references: [id])
 
   @@map("payment_item")
+}
+
+model Voyage {
+  id Int @default(autoincrement()) @id
+  shipId Int @map("ship_id")
+  ship Ship @relation(fields: [shipId], references: [id])
+  tripId Int? @map("trip_id") @unique
+  trip Trip? @relation(fields: [tripId], references: [id])
+
+  number Int
+  date DateTime
+  remarks String
+
+  @@map("voyage")
+}
+
+model DryDock {
+  id Int @default(autoincrement()) @id
+  shipId Int @map("ship_id")
+  ship Ship @relation(fields: [shipId], references: [id])
+
+  date DateTime
+
+  @@map("dry_dock")
 }

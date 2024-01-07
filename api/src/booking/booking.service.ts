@@ -46,12 +46,8 @@ export class BookingService {
 
   async getMyBookings(
     pagination: PaginatedRequest,
-    loggedInAccount?: IAccount
+    loggedInAccount: IAccount
   ): Promise<PaginatedResponse<IBooking>> {
-    if (loggedInAccount === undefined) {
-      throw new ForbiddenException();
-    }
-
     const itemsPerPage = 10;
     const skip = (pagination.page - 1) * itemsPerPage;
 

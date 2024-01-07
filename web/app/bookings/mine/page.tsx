@@ -6,9 +6,10 @@ import {
 } from '@/services/booking.service';
 import { IBooking } from '@ayahay/models';
 import { Button, Pagination, Typography } from 'antd';
-import Table, { ColumnsType } from 'antd/es/table';
+import Table, { ColumnsType, TablePaginationConfig } from 'antd/es/table';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/app/contexts/AuthContext';
+import { usePaginatedData } from '@ayahay/hooks';
 
 const { Title } = Typography;
 
@@ -63,34 +64,20 @@ const bookingColumns: ColumnsType<IBooking> = [
 
 export default function MyBookings() {
   const { loggedInAccount } = useAuth();
-  const [myBookings, setMyBookings] = useState<IBooking[] | undefined>();
-  const [myBookingsTotal, setMyBookingsTotal] = useState<number>(0);
+  const {
+    dataInPage: myBookings,
+    antdPagination,
+    onAntdChange,
+    resetData: resetMyBookingsTable,
+  } = usePaginatedData<IBooking>(
+    getMyBookings,
+    loggedInAccount !== null && loggedInAccount !== undefined
+  );
   const [savedBookings, setSavedBookings] = useState<IBooking[] | undefined>();
-
-  const resetMyBookingsTable = () => {
-    setMyBookings([]);
-    setMyBookingsTotal(0);
-  };
-
-  const loadMyBookings = async (page: number) => {
-    const myBookingsPaginated = await getMyBookings({ page });
-
-    if (myBookingsPaginated === undefined) {
-      resetMyBookingsTable();
-      return;
-    }
-
-    setMyBookings(myBookingsPaginated.data);
-    setMyBookingsTotal(myBookingsPaginated.total);
-  };
 
   const loadSavedBookings = async () => {
     const savedBookingsInBrowser = await getSavedBookingsInBrowser();
     setSavedBookings(savedBookingsInBrowser);
-  };
-
-  const onPageChange = async (page: number, _: number) => {
-    loadMyBookings(page);
   };
 
   useEffect(() => {
@@ -98,12 +85,12 @@ export default function MyBookings() {
   }, []);
 
   useEffect(() => {
-    if (loggedInAccount === null) {
-      return;
-    } else if (loggedInAccount === undefined) {
+    if (
+      myBookings &&
+      myBookings.length > 0 &&
+      (loggedInAccount === null || loggedInAccount === undefined)
+    ) {
       resetMyBookingsTable();
-    } else {
-      loadMyBookings(1);
     }
   }, [loggedInAccount]);
 
@@ -114,15 +101,11 @@ export default function MyBookings() {
         <Table
           dataSource={myBookings}
           columns={bookingColumns}
-          pagination={false}
+          pagination={antdPagination}
+          onChange={onAntdChange}
           loading={myBookings === undefined}
           tableLayout='fixed'
           rowKey={(booking) => booking.id}
-        />
-        <Pagination
-          onChange={onPageChange}
-          total={myBookingsTotal}
-          pageSize={10}
         />
       </section>
       <section>

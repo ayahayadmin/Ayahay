@@ -11,7 +11,7 @@ export class VehicleService {
     private vehicleMapper: VehicleMapper
   ) {}
 
-  public async createVehicle(
+  async createVehicle(
     vehicle: IVehicle,
     transactionContext?: PrismaClient
   ): Promise<IVehicle> {

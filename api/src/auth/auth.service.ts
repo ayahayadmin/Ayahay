@@ -1,19 +1,18 @@
 import { Injectable, Logger } from '@nestjs/common';
 import admin from 'firebase-admin';
-import { DecodedIdToken } from 'firebase-admin/lib/auth/token-verifier';
 
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
 
-  public async setUserClaims({ token, role }): Promise<void> {
+  async setUserClaims({ token, role, shippingLineId }): Promise<void> {
     const claims = await admin.auth().verifyIdToken(token);
 
     // Verify user is eligible for additional privileges.
     if (typeof claims.email !== 'undefined') {
       await admin
         .auth()
-        .setCustomUserClaims(claims.sub, { role })
+        .setCustomUserClaims(claims.sub, { role, shippingLineId })
         .catch((error) => {
           this.logger.error(`Set claims error: ${error}`);
           throw new Error(error);
@@ -24,7 +23,7 @@ export class AuthService {
     }
   }
 
-  public checkUserClaims(uid: string): Promise<{
+  checkUserClaims(uid: string): Promise<{
     [key: string]: any;
   }> {
     return admin
