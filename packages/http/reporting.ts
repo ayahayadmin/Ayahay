@@ -1,4 +1,3 @@
-import { OPERATION_COSTS } from '@ayahay/constants';
 import { IPort, IShip, IShippingLine } from '@ayahay/models';
 
 export interface TripReport {
@@ -95,15 +94,6 @@ export interface BillOfLading {
     vehicleTypeDesc: string;
     fare: number;
   }[];
-}
-
-export interface Disbursement {
-  date: string;
-  officialReceipt: string;
-  paidTo: string;
-  description: OPERATION_COSTS;
-  purpose: string;
-  amount: number;
 }
 
 export interface PortsByShip {

@@ -445,3 +445,15 @@ model DryDock {
 
   @@map("dry_dock")
 }
+
+model Disbursement {
+  id Int @default(autoincrement()) @id
+  date DateTime
+  officialReceipt String? @map("official_receipt")
+  paidTo String @map("paid_to")
+  description String
+  purpose String
+  amount Float
+
+  @@map("disbursement")
+}

@@ -1,6 +1,7 @@
 export * from './booking-passenger.model';
 export * from './booking.model';
 export * from './cabin.model';
+export * from './disbursement.model';
 export * from './passenger.model';
 export * from './port.model';
 export * from './seat.model';

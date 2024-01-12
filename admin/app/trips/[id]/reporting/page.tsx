@@ -1,14 +1,11 @@
 'use client';
 import React, { useEffect, useRef, useState } from 'react';
-import {
-  Disbursement as IDisbursement,
-  TripReport as ITripReport,
-} from '@ayahay/http';
+import { TripReport as ITripReport } from '@ayahay/http';
 import {
   computeExpenses,
   getTripsReporting,
 } from '@/services/reporting.service';
-import { Button, Form, Select, Typography } from 'antd';
+import { Button, DatePicker, Select, Typography } from 'antd';
 import { DownloadOutlined } from '@ant-design/icons';
 import { useAuthGuard } from '@/hooks/auth';
 import { useAuth } from '@/contexts/AuthContext';
@@ -16,11 +13,12 @@ import DailySalesReport from '@/components/reports/DailySalesReport';
 import jsPDF from 'jspdf';
 import SummarySalesPerVoyage from '@/components/reports/SummarySalesPerVoyage';
 import ProfitAndLossStatement from '@/components/reports/ProfitAndLossStatement';
-import Disbursements from '@/components/form/Disbursements';
 import dayjs from 'dayjs';
 import CargoDailySalesReport from '@/components/reports/CargoDailySalesReport';
-import { IShip } from '@ayahay/models';
+import { IDisbursement, IShip } from '@ayahay/models';
 import { getShips } from '@ayahay/services/ship.service';
+import { DATE_FORMAT_LIST, DATE_PLACEHOLDER } from '@ayahay/constants';
+import { getDisbursements } from '@/services/disbursement.service';
 
 const { Title } = Typography;
 
@@ -42,6 +40,7 @@ export default function TripReportingPage({ params }: any) {
   >();
   const [vesselName, setVesselName] = useState<string | undefined>();
   const [status, setStatus] = useState(STATUS.ON_TIME);
+  const [disbursementDate, setDisbursementDate] = useState(dayjs());
   const [disbursements, setDisbursements] = useState<
     IDisbursement[] | undefined
   >(undefined);
@@ -62,6 +61,20 @@ export default function TripReportingPage({ params }: any) {
 
   const fetchShips = async (): Promise<void> => {
     setShips(await getShips());
+  };
+
+  useEffect(() => {
+    if (loggedInAccount === null) {
+      return;
+    }
+    fetchDisbursements(disbursementDate);
+  }, [loggedInAccount, disbursementDate]);
+
+  const fetchDisbursements = async (date: any) => {
+    const disbursements = await getDisbursements(date);
+    const computedExpenses = computeExpenses(disbursements);
+    setExpenses(computedExpenses);
+    setDisbursements(disbursements);
   };
 
   const handleStatusChange = (value: string) => {
@@ -102,13 +115,8 @@ export default function TripReportingPage({ params }: any) {
     });
   };
 
-  const handleDisbursementSubmit = (values: any) => {
-    if (values.disbursement.length === 0) {
-      return;
-    }
-    const computedExpenses = computeExpenses(values.disbursement);
-    setExpenses(computedExpenses);
-    setDisbursements(values.disbursement);
+  const handleDisbursementDateChange = (value: any) => {
+    setDisbursementDate(value);
   };
 
   const handleDownloadProfitAndLossStatement = async () => {
@@ -211,24 +219,24 @@ export default function TripReportingPage({ params }: any) {
       <Title level={1} style={{ fontSize: 25 }}>
         Profit and Loss Statement
       </Title>
-      <Form
-        initialValues={{
-          disbursement: [{ date: dayjs() }],
-        }}
-        onFinish={handleDisbursementSubmit}
-      >
-        <Disbursements />
-        <div>
-          <Button type='primary' htmlType='submit'>
-            Submit
-          </Button>
-        </div>
-      </Form>
+      <div>
+        Disbursement Date:&nbsp;
+        <DatePicker
+          format={DATE_FORMAT_LIST}
+          placeholder={DATE_PLACEHOLDER}
+          onChange={handleDisbursementDateChange}
+          defaultValue={dayjs()}
+          allowClear={false}
+        />
+      </div>
       <Button
         type='primary'
         htmlType='submit'
-        loading={tripsReporting === undefined}
-        disabled={disbursements === undefined && expenses === undefined}
+        loading={
+          tripsReporting === undefined ||
+          (disbursements === undefined && expenses === undefined)
+        }
+        disabled={vesselName === undefined}
         onClick={handleDownloadProfitAndLossStatement}
       >
         <DownloadOutlined rev={undefined} /> Download

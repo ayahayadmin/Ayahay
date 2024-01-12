@@ -79,7 +79,11 @@ export async function getTripManifest(
   }
 }
 
-export function computeExpenses(disbursements: any[]) {
+export function computeExpenses(disbursements: any[] | undefined) {
+  if (disbursements === undefined) {
+    return 0;
+  }
+
   let expenses: any = {};
   disbursements.forEach(({ amount, description }) => {
     if (expenses.hasOwnProperty(description)) {
