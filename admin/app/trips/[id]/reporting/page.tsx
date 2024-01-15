@@ -5,7 +5,7 @@ import {
   computeExpenses,
   getTripsReporting,
 } from '@/services/reporting.service';
-import { Button, DatePicker, Select, Typography } from 'antd';
+import { Button, Select, Typography } from 'antd';
 import { DownloadOutlined } from '@ant-design/icons';
 import { useAuthGuard } from '@/hooks/auth';
 import { useAuth } from '@/contexts/AuthContext';
@@ -13,11 +13,9 @@ import DailySalesReport from '@/components/reports/DailySalesReport';
 import jsPDF from 'jspdf';
 import SummarySalesPerVoyage from '@/components/reports/SummarySalesPerVoyage';
 import ProfitAndLossStatement from '@/components/reports/ProfitAndLossStatement';
-import dayjs from 'dayjs';
 import CargoDailySalesReport from '@/components/reports/CargoDailySalesReport';
 import { IDisbursement, IShip } from '@ayahay/models';
 import { getShips } from '@ayahay/services/ship.service';
-import { DATE_FORMAT_LIST, DATE_PLACEHOLDER } from '@ayahay/constants';
 import { getDisbursements } from '@/services/disbursement.service';
 
 const { Title } = Typography;
@@ -40,7 +38,6 @@ export default function TripReportingPage({ params }: any) {
   >();
   const [vesselName, setVesselName] = useState<string | undefined>();
   const [status, setStatus] = useState(STATUS.ON_TIME);
-  const [disbursementDate, setDisbursementDate] = useState(dayjs());
   const [disbursements, setDisbursements] = useState<
     IDisbursement[] | undefined
   >(undefined);
@@ -53,6 +50,7 @@ export default function TripReportingPage({ params }: any) {
     const tripId = params.id;
     fetchTripsReporting(tripId);
     fetchShips();
+    fetchDisbursements(tripId);
   }, [loggedInAccount]);
 
   const fetchTripsReporting = async (tripId: number): Promise<void> => {
@@ -63,15 +61,8 @@ export default function TripReportingPage({ params }: any) {
     setShips(await getShips());
   };
 
-  useEffect(() => {
-    if (loggedInAccount === null) {
-      return;
-    }
-    fetchDisbursements(disbursementDate);
-  }, [loggedInAccount, disbursementDate]);
-
-  const fetchDisbursements = async (date: any) => {
-    const disbursements = await getDisbursements(date);
+  const fetchDisbursements = async (tripId: number) => {
+    const disbursements = await getDisbursements(tripId);
     const computedExpenses = computeExpenses(disbursements);
     setExpenses(computedExpenses);
     setDisbursements(disbursements);
@@ -113,10 +104,6 @@ export default function TripReportingPage({ params }: any) {
       },
       margin: [25, 0, 25, 0],
     });
-  };
-
-  const handleDisbursementDateChange = (value: any) => {
-    setDisbursementDate(value);
   };
 
   const handleDownloadProfitAndLossStatement = async () => {
@@ -219,16 +206,6 @@ export default function TripReportingPage({ params }: any) {
       <Title level={1} style={{ fontSize: 25 }}>
         Profit and Loss Statement
       </Title>
-      <div>
-        Disbursement Date:&nbsp;
-        <DatePicker
-          format={DATE_FORMAT_LIST}
-          placeholder={DATE_PLACEHOLDER}
-          onChange={handleDisbursementDateChange}
-          defaultValue={dayjs()}
-          allowClear={false}
-        />
-      </div>
       <Button
         type='primary'
         htmlType='submit'

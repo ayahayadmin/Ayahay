@@ -11,21 +11,10 @@ export class DisbursementService {
     private readonly disbursementMapper: DisbursementMapper
   ) {}
 
-  async getDisbursements({ startOfDay, endOfDay }): Promise<IDisbursement[]> {
+  async getDisbursements({ tripId }): Promise<IDisbursement[]> {
     const disbursements = await this.prisma.disbursement.findMany({
       where: {
-        AND: [
-          {
-            date: {
-              gte: startOfDay,
-            },
-          },
-          {
-            date: {
-              lt: endOfDay,
-            },
-          },
-        ],
+        tripId: Number(tripId),
       },
     });
     return disbursements.map((disbursement) =>

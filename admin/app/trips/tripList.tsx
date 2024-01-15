@@ -36,6 +36,14 @@ const tripActions = (trip: ITrip): any[] => {
       ),
       key: 'view-manifest',
     },
+    {
+      label: (
+        <a href={`/trips/${trip.id}/disbursement`} target='_blank'>
+          Input disbursements
+        </a>
+      ),
+      key: 'input-disbursements',
+    },
   ];
 
   if (trip.status === 'Awaiting') {

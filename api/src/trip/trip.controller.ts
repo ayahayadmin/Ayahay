@@ -53,6 +53,7 @@ export class TripController {
         srcPort: true,
         destPort: true,
         shippingLine: true,
+        voyage: true,
       }
     );
 

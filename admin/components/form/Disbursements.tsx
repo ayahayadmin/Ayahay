@@ -16,7 +16,11 @@ const two_columns_grid = {
   gridColumnGap: 50,
 };
 
-export default function Disbursements() {
+interface DisbursementsProps {
+  tripDate: string;
+}
+
+export default function Disbursements({ tripDate }: DisbursementsProps) {
   return (
     <Form.List name='disbursement'>
       {(fields, { add, remove }) => (
@@ -29,7 +33,6 @@ export default function Disbursements() {
                   <DatePicker
                     format={DATE_FORMAT_LIST}
                     placeholder={DATE_PLACEHOLDER}
-                    defaultValue={dayjs()}
                     style={{ width: '100%' }}
                   />
                 </Form.Item>
@@ -82,7 +85,11 @@ export default function Disbursements() {
             </div>
           ))}
 
-          <Button type='dashed' onClick={() => add({ date: dayjs() })} block>
+          <Button
+            type='dashed'
+            onClick={() => add({ date: dayjs(tripDate) })}
+            block
+          >
             Add Disbursement
           </Button>
         </>

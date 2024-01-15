@@ -30,9 +30,9 @@ export async function getTrips(): Promise<ITrip[] | undefined> {
   }
 }
 
-export async function getTrip(tripId: number): Promise<ITrip> {
+export async function getTrip(tripId: number): Promise<ITrip | undefined> {
   const trips = await getTrips();
-  return trips?.find((trip) => trip.id === tripId)!;
+  return trips?.find((trip) => trip.id === tripId);
 }
 
 export async function getTripsByDateRange(startDate: string, endDate: string) {
@@ -50,6 +50,17 @@ export async function getTripsByDateRange(startDate: string, endDate: string) {
     .then((res) => res);
 
   return result;
+}
+
+export async function getTripDetails(
+  tripId: number
+): Promise<ITrip | undefined> {
+  try {
+    const { data } = await axios.get<ITrip>(`${TRIP_API}/${tripId}`);
+    return data;
+  } catch (e) {
+    console.error(e);
+  }
 }
 
 export async function addTrips(newTrips: ITrip[] | any[]) {
