@@ -38,6 +38,7 @@ model Trip {
   notifications Notification[]
   availableCabins TripCabin[]
   availableVehicleTypes TripVehicleType[]
+  disbursements Disbursement[]
 
   @@map("trip")
 }
@@ -444,4 +445,18 @@ model DryDock {
   date DateTime
 
   @@map("dry_dock")
+}
+
+model Disbursement {
+  id Int @default(autoincrement()) @id
+  tripId Int @map("trip_id")
+  trip Trip? @relation(fields: [tripId], references: [id])
+  date DateTime
+  officialReceipt String? @map("official_receipt")
+  paidTo String @map("paid_to")
+  description String
+  purpose String
+  amount Float
+
+  @@map("disbursement")
 }

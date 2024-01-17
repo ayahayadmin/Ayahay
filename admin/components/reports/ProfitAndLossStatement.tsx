@@ -1,8 +1,5 @@
 import { forwardRef } from 'react';
-import {
-  Disbursement as IDisbursement,
-  TripReport as ITripReport,
-} from '@ayahay/http';
+import { TripReport as ITripReport } from '@ayahay/http';
 import {
   getFullDate,
   getLocaleTimeString,
@@ -11,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import styles from './Reports.module.scss';
 import { three_columns_grid, two_columns_grid } from './DailySalesReport';
 import { OPERATION_COSTS } from '@ayahay/constants';
+import { IDisbursement } from '@ayahay/models';
 
 interface ProfitAndLossStatementProps {
   data: ITripReport;
@@ -89,7 +87,7 @@ const ProfitAndLossStatement = forwardRef(function (
         >
           <div>
             <p>VESSEL NAME: {vesselName}</p>
-            <p>VOYAGE: {data.id}</p>
+            <p>VOYAGE: {data.voyageNumber}</p>
             <p>
               ROUTE: {data.srcPort.name} to {data.destPort.name}
             </p>

@@ -42,7 +42,7 @@ const columns: ColumnsType<PortsByShip> = [
       return (
         <Button
           type='primary'
-          href={`/reporting/ship?shipId=${record.shipId}&srcPortId=${record.srcPortId}&destPortId=${record.destPortId}&startDate=${record.startDate}&endDate=${record.endDate}`}
+          href={`/reporting/summary/ship?shipId=${record.shipId}&srcPortId=${record.srcPortId}&destPortId=${record.destPortId}&startDate=${record.startDate}&endDate=${record.endDate}`}
           target='_blank'
         >
           Generate
@@ -57,7 +57,7 @@ const columns: ColumnsType<PortsByShip> = [
       return (
         <Button
           type='primary'
-          href={`/reporting/ship?shipId=${record.shipId}&startDate=${record.startDate}&endDate=${record.endDate}&reportType=all`}
+          href={`/reporting/summary/ship?shipId=${record.shipId}&startDate=${record.startDate}&endDate=${record.endDate}&reportType=all`}
           target='_blank'
         >
           Generate

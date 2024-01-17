@@ -6,6 +6,7 @@ import {
   TripSearchByDateRange,
   PortsByShip,
   PerVesselReport,
+  BillOfLading,
 } from '@ayahay/http';
 import { ReportingMapper } from './reporting.mapper';
 import { BookingPricingService } from '../booking/booking-pricing.service';
@@ -59,6 +60,7 @@ export class ReportingService {
             },
           },
         },
+        voyage: true,
         availableVehicleTypes: true, // TODO: Temporary. If BookingVehicle is already linked to PaymentItems, this is not needed
       },
     });
@@ -170,6 +172,7 @@ export class ReportingService {
             passenger: true,
           },
         },
+        voyage: true,
       },
     });
 
@@ -242,5 +245,47 @@ export class ReportingService {
     }
 
     return this.reportingMapper.convertTripToTripManifest(trip);
+  }
+
+  async getBillOfLading(bookingId: string): Promise<BillOfLading> {
+    const booking = await this.prisma.booking.findUnique({
+      where: {
+        id: bookingId,
+      },
+      include: {
+        passengers: {
+          include: {
+            passenger: true,
+          },
+        },
+        vehicles: {
+          include: {
+            trip: {
+              include: {
+                ship: true,
+                shippingLine: true,
+                destPort: true,
+                voyage: true,
+              },
+            },
+            vehicle: {
+              include: {
+                vehicleType: {
+                  include: {
+                    trips: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (booking === null) {
+      throw new NotFoundException();
+    }
+
+    return this.reportingMapper.convertBookingToBillOfLading(booking);
   }
 }

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ShippingLineMapper } from '../shipping-line/shipping-line.mapper';
 import { PortMapper } from '../port/port.mapper';
-import { PortsByShip, TripManifest } from '@ayahay/http';
+import { BillOfLading, PortsByShip, TripManifest } from '@ayahay/http';
 
 @Injectable()
 export class ReportingMapper {
@@ -25,6 +25,7 @@ export class ReportingMapper {
       destPort: this.portMapper.convertPortToDto(trip.destPort),
       departureDate: trip.departureDate.toISOString(),
       totalPassengers: trip.passengers.length,
+      voyageNumber: trip.voyage?.number,
       totalBoardedPassengers: trip.passengers.filter(
         (passenger) =>
           passenger.checkInDate &&
@@ -180,6 +181,41 @@ export class ReportingMapper {
       destPortName: trip.destPort.name,
       departureDate: trip.departureDate.toISOString(),
       passengers,
+    };
+  }
+
+  convertBookingToBillOfLading(booking): BillOfLading {
+    const passenger = booking.passengers.find(
+      ({ passenger }) => passenger.discountType === 'Driver'
+    );
+    const driverName = passenger
+      ? passenger.passenger.firstName + ' ' + passenger.passenger.lastName
+      : booking.passengers[0].passenger.firstName +
+        ' ' +
+        booking.passengers[0].passenger.lastName;
+    const shipName = booking.vehicles[0].trip.ship.name;
+    const shippingLineName = booking.vehicles[0].trip.shippingLine.name;
+    const destPortName = booking.vehicles[0].trip.destPort.name;
+    const departureDate = booking.vehicles[0].trip.departureDate.toISOString();
+    const voyage = booking.vehicles[0].trip.voyage;
+
+    const vehicles = booking.vehicles.map((vehicle) => ({
+      classification: '', //If needed - Add a new column "class" in vehicle_type
+      modelName: vehicle.vehicle.modelName,
+      plateNo: vehicle.vehicle.plateNo,
+      weight: '', //If needed - Add a new column "weight" in vehicle_type
+      vehicleTypeDesc: vehicle.vehicle.vehicleType.description,
+      fare: vehicle.vehicle.vehicleType.trips[0].fare,
+    }));
+
+    return {
+      driverName,
+      shipName,
+      shippingLineName,
+      destPortName,
+      departureDate,
+      voyage,
+      vehicles,
     };
   }
 

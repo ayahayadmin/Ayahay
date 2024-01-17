@@ -1,4 +1,3 @@
-import { OPERATION_COSTS } from '@ayahay/constants';
 import { IPort, IShip, IShippingLine } from '@ayahay/models';
 
 export interface TripReport {
@@ -12,6 +11,7 @@ export interface TripReport {
   destPortId: number;
   destPort: IPort;
   departureDate: string;
+  voyageNumber?: number;
 
   passengers: {
     teller: string;
@@ -80,13 +80,21 @@ export interface TripManifest {
   }[];
 }
 
-export interface Disbursement {
-  date: string;
-  officialReceipt: string;
-  paidTo: string;
-  description: OPERATION_COSTS;
-  purpose: string;
-  amount: number;
+export interface BillOfLading {
+  driverName: string;
+  shipName: string;
+  shippingLineName: string;
+  destPortName: string;
+  departureDate: string;
+  voyage: number;
+  vehicles: {
+    classification?: string;
+    modelName: string;
+    plateNo: string;
+    weight?: string;
+    vehicleTypeDesc: string;
+    fare: number;
+  }[];
 }
 
 export interface PortsByShip {

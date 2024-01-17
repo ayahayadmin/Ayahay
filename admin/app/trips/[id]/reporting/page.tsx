@@ -1,14 +1,11 @@
 'use client';
 import React, { useEffect, useRef, useState } from 'react';
-import {
-  Disbursement as IDisbursement,
-  TripReport as ITripReport,
-} from '@ayahay/http';
+import { TripReport as ITripReport } from '@ayahay/http';
 import {
   computeExpenses,
   getTripsReporting,
 } from '@/services/reporting.service';
-import { Button, Form, Select, Typography } from 'antd';
+import { Button, Select, Typography } from 'antd';
 import { DownloadOutlined } from '@ant-design/icons';
 import { useAuthGuard } from '@/hooks/auth';
 import { useAuth } from '@/contexts/AuthContext';
@@ -16,11 +13,10 @@ import DailySalesReport from '@/components/reports/DailySalesReport';
 import jsPDF from 'jspdf';
 import SummarySalesPerVoyage from '@/components/reports/SummarySalesPerVoyage';
 import ProfitAndLossStatement from '@/components/reports/ProfitAndLossStatement';
-import Disbursements from '@/components/form/Disbursements';
-import dayjs from 'dayjs';
 import CargoDailySalesReport from '@/components/reports/CargoDailySalesReport';
-import { IShip } from '@ayahay/models';
+import { IDisbursement, IShip } from '@ayahay/models';
 import { getShips } from '@ayahay/services/ship.service';
+import { getDisbursements } from '@/services/disbursement.service';
 
 const { Title } = Typography;
 
@@ -54,6 +50,7 @@ export default function TripReportingPage({ params }: any) {
     const tripId = params.id;
     fetchTripsReporting(tripId);
     fetchShips();
+    fetchDisbursements(tripId);
   }, [loggedInAccount]);
 
   const fetchTripsReporting = async (tripId: number): Promise<void> => {
@@ -62,6 +59,13 @@ export default function TripReportingPage({ params }: any) {
 
   const fetchShips = async (): Promise<void> => {
     setShips(await getShips());
+  };
+
+  const fetchDisbursements = async (tripId: number) => {
+    const disbursements = await getDisbursements(tripId);
+    const computedExpenses = computeExpenses(disbursements);
+    setExpenses(computedExpenses);
+    setDisbursements(disbursements);
   };
 
   const handleStatusChange = (value: string) => {
@@ -100,15 +104,6 @@ export default function TripReportingPage({ params }: any) {
       },
       margin: [25, 0, 25, 0],
     });
-  };
-
-  const handleDisbursementSubmit = (values: any) => {
-    if (values.disbursement.length === 0) {
-      return;
-    }
-    const computedExpenses = computeExpenses(values.disbursement);
-    setExpenses(computedExpenses);
-    setDisbursements(values.disbursement);
   };
 
   const handleDownloadProfitAndLossStatement = async () => {
@@ -211,24 +206,14 @@ export default function TripReportingPage({ params }: any) {
       <Title level={1} style={{ fontSize: 25 }}>
         Profit and Loss Statement
       </Title>
-      <Form
-        initialValues={{
-          disbursement: [{ date: dayjs() }],
-        }}
-        onFinish={handleDisbursementSubmit}
-      >
-        <Disbursements />
-        <div>
-          <Button type='primary' htmlType='submit'>
-            Submit
-          </Button>
-        </div>
-      </Form>
       <Button
         type='primary'
         htmlType='submit'
-        loading={tripsReporting === undefined}
-        disabled={disbursements === undefined && expenses === undefined}
+        loading={
+          tripsReporting === undefined ||
+          (disbursements === undefined && expenses === undefined)
+        }
+        disabled={vesselName === undefined}
         onClick={handleDownloadProfitAndLossStatement}
       >
         <DownloadOutlined rev={undefined} /> Download

@@ -85,6 +85,19 @@ export default function BookingSummary({
         <PrinterOutlined rev={undefined} />
         Print
       </Button>
+      {booking &&
+        booking.bookingVehicles &&
+        booking.bookingVehicles.length > 0 && (
+          <Button
+            className='hide-on-print'
+            type='primary'
+            href={`/bookings/${booking.id}/bol`}
+            target='_blank'
+          >
+            <PrinterOutlined rev={undefined} />
+            Print BOL
+          </Button>
+        )}
       {showCancelBookingButton && (
         <Button
           className='hide-on-print'
@@ -146,7 +159,6 @@ export default function BookingSummary({
                 {booking.bookingPassengers?.length}
               </Descriptions.Item>
             </Descriptions>
-
             {bookingActions}
           </article>
         </section>

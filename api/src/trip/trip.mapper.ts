@@ -67,6 +67,7 @@ export class TripMapper {
         (tripVehicleType) => this.convertTripVehicleTypeToDto(tripVehicleType)
       ),
       departureDateIso: trip.departureDate.toISOString(),
+      voyage: trip.voyage,
       availableSeatTypes: [],
       meals: [],
     };

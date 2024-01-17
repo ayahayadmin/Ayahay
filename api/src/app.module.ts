@@ -18,6 +18,7 @@ import { ShipModule } from './ship/ship.module';
 import { CsvModule } from './csv/csv.module';
 import { ReportingModule } from './reporting/reporting.module';
 import { NotificationModule } from './notification/notification.module';
+import { DisbursementModule } from './disbursement/disbursement.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { NotificationModule } from './notification/notification.module';
     CsvModule,
     ReportingModule,
     NotificationModule,
+    DisbursementModule,
   ],
 })
 export class AppModule {}

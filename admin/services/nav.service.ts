@@ -33,6 +33,12 @@ export const webLinks = {
     {
       label: 'Reporting',
       key: 'reporting',
+      children: [
+        {
+          label: 'Summary Sales',
+          key: 'reporting/summary',
+        },
+      ],
     },
     {
       label: 'Upload',
