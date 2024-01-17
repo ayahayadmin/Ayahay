@@ -87,7 +87,7 @@ const ProfitAndLossStatement = forwardRef(function (
         >
           <div>
             <p>VESSEL NAME: {vesselName}</p>
-            <p>VOYAGE: {data.id}</p>
+            <p>VOYAGE: {data.voyageNumber}</p>
             <p>
               ROUTE: {data.srcPort.name} to {data.destPort.name}
             </p>

@@ -149,7 +149,7 @@ const SummarySalesPerVessel = forwardRef(function (
                   shipData.departureDate,
                   true
                 )} @ ${getLocaleTimeString(shipData.departureDate)} (Voyage: ${
-                  shipData.id
+                  shipData.voyageNumber
                 })`;
                 const boarded = shipData.totalBoardedPassengers;
                 const total = sumBy(

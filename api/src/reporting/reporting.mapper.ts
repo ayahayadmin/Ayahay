@@ -25,6 +25,7 @@ export class ReportingMapper {
       destPort: this.portMapper.convertPortToDto(trip.destPort),
       departureDate: trip.departureDate.toISOString(),
       totalPassengers: trip.passengers.length,
+      voyageNumber: trip.voyage?.number,
       totalBoardedPassengers: trip.passengers.filter(
         (passenger) =>
           passenger.checkInDate &&

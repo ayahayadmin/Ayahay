@@ -60,6 +60,7 @@ export class ReportingService {
             },
           },
         },
+        voyage: true,
         availableVehicleTypes: true, // TODO: Temporary. If BookingVehicle is already linked to PaymentItems, this is not needed
       },
     });
@@ -171,6 +172,7 @@ export class ReportingService {
             passenger: true,
           },
         },
+        voyage: true,
       },
     });
 

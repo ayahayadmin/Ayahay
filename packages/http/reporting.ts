@@ -11,6 +11,7 @@ export interface TripReport {
   destPortId: number;
   destPort: IPort;
   departureDate: string;
+  voyageNumber?: number;
 
   passengers: {
     teller: string;
