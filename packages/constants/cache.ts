@@ -13,6 +13,7 @@ export const publicCacheKeys = <const>[
   'shipping-lines',
   'vehicle-types',
   'trips',
+  'trips-by-id',
   'saved-bookings',
 ];
 
