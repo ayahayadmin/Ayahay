@@ -1,5 +1,9 @@
 // Cached items that will be invalidated when user signs out
-export const accountRelatedCacheKeys = <const>['logged-in-account', 'jwt'];
+export const accountRelatedCacheKeys = <const>[
+  'logged-in-account',
+  'jwt',
+  'my-notifications',
+];
 
 // Cached items that will only be invalidated if explicitly called
 export const publicCacheKeys = <const>[
@@ -9,6 +13,7 @@ export const publicCacheKeys = <const>[
   'shipping-lines',
   'vehicle-types',
   'trips',
+  'trips-by-id',
   'saved-bookings',
 ];
 
