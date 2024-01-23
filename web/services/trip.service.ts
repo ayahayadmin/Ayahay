@@ -8,9 +8,11 @@ import {
 import { ceil, forEach, isEmpty } from 'lodash';
 import axios from '@ayahay/services/axios';
 import { TRIP_API } from '@ayahay/constants/api';
-import { getPort } from '@ayahay/services/port.service';
-import { getShippingLine } from '@ayahay/services/shipping-line.service';
 import { cacheItem, fetchItem } from '@ayahay/services/cache.service';
+import {
+  fetchAssociatedEntitiesToTrip,
+  fetchAssociatedEntitiesToTrips,
+} from '@ayahay/services/trip.service';
 
 export async function getTrip(tripId: number): Promise<ITrip | undefined> {
   if (tripId === undefined) {
@@ -52,23 +54,17 @@ export async function getAvailableTrips(
     return;
   }
 
-  const responseData: ITrip[] = await axios
-    .get(`${TRIP_API}/available`, { params: { ...query } })
-    .then((res) => {
-      return Promise.all(
-        res.data.map((data: ITrip) => {
-          return mapResponseData(data);
-        })
-      );
-    })
-    .then((res) => res);
+  const { data: trips } = await axios.get(`${TRIP_API}/available`, {
+    params: { ...query },
+  });
+  await fetchAssociatedEntitiesToTrips(trips);
 
-  const totalItems = responseData.length;
+  const totalItems = trips.length;
   const totalPages = ceil(totalItems / 10);
 
   const data: TripData[] = [];
   let availableTrips: ITrip[] = [];
-  forEach(responseData, (trip, idx) => {
+  forEach(trips, (trip, idx) => {
     const incrementOfTen = (Number(idx) + 1) % 10 === 0;
     const lastElement = idx + 1 === totalItems;
 
@@ -90,24 +86,6 @@ export async function getAvailableTrips(
     totalPages,
     totalItems,
   };
-}
-
-function mapResponseData(responseData: ITrip) {
-  // TO DO: use one in packages
-  return Promise.allSettled([
-    // For now we are just interested with Ports & Shipping Line. In the future we can add more like Ship
-    getPort(responseData.srcPortId),
-    getPort(responseData.destPortId),
-    getShippingLine(responseData.shippingLineId),
-  ]).then(([srcPort, destPort, shippingLine]) => {
-    return {
-      ...responseData,
-      srcPort: srcPort.status === 'fulfilled' ? srcPort.value : '',
-      destPort: destPort.status === 'fulfilled' ? destPort.value : '',
-      shippingLine:
-        shippingLine.status === 'fulfilled' ? shippingLine.value : '',
-    };
-  });
 }
 
 export function getCabinCapacities(cabins: ITripCabin[]) {

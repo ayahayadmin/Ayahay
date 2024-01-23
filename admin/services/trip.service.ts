@@ -9,7 +9,10 @@ import { cacheItem, fetchItem } from '@ayahay/services/cache.service';
 import dayjs from 'dayjs';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
-import { mapTripResponseData } from '@ayahay/services/trip.service';
+import {
+  fetchAssociatedEntitiesToTrip,
+  fetchAssociatedEntitiesToTrips,
+} from '@ayahay/services/trip.service';
 
 dayjs.extend(isSameOrBefore);
 dayjs.extend(isSameOrAfter);
@@ -36,20 +39,12 @@ export async function getTrip(tripId: number): Promise<ITrip | undefined> {
 }
 
 export async function getTripsByDateRange(startDate: string, endDate: string) {
-  const result: ITrip[] = await axios
-    .get(`${TRIP_API}/to-edit`, {
-      params: { startDate, endDate },
-    })
-    .then((res) => {
-      return Promise.all(
-        res.data.map((data: ITrip) => {
-          return mapTripResponseData(data);
-        })
-      );
-    })
-    .then((res) => res);
+  const { data: trips } = await axios.get(`${TRIP_API}/to-edit`, {
+    params: { startDate, endDate },
+  });
 
-  return result;
+  await fetchAssociatedEntitiesToTrips(trips);
+  return trips;
 }
 
 export async function getTripDetails(
