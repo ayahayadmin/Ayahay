@@ -29,7 +29,7 @@ const steps = [
 export default function CreateBookingForm({
   onComplete,
 }: CreateBookingFormProps) {
-  const { loggedInAccount } = useAuth();
+  const { loggedInAccount, hasPrivilegedAccess } = useAuth();
   const { trip } = useTripFromSearchParams();
   const screens = useBreakpoint();
   const [modal, contextHolder] = Modal.useModal();
@@ -37,6 +37,7 @@ export default function CreateBookingForm({
   const passengers = Form.useWatch('passengers', form);
   const vehicles = Form.useWatch('vehicles', form);
   const preferences = Form.useWatch('preferences', form);
+  const gateway = Form.useWatch('gateway', form);
   const [loadingMessage, setLoadingMessage] = useState<string>('');
   const [bookingPreview, setBookingPreview] = useState<IBooking>();
   const [currentStep, setCurrentStep] = useState(0);
@@ -92,7 +93,8 @@ export default function CreateBookingForm({
     const contactEmail = form.getFieldValue('contactEmail');
     const response = await startPaymentForBooking(
       tentativeBookingId,
-      contactEmail
+      contactEmail,
+      gateway
     );
 
     setLoadingMessage('');
@@ -115,8 +117,7 @@ export default function CreateBookingForm({
     modal.info({
       width: 'min(90vw, 512px)',
       centered: true,
-      title:
-        'You will be redirected to the secure Dragonpay Payment Gateway to pay for your booking.',
+      title: `You will be redirected to the secure ${gateway} Payment Gateway to pay for your booking.`,
       icon: <InfoCircleOutlined />,
       content: (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -171,6 +172,7 @@ export default function CreateBookingForm({
         passengers: [{ nationality: 'Filipino', discountType: undefined }],
         vehicles: [],
         preferences: [],
+        gateway: 'PayMongo',
       }}
       onFinish={(values) => console.log(values)}
     >
@@ -218,6 +220,7 @@ export default function CreateBookingForm({
         >
           <BookingConfirmation
             tentativeBooking={bookingPreview}
+            hasPrivilegedAccess={hasPrivilegedAccess}
             onPreviousStep={previousStep}
             onStartPayment={payBooking}
           />

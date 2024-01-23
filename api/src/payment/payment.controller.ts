@@ -5,11 +5,17 @@ import {
   Body,
   Request,
   UseGuards,
+  Query,
+  Headers,
+  RawBodyRequest,
+  Req,
 } from '@nestjs/common';
+import { FastifyRequest } from 'fastify';
 import { PaymentService } from './payment.service';
 import { PaymentInitiationResponse } from '@ayahay/http';
 import { AllowUnauthenticated } from '../decorator/authenticated.decorator';
 import { AuthGuard } from '../guard/auth.guard';
+import { PayMongoCheckoutPaidPostbackRequest } from '../types/paymongo';
 
 @Controller('pay')
 export class PaymentController {
@@ -21,10 +27,12 @@ export class PaymentController {
   async payBooking(
     @Request() req,
     @Param('id') tempBookingId: string,
+    @Query() { gateway }: { gateway: string },
     @Body('email') email?: string
   ): Promise<PaymentInitiationResponse> {
     return this.paymentService.startPaymentFlow(
       +tempBookingId,
+      gateway,
       email,
       req.user
     );
@@ -50,6 +58,19 @@ export class PaymentController {
       currency,
       processorId,
       digest
+    );
+  }
+
+  @Post('postback/paymongo/checkout-paid')
+  async payMongoCheckoutPaidPostback(
+    @Req() request: RawBodyRequest<FastifyRequest>,
+    @Headers() headers: Record<string, string>,
+    @Body() postback: { data: PayMongoCheckoutPaidPostbackRequest }
+  ): Promise<void> {
+    return this.paymentService.handlePayMongoCheckoutPaidPostback(
+      request.rawBody,
+      headers,
+      postback.data
     );
   }
 }
