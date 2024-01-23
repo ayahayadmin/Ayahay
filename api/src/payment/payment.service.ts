@@ -8,9 +8,13 @@ import { PrismaService } from '../prisma.service';
 import { v4 as uuidv4 } from 'uuid';
 import { BookingService } from '../booking/booking.service';
 import { PaymentInitiationResponse } from '@ayahay/http';
-import { createHash } from 'crypto';
-import axios from 'axios';
+import { createHash, createHmac } from 'crypto';
+import axios, { AxiosError } from 'axios';
 import { IAccount } from '@ayahay/models';
+import {
+  PayMongoCheckoutPaidPostbackRequest,
+  PayMongoCheckoutSession,
+} from '../types/paymongo';
 
 @Injectable()
 export class PaymentService {
@@ -23,6 +27,7 @@ export class PaymentService {
 
   async startPaymentFlow(
     tempBookingId: number,
+    paymentGateway: string,
     email?: string,
     loggedInAccount?: IAccount
   ): Promise<PaymentInitiationResponse> {
@@ -48,22 +53,29 @@ export class PaymentService {
       );
     }
 
-    const paymentGatewayResponse =
-      await this.initiateTransactionWithPaymentGateway(paymentReference, {
-        Amount: tempBooking.totalPrice,
-        Currency: 'PHP',
-        Description: `Booking ${paymentReference}`,
-        Email: contactEmail ?? 'your-email@example.com',
-      } as DragonpayPaymentInitiationRequest);
+    let response: PaymentInitiationResponse;
 
-    if (paymentGatewayResponse.Status === 'F') {
-      throw new InternalServerErrorException('Could not initiate payment.');
+    switch (paymentGateway) {
+      case 'Dragonpay':
+        response = await this.initiateTransactionWithDragonpay(
+          paymentReference,
+          tempBooking.totalPrice,
+          contactEmail
+        );
+        break;
+      default:
+        response = await this.initiateCheckoutWithPayMongo(
+          paymentReference,
+          tempBooking.totalPrice,
+          contactEmail
+        );
+        break;
     }
 
     return this.onSuccessfulPaymentInitiation(
       tempBookingId,
       paymentReference,
-      paymentGatewayResponse.Url,
+      response.redirectUrl,
       contactEmail
     );
   }
@@ -96,29 +108,96 @@ export class PaymentService {
     return response;
   }
 
-  private async initiateTransactionWithPaymentGateway(
+  private async initiateTransactionWithDragonpay(
     transactionId: string,
-    request: DragonpayPaymentInitiationRequest
-  ): Promise<DragonpayPaymentInitiationResponse> {
-    const dragonpayInitiationUrl = `${process.env.DRAGONPAY_URL}/api/collect/v1/${transactionId}/post`;
+    totalPrice: number,
+    contactEmail?: string
+  ): Promise<PaymentInitiationResponse> {
+    const { data } = await axios.post<DragonpayPaymentInitiationResponse>(
+      `${process.env.DRAGONPAY_URL}/api/collect/v1/${transactionId}/post`,
+      {
+        Amount: totalPrice,
+        Currency: 'PHP',
+        Description: `Booking ${transactionId}`,
+        Email: contactEmail ?? 'it@ayahay.com',
+      },
+      {
+        auth: {
+          username: process.env.DRAGONPAY_MERCHANT_ID,
+          password: process.env.DRAGONPAY_PASSWORD,
+        },
+      }
+    );
 
-    const merchantId = process.env.DRAGONPAY_MERCHANT_ID;
-    const password = process.env.DRAGONPAY_PASSWORD;
+    if (data.Status === 'F') {
+      throw new InternalServerErrorException('Could not initiate payment.');
+    }
+
+    return {
+      paymentReference: transactionId,
+      redirectUrl: data.Url,
+    };
+  }
+
+  private async initiateCheckoutWithPayMongo(
+    transactionId: string,
+    totalPrice: number,
+    contactEmail?: string
+  ): Promise<PaymentInitiationResponse> {
+    const checkoutUrl = `${process.env.PAYMONGO_URL}/checkout_sessions`;
 
     try {
-      const { data } = await axios.post<DragonpayPaymentInitiationResponse>(
-        dragonpayInitiationUrl,
-        request,
+      const { data: response } = await axios.post<{
+        data: PayMongoCheckoutSession;
+      }>(
+        checkoutUrl,
+        {
+          data: {
+            attributes: {
+              billing: contactEmail ? { email: contactEmail } : {},
+              line_items: [
+                {
+                  amount: totalPrice * 100,
+                  currency: 'PHP',
+                  name: `Booking ${transactionId}`,
+                  quantity: 1,
+                },
+              ],
+              payment_method_types: [
+                'card',
+                'dob',
+                'dob_ubp',
+                'gcash',
+                'grab_pay',
+                'paymaya',
+              ],
+              reference_number: transactionId,
+              send_email_receipt: true,
+              success_url: `${process.env.WEB_URL}/bookings/${transactionId}`,
+            },
+          },
+        },
         {
           auth: {
-            username: merchantId,
-            password: password,
+            username: process.env.PAYMONGO_SECRET_KEY,
+            password: '',
           },
         }
       );
-      return data;
+      return {
+        paymentReference: transactionId,
+        redirectUrl: response.data.attributes.checkout_url,
+      };
     } catch (e) {
-      this.logger.error(`Payment initiation failed: ${e}`);
+      let errorMessage: any = e;
+
+      if (e instanceof AxiosError) {
+        const payMongoError = e.response.data?.errors?.join(',');
+        errorMessage = `PayMongo error: ${payMongoError}`;
+      }
+
+      this.logger.error(errorMessage);
+      throw e;
     }
   }
 
@@ -158,14 +237,20 @@ export class PaymentService {
       `Received Dragonpay postback with Transaction ID: ${transactionId} & Status: ${status}`
     );
     try {
-      this.verifyDigest(transactionId, referenceNo, status, message, digest);
+      this.verifyDragonpayDigest(
+        transactionId,
+        referenceNo,
+        status,
+        message,
+        digest
+      );
 
-      if (this.isPendingStatus(status)) {
+      if (this.isPendingDragonpayStatus(status)) {
         await this.prisma.$transaction(
           async (transactionContext) =>
             await this.onPendingTransaction(transactionContext, transactionId)
         );
-      } else if (this.isSuccessfulStatus(status)) {
+      } else if (this.isSuccessfulDragonpayStatus(status)) {
         await this.prisma.$transaction(
           async (transactionContext) =>
             await this.onSuccessfulTransaction(
@@ -173,7 +258,7 @@ export class PaymentService {
               transactionId
             )
         );
-      } else if (this.isFailedStatus(status)) {
+      } else if (this.isFailedDragonpayStatus(status)) {
         await this.prisma.$transaction(
           async (transactionContext) =>
             await this.onFailedTransaction(transactionContext, transactionId)
@@ -187,7 +272,7 @@ export class PaymentService {
     return 'result=OK';
   }
 
-  private verifyDigest(
+  private verifyDragonpayDigest(
     transactionId: string,
     referenceNo: string,
     status: string,
@@ -209,7 +294,7 @@ export class PaymentService {
     }
   }
 
-  private isPendingStatus(status: string): boolean {
+  private isPendingDragonpayStatus(status: string): boolean {
     return status === 'P' || status === 'U';
   }
 
@@ -234,7 +319,7 @@ export class PaymentService {
     }
   }
 
-  private isSuccessfulStatus(status: string): boolean {
+  private isSuccessfulDragonpayStatus(status: string): boolean {
     return status === 'S';
   }
 
@@ -269,7 +354,7 @@ export class PaymentService {
     });
   }
 
-  private isFailedStatus(status: string): boolean {
+  private isFailedDragonpayStatus(status: string): boolean {
     return status === 'F' || status === 'V';
   }
 
@@ -279,15 +364,64 @@ export class PaymentService {
     transactionContext: any,
     transactionId: string
   ): Promise<void> {
-    await this.bookingService.failBooking(transactionId, transactionContext);
+    return this.bookingService.failBooking(transactionId, transactionContext);
   }
-}
 
-interface DragonpayPaymentInitiationRequest {
-  Amount: number;
-  Currency: string;
-  Description: string;
-  Email: string;
+  async handlePayMongoCheckoutPaidPostback(
+    requestPayload: Buffer,
+    headers: Record<string, string>,
+    postback: PayMongoCheckoutPaidPostbackRequest
+  ): Promise<void> {
+    const checkoutSession = postback.attributes.data;
+    const transactionId = checkoutSession.attributes.reference_number;
+
+    this.logger.log(
+      `Received PayMongo checkout paid postback with Session ID: ${checkoutSession.id} & Transaction ID: ${transactionId}`
+    );
+
+    const payMongoSignatureKey = 'paymongo-signature';
+    if (!headers.hasOwnProperty(payMongoSignatureKey)) {
+      throw new BadRequestException('Missing signature');
+    }
+
+    this.verifyPayMongoSignature(requestPayload, headers[payMongoSignatureKey]);
+
+    await this.prisma.$transaction(
+      async (transactionContext) =>
+        await this.onSuccessfulTransaction(
+          transactionContext,
+          checkoutSession.attributes.reference_number
+        )
+    );
+  }
+
+  private verifyPayMongoSignature(requestPayload: Buffer, signature: string) {
+    const signatureSplit = signature.split(',');
+    if (signatureSplit.length !== 3) {
+      throw new BadRequestException('Invalid signature');
+    }
+    const timestamp = signatureSplit[0].substring(2);
+    const testSignature = signatureSplit[1].substring(3);
+    const liveSignature = signatureSplit[2].substring(3);
+
+    const ourSignature = `${timestamp}.${requestPayload.toString()}`;
+    const privateKey = process.env.PAYMONGO_CHECKOUT_PAID_WEBHOOK_PRIVATE_KEY;
+    const expectedSignature = createHmac('sha256', privateKey)
+      .update(ourSignature)
+      .digest('hex');
+
+    const actualSignature =
+      process.env.NODE_ENV === 'production' ? liveSignature : testSignature;
+
+    if (actualSignature === expectedSignature) {
+      return;
+    }
+
+    this.logger.log(
+      `Signature mismatch: expected ${expectedSignature}, got ${actualSignature}`
+    );
+    throw new BadRequestException('Invalid signature');
+  }
 }
 
 interface DragonpayPaymentInitiationResponse {

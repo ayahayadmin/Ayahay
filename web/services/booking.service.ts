@@ -43,16 +43,11 @@ export async function createTentativeBooking(
 export async function getBookingById(
   bookingId: string
 ): Promise<IBooking | undefined> {
-  try {
-    const { data: booking } = await axios.get<IBooking>(
-      `${BOOKING_API}/${bookingId}`
-    );
+  const { data: booking } = await axios.get<IBooking>(
+    `${BOOKING_API}/${bookingId}`
+  );
 
-    return booking;
-  } catch (e) {
-    console.error(e);
-    return undefined;
-  }
+  return booking;
 }
 
 export async function getMyBookings(

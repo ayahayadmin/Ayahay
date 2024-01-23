@@ -1,12 +1,12 @@
 import axios, { AxiosError } from 'axios';
-import { NestJsDefaultError } from '@ayahay/http';
+import { ApiError } from '@ayahay/http';
 
-export function getAxiosError(error: any): NestJsDefaultError | undefined {
+export function getAxiosError(error: any): ApiError | undefined {
   if (!axios.isAxiosError(error)) {
     return undefined;
   }
 
-  const errorResponse = (error as AxiosError<NestJsDefaultError>).response;
+  const errorResponse = (error as AxiosError<ApiError>).response;
 
   if (errorResponse === undefined) {
     return undefined;

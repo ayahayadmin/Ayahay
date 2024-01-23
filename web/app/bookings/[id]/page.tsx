@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import BookingSummary from '@ayahay/components/descriptions/BookingSummary';
 import { getBookingById } from '@/services/booking.service';
 import { IBooking } from '@ayahay/models/booking.model';
-import { notification, Typography } from 'antd';
+import { Button, notification, Typography } from 'antd';
 import {
   cancelBooking,
   checkInPassenger,
@@ -15,15 +15,29 @@ import { useAuth } from '@/app/contexts/AuthContext';
 
 const { Title } = Typography;
 
+const textCenter = { textAlign: 'center' };
+const noPadding = { padding: '0' };
+
 export default function GetBooking({ params }) {
   const [api, contextHolder] = notification.useNotification();
   const { loggedInAccount, hasPrivilegedAccess } = useAuth();
   const [booking, setBooking] = useState<IBooking | undefined>();
+  const [errorCode, setErrorCode] = useState<number | undefined>();
 
   const loadBooking = async () => {
     const bookingId = params.id;
-    const booking = await getBookingById(bookingId);
-    setBooking(booking);
+    try {
+      const booking = await getBookingById(bookingId);
+      setBooking(booking);
+      setErrorCode(undefined);
+    } catch (e) {
+      const axiosError = getAxiosError(e);
+      if (axiosError === undefined) {
+        setErrorCode(500);
+      } else {
+        setErrorCode(axiosError.statusCode);
+      }
+    }
   };
 
   useEffect(() => {
@@ -98,15 +112,46 @@ export default function GetBooking({ params }) {
 
   return (
     <div className={styles['main-container']}>
-      <Title level={1}>Booking Summary</Title>
-      <BookingSummary
-        booking={booking}
-        titleLevel={2}
-        hasPrivilegedAccess={hasPrivilegedAccess}
-        onCancelBooking={onCancelBooking}
-        onCheckInPassenger={checkInBookingPassenger}
-        onCheckInVehicle={checkInBookingVehicle}
-      />
+      {errorCode === undefined && (
+        <>
+          <Title level={1}>Booking Summary</Title>
+          <BookingSummary
+            booking={booking}
+            titleLevel={2}
+            hasPrivilegedAccess={hasPrivilegedAccess}
+            onCancelBooking={onCancelBooking}
+            onCheckInPassenger={checkInBookingPassenger}
+            onCheckInVehicle={checkInBookingVehicle}
+          />
+        </>
+      )}
+      {errorCode === 404 && (
+        <p style={textCenter}>
+          The booking does not exist. Try again after a few minutes or&nbsp;
+          <Button
+            type='link'
+            href={`mailto:it@ayahay.com?subject=Booking Not Found`}
+            style={noPadding}
+          >
+            contact us for assistance
+          </Button>
+          .
+        </p>
+      )}
+      {errorCode === 403 && (
+        <p style={textCenter}>
+          You are not authorized to view this booking.&nbsp;
+          <Button
+            type='link'
+            href={`mailto:it@ayahay.com?subject=I cannot access my booking`}
+            style={noPadding}
+          >
+            Contact us for assistance
+          </Button>
+          &nbsp; if you think this is a mistake.
+        </p>
+      )}
+      {errorCode === 500 && <p style={textCenter}>Something went wrong.</p>}
       {contextHolder}
     </div>
   );

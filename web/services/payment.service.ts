@@ -2,14 +2,15 @@ import { PAYMENT_API } from '@ayahay/constants/api';
 import axios from '@ayahay/services/axios';
 import { PaymentInitiationResponse } from '@ayahay/http';
 
-// TODO: should return void when payment flow is finalized
 export async function startPaymentForBooking(
   tentativeBookingId: number,
-  contactEmail?: string
+  contactEmail?: string,
+  gateway?: string
 ): Promise<PaymentInitiationResponse | undefined> {
+  const gatewayQuery = gateway ? `?gateway=${gateway}` : '';
   try {
     const { data: response } = await axios.post<PaymentInitiationResponse>(
-      `${PAYMENT_API}/booking/${tentativeBookingId}`,
+      `${PAYMENT_API}/booking/${tentativeBookingId}${gatewayQuery}`,
       contactEmail ? { email: contactEmail } : undefined
     );
     return response;
