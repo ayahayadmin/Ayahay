@@ -20,6 +20,7 @@ import {
   PaginatedRequest,
   PaginatedResponse,
   PassengerPreferences,
+  TripSearchByDateRange,
 } from '@ayahay/http';
 import { UtilityService } from '../utility.service';
 import { TripService } from '../trip/trip.service';
@@ -119,6 +120,41 @@ export class BookingService {
   async getAllBookings(): Promise<IBooking[]> {
     // TO DO: might use SQL query to get paymentItems for particular bookingPassengers and bookingVehicles
     const bookingEntities = await this.prisma.booking.findMany({
+      include: {
+        account: true,
+        passengers: {
+          include: {
+            trip: {
+              include: {
+                shippingLine: true,
+                srcPort: true,
+                destPort: true,
+              },
+            },
+            passenger: true,
+          },
+        },
+        paymentItems: true,
+      },
+    });
+
+    return bookingEntities.map((bookingEntity) =>
+      this.bookingMapper.convertBookingToBasicDto(bookingEntity)
+    );
+  }
+
+  async getBookingsToDownload({
+    startDate,
+    endDate,
+  }: TripSearchByDateRange): Promise<IBooking[]> {
+    const bookingEntities = await this.prisma.booking.findMany({
+      where: {
+        createdAt: {
+          gte: new Date(startDate).toISOString(),
+          lte: new Date(endDate).toISOString(),
+        },
+        bookingStatus: 'Confirmed',
+      },
       include: {
         account: true,
         passengers: {
