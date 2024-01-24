@@ -6,10 +6,9 @@ import {
 } from '@ayahay/http';
 import axios from '@ayahay/services/axios';
 import { SEARCH_API } from '@ayahay/constants';
-import { getPort } from '@ayahay/services/port.service';
-import { getShip } from '@ayahay/services/ship.service';
 import dayjs from 'dayjs';
 import { isEmpty } from 'lodash';
+import { fetchAssociatedEntitiesForReports } from './reporting.service';
 
 export function initializeAdminSearchFormFromQueryParams(
   form: FormInstance,
@@ -99,35 +98,16 @@ export async function getTripInformation(
   startDate: string,
   endDate: string
 ): Promise<DashboardTrips[] | undefined> {
-  return axios
-    .get(`${SEARCH_API}/dashboard`, {
+  const { data: dashboardTrips } = await axios.get<DashboardTrips[]>(
+    `${SEARCH_API}/dashboard`,
+    {
       params: {
         startDate,
         endDate,
       },
-    })
-    .then((res) => {
-      return Promise.all(
-        res.data.map((data: DashboardTrips) => {
-          return mapResponseData(data);
-        })
-      );
-    })
-    .then((res) => res);
-}
+    }
+  );
 
-function mapResponseData(responseData: DashboardTrips) {
-  return Promise.allSettled([
-    // For now we are just interested with Ports & Shipping Line. In the future we can add more like Ship
-    getPort(responseData.srcPortId),
-    getPort(responseData.destPortId),
-    getShip(responseData.shipId),
-  ]).then(([srcPort, destPort, ship]) => {
-    return {
-      ...responseData,
-      srcPort: srcPort.status === 'fulfilled' ? srcPort.value : '',
-      destPort: destPort.status === 'fulfilled' ? destPort.value : '',
-      ship: ship.status === 'fulfilled' ? ship.value : '',
-    };
-  });
+  await fetchAssociatedEntitiesForReports(dashboardTrips);
+  return dashboardTrips;
 }
