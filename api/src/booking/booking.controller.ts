@@ -15,6 +15,7 @@ import {
   PaginatedRequest,
   PaginatedResponse,
   PassengerPreferences,
+  TripSearchByDateRange,
 } from '@ayahay/http';
 import { AuthGuard } from 'src/guard/auth.guard';
 import { Roles } from 'src/decorator/roles.decorator';
@@ -33,6 +34,15 @@ export class BookingController {
   @Roles('Staff', 'Admin')
   async getAllBookings(): Promise<IBooking[]> {
     return await this.bookingService.getAllBookings();
+  }
+
+  @Get('download')
+  @UseGuards(AuthGuard)
+  @Roles('Staff', 'Admin', 'SuperAdmin')
+  async getBookingsToDownload(
+    @Query() dates: TripSearchByDateRange
+  ): Promise<IBooking[]> {
+    return this.bookingService.getBookingsToDownload(dates);
   }
 
   @Get('public')
