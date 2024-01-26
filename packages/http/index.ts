@@ -8,3 +8,4 @@ export * from './error';
 export * from './reporting';
 export * from './pagination';
 export * from './reporting';
+export * from './email';

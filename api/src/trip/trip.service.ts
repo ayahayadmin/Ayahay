@@ -23,6 +23,7 @@ import { TripValidator } from './trip.validator';
 import { ShippingLineService } from '../shipping-line/shipping-line.service';
 import { ShipService } from '../ship/ship.service';
 import { UtilityService } from '../utility.service';
+import { EmailService } from 'src/email/email.service';
 
 const TRIP_AVAILABLE_QUERY = Prisma.sql`
   SELECT 
@@ -60,6 +61,7 @@ export class TripService {
     private readonly prisma: PrismaService,
     private readonly shippingLineService: ShippingLineService,
     private readonly shipService: ShipService,
+    private readonly emailService: EmailService,
     private readonly utilityService: UtilityService,
     private readonly tripMapper: TripMapper,
     private readonly tripValidator: TripValidator
@@ -124,6 +126,7 @@ export class TripService {
         AND t.departure_date <= ${dateSelectedPlusAWeek.toISOString()}::DATE + 1 - interval '1 sec'
         AND t.src_port_id = ${Number(srcPortId)}
         AND t.dest_port_id = ${Number(destPortId)}
+        AND t.status = 'Awaiting'
         ${
           isEmpty(cabinIds)
             ? Prisma.empty
@@ -516,6 +519,93 @@ export class TripService {
         tripToUpdate,
         transactionContext as any
       );
+    });
+  }
+
+  async setTripAsCancelled(
+    tripId: number,
+    reason: string,
+    loggedInAccount: IAccount
+  ): Promise<void> {
+    const tripToUpdate = await this.prisma.trip.findUnique({
+      where: {
+        id: tripId,
+      },
+      include: {
+        srcPort: true,
+        destPort: true,
+      },
+    });
+
+    if (tripToUpdate === null) {
+      throw new NotFoundException();
+    }
+
+    this.utilityService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
+      tripToUpdate,
+      loggedInAccount
+    );
+
+    if (tripToUpdate.status !== 'Awaiting') {
+      throw new BadRequestException(
+        'Cannot set a cancelled or arrived trip as cancelled.'
+      );
+    }
+
+    await this.prisma.$transaction(async (transactionContext) => {
+      await transactionContext.trip.update({
+        where: {
+          id: tripId,
+        },
+        data: {
+          status: 'Cancelled',
+        },
+      });
+
+      await this.voidBookingsOfTrip(tripId, transactionContext as any);
+
+      await this.emailService.prepareTripCancelledEmail(
+        { tripId, reason },
+        transactionContext as any
+      );
+
+      await this.shipService.createVoyageForTrip(
+        tripToUpdate,
+        transactionContext as any
+      );
+    });
+  }
+
+  private async voidBookingsOfTrip(
+    tripId: number,
+    transactionContext?: PrismaClient
+  ): Promise<void> {
+    transactionContext ??= this.prisma;
+    const bookingIds = await transactionContext.bookingPassenger.findMany({
+      where: {
+        tripId,
+      },
+      select: {
+        bookingId: true,
+      },
+    });
+
+    if (bookingIds.length === 0) {
+      return;
+    }
+
+    const bookingIdsStrArr = bookingIds.map(({ bookingId }) => bookingId);
+
+    await transactionContext.booking.updateMany({
+      where: {
+        id: {
+          in: bookingIdsStrArr,
+        },
+      },
+      data: {
+        bookingStatus: 'Cancelled',
+        failureCancellationRemarks: 'Trip Cancelled',
+      },
     });
   }
 }

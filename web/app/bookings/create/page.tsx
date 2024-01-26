@@ -1,5 +1,4 @@
 'use client';
-
 import styles from './page.module.scss';
 import { Typography } from 'antd';
 import TripSummary from '@ayahay/components/descriptions/TripSummary';
@@ -17,6 +16,10 @@ export default function CreateBooking() {
   const onComplete = (booking: IBooking) => {
     router.push(`/bookings/${booking.id}`);
   };
+
+  if (trip && trip.status !== 'Awaiting') {
+    router.push('/');
+  }
 
   return (
     <div id={styles['create-booking-page']}>

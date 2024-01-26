@@ -23,6 +23,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@aws-sdk/client-ses": "^3.490.0",
     "@ayahay/constants": "^0.1.0",
     "@ayahay/http": "^0.1.0",
     "@ayahay/models": "^0.1.0",

@@ -22,7 +22,6 @@ import {
   PassengerPreferences,
   TripSearchByDateRange,
 } from '@ayahay/http';
-import { UtilityService } from '../utility.service';
 import { TripService } from '../trip/trip.service';
 import { BookingMapper } from './booking.mapper';
 import { PassengerService } from '../passenger/passenger.service';
@@ -31,6 +30,7 @@ import { VehicleService } from '../vehicle/vehicle.service';
 import { BookingReservationService } from './booking-reservation.service';
 import { BookingPricingService } from './booking-pricing.service';
 import { AvailableBooking } from './booking.types';
+import { EmailService } from 'src/email/email.service';
 
 @Injectable()
 export class BookingService {
@@ -39,6 +39,7 @@ export class BookingService {
     private readonly tripService: TripService,
     private readonly bookingReservationService: BookingReservationService,
     private readonly bookingPricingService: BookingPricingService,
+    private readonly emailService: EmailService,
     private readonly bookingMapper: BookingMapper,
     private readonly bookingValidator: BookingValidator,
     private readonly passengerService: PassengerService,
@@ -600,6 +601,13 @@ export class BookingService {
     const bookingEntity = await transactionContext.booking.create(
       bookingToCreate
     );
+
+    if (booking.contactEmail !== null) {
+      await this.emailService.sendBookingConfirmedEmail({
+        recipient: booking.contactEmail,
+        bookingId: booking.id,
+      });
+    }
 
     return this.bookingMapper.convertBookingToBasicDto(bookingEntity);
   }

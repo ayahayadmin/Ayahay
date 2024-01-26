@@ -8,9 +8,16 @@ import { VehicleModule } from '../vehicle/vehicle.module';
 import { AccountModule } from '../account/account.module';
 import { BookingReservationService } from './booking-reservation.service';
 import { BookingPricingService } from './booking-pricing.service';
+import { EmailModule } from 'src/email/email.module';
 
 @Module({
-  imports: [TripModule, PassengerModule, VehicleModule, AccountModule],
+  imports: [
+    TripModule,
+    PassengerModule,
+    VehicleModule,
+    AccountModule,
+    EmailModule,
+  ],
   controllers: [BookingController],
   providers: [
     BookingValidator,

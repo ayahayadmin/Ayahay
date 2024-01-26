@@ -4,8 +4,10 @@ import { TripService } from './trip.service';
 import { TripValidator } from './trip.validator';
 import { ShippingLineService } from '../shipping-line/shipping-line.service';
 import { ShipService } from '../ship/ship.service';
+import { EmailModule } from 'src/email/email.module';
 
 @Module({
+  imports: [EmailModule],
   controllers: [TripController],
   providers: [TripService, ShippingLineService, ShipService, TripValidator],
   exports: [TripService],
