@@ -4,9 +4,9 @@ import {
   InternalServerErrorException,
   Logger,
 } from '@nestjs/common';
-import { PrismaService } from '../prisma.service';
+import { PrismaService } from '@/prisma.service';
 import { v4 as uuidv4 } from 'uuid';
-import { BookingService } from '../booking/booking.service';
+import { BookingService } from '@/booking/booking.service';
 import { PaymentInitiationResponse } from '@ayahay/http';
 import { createHash, createHmac } from 'crypto';
 import axios, { AxiosError } from 'axios';
@@ -14,7 +14,7 @@ import { IAccount } from '@ayahay/models';
 import {
   PayMongoCheckoutPaidPostbackRequest,
   PayMongoCheckoutSession,
-} from '../types/paymongo';
+} from './payment.types';
 
 @Injectable()
 export class PaymentService {

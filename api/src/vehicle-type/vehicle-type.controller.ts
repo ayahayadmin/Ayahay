@@ -1,13 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Post,
-  Put,
-  Query,
-} from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { VehicleTypeService } from './vehicle-type.service';
 import { IVehicleType } from '@ayahay/models';
 

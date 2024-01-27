@@ -17,7 +17,7 @@ export default function CreateVoyageModal({
 
   const onOkModal = async () => {
     try {
-      await form.validateFields(['remarks']);
+      await form.validateFields();
       await onCreateVoyage(form.getFieldValue('remarks'));
     } catch {}
   };

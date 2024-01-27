@@ -22,4 +22,5 @@ export * from './payment-item.model';
 export * from './notification.model';
 export * from './account-notification.model';
 export * from './voyage.model';
-export * from './dry-dock';
+export * from './dry-dock.model';
+export * from './voucher.model';

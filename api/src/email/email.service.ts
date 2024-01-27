@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PrismaService } from '../prisma.service';
-import { TripCancelEmailRequest, EmailRole } from '@ayahay/http';
+import { PrismaService } from '@/prisma.service';
+import { TripCancelEmailRequest } from '@ayahay/http';
 import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
 import { PrismaClient } from '@prisma/client';
 

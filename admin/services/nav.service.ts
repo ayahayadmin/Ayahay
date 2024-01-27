@@ -41,6 +41,10 @@ export const webLinks = {
       ],
     },
     {
+      label: 'Vouchers',
+      key: 'vouchers',
+    },
+    {
       label: 'Upload',
       key: 'upload',
       children: [

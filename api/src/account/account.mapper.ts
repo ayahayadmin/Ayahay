@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { IAccount } from '@ayahay/models';
 import { ACCOUNT_ROLE } from '@ayahay/constants';
-import { PassengerMapper } from '../passenger/passenger.mapper';
-import { VehicleMapper } from '../vehicle/vehicle.mapper';
+import { PassengerMapper } from '@/passenger/passenger.mapper';
+import { VehicleMapper } from '@/vehicle/vehicle.mapper';
 import { Prisma } from '@prisma/client';
 
 @Injectable()

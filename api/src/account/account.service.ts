@@ -4,10 +4,10 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { PrismaService } from '../prisma.service';
+import { PrismaService } from '@/prisma.service';
 import { IAccount, IPassenger } from '@ayahay/models';
 import { AccountMapper } from './account.mapper';
-import { AuthService } from 'src/auth/auth.service';
+import { AuthService } from '@/auth/auth.service';
 import { isEmpty } from 'lodash';
 
 @Injectable()

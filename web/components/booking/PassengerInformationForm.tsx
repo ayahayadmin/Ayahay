@@ -576,7 +576,10 @@ export default function PassengerInformationForm({
           </>
         )}
       </Form.List>
-      <div>
+      <div style={{ marginTop: '24px' }}>
+        <Form.Item label='Voucher Code' name='voucherCode' colon={false}>
+          <Input />
+        </Form.Item>
         <Button type='primary' onClick={() => validateFieldsInCurrentStep()}>
           Next
         </Button>

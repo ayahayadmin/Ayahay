@@ -67,7 +67,7 @@ export default function MyBookings() {
   const {
     dataInPage: myBookings,
     antdPagination,
-    onAntdChange,
+    antdOnChange,
     resetData: resetMyBookingsTable,
   } = usePaginatedData<IBooking>(
     getMyBookings,
@@ -102,7 +102,7 @@ export default function MyBookings() {
           dataSource={myBookings}
           columns={bookingColumns}
           pagination={antdPagination}
-          onChange={onAntdChange}
+          onChange={antdOnChange}
           loading={myBookings === undefined}
           tableLayout='fixed'
           rowKey={(booking) => booking.id}

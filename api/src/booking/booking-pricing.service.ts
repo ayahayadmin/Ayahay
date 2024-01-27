@@ -7,8 +7,10 @@ import {
   ITrip,
   IAccount,
   IShippingLine,
+  IPaymentItem,
 } from '@ayahay/models';
 import { AvailableBooking } from './booking.types';
+import { Voucher } from '@prisma/client';
 
 @Injectable()
 export class BookingPricingService {
@@ -122,5 +124,34 @@ export class BookingPricingService {
     }
 
     return vehicleFare * this.AYAHAY_MARKUP_PERCENT;
+  }
+
+  calculateVoucherDiscount(
+    bookingPassengers: IBookingPassenger[],
+    bookingVehicles: IBookingVehicle[],
+    voucher?: Voucher
+  ): number {
+    if (!voucher) {
+      return 0;
+    }
+
+    const passengersTotalPrice = bookingPassengers
+      .map((passenger) => passenger.totalPrice)
+      .reduce((priceA, priceB) => priceA + priceB, 0);
+
+    const vehiclesTotalPrice = bookingVehicles
+      .map((vehicle) => vehicle.totalPrice)
+      .reduce((priceA, priceB) => priceA + priceB, 0);
+
+    const totalDiscountablePrice = passengersTotalPrice + vehiclesTotalPrice;
+
+    const totalDiscount =
+      totalDiscountablePrice * voucher.discountPercent + voucher.discountFlat;
+
+    if (totalDiscount > totalDiscountablePrice) {
+      return totalDiscountablePrice;
+    }
+
+    return totalDiscount;
   }
 }

@@ -1,8 +1,8 @@
 import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { SearchService } from './search.service';
 import { Booking, Trip } from '@prisma/client';
-import { AuthGuard } from 'src/guard/auth.guard';
-import { Roles } from 'src/decorator/roles.decorator';
+import { AuthGuard } from '@/guard/auth.guard';
+import { Roles } from '@/decorator/roles.decorator';
 import { DashboardTrips } from '@ayahay/http';
 
 @Controller('search')

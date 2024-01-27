@@ -8,11 +8,11 @@ import {
   ITripVehicleType,
   IVehicleType,
 } from '@ayahay/models';
-import { ShippingLineMapper } from '../shipping-line/shipping-line.mapper';
-import { PortMapper } from '../port/port.mapper';
+import { ShippingLineMapper } from '@/shipping-line/shipping-line.mapper';
+import { PortMapper } from '@/port/port.mapper';
 import { map } from 'lodash';
 import { Prisma } from '@prisma/client';
-import { ShipMapper } from 'src/ship/ship.mapper';
+import { ShipMapper } from '@/ship/ship.mapper';
 
 @Injectable()
 export class TripMapper {

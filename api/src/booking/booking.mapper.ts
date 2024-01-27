@@ -6,11 +6,11 @@ import {
   IPaymentItem,
 } from '@ayahay/models';
 import { Prisma } from '@prisma/client';
-import { TripMapper } from 'src/trip/trip.mapper';
-import { PassengerMapper } from '../passenger/passenger.mapper';
-import { CabinMapper } from '../cabin/cabin.mapper';
-import { VehicleMapper } from '../vehicle/vehicle.mapper';
-import { PaymentMapper } from '../payment/payment.mapper';
+import { TripMapper } from '@/trip/trip.mapper';
+import { PassengerMapper } from '@/passenger/passenger.mapper';
+import { CabinMapper } from '@/cabin/cabin.mapper';
+import { VehicleMapper } from '@/vehicle/vehicle.mapper';
+import { PaymentMapper } from '@/payment/payment.mapper';
 
 @Injectable()
 export class BookingMapper {
@@ -67,6 +67,7 @@ export class BookingMapper {
     return {
       id: booking.id,
       accountId: booking.accountId,
+      voucherCode: booking.voucherCode,
 
       referenceNo: booking.referenceNo,
       bookingType: booking.bookingType,
@@ -129,6 +130,7 @@ export class BookingMapper {
   ): Prisma.TempBookingCreateArgs {
     const {
       accountId,
+      voucherCode,
       totalPrice,
       bookingType,
       bookingPassengers,
@@ -141,7 +143,9 @@ export class BookingMapper {
 
     return {
       data: {
-        accountId,
+        accountId: accountId ?? null,
+        voucherCode: voucherCode ?? null,
+
         totalPrice,
         bookingType,
         paymentReference: null,
@@ -167,7 +171,8 @@ export class BookingMapper {
 
     return {
       id: tempBooking.paymentReference,
-      accountId: tempBooking.accountId,
+      accountId: tempBooking.accountId ?? undefined,
+      voucherCode: tempBooking.voucherCode ?? undefined,
 
       referenceNo: tempBooking.paymentReference.substring(0, 6).toUpperCase(),
       bookingStatus: bookingStatus as any,
@@ -219,7 +224,9 @@ export class BookingMapper {
     return {
       data: {
         id: booking.id,
-        accountId: booking.accountId,
+        accountId: booking.accountId ?? null,
+        voucherCode: booking.voucherCode ?? null,
+
         referenceNo: booking.referenceNo,
         bookingStatus: booking.bookingStatus,
         paymentStatus: booking.paymentStatus,

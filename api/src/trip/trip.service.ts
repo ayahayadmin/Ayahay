@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Prisma, PrismaClient, Trip } from '@prisma/client';
-import { PrismaService } from 'src/prisma.service';
+import { PrismaService } from '@/prisma.service';
 import {
   AvailableTrips,
   IAccount,
@@ -20,10 +20,10 @@ import {
   UpdateTripCapacityRequest,
 } from '@ayahay/http';
 import { TripValidator } from './trip.validator';
-import { ShippingLineService } from '../shipping-line/shipping-line.service';
-import { ShipService } from '../ship/ship.service';
-import { UtilityService } from '../utility.service';
-import { EmailService } from 'src/email/email.service';
+import { ShippingLineService } from '@/shipping-line/shipping-line.service';
+import { ShipService } from '@/ship/ship.service';
+import { UtilityService } from '@/utility.service';
+import { EmailService } from '@/email/email.service';
 
 const TRIP_AVAILABLE_QUERY = Prisma.sql`
   SELECT 

@@ -1,4 +1,13 @@
-import { Form, Spin, Steps, Grid, notification, Modal, Button } from 'antd';
+import {
+  Form,
+  Spin,
+  Steps,
+  Grid,
+  notification,
+  Modal,
+  Button,
+  Input,
+} from 'antd';
 import styles from './createBookingForm.module.scss';
 import { IBooking } from '@ayahay/models';
 import PassengerInformationForm from '@/components/booking/PassengerInformationForm';
@@ -14,6 +23,8 @@ import { startPaymentForBooking } from '@/services/payment.service';
 import { InfoCircleOutlined } from '@ant-design/icons';
 import { invalidateItem } from '@ayahay/services/cache.service';
 import { useAuth } from '@/app/contexts/AuthContext';
+import { getAxiosError } from '@ayahay/services/error.service';
+import { FieldError } from '@ayahay/http';
 
 const { useBreakpoint } = Grid;
 
@@ -56,35 +67,51 @@ export default function CreateBookingForm({
     );
 
     if (trip === undefined) {
-      console.error('Trip is not defined');
-      onBookError();
+      onBookError('Trip is not defined');
       return;
     }
 
-    const pref = [];
-    passengers.forEach((_) => pref.push({}));
-    const tentativeBooking = await createTentativeBooking(
-      [trip?.id],
-      passengers,
-      pref,
-      vehicles
-    );
+    const pref: any[] = [];
+    passengers.forEach((_: any) => pref.push({}));
 
-    if (tentativeBooking === undefined) {
-      onBookError();
+    const voucherCode = form.getFieldValue('voucherCode');
+
+    try {
+      const tentativeBooking = await createTentativeBooking(
+        [trip?.id],
+        passengers,
+        pref,
+        vehicles,
+        voucherCode
+      );
+      setBookingPreview(tentativeBooking);
+      nextStep();
+    } catch (e: any) {
+      onBookError(e);
     }
 
-    setBookingPreview(tentativeBooking);
-    nextStep();
     setLoadingMessage('');
   };
 
-  const onBookError = () => {
-    notification.error({
-      message: 'Could not find a booking',
-      description:
-        'There seems to be an issue with finding a booking. Please try again in a few minutes or contact us at help@ayahay.com for assistance.',
-    });
+  const onBookError = (e: any) => {
+    const axiosError = getAxiosError<FieldError[]>(e);
+
+    if (axiosError === undefined || axiosError.statusCode !== 400) {
+      console.error(e);
+      notification.error({
+        message: 'Could not find a booking',
+        description:
+          'There seems to be an issue with finding a booking. Please try again in a few minutes or contact us at it@ayahay.com for assistance.',
+      });
+    } else {
+      const fieldErrors = axiosError.message;
+      form.setFields(
+        fieldErrors.map((error) => ({
+          name: error.fieldName,
+          errors: [error.message],
+        }))
+      );
+    }
   };
 
   const payBooking = async (tentativeBookingId: number): Promise<void> => {
@@ -142,17 +169,6 @@ export default function CreateBookingForm({
     });
   };
 
-  const informFullyBooked = () => {
-    modal.info({
-      width: 'min(90vw, 512px)',
-      centered: true,
-      title: 'The selected trip is now fully booked.',
-      icon: <InfoCircleOutlined />,
-      content: <p>You will now be redirected to the landing page.</p>,
-      onOk: () => window.location.replace('/'),
-    });
-  };
-
   const onStartPaymentError = () => {
     notification.error({
       message: 'Something went wrong.',
@@ -164,6 +180,12 @@ export default function CreateBookingForm({
   const items = steps.map(({ title }) => ({ key: title, title: title }));
   const stepDirection = screens.md ? 'horizontal' : 'vertical';
 
+  const onFieldsChange = (changedFields: any[], allFields: any[]) => {
+    if (changedFields.some((field) => field.name.includes('voucherCode'))) {
+      form.setFields([{ name: 'voucherCode', errors: [] }]);
+    }
+  };
+
   return (
     <Form
       form={form}
@@ -174,7 +196,7 @@ export default function CreateBookingForm({
         preferences: [],
         gateway: 'PayMongo',
       }}
-      onFinish={(values) => console.log(values)}
+      onFieldsChange={onFieldsChange}
     >
       <Steps
         current={currentStep}

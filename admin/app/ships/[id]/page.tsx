@@ -80,7 +80,7 @@ export default function ShipPage({ params }: any) {
   const {
     dataInPage: voyagesAfterLastMaintenance,
     antdPagination: voyagesAfterLastMaintenancePagination,
-    onAntdChange: voyagesAfterLastMaintenanceChange,
+    antdOnChange: voyagesAfterLastMaintenanceChange,
     resetData: voyagesAfterLastMaintenanceReset,
   } = usePaginatedData<IVoyage>(
     fetchVoyagesAfterLastMaintenance,
@@ -99,7 +99,7 @@ export default function ShipPage({ params }: any) {
   const {
     dataInPage: voyagesBeforeLastMaintenance,
     antdPagination: voyagesBeforeLastMaintenancePagination,
-    onAntdChange: voyagesBeforeLastMaintenanceChange,
+    antdOnChange: voyagesBeforeLastMaintenanceChange,
     resetData: voyagesBeforeLastMaintenanceReset,
   } = usePaginatedData<IVoyage>(
     fetchVoyagesBeforeLastMaintenance,
@@ -116,7 +116,7 @@ export default function ShipPage({ params }: any) {
   const {
     dataInPage: dryDocks,
     antdPagination: dryDocksPagination,
-    onAntdChange: dryDocksChange,
+    antdOnChange: dryDocksChange,
     resetData: dryDocksReset,
   } = usePaginatedData<IDryDock>(
     fetchDryDocks,

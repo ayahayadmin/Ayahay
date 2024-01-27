@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Port, Prisma } from '@prisma/client';
+import { Port } from '@prisma/client';
 import { IPort } from '@ayahay/models';
 
 @Injectable()

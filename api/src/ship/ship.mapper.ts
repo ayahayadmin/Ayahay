@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { IDryDock, IShip, IVoyage } from '@ayahay/models';
-import { CabinMapper } from '../cabin/cabin.mapper';
+import { CabinMapper } from '@/cabin/cabin.mapper';
 
 @Injectable()
 export class ShipMapper {

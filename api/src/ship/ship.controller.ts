@@ -11,8 +11,8 @@ import {
 import { ShipService } from './ship.service';
 import { IDryDock, IShip, IVoyage } from '@ayahay/models';
 import { PaginatedRequest, PaginatedResponse } from '@ayahay/http';
-import { Roles } from '../decorator/roles.decorator';
-import { AuthGuard } from '../guard/auth.guard';
+import { Roles } from '@/decorator/roles.decorator';
+import { AuthGuard } from '@/guard/auth.guard';
 
 @Controller('ships')
 export class ShipController {

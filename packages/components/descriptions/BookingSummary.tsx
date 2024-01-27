@@ -34,6 +34,12 @@ export default function BookingSummary({
   const [isPrinting, setIsPrinting] = useState(false);
   const [isCancellationModalOpen, setIsCancellationModalOpen] = useState(false);
 
+  const trip =
+    booking?.bookingPassengers?.[0]?.trip ??
+    booking?.bookingVehicles?.[0]?.trip;
+  const showQrCode =
+    booking?.bookingStatus === 'Confirmed' && trip?.status === 'Awaiting';
+
   useEffect(() => {
     if (isPrinting) {
       window.print();
@@ -126,7 +132,7 @@ export default function BookingSummary({
             flexWrap: screens.lg ? 'nowrap' : 'wrap',
           }}
         >
-          {booking?.bookingStatus === 'Confirmed' && (
+          {showQrCode && (
             <article style={{ flexGrow: '1' }}>
               <p>{getUserAction()}</p>
               <QRCode
@@ -163,10 +169,10 @@ export default function BookingSummary({
           </article>
         </section>
       )}
-      {booking && booking.bookingPassengers?.[0]?.trip && (
+      {booking && trip && (
         <section>
           <Title level={titleLevel}>Trip Details</Title>
-          <TripSummary trip={booking?.bookingPassengers?.[0]?.trip} />
+          <TripSummary trip={trip} />
         </section>
       )}
       {booking &&
@@ -204,7 +210,7 @@ export default function BookingSummary({
 
   const minimalBookingSummary = (
     <div style={{ display: 'flex', flexDirection: 'column' }}>
-      {booking && booking.createdAtIso?.length > 0 && (
+      {showQrCode && (
         <section>
           <p>Ref # {booking.referenceNo}</p>
           <QRCode
@@ -215,16 +221,13 @@ export default function BookingSummary({
           />
         </section>
       )}
-      {booking && booking.bookingPassengers?.[0]?.trip && (
+      {booking && trip && (
         <section>
           <p>
-            {booking.bookingPassengers?.[0].trip.srcPort?.name} -{' '}
-            {booking.bookingPassengers?.[0].trip.destPort?.name}
+            {trip.srcPort?.name} - {trip.destPort?.name}
           </p>
           <p>
-            {dayjs(booking.bookingPassengers?.[0].trip.departureDateIso).format(
-              'MMM D, YYYY [at] h:mm A'
-            )}
+            {dayjs(trip.departureDateIso).format('MMM D, YYYY [at] h:mm A')}
           </p>
         </section>
       )}

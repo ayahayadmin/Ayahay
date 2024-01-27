@@ -11,10 +11,10 @@ import admin from 'firebase-admin';
 import { includes } from 'lodash';
 import { Request } from 'express';
 import { ACCOUNT_ROLE } from '@ayahay/constants';
-import { ROLES_KEY } from 'src/decorator/roles.decorator';
-import { PrismaService } from 'src/prisma.service';
-import { AUTHENTICATED_KEY } from '../decorator/authenticated.decorator';
-import { VERIFIED_KEY } from 'src/decorator/verified.decorator';
+import { ROLES_KEY } from '@/decorator/roles.decorator';
+import { PrismaService } from '@/prisma.service';
+import { AUTHENTICATED_KEY } from '@/decorator/authenticated.decorator';
+import { VERIFIED_KEY } from '@/decorator/verified.decorator';
 
 /**
  * Sets request.user to the logged-in account making the request

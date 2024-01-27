@@ -13,9 +13,9 @@ import {
 import { FastifyRequest } from 'fastify';
 import { PaymentService } from './payment.service';
 import { PaymentInitiationResponse } from '@ayahay/http';
-import { AllowUnauthenticated } from '../decorator/authenticated.decorator';
-import { AuthGuard } from '../guard/auth.guard';
-import { PayMongoCheckoutPaidPostbackRequest } from '../types/paymongo';
+import { AllowUnauthenticated } from '@/decorator/authenticated.decorator';
+import { AuthGuard } from '@/guard/auth.guard';
+import { PayMongoCheckoutPaidPostbackRequest } from './payment.types';
 
 @Controller('pay')
 export class PaymentController {

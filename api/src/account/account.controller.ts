@@ -9,10 +9,10 @@ import {
 } from '@nestjs/common';
 import { AccountService } from './account.service';
 import { IAccount, IPassenger } from '@ayahay/models';
-import { AuthGuard } from 'src/guard/auth.guard';
+import { AuthGuard } from '@/guard/auth.guard';
 import { Prisma } from '@prisma/client';
-import { Roles } from 'src/decorator/roles.decorator';
-import { AllowUnverified } from 'src/decorator/verified.decorator';
+import { Roles } from '@/decorator/roles.decorator';
+import { AllowUnverified } from '@/decorator/verified.decorator';
 
 @Controller('accounts')
 @UseGuards(AuthGuard)

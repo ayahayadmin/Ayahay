@@ -1,9 +1,5 @@
-import {
-  BadRequestException,
-  ForbiddenException,
-  Injectable,
-} from '@nestjs/common';
-import { PrismaService } from '../prisma.service';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { PrismaService } from '@/prisma.service';
 import {
   IAccount,
   IShippingLine,
@@ -12,7 +8,7 @@ import {
 } from '@ayahay/models';
 import { CreateTripsFromSchedulesRequest } from '@ayahay/http';
 import { ShippingLineMapper } from './shipping-line.mapper';
-import { UtilityService } from '../utility.service';
+import { UtilityService } from '@/utility.service';
 
 @Injectable()
 export class ShippingLineService {

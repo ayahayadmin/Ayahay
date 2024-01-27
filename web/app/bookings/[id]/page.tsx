@@ -65,7 +65,7 @@ export default function GetBooking({ params }) {
   };
 
   const handleAxiosError = (e: any, errorTitle: string) => {
-    const axiosError = getAxiosError(e);
+    const axiosError = getAxiosError<string>(e);
     // not an HTTP error
     const errorMessage = axiosError
       ? axiosError.message
