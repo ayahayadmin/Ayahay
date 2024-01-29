@@ -1,7 +1,7 @@
 import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { ReportingService } from './reporting.service';
-import { AuthGuard } from 'src/guard/auth.guard';
-import { Roles } from 'src/decorator/roles.decorator';
+import { AuthGuard } from '@/guard/auth.guard';
+import { Roles } from '@/decorator/roles.decorator';
 import {
   TripReport,
   TripManifest,

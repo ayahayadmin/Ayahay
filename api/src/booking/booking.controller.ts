@@ -10,17 +10,17 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { BookingService } from './booking.service';
-import { IBooking, IPassenger, IVehicle } from '@ayahay/models';
+import { IBooking } from '@ayahay/models';
 import {
+  CreateTentativeBookingRequest,
   PaginatedRequest,
   PaginatedResponse,
-  PassengerPreferences,
   TripSearchByDateRange,
 } from '@ayahay/http';
-import { AuthGuard } from 'src/guard/auth.guard';
-import { Roles } from 'src/decorator/roles.decorator';
-import { AllowUnauthenticated } from '../decorator/authenticated.decorator';
-import { AccountService } from '../account/account.service';
+import { AuthGuard } from '@/guard/auth.guard';
+import { Roles } from '@/decorator/roles.decorator';
+import { AllowUnauthenticated } from '@/decorator/authenticated.decorator';
+import { AccountService } from '@/account/account.service';
 
 @Controller('bookings')
 export class BookingController {
@@ -28,13 +28,6 @@ export class BookingController {
     private readonly bookingService: BookingService,
     private readonly accountService: AccountService
   ) {}
-
-  @Get()
-  @UseGuards(AuthGuard)
-  @Roles('Staff', 'Admin')
-  async getAllBookings(): Promise<IBooking[]> {
-    return await this.bookingService.getAllBookings();
-  }
 
   @Get('download')
   @UseGuards(AuthGuard)
@@ -83,7 +76,8 @@ export class BookingController {
       passengers,
       passengerPreferences,
       vehicles,
-    }: CreateTempBookingRequest
+      voucherCode,
+    }: CreateTentativeBookingRequest
   ): Promise<IBooking> {
     const loggedInAccount = req.user
       ? await this.accountService.getMyAccountInformation(req.user)
@@ -94,6 +88,7 @@ export class BookingController {
       passengers,
       passengerPreferences,
       vehicles,
+      voucherCode,
       loggedInAccount
     );
   }
@@ -127,11 +122,4 @@ export class BookingController {
   ) {
     return this.bookingService.cancelBooking(bookingId, remarks);
   }
-}
-
-interface CreateTempBookingRequest {
-  tripIds: number[];
-  passengers: IPassenger[];
-  passengerPreferences: PassengerPreferences[];
-  vehicles: IVehicle[];
 }

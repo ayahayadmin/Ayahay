@@ -1,13 +1,20 @@
 import { IBookingPassenger } from './booking-passenger.model';
 import { IBookingVehicle } from './booking-vehicle.model';
-import { PAYMENT_STATUS, BOOKING_TYPE, BOOKING_STATUS } from '@ayahay/constants/enum';
+import {
+  PAYMENT_STATUS,
+  BOOKING_TYPE,
+  BOOKING_STATUS,
+} from '@ayahay/constants/enum';
 import { IPaymentItem } from './payment-item.model';
 import { IAccount } from './account.model';
+import { IVoucher } from './voucher.model';
 
 export interface IBooking {
   id: string;
-  accountId: string;
+  accountId?: string;
   account?: IAccount;
+  voucherCode?: string;
+  voucher?: IVoucher;
 
   referenceNo: string;
   bookingStatus: keyof typeof BOOKING_STATUS;

@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Booking, Prisma, Trip } from '@prisma/client';
-import { PrismaService } from 'src/prisma.service';
+import { PrismaService } from '@/prisma.service';
 import { SearchMapper } from './search.mapper';
 import {
   DashboardTrips,

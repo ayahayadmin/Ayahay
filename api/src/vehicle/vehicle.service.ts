@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { Vehicle, Prisma, PrismaClient } from '@prisma/client';
-import { PrismaService } from '../prisma.service';
+import { PrismaClient } from '@prisma/client';
+import { PrismaService } from '@/prisma.service';
 import { IVehicle } from '@ayahay/models';
 import { VehicleMapper } from './vehicle.mapper';
 

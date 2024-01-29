@@ -210,6 +210,8 @@ model Booking {
   id String @id
   accountId String? @map("account_id")
   account Account? @relation(fields: [accountId], references: [id])
+  voucherCode String? @map("voucher_code")
+  voucher Voucher? @relation(fields: [voucherCode], references: [code])
 
   referenceNo String @map("reference_no")
   bookingStatus String @map("booking_status")
@@ -310,6 +312,8 @@ model TempBooking {
   id Int @default(autoincrement()) @id
   accountId String? @map("account_id")
   account Account? @relation(fields: [accountId], references: [id])
+  voucherCode String? @map("voucher_code")
+  voucher Voucher? @relation(fields: [voucherCode], references: [code])
 
   totalPrice Float @map("total_price")
   bookingType String @map("booking_type")
@@ -338,6 +342,7 @@ model Account {
   vehicles Vehicle[]
   tempBookings TempBooking[]
   notifications AccountNotification[]
+  myVouchers Voucher[]
 
   @@map("account")
 }
@@ -459,4 +464,24 @@ model Disbursement {
   amount Float
 
   @@map("disbursement")
+}
+
+model Voucher {
+  code String @id
+  createdByAccountId String @map("created_by_account_id")
+  createdBy Account @relation(fields: [createdByAccountId], references: [id])
+
+  description String
+  discountFlat Float @map("discount_flat")
+  discountPercent Float @map("discount_percent")
+  numberOfUses Int? @map("number_of_uses")
+  remainingUses Int? @map("remaining_uses")
+  expiry DateTime
+
+  minVehicles Int? @map("min_vehicles")
+
+  bookings Booking[]
+  tempBookings TempBooking[]
+
+  @@map("voucher")
 }

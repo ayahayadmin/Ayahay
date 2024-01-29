@@ -10,7 +10,7 @@ import {
   signOut,
 } from 'firebase/auth';
 import { createContext, useContext, useEffect, useState } from 'react';
-import { firebase } from '../utils/initFirebase';
+import { firebase } from '@/app/utils/initFirebase';
 import { useIdToken } from 'react-firebase-hooks/auth';
 import { cacheItem, invalidateItem } from '@ayahay/services/cache.service';
 import { accountRelatedCacheKeys } from '@ayahay/constants';
@@ -33,7 +33,7 @@ const AuthContext = createContext({
   signInWithFacebook: () => Promise,
   logout: () => Promise,
   resetPassword: (email: string) => Promise,
-  emailVerification: (user: User) => Promise,
+  sendEmailVerification: (user: User) => Promise,
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -84,8 +84,7 @@ export default function AuthContextProvider({ children }: any) {
         const mappedPassenger = mapPassengerToDto(user.uid, values);
         await createPassengerAccount(token, mappedPassenger);
 
-        await emailVerification(user);
-
+        sendEmailVerification(user);
         return token;
       })
       .catch((error) => {
@@ -146,10 +145,6 @@ export default function AuthContextProvider({ children }: any) {
       });
   }
 
-  async function emailVerification(user: User) {
-    await sendEmailVerification(user);
-  }
-
   const value = {
     currentUser,
     loggedInAccount,
@@ -161,7 +156,7 @@ export default function AuthContextProvider({ children }: any) {
     signInWithGoogle,
     signInWithFacebook,
     resetPassword,
-    emailVerification,
+    sendEmailVerification,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

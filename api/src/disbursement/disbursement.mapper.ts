@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Disbursement } from '@prisma/client';
-import { IDisbursement, IPort } from '@ayahay/models';
+import { IDisbursement } from '@ayahay/models';
 import { OPERATION_COSTS } from '@ayahay/constants';
 
 @Injectable()

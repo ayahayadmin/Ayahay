@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma.service';
+import { PrismaService } from '@/prisma.service';
 import { INotification } from '@ayahay/models';
 import { PaginatedRequest } from '@ayahay/http';
 import { NotificationMapper } from './notification.mapper';

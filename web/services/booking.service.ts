@@ -14,8 +14,9 @@ export async function createTentativeBooking(
   tripIds: number[],
   passengers: IPassenger[],
   passengerPreferences: PassengerPreferences[],
-  vehicles: IVehicle[]
-): Promise<IBooking | undefined> {
+  vehicles: IVehicle[],
+  voucherCode?: string
+): Promise<IBooking> {
   for (const vehicle of vehicles) {
     // TODO: remove these after file upload has been properly implemented
     vehicle.certificateOfRegistrationUrl ??= '';
@@ -25,19 +26,16 @@ export async function createTentativeBooking(
     vehicle.vehicleType = await getVehicleType(vehicle.vehicleTypeId);
   }
 
-  try {
-    const { data: booking } = await axios.post<IBooking>(`${BOOKING_API}`, {
-      tripIds,
-      passengers,
-      passengerPreferences,
-      vehicles,
-    });
+  const { data: booking } = await axios.post<IBooking>(`${BOOKING_API}`, {
+    tripIds,
+    passengers,
+    passengerPreferences,
+    vehicles,
+    voucherCode:
+      voucherCode && voucherCode.length > 0 ? voucherCode : undefined,
+  });
 
-    return booking;
-  } catch (e) {
-    console.error(e);
-    return undefined;
-  }
+  return booking;
 }
 
 export async function getBookingById(

@@ -4,10 +4,10 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { PrismaService } from '../prisma.service';
+import { PrismaService } from '@/prisma.service';
 import { IAccount, IPassenger } from '@ayahay/models';
 import { AccountMapper } from './account.mapper';
-import { AuthService } from 'src/auth/auth.service';
+import { AuthService } from '@/auth/auth.service';
 import { isEmpty } from 'lodash';
 
 @Injectable()
@@ -52,9 +52,7 @@ export class AccountService {
     const userClaims = await this.authService.checkUserClaims(
       loggedInAccountId
     );
-    const myAccountEntityRole = myAccountEntity
-      ? myAccountEntity.role
-      : 'Passenger';
+    const myAccountEntityRole = myAccountEntity?.role ?? 'Passenger';
 
     // Set user claims if userClaims is empty OR if there is a mismatch between
     // useClaims and account table role (i.e. a Passenger might have been

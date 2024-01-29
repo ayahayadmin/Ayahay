@@ -19,6 +19,8 @@ import { CsvModule } from './csv/csv.module';
 import { ReportingModule } from './reporting/reporting.module';
 import { NotificationModule } from './notification/notification.module';
 import { DisbursementModule } from './disbursement/disbursement.module';
+import { EmailModule } from './email/email.module';
+import { VoucherModule } from './voucher/voucher.module';
 
 @Module({
   imports: [
@@ -42,6 +44,8 @@ import { DisbursementModule } from './disbursement/disbursement.module';
     ReportingModule,
     NotificationModule,
     DisbursementModule,
+    EmailModule,
+    VoucherModule,
   ],
 })
 export class AppModule {}

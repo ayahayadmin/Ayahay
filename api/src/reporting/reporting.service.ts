@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../prisma.service';
+import { PrismaService } from '@/prisma.service';
 import {
   TripReport,
   TripManifest,
@@ -9,7 +9,7 @@ import {
   BillOfLading,
 } from '@ayahay/http';
 import { ReportingMapper } from './reporting.mapper';
-import { BookingPricingService } from '../booking/booking-pricing.service';
+import { BookingPricingService } from '@/booking/booking-pricing.service';
 
 @Injectable()
 export class ReportingService {

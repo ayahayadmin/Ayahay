@@ -9,6 +9,7 @@ export interface CreateTentativeBookingRequest {
   passengers: IPassenger[];
   passengerPreferences: PassengerPreferences[];
   vehicles: IVehicle[];
+  voucherCode: string;
 }
 
 export interface PassengerPreferences {

@@ -4,9 +4,9 @@ import {
   InternalServerErrorException,
   Logger,
 } from '@nestjs/common';
-import { PrismaService } from '../prisma.service';
+import { PrismaService } from '@/prisma.service';
 import { v4 as uuidv4 } from 'uuid';
-import { BookingService } from '../booking/booking.service';
+import { BookingService } from '@/booking/booking.service';
 import { PaymentInitiationResponse } from '@ayahay/http';
 import { createHash, createHmac } from 'crypto';
 import axios, { AxiosError } from 'axios';
@@ -14,7 +14,8 @@ import { IAccount } from '@ayahay/models';
 import {
   PayMongoCheckoutPaidPostbackRequest,
   PayMongoCheckoutSession,
-} from '../types/paymongo';
+} from './payment.types';
+import { UtilityService } from '@/utility.service';
 
 @Injectable()
 export class PaymentService {
@@ -22,7 +23,8 @@ export class PaymentService {
 
   constructor(
     private prisma: PrismaService,
-    private bookingService: BookingService
+    private bookingService: BookingService,
+    private utilityService: UtilityService
   ) {}
 
   async startPaymentFlow(
@@ -81,12 +83,12 @@ export class PaymentService {
   }
 
   private shouldSkipPaymentFlow(loggedInAccount?: IAccount): boolean {
-    const isStaffOrAdmin =
-      loggedInAccount && loggedInAccount.role !== 'Passenger';
-
     const isLocalEnvironment = process.env.NODE_ENV === 'local';
 
-    return isStaffOrAdmin || isLocalEnvironment;
+    return (
+      isLocalEnvironment ||
+      this.utilityService.hasPrivilegedAccess(loggedInAccount)
+    );
   }
 
   private async skipPaymentFlow(

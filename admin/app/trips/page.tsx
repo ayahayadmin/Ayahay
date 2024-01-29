@@ -17,15 +17,15 @@ import { useCallback, useEffect, useState } from 'react';
 import { TripSearchByDateRange } from '@ayahay/http';
 import TripList from './tripList';
 import { useSearchParams } from 'next/navigation';
-import { useAuthGuard, useAuthState } from '@/hooks/auth';
+import { useAuthGuard } from '@/hooks/auth';
 import styles from './page.module.scss';
 import { useAuth } from '@/contexts/AuthContext';
 import dayjs from 'dayjs';
 import { RangePickerProps } from 'antd/es/date-picker';
 import { DATE_FORMAT_LIST, DATE_PLACEHOLDER } from '@ayahay/constants';
 import { PlusCircleOutlined } from '@ant-design/icons';
-import { setTripAsArrived } from '@/services/trip.service';
-import { getAxiosError } from '@ayahay/services/error.service';
+import { setTripAsArrived, setTripAsCancelled } from '@/services/trip.service';
+import CancelledTripModal from '@/components/modal/CancelledTripModal';
 
 const { RangePicker } = DatePicker;
 const items: MenuProps['items'] = [
@@ -49,6 +49,8 @@ export default function Schedules() {
     {} as TripSearchByDateRange | undefined
   );
   const [hasAdminPrivileges, setHasAdminPrivileges] = useState(false);
+  const [tripNumber, setTripNumber] = useState(-1);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const onPageLoad = () => {
     const params = Object.fromEntries(searchParams.entries());
@@ -69,6 +71,11 @@ export default function Schedules() {
         description: 'Something went wrong.',
       });
     }
+  };
+
+  const onSetTripAsCancelled = async (tripId: number) => {
+    setTripNumber(tripId);
+    setIsModalOpen(true);
   };
 
   useEffect(onPageLoad, []);
@@ -142,6 +149,7 @@ export default function Schedules() {
           searchQuery={searchQuery}
           hasAdminPrivileges={hasAdminPrivileges}
           onSetTripAsArrived={onSetTripAsArrived}
+          onSetTripAsCancelled={onSetTripAsCancelled}
         />
         {contextHolder}
         {/* <BookingList /> */}
@@ -157,6 +165,13 @@ export default function Schedules() {
         <CabinFilter name='cabinTypes' label='Cabin Types' />
         <TripResults searchQuery={searchQuery} /> */}
       </div>
+      <CancelledTripModal
+        open={isModalOpen}
+        tripId={tripNumber}
+        setTripAsCancelled={setTripAsCancelled}
+        setIsModalOpen={setIsModalOpen}
+        api={api}
+      />
     </div>
   );
 }

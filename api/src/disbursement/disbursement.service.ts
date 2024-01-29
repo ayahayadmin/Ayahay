@@ -1,5 +1,5 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { PrismaService } from '../prisma.service';
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '@/prisma.service';
 import { IDisbursement } from '@ayahay/models';
 import { DisbursementMapper } from './disbursement.mapper';
 import { Prisma } from '@prisma/client';

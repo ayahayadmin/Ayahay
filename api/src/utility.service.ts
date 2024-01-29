@@ -41,4 +41,13 @@ export class UtilityService {
       throw new ForbiddenException();
     }
   }
+
+  hasPrivilegedAccess(loggedInAccount?: IAccount): boolean {
+    if (loggedInAccount === undefined) {
+      return false;
+    }
+
+    const privilegedAccessRoles = ['Staff', 'Admin', 'SuperAdmin'];
+    return privilegedAccessRoles.includes(loggedInAccount.role);
+  }
 }

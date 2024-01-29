@@ -11,7 +11,7 @@ export async function getShippingLines(): Promise<IShippingLine[] | undefined> {
 
   try {
     const { data } = await axios.get(`${SHIPPING_LINE_API}`);
-    cacheItem('shipping-lines', data);
+    cacheItem('shipping-lines', data, 60 * 24 * 7);
     return data;
   } catch (e) {
     console.error(e);

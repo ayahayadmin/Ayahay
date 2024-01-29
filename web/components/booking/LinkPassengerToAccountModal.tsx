@@ -2,7 +2,7 @@ import { IPassenger } from '@ayahay/models/passenger.model';
 import { Checkbox, Modal, ModalProps, Typography } from 'antd';
 import { useState } from 'react';
 import { CheckboxValueType } from 'antd/es/checkbox/Group';
-import { useAuth } from '@/app/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 const { Title } = Typography;
 

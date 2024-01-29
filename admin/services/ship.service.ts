@@ -24,7 +24,7 @@ async function getVoyagesOfShip(
   shipId: number,
   afterLastMaintenance: boolean,
   pagination: PaginatedRequest
-) {
+): Promise<PaginatedResponse<IVoyage> | undefined> {
   const query = new URLSearchParams({
     afterLastMaintenance,
     ...pagination,

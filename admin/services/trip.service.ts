@@ -25,7 +25,7 @@ export async function getTrips(): Promise<ITrip[] | undefined> {
 
   try {
     const { data } = await axios.get(`${TRIP_API}`);
-    cacheItem('trips', data);
+    cacheItem('trips', data, 30);
     return data;
   } catch (e) {
     console.error(e);
@@ -101,4 +101,11 @@ export async function updateTripCabinCapacity(
 
 export async function setTripAsArrived(tripId: number): Promise<void> {
   return axios.patch(`${TRIP_API}/${tripId}/arrived`);
+}
+
+export async function setTripAsCancelled(
+  tripId: number,
+  reason: string
+): Promise<void> {
+  return axios.patch(`${TRIP_API}/${tripId}/cancelled`, { reason });
 }

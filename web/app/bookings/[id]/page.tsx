@@ -11,7 +11,7 @@ import {
   checkInVehicle,
 } from '@ayahay/services/booking.service';
 import { getAxiosError } from '@ayahay/services/error.service';
-import { useAuth } from '@/app/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 const { Title } = Typography;
 
@@ -65,7 +65,7 @@ export default function GetBooking({ params }) {
   };
 
   const handleAxiosError = (e: any, errorTitle: string) => {
-    const axiosError = getAxiosError(e);
+    const axiosError = getAxiosError<string>(e);
     // not an HTTP error
     const errorMessage = axiosError
       ? axiosError.message

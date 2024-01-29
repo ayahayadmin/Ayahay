@@ -44,7 +44,7 @@ export function usePaginatedData<T>(
     total: totalCount,
   };
 
-  const onAntdChange = (pagination: TablePaginationConfig, _: any, __: any) => {
+  const antdOnChange = (pagination: TablePaginationConfig, _: any, __: any) => {
     setPaginationConfig({
       page: pagination.current ?? 1,
     });
@@ -55,7 +55,7 @@ export function usePaginatedData<T>(
     totalCount,
     paginationConfig,
     antdPagination,
-    onAntdChange,
+    antdOnChange,
     resetData,
   };
 }

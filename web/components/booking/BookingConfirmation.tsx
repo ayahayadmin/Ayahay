@@ -3,7 +3,7 @@ import React from 'react';
 import BookingSummary from '@ayahay/components/descriptions/BookingSummary';
 import { Button, Form, Input, notification, Radio, Typography } from 'antd';
 import { startPaymentForBooking } from '@/services/payment.service';
-import { useAuth } from '@/app/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { InfoCircleOutlined } from '@ant-design/icons';
 
 const { Title } = Typography;

@@ -1,14 +1,13 @@
 'use client';
 import './globals.css';
-import Footer from '@/components/WebFooter';
 import WebHeader from '@/components/WebHeader';
 import { Jost } from 'next/font/google';
-import { App, ConfigProvider, Layout, Menu } from 'antd';
+import { App, ConfigProvider, Layout } from 'antd';
 import React from 'react';
 import { Content } from 'antd/es/layout/layout';
 import WebFooter from '@/components/WebFooter';
 import WebSider from '@/components/WebSider';
-import AuthContextProvider from './contexts/AuthContext';
+import AuthContextProvider from '@/contexts/AuthContext';
 
 const jost = Jost({ subsets: ['latin'], display: 'swap' });
 

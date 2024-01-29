@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Voucher } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
 import {
   IBooking,
@@ -22,15 +22,16 @@ import {
   PassengerPreferences,
   TripSearchByDateRange,
 } from '@ayahay/http';
-import { UtilityService } from '../utility.service';
-import { TripService } from '../trip/trip.service';
+import { TripService } from '@/trip/trip.service';
 import { BookingMapper } from './booking.mapper';
-import { PassengerService } from '../passenger/passenger.service';
+import { PassengerService } from '@/passenger/passenger.service';
 import { BookingValidator } from './booking.validator';
-import { VehicleService } from '../vehicle/vehicle.service';
+import { VehicleService } from '@/vehicle/vehicle.service';
 import { BookingReservationService } from './booking-reservation.service';
 import { BookingPricingService } from './booking-pricing.service';
 import { AvailableBooking } from './booking.types';
+import { EmailService } from '@/email/email.service';
+import { VoucherService } from '@/voucher/voucher.service';
 
 @Injectable()
 export class BookingService {
@@ -39,10 +40,12 @@ export class BookingService {
     private readonly tripService: TripService,
     private readonly bookingReservationService: BookingReservationService,
     private readonly bookingPricingService: BookingPricingService,
+    private readonly emailService: EmailService,
     private readonly bookingMapper: BookingMapper,
     private readonly bookingValidator: BookingValidator,
     private readonly passengerService: PassengerService,
-    private readonly vehicleService: VehicleService
+    private readonly vehicleService: VehicleService,
+    private readonly voucherService: VoucherService
   ) {}
 
   async getMyBookings(
@@ -113,32 +116,6 @@ export class BookingService {
     });
 
     return publicBookingEntities.map((bookingEntity) =>
-      this.bookingMapper.convertBookingToBasicDto(bookingEntity)
-    );
-  }
-
-  async getAllBookings(): Promise<IBooking[]> {
-    // TO DO: might use SQL query to get paymentItems for particular bookingPassengers and bookingVehicles
-    const bookingEntities = await this.prisma.booking.findMany({
-      include: {
-        account: true,
-        passengers: {
-          include: {
-            trip: {
-              include: {
-                shippingLine: true,
-                srcPort: true,
-                destPort: true,
-              },
-            },
-            passenger: true,
-          },
-        },
-        paymentItems: true,
-      },
-    });
-
-    return bookingEntities.map((bookingEntity) =>
       this.bookingMapper.convertBookingToBasicDto(bookingEntity)
     );
   }
@@ -255,9 +232,18 @@ export class BookingService {
     passengers: IPassenger[],
     passengerPreferences: PassengerPreferences[],
     vehicles: IVehicle[],
+    voucherCode?: string,
     loggedInAccount?: IAccount
   ): Promise<IBooking | undefined> {
     const trips = await this.tripService.getTripsByIds(tripIds);
+
+    const voucher = voucherCode
+      ? await this.prisma.voucher.findUnique({
+          where: {
+            code: voucherCode,
+          },
+        })
+      : undefined;
 
     const errorMessages =
       this.bookingValidator.validateCreateTentativeBookingRequest(
@@ -265,6 +251,7 @@ export class BookingService {
         passengers,
         passengerPreferences,
         vehicles,
+        voucher,
         loggedInAccount
       );
 
@@ -311,11 +298,8 @@ export class BookingService {
     const paymentItems = this.createPaymentItemsForBooking(
       bookingPassengers,
       bookingVehicles,
+      voucher,
       loggedInAccount
-    );
-
-    paymentItems.forEach(
-      (item) => (item.price = Math.floor(item.price * 100) / 100)
     );
 
     const totalPrice = paymentItems
@@ -325,6 +309,8 @@ export class BookingService {
     const tempBooking: IBooking = {
       id: '',
       accountId: loggedInAccount?.id,
+      voucherCode: voucherCode,
+
       totalPrice,
       bookingType: 'Single',
       referenceNo: '',
@@ -483,6 +469,7 @@ export class BookingService {
   private createPaymentItemsForBooking(
     bookingPassengers: IBookingPassenger[],
     bookingVehicles: IBookingVehicle[],
+    voucher?: Voucher,
     loggedInAccount?: IAccount
   ): IPaymentItem[] {
     const paymentItems: IPaymentItem[] = [];
@@ -509,16 +496,37 @@ export class BookingService {
       })
     );
 
-    paymentItems.push({
-      id: -1,
-      bookingId: -1,
-      price: this.bookingPricingService.calculateServiceCharge(
-        bookingPassengers,
-        bookingVehicles,
-        loggedInAccount
-      ),
-      description: 'Administrative Fee',
-    });
+    const serviceCharge = this.bookingPricingService.calculateServiceCharge(
+      bookingPassengers,
+      bookingVehicles,
+      loggedInAccount
+    );
+    if (serviceCharge > 0) {
+      paymentItems.push({
+        id: -1,
+        bookingId: -1,
+        price: serviceCharge,
+        description: 'Administrative Fee',
+      });
+    }
+
+    const voucherDiscount = this.bookingPricingService.calculateVoucherDiscount(
+      bookingPassengers,
+      bookingVehicles,
+      voucher
+    );
+    if (voucherDiscount > 0) {
+      paymentItems.push({
+        id: -1,
+        bookingId: -1,
+        price: -voucherDiscount,
+        description: `Voucher Discount (Code: ${voucher.code})`,
+      });
+    }
+
+    paymentItems.forEach(
+      (item) => (item.price = Math.floor(item.price * 100) / 100)
+    );
 
     return paymentItems;
   }
@@ -577,6 +585,11 @@ export class BookingService {
       'decrement',
       transactionContext
     );
+
+    await this.voucherService.useVoucher(
+      bookingToCreate.voucherCode,
+      transactionContext
+    );
   }
 
   // saves actual booking data; called after payment
@@ -600,6 +613,13 @@ export class BookingService {
     const bookingEntity = await transactionContext.booking.create(
       bookingToCreate
     );
+
+    if (booking.contactEmail !== null) {
+      await this.emailService.sendBookingConfirmedEmail({
+        recipient: booking.contactEmail,
+        bookingId: booking.id,
+      });
+    }
 
     return this.bookingMapper.convertBookingToBasicDto(bookingEntity);
   }

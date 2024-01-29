@@ -24,6 +24,7 @@ interface TripListProps {
   searchQuery: TripSearchByDateRange | undefined;
   hasAdminPrivileges: boolean;
   onSetTripAsArrived: (tripId: number) => Promise<void>;
+  onSetTripAsCancelled: (tripId: number) => Promise<void>;
 }
 
 const tripActions = (trip: ITrip): any[] => {
@@ -53,6 +54,10 @@ const tripActions = (trip: ITrip): any[] => {
           label: 'Set status to Arrived',
           key: `set-arrived`,
         },
+        {
+          label: 'Set status to Cancelled',
+          key: `set-cancelled`,
+        },
       ]
     );
   }
@@ -75,6 +80,7 @@ export default function TripList({
   searchQuery,
   hasAdminPrivileges,
   onSetTripAsArrived,
+  onSetTripAsCancelled,
 }: TripListProps) {
   const [tripsData, setTripsData] = useState([] as ITrip[]);
   const [loading, setLoading] = useState(false);
@@ -82,6 +88,10 @@ export default function TripList({
   const onClickSetTripAsArrived = async (tripId: number) => {
     await onSetTripAsArrived(tripId);
     fetchTrips();
+  };
+
+  const onClickSetTripAsCancelled = async (tripId: number) => {
+    await onSetTripAsCancelled(tripId);
   };
 
   const columns: ColumnsType<ITrip> = [
@@ -134,6 +144,8 @@ export default function TripList({
             onClick: ({ key }) => {
               if (key === 'set-arrived') {
                 onClickSetTripAsArrived(trip.id);
+              } else if (key === 'set-cancelled') {
+                onClickSetTripAsCancelled(trip.id);
               }
             },
           }}

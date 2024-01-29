@@ -8,10 +8,10 @@ import {
   ITripCabin,
   ITripVehicleType,
 } from '@ayahay/models';
-import { ShipMapper } from '../ship/ship.mapper';
-import { VehicleMapper } from '../vehicle/vehicle.mapper';
-import { CabinMapper } from '../cabin/cabin.mapper';
-import { PortMapper } from '../port/port.mapper';
+import { ShipMapper } from '@/ship/ship.mapper';
+import { VehicleMapper } from '@/vehicle/vehicle.mapper';
+import { CabinMapper } from '@/cabin/cabin.mapper';
+import { PortMapper } from '@/port/port.mapper';
 
 @Injectable()
 export class ShippingLineMapper {

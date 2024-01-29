@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { IAccount, IPassenger, IVehicle } from '@ayahay/models';
+import { IPassenger } from '@ayahay/models';
 import { Prisma } from '@prisma/client';
 
 @Injectable()

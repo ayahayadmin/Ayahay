@@ -13,8 +13,8 @@ import { TripService } from './trip.service';
 import { ITrip, SearchAvailableTrips } from '@ayahay/models';
 import { Prisma } from '@prisma/client';
 import { TripMapper } from './trip.mapper';
-import { Roles } from 'src/decorator/roles.decorator';
-import { AuthGuard } from '../guard/auth.guard';
+import { Roles } from '@/decorator/roles.decorator';
+import { AuthGuard } from '@/guard/auth.guard';
 import {
   CreateTripsFromSchedulesRequest,
   TripSearchByDateRange,
@@ -119,5 +119,16 @@ export class TripController {
     @Request() req
   ): Promise<void> {
     return this.tripService.setTripAsArrived(tripId, req.user);
+  }
+
+  @Patch(':tripId/cancelled')
+  @UseGuards(AuthGuard)
+  @Roles('Staff', 'Admin', 'SuperAdmin')
+  async setTripAsCancelled(
+    @Param('tripId') tripId: number,
+    @Body('reason') reason: string,
+    @Request() req
+  ): Promise<void> {
+    return this.tripService.setTripAsCancelled(tripId, reason, req.user);
   }
 }

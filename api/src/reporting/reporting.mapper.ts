@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { ShippingLineMapper } from '../shipping-line/shipping-line.mapper';
-import { PortMapper } from '../port/port.mapper';
+import { ShippingLineMapper } from '@/shipping-line/shipping-line.mapper';
+import { PortMapper } from '@/port/port.mapper';
 import { BillOfLading, PortsByShip, TripManifest } from '@ayahay/http';
 
 @Injectable()

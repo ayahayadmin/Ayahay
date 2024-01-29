@@ -1,8 +1,8 @@
 import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
 import { IDisbursement } from '@ayahay/models';
 import { DisbursementService } from './disbursement.service';
-import { AuthGuard } from 'src/guard/auth.guard';
-import { Roles } from 'src/decorator/roles.decorator';
+import { AuthGuard } from '@/guard/auth.guard';
+import { Roles } from '@/decorator/roles.decorator';
 import { Prisma } from '@prisma/client';
 
 @Controller('disbursement')

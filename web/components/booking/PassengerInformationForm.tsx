@@ -15,7 +15,7 @@ import EnumRadio from '@/components/form/EnumRadio';
 import AddCompanionsModal from '@/components/booking/AddCompanionsModal';
 import AddVehiclesModal from '@/components/booking/AddVehiclesModal';
 import { toPassengerFormValue } from '@ayahay/services/form.service';
-import { useAuth } from '@/app/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { DATE_FORMAT_LIST, DATE_PLACEHOLDER } from '@ayahay/constants';
 import { computeAge, computeBirthday } from '@ayahay/services/date.service';
 import dayjs from 'dayjs';
@@ -576,7 +576,10 @@ export default function PassengerInformationForm({
           </>
         )}
       </Form.List>
-      <div>
+      <div style={{ marginTop: '24px' }}>
+        <Form.Item label='Voucher Code' name='voucherCode' colon={false}>
+          <Input />
+        </Form.Item>
         <Button type='primary' onClick={() => validateFieldsInCurrentStep()}>
           Next
         </Button>

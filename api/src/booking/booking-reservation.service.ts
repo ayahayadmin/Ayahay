@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma, PrismaClient } from '@prisma/client';
-import { PrismaService } from '../prisma.service';
+import { PrismaService } from '@/prisma.service';
 import { IBookingPassenger, IBookingVehicle, ITrip } from '@ayahay/models';
 import { PassengerPreferences } from '@ayahay/http';
 import { AvailableBooking } from './booking.types';
