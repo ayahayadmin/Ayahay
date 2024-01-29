@@ -52,9 +52,7 @@ export class AccountService {
     const userClaims = await this.authService.checkUserClaims(
       loggedInAccountId
     );
-    const myAccountEntityRole = myAccountEntity
-      ? myAccountEntity.role
-      : 'Passenger';
+    const myAccountEntityRole = myAccountEntity?.role ?? 'Passenger';
 
     // Set user claims if userClaims is empty OR if there is a mismatch between
     // useClaims and account table role (i.e. a Passenger might have been

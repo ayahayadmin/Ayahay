@@ -15,6 +15,7 @@ import {
   PayMongoCheckoutPaidPostbackRequest,
   PayMongoCheckoutSession,
 } from './payment.types';
+import { UtilityService } from '@/utility.service';
 
 @Injectable()
 export class PaymentService {
@@ -22,7 +23,8 @@ export class PaymentService {
 
   constructor(
     private prisma: PrismaService,
-    private bookingService: BookingService
+    private bookingService: BookingService,
+    private utilityService: UtilityService
   ) {}
 
   async startPaymentFlow(
@@ -81,12 +83,12 @@ export class PaymentService {
   }
 
   private shouldSkipPaymentFlow(loggedInAccount?: IAccount): boolean {
-    const isStaffOrAdmin =
-      loggedInAccount && loggedInAccount.role !== 'Passenger';
-
     const isLocalEnvironment = process.env.NODE_ENV === 'local';
 
-    return isStaffOrAdmin || isLocalEnvironment;
+    return (
+      isLocalEnvironment ||
+      this.utilityService.hasPrivilegedAccess(loggedInAccount)
+    );
   }
 
   private async skipPaymentFlow(
