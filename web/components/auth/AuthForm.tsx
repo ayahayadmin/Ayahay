@@ -8,7 +8,7 @@ import {
 } from '@ant-design/icons';
 import { LoginForm, RegisterForm } from '@ayahay/models';
 import Link from 'next/link';
-import { useAuth } from '@/app/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { User } from 'firebase/auth';
 import Register from '../form/Register';
 import Login from '../form/Login';
@@ -21,7 +21,7 @@ export default function AuthForm() {
     currentUser,
     loggedInAccount,
     loading,
-    emailVerification,
+    sendEmailVerification,
     logout,
     register,
     resetPassword,
@@ -54,7 +54,7 @@ export default function AuthForm() {
 
   const verifyEmail = async (user: User) => {
     try {
-      await emailVerification(user);
+      await sendEmailVerification(user);
       message.success({
         type: 'success',
         content:

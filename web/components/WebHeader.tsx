@@ -8,7 +8,7 @@ import Notifications from '@ayahay/components/Notifications';
 import { webLinks } from '@/services/nav.service';
 import AuthForm from '@/components/auth/AuthForm';
 import { usePathname, useRouter } from 'next/navigation';
-import { useAuth } from '@/app/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function WebHeader() {
   const { loggedInAccount } = useAuth();

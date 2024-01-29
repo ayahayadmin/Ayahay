@@ -22,7 +22,7 @@ import { useTripFromSearchParams } from '@/hooks/trip';
 import { startPaymentForBooking } from '@/services/payment.service';
 import { InfoCircleOutlined } from '@ant-design/icons';
 import { invalidateItem } from '@ayahay/services/cache.service';
-import { useAuth } from '@/app/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { getAxiosError } from '@ayahay/services/error.service';
 import { FieldError } from '@ayahay/http';
 
