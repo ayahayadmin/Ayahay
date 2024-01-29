@@ -12,7 +12,7 @@ export async function getAccountInformation(): Promise<IAccount | undefined> {
   try {
     const { data } = await axios.get(`${ACCOUNT_API}/mine`);
 
-    cacheItem('logged-in-account', data, 60);
+    cacheItem('logged-in-account', data);
     return data;
   } catch (e) {
     console.error(e);

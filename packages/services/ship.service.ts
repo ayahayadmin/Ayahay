@@ -13,7 +13,7 @@ export async function getShips(): Promise<IShip[] | undefined> {
   const shippingLineId = 1;
   try {
     const { data } = await axios.get(`${SHIPS_API}/${shippingLineId}`);
-    cacheItem('ships', data);
+    cacheItem('ships', data, 60 * 24 * 7);
     return data;
   } catch (e) {
     console.error(e);

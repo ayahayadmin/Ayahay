@@ -6,7 +6,7 @@ export function cacheItem(
   item: any,
   expirationInMinutes?: number
 ) {
-  expirationInMinutes ??= 30;
+  expirationInMinutes ??= 60 * 24 * 365;
 
   localStorage.setItem(
     key,

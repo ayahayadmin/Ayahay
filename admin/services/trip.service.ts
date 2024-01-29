@@ -25,7 +25,7 @@ export async function getTrips(): Promise<ITrip[] | undefined> {
 
   try {
     const { data } = await axios.get(`${TRIP_API}`);
-    cacheItem('trips', data);
+    cacheItem('trips', data, 30);
     return data;
   } catch (e) {
     console.error(e);

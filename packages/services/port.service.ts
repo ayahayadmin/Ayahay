@@ -11,7 +11,7 @@ export async function getPorts(): Promise<IPort[] | undefined> {
 
   try {
     const { data } = await axios.get(`${PORTS_API}`);
-    cacheItem('ports', data);
+    cacheItem('ports', data, 60 * 24 * 7);
     return data;
   } catch (e) {
     console.error(e);
