@@ -1,4 +1,5 @@
 import { BOOKING_API } from '@ayahay/constants';
+import { PaginatedRequest, PaginatedResponse } from '@ayahay/http';
 import { IBooking } from '@ayahay/models';
 import axios from '@ayahay/services/axios';
 import dayjs from 'dayjs';

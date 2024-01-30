@@ -36,6 +36,10 @@ export class SearchMapper {
         trip.pipeSeparatedVehicleNames?.split('|'),
         trip.pipeSeparatedVehicleFares?.split('|')
       ),
+      notCheckedInPassengerNames: this.convertPassengerNames(
+        trip.pipeSeparatedPassengerFirstNames?.split('|'),
+        trip.pipeSeparatedPassengerLastNames?.split('|')
+      ),
     };
   }
 
@@ -58,5 +62,12 @@ export class SearchMapper {
         vehicleTypeFare: vehicleFares[idx],
       };
     });
+  }
+
+  private convertPassengerNames(firstNames, lastNames): string[] {
+    return map(
+      firstNames,
+      (firstName, idx) => `${firstName} ${lastNames[idx]}`
+    );
   }
 }

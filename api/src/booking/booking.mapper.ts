@@ -77,13 +77,13 @@ export class BookingMapper {
       paymentStatus: booking.paymentStatus,
       totalPrice: booking.totalPrice,
 
-      bookingPassengers: booking.passengers.map((bookingPassenger) =>
+      bookingPassengers: booking.passengers?.map((bookingPassenger) =>
         this.convertBookingPassengerToSummary(bookingPassenger)
       ),
       bookingVehicles: booking.vehicles.map((bookingVehicle) =>
         this.convertBookingVehicleToSummary(bookingVehicle)
       ),
-      paymentItems: booking.paymentItems.map((paymentItem) =>
+      paymentItems: booking.paymentItems?.map((paymentItem) =>
         this.paymentMapper.convertPaymentItemToDto(paymentItem)
       ),
     };
@@ -116,7 +116,9 @@ export class BookingMapper {
       id: bookingVehicle.id,
       bookingId: bookingVehicle.bookingId,
       tripId: bookingVehicle.tripId,
-      trip: this.tripMapper.convertTripToBasicDto(bookingVehicle.trip),
+      trip: bookingVehicle.trip
+        ? this.tripMapper.convertTripToBasicDto(bookingVehicle.trip)
+        : null,
       vehicleId: bookingVehicle.vehicleId,
       vehicle: this.vehicleMapper.convertVehicleToDto(bookingVehicle.vehicle),
 

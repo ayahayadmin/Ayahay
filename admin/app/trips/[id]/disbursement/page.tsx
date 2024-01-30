@@ -27,7 +27,7 @@ export default function DisbursementPage({ params }: any) {
     fetchTrip(tripId);
   }, [loggedInAccount]);
 
-  const fetchTrip = async (tripId: ITrip): Promise<void> => {
+  const fetchTrip = async (tripId: number): Promise<void> => {
     setTrip(await getTripDetails(Number(tripId)));
   };
 

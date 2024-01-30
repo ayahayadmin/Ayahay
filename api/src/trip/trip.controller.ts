@@ -10,13 +10,15 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { TripService } from './trip.service';
-import { ITrip, SearchAvailableTrips } from '@ayahay/models';
+import { IBooking, ITrip, SearchAvailableTrips } from '@ayahay/models';
 import { Prisma } from '@prisma/client';
 import { TripMapper } from './trip.mapper';
 import { Roles } from '@/decorator/roles.decorator';
 import { AuthGuard } from '@/guard/auth.guard';
 import {
   CreateTripsFromSchedulesRequest,
+  PaginatedRequest,
+  PaginatedResponse,
   TripSearchByDateRange,
   UpdateTripCapacityRequest,
 } from '@ayahay/http';
@@ -63,6 +65,16 @@ export class TripController {
   @Get('to-edit')
   async getTripByDateRange(@Query() query: TripSearchByDateRange) {
     return await this.tripService.getTripsByDateRange(query);
+  }
+
+  @Get(':tripId/bookings')
+  @UseGuards(AuthGuard)
+  @Roles('Staff', 'Admin', 'SuperAdmin')
+  async getBookingsOfTrip(
+    @Query() pagination: PaginatedRequest,
+    @Param('tripId') tripId: number
+  ): Promise<PaginatedResponse<IBooking>> {
+    return this.tripService.getBookingsOfTrip(pagination, tripId);
   }
 
   @Post()

@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { ITrip } from '@ayahay/models/trip.model';
 import { Button, Dropdown, Skeleton, Space } from 'antd';
 import { IShippingLine } from '@ayahay/models/shipping-line.model';
-import { IPort } from '@ayahay/models/port.model';
 import dayjs from 'dayjs';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
@@ -15,7 +14,7 @@ import {
 import { TripSearchByDateRange } from '@ayahay/http';
 import { isEmpty } from 'lodash';
 import EditCapacity from '@/components/form/EditCapacity';
-import { DownOutlined } from '@ant-design/icons';
+import { ArrowRightOutlined, DownOutlined } from '@ant-design/icons';
 
 dayjs.extend(isSameOrBefore);
 dayjs.extend(isSameOrAfter);
@@ -39,11 +38,27 @@ const tripActions = (trip: ITrip): any[] => {
     },
     {
       label: (
+        <a href={`/trips/${trip.id}/bookings`} target='_blank'>
+          View vehicle bookings
+        </a>
+      ),
+      key: 'view-vehicle-bookings',
+    },
+    {
+      label: (
         <a href={`/trips/${trip.id}/disbursement`} target='_blank'>
           Input disbursements
         </a>
       ),
       key: 'input-disbursements',
+    },
+    {
+      label: (
+        <a href={`/trips/${trip.id}/reporting`} target='_blank'>
+          Generate reports
+        </a>
+      ),
+      key: 'generate-reports',
     },
   ];
 
@@ -65,16 +80,7 @@ const tripActions = (trip: ITrip): any[] => {
   return actions;
 };
 
-const tripAdminActions = (trip: ITrip): any[] => [
-  {
-    label: (
-      <a href={`/trips/${trip.id}/reporting`} target='_blank'>
-        Generate reports
-      </a>
-    ),
-    key: 'generate-reports',
-  },
-];
+const tripAdminActions = (trip: ITrip): any[] => [];
 
 export default function TripList({
   searchQuery,
@@ -106,18 +112,20 @@ export default function TripList({
         />
       ),
       align: 'center',
+      responsive: ['md'],
     },
     {
-      title: 'Origin',
-      key: 'srcPort',
-      dataIndex: 'srcPort',
-      render: (text: IPort) => <span>{text.name}</span>,
-    },
-    {
-      title: 'Destination',
-      key: 'destPort',
-      dataIndex: 'destPort',
-      render: (text: IPort) => <span>{text.name}</span>,
+      title: 'Route',
+      key: 'srcDestPort',
+      render: (_: string, record: ITrip) => (
+        <span>
+          {record.srcPort!.name} <ArrowRightOutlined rev={undefined} />
+          &nbsp;
+          {record.destPort!.name}
+        </span>
+      ),
+      align: 'center',
+      responsive: ['sm'],
     },
     {
       title: 'Departure Date',
@@ -125,13 +133,43 @@ export default function TripList({
       dataIndex: 'departureDateIso',
       render: (departureDate: string) => (
         <div>
-          <span>{getFullDate(departureDate)}</span>
+          <span>{dayjs(departureDate).format('MM/DD/YYYY')}</span>
           <br></br>
           <span>{getLocaleTimeString(departureDate)}</span>
         </div>
       ),
+      align: 'center',
+      responsive: ['sm'],
     },
-    { title: 'Status', key: 'status', dataIndex: 'status' },
+    {
+      title: 'Status',
+      key: 'status',
+      dataIndex: 'status',
+      align: 'center',
+      responsive: ['sm'],
+    },
+    {
+      title: 'Details',
+      key: 'tripDetails',
+      render: (_: string, record: ITrip) => (
+        <>
+          <strong>Route:</strong>&nbsp;
+          <span>
+            {record.srcPort!.name} <ArrowRightOutlined rev={undefined} />
+            &nbsp;
+            {record.destPort!.name}
+          </span>
+          <br></br>
+          <strong>Date:</strong>&nbsp;
+          <span>{dayjs(record.departureDateIso).format('MM/DD/YYYY')}</span>
+          <br></br>
+          <span>{getLocaleTimeString(record.departureDateIso)}</span>
+          <br></br>
+          <strong>Status:</strong>&nbsp;<span>{record.status}</span>
+        </>
+      ),
+      responsive: ['xs'],
+    },
     {
       title: '',
       render: (_, trip: ITrip) => (
@@ -158,6 +196,7 @@ export default function TripList({
           </Button>
         </Dropdown>
       ),
+      align: 'center',
     },
   ];
 

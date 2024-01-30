@@ -5,7 +5,7 @@ import { Button, Table, Typography } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import React, { useState } from 'react';
 import { IVoucher } from '@ayahay/models';
-import { usePaginatedData } from '@ayahay/hooks';
+import { useServerPagination } from '@ayahay/hooks';
 import {
   createVoucher as _createVoucher,
   getVouchers,
@@ -55,7 +55,7 @@ export default function VouchersPage() {
   const [createVoucherModalOpen, setCreateVoucherModalOpen] = useState(false);
 
   const { dataInPage, antdPagination, antdOnChange, resetData } =
-    usePaginatedData<IVoucher>(getVouchers, true);
+    useServerPagination<IVoucher>(getVouchers, true);
 
   const createVoucher = async (voucher: IVoucher): Promise<void> => {
     await _createVoucher(voucher);

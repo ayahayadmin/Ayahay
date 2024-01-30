@@ -5,7 +5,7 @@ import { getShip } from '@ayahay/services/ship.service';
 import { Typography, Table, Collapse, Button, Popconfirm } from 'antd';
 import { useAuthGuard } from '@/hooks/auth';
 import { PlusOutlined } from '@ant-design/icons';
-import { usePaginatedData } from '@ayahay/hooks';
+import { useServerPagination } from '@ayahay/hooks';
 import { PaginatedRequest } from '@ayahay/http/pagination';
 import {
   createDryDock,
@@ -82,7 +82,7 @@ export default function ShipPage({ params }: any) {
     antdPagination: voyagesAfterLastMaintenancePagination,
     antdOnChange: voyagesAfterLastMaintenanceChange,
     resetData: voyagesAfterLastMaintenanceReset,
-  } = usePaginatedData<IVoyage>(
+  } = useServerPagination<IVoyage>(
     fetchVoyagesAfterLastMaintenance,
     ship !== undefined
   );
@@ -101,7 +101,7 @@ export default function ShipPage({ params }: any) {
     antdPagination: voyagesBeforeLastMaintenancePagination,
     antdOnChange: voyagesBeforeLastMaintenanceChange,
     resetData: voyagesBeforeLastMaintenanceReset,
-  } = usePaginatedData<IVoyage>(
+  } = useServerPagination<IVoyage>(
     fetchVoyagesBeforeLastMaintenance,
     ship !== undefined && hasShownVoyagesBeforeLastMaintenance
   );
@@ -118,7 +118,7 @@ export default function ShipPage({ params }: any) {
     antdPagination: dryDocksPagination,
     antdOnChange: dryDocksChange,
     resetData: dryDocksReset,
-  } = usePaginatedData<IDryDock>(
+  } = useServerPagination<IDryDock>(
     fetchDryDocks,
     ship !== undefined && hasShownDryDocks
   );

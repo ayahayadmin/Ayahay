@@ -9,6 +9,7 @@ import { PrismaService } from '@/prisma.service';
 import {
   AvailableTrips,
   IAccount,
+  IBooking,
   ITrip,
   SearchAvailableTrips,
 } from '@ayahay/models';
@@ -16,6 +17,8 @@ import { TripMapper } from './trip.mapper';
 import { isEmpty } from 'lodash';
 import {
   CreateTripsFromSchedulesRequest,
+  PaginatedRequest,
+  PaginatedResponse,
   TripSearchByDateRange,
   UpdateTripCapacityRequest,
 } from '@ayahay/http';
@@ -24,6 +27,7 @@ import { ShippingLineService } from '@/shipping-line/shipping-line.service';
 import { ShipService } from '@/ship/ship.service';
 import { UtilityService } from '@/utility.service';
 import { EmailService } from '@/email/email.service';
+import { BookingMapper } from '@/booking/booking.mapper';
 
 const TRIP_AVAILABLE_QUERY = Prisma.sql`
   SELECT 
@@ -64,6 +68,7 @@ export class TripService {
     private readonly emailService: EmailService,
     private readonly utilityService: UtilityService,
     private readonly tripMapper: TripMapper,
+    private readonly bookingMapper: BookingMapper,
     private readonly tripValidator: TripValidator
   ) {}
 
@@ -189,6 +194,62 @@ export class TripService {
     return trips.map((trip) =>
       this.tripMapper.convertAvailableTripsToDto(trip)
     );
+  }
+
+  async getBookingsOfTrip(
+    pagination: PaginatedRequest,
+    tripId: number
+  ): Promise<PaginatedResponse<IBooking>> {
+    const itemsPerPage = 10;
+    const skip = (pagination.page - 1) * itemsPerPage;
+
+    const bookingIds = await this.prisma.bookingVehicle.findMany({
+      where: {
+        tripId,
+      },
+      select: {
+        bookingId: true,
+      },
+    });
+
+    const bookingIdsStrArr = bookingIds.map(({ bookingId }) => bookingId);
+
+    const where = {
+      id: {
+        in: bookingIdsStrArr,
+      },
+      bookingStatus: {
+        in: ['Confirmed', 'Requested'],
+      },
+    };
+
+    const bookings = await this.prisma.booking.findMany({
+      where,
+      include: {
+        vehicles: {
+          include: {
+            vehicle: {
+              include: {
+                vehicleType: true,
+              },
+            },
+          },
+        },
+      },
+      take: itemsPerPage,
+      skip,
+    });
+
+    const bookingsCount = await this.prisma.booking.count({
+      where,
+    });
+
+    return {
+      total: bookingsCount,
+      data: bookings.map((booking) =>
+        this.bookingMapper.convertBookingToSummary(booking)
+      ),
+    };
   }
 
   async createTrip(data: Prisma.TripCreateInput): Promise<Trip> {
