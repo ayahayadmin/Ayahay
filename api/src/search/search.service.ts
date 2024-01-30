@@ -90,16 +90,36 @@ export class SearchService {
         WHERE
           departure_date > ${startDate}::TIMESTAMP
           AND departure_date <= ${endDate}::TIMESTAMP
-      ), checked_in_passenger_count_per_trip AS (
-        SELECT 
-          trip_id,
-          COUNT(*) AS "checkedInPassengerCount"
+          AND status != 'Cancelled'
+      ), confirmed_passengers AS (
+        SELECT
+          bp.trip_id,
+          booking_id,
+          passenger_id,
+          check_in_date
         FROM ayahay.booking_passenger bp
           INNER JOIN ayahay.booking b ON bp.booking_id = b.id
         WHERE 
           b.booking_status = 'Confirmed'
-          AND bp.check_in_date IS NOT NULL
           AND trip_id IN (SELECT id FROM trips_matching_query)
+        GROUP BY bp.trip_id, booking_id, passenger_id, check_in_date
+      ), checked_in_passenger_count_per_trip AS (
+        SELECT 
+          trip_id,
+          COUNT(*) AS "checkedInPassengerCount"
+        FROM confirmed_passengers cp
+        WHERE 
+          cp.check_in_date IS NOT NULL
+        GROUP BY trip_id
+      ), not_checked_in_passenger_names AS (
+        SELECT
+        trip_id,
+        STRING_AGG(p.first_name::TEXT, '|') AS "pipeSeparatedPassengerFirstNames",
+        STRING_AGG(p.last_name::TEXT, '|') AS "pipeSeparatedPassengerLastNames"
+        FROM confirmed_passengers cp
+          INNER JOIN ayahay.passenger p ON cp.passenger_id = p.id
+        WHERE 
+          cp.check_in_date IS NULL
         GROUP BY trip_id
       ), checked_in_vehicle_count_per_trip AS (
         SELECT 
@@ -137,6 +157,7 @@ export class SearchService {
         *
       FROM trips_matching_query t
         LEFT JOIN checked_in_passenger_count_per_trip pc ON t.id = pc.trip_id
+        LEFT JOIN not_checked_in_passenger_names nc ON t.id = nc.trip_id
         LEFT JOIN checked_in_vehicle_count_per_trip vc ON t.id = vc.trip_id
         LEFT JOIN cabin_information_per_trip cb ON t.id = cb.trip_id
         LEFT JOIN vehicle_rates_per_trip vr ON t.id = vr.trip_id

@@ -9,7 +9,7 @@ import { Button, Pagination, Typography } from 'antd';
 import Table, { ColumnsType, TablePaginationConfig } from 'antd/es/table';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { usePaginatedData } from '@ayahay/hooks';
+import { useServerPagination } from '@ayahay/hooks';
 
 const { Title } = Typography;
 
@@ -69,7 +69,7 @@ export default function MyBookings() {
     antdPagination,
     antdOnChange,
     resetData: resetMyBookingsTable,
-  } = usePaginatedData<IBooking>(
+  } = useServerPagination<IBooking>(
     getMyBookings,
     loggedInAccount !== null && loggedInAccount !== undefined
   );

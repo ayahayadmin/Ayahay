@@ -26,7 +26,7 @@ enum STATUS {
 }
 
 export default function TripReportingPage({ params }: any) {
-  useAuthGuard(['SuperAdmin', 'Admin']);
+  useAuthGuard(['Staff', 'Admin', 'SuperAdmin']);
   const { loggedInAccount } = useAuth();
   const dailySalesReportRef = useRef();
   const cargoDailySalesReportRef = useRef();

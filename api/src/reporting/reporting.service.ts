@@ -88,7 +88,7 @@ export class ReportingService {
           const adminFee =
             this.bookingPricingService.calculateServiceChargeForPassenger(
               passenger.passenger,
-              passenger.booking.account.role
+              passenger.booking.account?.role
             );
 
           return this.reportingMapper.convertTripPassengersForReporting(
@@ -102,7 +102,7 @@ export class ReportingService {
         const vehicleAdminFee =
           this.bookingPricingService.calculateServiceChargeForVehicle(
             vehicleFare,
-            vehicle.booking.account.role
+            vehicle.booking.account?.role
           );
 
         return this.reportingMapper.convertTripVehiclesForReporting(

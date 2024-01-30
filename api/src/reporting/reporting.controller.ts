@@ -17,14 +17,14 @@ export class ReportingController {
 
   @Get('trips/:id/reporting')
   @UseGuards(AuthGuard)
-  @Roles('Admin', 'SuperAdmin')
+  @Roles('Staff', 'Admin', 'SuperAdmin')
   async getTripsReporting(@Param('id') tripId: string): Promise<TripReport> {
     return this.reportingService.getTripsReporting(Number(tripId));
   }
 
   @Get('ports')
   @UseGuards(AuthGuard)
-  @Roles('Admin', 'SuperAdmin')
+  @Roles('Staff', 'Admin', 'SuperAdmin')
   async getPortsByShip(
     @Query() dates: TripSearchByDateRange
   ): Promise<PortsByShip[]> {
@@ -33,7 +33,7 @@ export class ReportingController {
 
   @Get('trips/ships')
   @UseGuards(AuthGuard)
-  @Roles('Admin', 'SuperAdmin')
+  @Roles('Staff', 'Admin', 'SuperAdmin')
   async getTripsByShip(@Query() data: PortsByShip): Promise<PerVesselReport[]> {
     return this.reportingService.getTripsByShip(data);
   }

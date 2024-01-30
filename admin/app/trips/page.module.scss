@@ -2,12 +2,16 @@
   padding: 16px 5vw;
 
   @media (max-width: 1023px) {
-    padding: 24px 5vw;
+    padding: 20px 1vw;
   }
 
   .form-item {
     display: grid;
     grid-template-columns: 1fr 1fr;
+
+    @media (max-width: 580px) {
+      grid-template-columns: 2fr 1fr;
+    }
   }
 
   .range-picker {

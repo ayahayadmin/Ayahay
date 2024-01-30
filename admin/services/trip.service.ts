@@ -1,7 +1,9 @@
-import { IShippingLineSchedule, ITrip } from '@ayahay/models';
+import { IBooking, IShippingLineSchedule, ITrip } from '@ayahay/models';
 import { TRIP_API } from '@ayahay/constants';
 import {
   CreateTripsFromSchedulesRequest,
+  PaginatedRequest,
+  PaginatedResponse,
   UpdateTripCapacityRequest,
 } from '@ayahay/http';
 import axios from '@ayahay/services/axios';
@@ -52,6 +54,22 @@ export async function getTripDetails(
 ): Promise<ITrip | undefined> {
   try {
     const { data } = await axios.get<ITrip>(`${TRIP_API}/${tripId}`);
+    return data;
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+export async function getBookingsOfTrip(
+  tripId: number,
+  pagination: PaginatedRequest
+): Promise<PaginatedResponse<IBooking> | undefined> {
+  const query = new URLSearchParams(pagination as any).toString();
+
+  try {
+    const { data } = await axios.get<PaginatedResponse<IBooking>>(
+      `${TRIP_API}/${tripId}/bookings?${query}`
+    );
     return data;
   } catch (e) {
     console.error(e);

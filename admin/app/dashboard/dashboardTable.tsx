@@ -1,18 +1,23 @@
 import BarChart from '@/components/charts/BarChart';
 import { buildPaxAndVehicleBookedData } from '@/services/dashboard.service';
 import { getTripInformation } from '@/services/search.service';
-import { ArrowRightOutlined, BarChartOutlined } from '@ant-design/icons';
+import {
+  ArrowRightOutlined,
+  BarChartOutlined,
+  InfoCircleOutlined,
+} from '@ant-design/icons';
 import { DashboardTrips, TripSearchByDateRange } from '@ayahay/http';
 import {
   getFullDate,
   getLocaleTimeString,
 } from '@ayahay/services/date.service';
-import { Skeleton, Table } from 'antd';
+import { Button, Popover, Skeleton, Table } from 'antd';
 import { ColumnsType } from 'antd/es/table';
 import { useEffect, useState } from 'react';
 import styles from './page.module.scss';
 import { isEmpty } from 'lodash';
 import { useAuth } from '@/contexts/AuthContext';
+import { PassengerNamesModal } from '@/components/modal/PassengerNamesModal';
 
 const columns: ColumnsType<DashboardTrips> = [
   {
@@ -43,12 +48,27 @@ const columns: ColumnsType<DashboardTrips> = [
   {
     title: 'Pax Onboarded',
     key: 'paxOnboardedOverBooked',
-    render: (_: string, record: DashboardTrips) => (
-      <div>
-        <span>{record.checkedInPassengerCount ?? 0}</span>/
-        <span>{record.passengerCapacities - record.availableCapacities}</span>
-      </div>
-    ),
+    render: (_: string, record: DashboardTrips) => {
+      const passengerNames = record.notCheckedInPassengerNames.map((name) => ({
+        name,
+      }));
+
+      return (
+        <div>
+          <span>{record.checkedInPassengerCount ?? 0}</span>/
+          <span>{record.passengerCapacities - record.availableCapacities}</span>
+          &nbsp;
+          <Popover
+            content={<PassengerNamesModal passengerNames={passengerNames} />}
+            trigger='click'
+          >
+            <Button type='text' style={{ padding: 0 }}>
+              <InfoCircleOutlined rev={undefined} />
+            </Button>
+          </Popover>
+        </div>
+      );
+    },
     align: 'center',
   },
 ];

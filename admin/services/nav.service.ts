@@ -13,6 +13,16 @@ export const webLinks = {
       key: 'dashboard',
     },
     {
+      label: 'Reporting',
+      key: 'reporting',
+      children: [
+        {
+          label: 'Summary Sales',
+          key: 'reporting/summary',
+        },
+      ],
+    },
+    {
       label: 'Download Bookings',
       key: 'download/bookings',
     },

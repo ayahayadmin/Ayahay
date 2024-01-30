@@ -36,6 +36,8 @@ export interface TripInformation {
   checkedInPassengerCount: number | null;
   checkedInVehicleCount: number | null;
 
+  pipeSeparatedPassengerFirstNames: string;
+  pipeSeparatedPassengerLastNames: string;
   pipeSeparatedCabinTypeIds: string;
   pipeSeparatedCabinNames: string;
   pipeSeparatedCabinFares: string;
@@ -61,6 +63,7 @@ export interface DashboardTrips {
   passengerCapacities: number;
   passengerRates: PassengerRates[];
   vehicleRates: VehicleRates[];
+  notCheckedInPassengerNames: string[];
   checkedInPassengerCount?: number;
   checkedInVehicleCount?: number;
 }
