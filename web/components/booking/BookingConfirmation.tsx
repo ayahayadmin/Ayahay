@@ -81,8 +81,12 @@ export default function BookingConfirmation({
         <div>
           <Form.Item name='gateway' label='Payment Method' colon={false}>
             <Radio.Group>
-              <Radio value='PayMongo'>PayMongo</Radio>
-              <Radio value='Dragonpay'>Dragonpay</Radio>
+              <Radio value='PayMongo'>
+                PayMongo (Visa, Mastercard, GCash, Maya, BPI, UBP)
+              </Radio>
+              <Radio value='Dragonpay'>
+                Dragonpay (Bayad Center, M Lhuilier, OTC)
+              </Radio>
             </Radio.Group>
           </Form.Item>
         </div>
