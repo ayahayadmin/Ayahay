@@ -61,11 +61,14 @@ export default function BillOfLading({ data }: BillOfLadingProps) {
                   <div>
                     <p
                       style={{
+                        lineHeight: '1',
                         fontSize: '16px',
                         fontWeight: 'bold',
                       }}
                     >
-                      Original
+                      <span>BOL #</span>
+                      <br></br>
+                      <span>Original</span>
                     </p>
                     <p style={{ paddingTop: '5px', fontSize: '13px' }}>
                       (CONSIGNEE'S COPY)
@@ -123,7 +126,9 @@ export default function BillOfLading({ data }: BillOfLadingProps) {
                         paddingTop: '10px',
                       }}
                     >
-                      B/L
+                      <span>B/L</span>
+                      <br></br>
+                      <span>FRR:</span>
                     </p>
                   </div>
                 </div>
@@ -169,7 +174,11 @@ export default function BillOfLading({ data }: BillOfLadingProps) {
                     </td>
                     <td></td>
                     {/* {vehicle.weight} will use vehicle type description */}
-                    <td></td>
+                    <td>
+                      {vehicle.vehicleTypeDesc === 'Bus with 60 pax capacity'
+                        ? 'E'
+                        : ''}
+                    </td>
                     <td></td>
                     <td>{vehicle.fare}</td>
                   </tr>
