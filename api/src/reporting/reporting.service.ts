@@ -47,15 +47,15 @@ export class ReportingService {
         },
         bookingVehicles: {
           include: {
-            vehicle: {
-              include: {
-                vehicleType: true,
-              },
-            },
             booking: {
               include: {
                 createdByAccount: true,
                 paymentItems: true,
+              },
+            },
+            vehicle: {
+              include: {
+                vehicleType: true,
               },
             },
           },
@@ -67,7 +67,11 @@ export class ReportingService {
 
     let vehiclesBreakdown = [];
 
-    trip.bookingVehicles.forEach((vehicle) => {
+    const confirmedBookingVehicles = trip.bookingVehicles.filter(
+      (vehicle) => vehicle.booking.bookingStatus === 'Confirmed'
+    );
+
+    confirmedBookingVehicles.forEach((vehicle) => {
       const vehicleFare =
         trip.availableVehicleTypes[vehicle.vehicle.vehicleTypeId - 1].fare; // temporary
 
@@ -96,7 +100,7 @@ export class ReportingService {
             adminFee
           );
         }),
-      vehicles: trip.bookingVehicles.map((vehicle) => {
+      vehicles: confirmedBookingVehicles.map((vehicle) => {
         const vehicleFare =
           trip.availableVehicleTypes[vehicle.vehicle.vehicleTypeId - 1].fare; // temporary
         const vehicleAdminFee =

@@ -41,9 +41,9 @@ export class ReportingMapper {
       accommodation: passenger.cabin.cabinType.name,
       discount: passenger.passenger.discountType ?? 'Adult',
       checkedIn: !!passenger.checkInDate,
-      ticketCost: passenger.totalPrice - adminFee,
+      ticketCost: passenger.totalPrice,
       adminFee,
-      fare: passenger.totalPrice,
+      fare: passenger.totalPrice + adminFee,
       paymentStatus:
         passenger.booking.createdByAccount?.role === 'Admin' ||
         passenger.booking.createdByAccount?.role === 'Staff'
@@ -54,9 +54,9 @@ export class ReportingMapper {
 
   convertTripVehiclesForReporting(vehicle, vehicleAdminFee) {
     return {
-      ticketCost: vehicle.totalPrice - vehicleAdminFee,
+      ticketCost: vehicle.totalPrice,
       adminFee: vehicleAdminFee,
-      fare: vehicle.totalPrice,
+      fare: vehicle.totalPrice + vehicleAdminFee,
       paymentStatus:
         vehicle.booking.createdByAccount?.role === 'Admin' ||
         vehicle.booking.createdByAccount?.role === 'Staff'

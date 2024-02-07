@@ -34,10 +34,8 @@ const CargoDailySalesReport = forwardRef(function (
 
   let totalVehicles = data.vehicles?.length;
   let totalSales = sumBy(data.vehicles, 'ticketCost');
-  let totalFare = 0;
 
   data.vehicles?.map((vehicle) => {
-    totalFare += vehicle.ticketCost;
     if (vehicle.paymentStatus === 'PayMongo') {
       mopBreakdown.Ayahay.aggFare += vehicle.ticketCost;
     } else {
@@ -202,7 +200,7 @@ const CargoDailySalesReport = forwardRef(function (
             <tfoot style={{ backgroundColor: '#ddebf7' }}>
               <tr style={{ fontWeight: 'bold' }}>
                 <td className={styles['cell-border']}>TOTAL SALES</td>
-                <td className={styles['cell-border']}>{totalFare}</td>
+                <td className={styles['cell-border']}>{totalSales}</td>
               </tr>
             </tfoot>
           </table>
