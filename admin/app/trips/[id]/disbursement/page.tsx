@@ -16,6 +16,7 @@ const { Title } = Typography;
 export default function DisbursementPage({ params }: any) {
   useAuthGuard(['Staff', 'Admin', 'SuperAdmin']);
   const { loggedInAccount } = useAuth();
+  const [form] = Form.useForm();
   const [trip, setTrip] = useState<ITrip | undefined>();
   const [api, contextHolder] = notification.useNotification();
   const tripId = params.id;
@@ -37,6 +38,7 @@ export default function DisbursementPage({ params }: any) {
     }
     try {
       await createDisbursements(tripId, values.disbursement);
+      form.resetFields();
       api.success({
         message: 'Success',
         description: 'Disbursements saved successfully.',
@@ -76,6 +78,7 @@ export default function DisbursementPage({ params }: any) {
           </div>
 
           <Form
+            form={form}
             initialValues={{
               disbursement: [{ date: dayjs(trip.departureDateIso) }],
             }}
