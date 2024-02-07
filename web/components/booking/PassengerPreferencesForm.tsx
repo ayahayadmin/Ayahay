@@ -13,7 +13,8 @@ export default function PassengerPreferencesForm({
   onNextStep,
   onPreviousStep,
 }: PassengerPreferencesFormProps) {
-  const { trip } = useTripFromSearchParams();
+  const { trips } = useTripFromSearchParams();
+  const trip = trips?.[0];
   const form = Form.useFormInstance();
   const passengers = Form.useWatch('passengers', form);
 

@@ -150,6 +150,9 @@ export class TripService {
   }
 
   async getTripsByIds(tripIds: number[]): Promise<ITrip[]> {
+    if (!tripIds || tripIds.length === 0 || tripIds.length > 10) {
+      throw new BadRequestException();
+    }
     const trips = await this.prisma.trip.findMany({
       where: {
         id: {
@@ -226,7 +229,7 @@ export class TripService {
     const bookings = await this.prisma.booking.findMany({
       where,
       include: {
-        vehicles: {
+        bookingVehicles: {
           include: {
             vehicle: {
               include: {

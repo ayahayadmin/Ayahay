@@ -21,11 +21,13 @@ import { AuthGuard } from '@/guard/auth.guard';
 import { Roles } from '@/decorator/roles.decorator';
 import { AllowUnauthenticated } from '@/decorator/authenticated.decorator';
 import { AccountService } from '@/account/account.service';
+import { BookingRequestService } from '@/booking/booking-request.service';
 
 @Controller('bookings')
 export class BookingController {
   constructor(
     private readonly bookingService: BookingService,
+    private readonly bookingRequestService: BookingRequestService,
     private readonly accountService: AccountService
   ) {}
 
@@ -55,6 +57,19 @@ export class BookingController {
     return this.bookingService.getMyBookings(pagination, req.user);
   }
 
+  @Get('for-approval')
+  @UseGuards(AuthGuard)
+  @Roles('Admin', 'SuperAdmin')
+  async getBookingRequestsForApproval(
+    @Request() req: any,
+    @Query() pagination: PaginatedRequest
+  ): Promise<PaginatedResponse<IBooking>> {
+    return this.bookingRequestService.getBookingRequestsForApproval(
+      pagination,
+      req.user
+    );
+  }
+
   @Get(':id')
   @UseGuards(AuthGuard)
   @AllowUnauthenticated()
@@ -63,6 +78,19 @@ export class BookingController {
     @Param('id') id: string
   ): Promise<IBooking> {
     return this.bookingService.getBookingById(id, req.user);
+  }
+
+  @Get('requests/:tempBookingId')
+  @UseGuards(AuthGuard)
+  @AllowUnauthenticated()
+  async getBookingRequestById(
+    @Request() req,
+    @Param('tempBookingId') tempBookingId: number
+  ): Promise<IBooking> {
+    return this.bookingRequestService.getBookingRequestById(
+      tempBookingId,
+      req.user
+    );
   }
 
   @Post()
@@ -99,7 +127,7 @@ export class BookingController {
   async checkInPassenger(
     @Param('bookingId') bookingId: string,
     @Param('bookingPassengerId') bookingPassengerId: number
-  ) {
+  ): Promise<void> {
     return this.bookingService.checkInPassenger(bookingId, bookingPassengerId);
   }
 
@@ -109,7 +137,7 @@ export class BookingController {
   async checkInVehicle(
     @Param('bookingId') bookingId: string,
     @Param('bookingVehicleId') bookingVehicleId: number
-  ) {
+  ): Promise<void> {
     return this.bookingService.checkInVehicle(bookingId, bookingVehicleId);
   }
 
@@ -119,7 +147,47 @@ export class BookingController {
   async cancelBooking(
     @Param('bookingId') bookingId: string,
     @Body('remarks') remarks: string
-  ) {
+  ): Promise<void> {
     return this.bookingService.cancelBooking(bookingId, remarks);
   }
+
+  @Patch('requests/:tempBookingId/create')
+  @UseGuards(AuthGuard)
+  @AllowUnauthenticated()
+  async createBookingRequest(
+    @Request() req,
+    @Param('tempBookingId') tempBookingId: number,
+    @Body('email') email?: string
+  ): Promise<IBooking> {
+    return this.bookingRequestService.createBookingRequest(
+      tempBookingId,
+      email,
+      req.user
+    );
+  }
+
+  @Patch('requests/:tempBookingId/approve')
+  @UseGuards(AuthGuard)
+  @Roles('Admin', 'SuperAdmin')
+  async approveBookingRequest(
+    @Request() req,
+    @Param('tempBookingId') tempBookingId: number
+  ): Promise<void> {
+    return this.bookingRequestService.approveBookingRequest(
+      tempBookingId,
+      req.user
+    );
+  }
+
+  @Patch('requests/:tempBookingId/reject')
+  @UseGuards(AuthGuard)
+  @Roles('Admin', 'SuperAdmin')
+  async rejectBookingRequest(
+    @Request() req,
+    @Param('tempBookingId') tempBookingId: number
+  ): Promise<void> {
+    return this.bookingRequestService.rejectBookingRequest(tempBookingId);
+  }
+
+  // TODO: get passenger's booking requests
 }

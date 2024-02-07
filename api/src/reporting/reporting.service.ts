@@ -29,11 +29,11 @@ export class ReportingService {
         destPort: true,
         ship: true,
         shippingLine: true,
-        passengers: {
+        bookingPassengers: {
           include: {
             booking: {
               include: {
-                account: true,
+                createdByAccount: true,
                 paymentItems: true,
               },
             },
@@ -45,7 +45,7 @@ export class ReportingService {
             passenger: true,
           },
         },
-        vehicles: {
+        bookingVehicles: {
           include: {
             vehicle: {
               include: {
@@ -54,7 +54,7 @@ export class ReportingService {
             },
             booking: {
               include: {
-                account: true,
+                createdByAccount: true,
                 paymentItems: true,
               },
             },
@@ -67,7 +67,7 @@ export class ReportingService {
 
     let vehiclesBreakdown = [];
 
-    trip.vehicles.forEach((vehicle) => {
+    trip.bookingVehicles.forEach((vehicle) => {
       const vehicleFare =
         trip.availableVehicleTypes[vehicle.vehicle.vehicleTypeId - 1].fare; // temporary
 
@@ -82,13 +82,13 @@ export class ReportingService {
 
     return {
       ...this.reportingMapper.convertTripsForReporting(trip),
-      passengers: trip.passengers
+      passengers: trip.bookingPassengers
         .filter((passenger) => passenger.booking.bookingStatus === 'Confirmed')
         .map((passenger) => {
           const adminFee =
             this.bookingPricingService.calculateServiceChargeForPassenger(
               passenger.passenger,
-              passenger.booking.account?.role
+              passenger.booking.createdByAccount?.role
             );
 
           return this.reportingMapper.convertTripPassengersForReporting(
@@ -96,13 +96,13 @@ export class ReportingService {
             adminFee
           );
         }),
-      vehicles: trip.vehicles.map((vehicle) => {
+      vehicles: trip.bookingVehicles.map((vehicle) => {
         const vehicleFare =
           trip.availableVehicleTypes[vehicle.vehicle.vehicleTypeId - 1].fare; // temporary
         const vehicleAdminFee =
           this.bookingPricingService.calculateServiceChargeForVehicle(
             vehicleFare,
-            vehicle.booking.account?.role
+            vehicle.booking.createdByAccount?.role
           );
 
         return this.reportingMapper.convertTripVehiclesForReporting(
@@ -156,11 +156,11 @@ export class ReportingService {
         destPort: true,
         ship: true,
         shippingLine: true,
-        passengers: {
+        bookingPassengers: {
           include: {
             booking: {
               include: {
-                account: true,
+                createdByAccount: true,
                 paymentItems: true,
               },
             },
@@ -181,13 +181,13 @@ export class ReportingService {
       let noShowBreakdown = [];
       let passengers = [];
 
-      trip.passengers
+      trip.bookingPassengers
         .filter((passenger) => passenger.booking.bookingStatus === 'Confirmed')
         .forEach((passenger) => {
           const adminFee =
             this.bookingPricingService.calculateServiceChargeForPassenger(
               passenger.passenger,
-              passenger.booking.account.role
+              passenger.booking.createdByAccount.role
             );
 
           const { cabinPassengerArr, noShowArr } =
@@ -225,7 +225,7 @@ export class ReportingService {
         ship: true,
         srcPort: true,
         destPort: true,
-        passengers: {
+        bookingPassengers: {
           where: {
             booking: {
               bookingStatus: {
@@ -253,12 +253,12 @@ export class ReportingService {
         id: bookingId,
       },
       include: {
-        passengers: {
+        bookingPassengers: {
           include: {
             passenger: true,
           },
         },
-        vehicles: {
+        bookingVehicles: {
           include: {
             trip: {
               include: {

@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaClient, Voucher } from '@prisma/client';
-import { PrismaService } from '../prisma.service';
+import { PrismaService } from '@/prisma.service';
 import {
   IBooking,
   IBookingPassenger,
@@ -24,14 +24,10 @@ import {
 } from '@ayahay/http';
 import { TripService } from '@/trip/trip.service';
 import { BookingMapper } from './booking.mapper';
-import { PassengerService } from '@/passenger/passenger.service';
 import { BookingValidator } from './booking.validator';
-import { VehicleService } from '@/vehicle/vehicle.service';
 import { BookingReservationService } from './booking-reservation.service';
 import { BookingPricingService } from './booking-pricing.service';
 import { AvailableBooking } from './booking.types';
-import { EmailService } from '@/email/email.service';
-import { VoucherService } from '@/voucher/voucher.service';
 
 @Injectable()
 export class BookingService {
@@ -40,12 +36,8 @@ export class BookingService {
     private readonly tripService: TripService,
     private readonly bookingReservationService: BookingReservationService,
     private readonly bookingPricingService: BookingPricingService,
-    private readonly emailService: EmailService,
     private readonly bookingMapper: BookingMapper,
-    private readonly bookingValidator: BookingValidator,
-    private readonly passengerService: PassengerService,
-    private readonly vehicleService: VehicleService,
-    private readonly voucherService: VoucherService
+    private readonly bookingValidator: BookingValidator
   ) {}
 
   async getMyBookings(
@@ -57,10 +49,10 @@ export class BookingService {
 
     const myBookingEntities = await this.prisma.booking.findMany({
       where: {
-        accountId: loggedInAccount.id,
+        createdByAccountId: loggedInAccount.id,
       },
       include: {
-        passengers: {
+        bookingPassengers: {
           include: {
             trip: {
               include: {
@@ -80,7 +72,7 @@ export class BookingService {
 
     const myBookingsCount = await this.prisma.booking.count({
       where: {
-        accountId: loggedInAccount.id,
+        createdByAccountId: loggedInAccount.id,
       },
     });
     const bookings = myBookingEntities.map((bookingEntity) =>
@@ -96,13 +88,13 @@ export class BookingService {
   async getPublicBookings(bookingIds: string[]): Promise<IBooking[]> {
     const publicBookingEntities = await this.prisma.booking.findMany({
       where: {
-        accountId: null,
+        createdByAccountId: null,
         id: {
           in: bookingIds,
         },
       },
       include: {
-        passengers: {
+        bookingPassengers: {
           include: {
             trip: {
               include: {
@@ -133,8 +125,8 @@ export class BookingService {
         bookingStatus: 'Confirmed',
       },
       include: {
-        account: true,
-        passengers: {
+        createdByAccount: true,
+        bookingPassengers: {
           include: {
             trip: {
               include: {
@@ -164,7 +156,7 @@ export class BookingService {
         id,
       },
       include: {
-        passengers: {
+        bookingPassengers: {
           include: {
             trip: {
               include: {
@@ -181,7 +173,7 @@ export class BookingService {
             },
           },
         },
-        vehicles: {
+        bookingVehicles: {
           include: {
             trip: {
               include: {
@@ -205,22 +197,24 @@ export class BookingService {
       throw new NotFoundException();
     }
 
-    if (loggedInAccount === undefined && booking.accountId !== null) {
+    if (loggedInAccount === undefined && booking.createdByAccountId !== null) {
       throw new ForbiddenException();
     }
     if (
-      booking.accountId !== null &&
+      booking.createdByAccountId !== null &&
       loggedInAccount !== undefined &&
       loggedInAccount.role === 'Passenger' &&
-      booking.accountId !== loggedInAccount.id
+      booking.createdByAccountId !== loggedInAccount.id
     ) {
       throw new ForbiddenException();
     }
 
-    booking.passengers.sort(
+    booking.bookingPassengers.sort(
       (passengerA, passengerB) => passengerA.id - passengerB.id
     );
-    booking.vehicles.sort((vehicleA, vehicleB) => vehicleA.id - vehicleB.id);
+    booking.bookingVehicles.sort(
+      (vehicleA, vehicleB) => vehicleA.id - vehicleB.id
+    );
     booking.paymentItems.sort(
       (paymentItemA, paymentItemB) => paymentItemA.id - paymentItemB.id
     );
@@ -308,15 +302,18 @@ export class BookingService {
 
     const tempBooking: IBooking = {
       id: '',
-      accountId: loggedInAccount?.id,
+      shippingLineId: trips[0].shippingLineId,
+      createdByAccountId: loggedInAccount?.id,
       voucherCode: voucherCode,
 
-      totalPrice,
-      bookingType: 'Single',
       referenceNo: '',
-      createdAtIso: '',
       bookingStatus: undefined,
       paymentStatus: undefined,
+      totalPrice,
+      bookingType: 'Single',
+      createdAtIso: '',
+      isBookingRequest: false,
+
       bookingPassengers,
       bookingVehicles,
       paymentItems,
@@ -544,7 +541,8 @@ export class BookingService {
     } as IBooking;
   }
 
-  async createBookingFromTempBooking(
+  // saves actual booking data; called after payment
+  async createConfirmedBookingFromPaymentReference(
     paymentReference: string,
     paymentStatus: 'Pending' | 'Success',
     transactionContext?: PrismaClient
@@ -563,118 +561,18 @@ export class BookingService {
       );
     }
 
-    // TODO: check if seats are available
-    const bookingStatus =
-      paymentStatus === 'Success' ? 'Confirmed' : 'Requested';
-
-    const bookingToCreate = this.bookingMapper.convertTempBookingToBooking(
-      tempBooking,
-      bookingStatus,
-      paymentStatus
-    );
-    await this.saveBooking(bookingToCreate, transactionContext);
-
-    await this.bookingReservationService.updatePassengerCapacities(
-      bookingToCreate.bookingPassengers,
-      'decrement',
-      transactionContext
-    );
-
-    await this.bookingReservationService.updateVehicleCapacities(
-      bookingToCreate.bookingVehicles,
-      'decrement',
-      transactionContext
-    );
-
-    await this.voucherService.useVoucher(
-      bookingToCreate.voucherCode,
-      transactionContext
-    );
-  }
-
-  // saves actual booking data; called after payment
-  private async saveBooking(
-    booking: IBooking,
-    transactionContext?: PrismaClient
-  ): Promise<IBooking> {
-    transactionContext ??= this.prisma;
-
-    const createdPassengerIds = await this.saveNewPassengers(
-      booking.bookingPassengers,
-      transactionContext
-    );
-    const createdVehicleIds = await this.saveNewVehicles(
-      booking.bookingVehicles,
-      transactionContext
-    );
-
     const bookingToCreate =
-      this.bookingMapper.convertBookingToEntityForCreation(booking);
-    const bookingEntity = await transactionContext.booking.create(
-      bookingToCreate
+      this.bookingMapper.convertTempBookingToBooking(tempBooking);
+
+    bookingToCreate.id = tempBooking.paymentReference;
+    bookingToCreate.bookingStatus = 'Confirmed';
+    bookingToCreate.paymentStatus = paymentStatus;
+    bookingToCreate.createdAtIso = new Date().toISOString();
+
+    await this.bookingReservationService.saveConfirmedBooking(
+      bookingToCreate,
+      transactionContext
     );
-
-    if (booking.contactEmail !== null) {
-      await this.emailService.sendBookingConfirmedEmail({
-        recipient: booking.contactEmail,
-        bookingId: booking.id,
-      });
-    }
-
-    return this.bookingMapper.convertBookingToBasicDto(bookingEntity);
-  }
-
-  // creates the passengers in booking with ID -1
-  // returns the created passengers' ID with the same order as BookingPassengers in booking
-  private async saveNewPassengers(
-    bookingPassengers: IBookingPassenger[],
-    transactionContext?: PrismaClient
-  ): Promise<number[]> {
-    transactionContext ??= this.prisma;
-
-    const createdPassengerIds = await Promise.all(
-      bookingPassengers.map(async ({ passenger }) => {
-        // if passenger already has an ID, do nothing
-        if (passenger.id > 0) {
-          return;
-        }
-        const createdPassenger = await this.passengerService.createPassenger(
-          passenger,
-          transactionContext
-        );
-        passenger.id = createdPassenger.id;
-        return createdPassenger.id;
-      })
-    );
-
-    return createdPassengerIds;
-  }
-
-  // creates the vehicles in booking with ID -1
-  // returns the created vehicles' ID with the same order as BookingVehicles in booking
-  private async saveNewVehicles(
-    bookingVehicles: IBookingVehicle[],
-    transactionContext?: PrismaClient
-  ): Promise<number[]> {
-    transactionContext ??= this.prisma;
-
-    const createdVehicleIds = await Promise.all(
-      bookingVehicles.map(async ({ vehicle }) => {
-        // if passenger already has an ID, do nothing
-        if (vehicle.id > 0) {
-          return;
-        }
-
-        const createdVehicle = await this.vehicleService.createVehicle(
-          vehicle,
-          transactionContext
-        );
-        vehicle.id = createdVehicle.id;
-        return createdVehicle.id;
-      })
-    );
-
-    return createdVehicleIds;
   }
 
   // TO DO: include bookingPassengerId and bookingVehicleId in paymentItems
@@ -712,8 +610,8 @@ export class BookingService {
         id,
       },
       include: {
-        passengers: true,
-        vehicles: true,
+        bookingPassengers: true,
+        bookingVehicles: true,
       },
     });
 
@@ -728,13 +626,13 @@ export class BookingService {
     });
 
     await this.bookingReservationService.updatePassengerCapacities(
-      booking.passengers as any[] as IBookingPassenger[],
+      booking.bookingPassengers as any[] as IBookingPassenger[],
       'increment',
       transactionContext
     );
 
     await this.bookingReservationService.updateVehicleCapacities(
-      booking.vehicles as any[] as IBookingVehicle[],
+      booking.bookingVehicles as any[] as IBookingVehicle[],
       'increment',
       transactionContext
     );
@@ -804,8 +702,8 @@ export class BookingService {
         id: bookingId,
       },
       include: {
-        passengers: true,
-        vehicles: true,
+        bookingPassengers: true,
+        bookingVehicles: true,
       },
     });
 
@@ -831,17 +729,19 @@ export class BookingService {
         },
       });
 
-      await this.bookingReservationService.updatePassengerCapacities(
-        booking.passengers as any,
-        'increment',
-        transactionContext as any
-      );
+      if (booking.bookingStatus === 'Confirmed') {
+        await this.bookingReservationService.updatePassengerCapacities(
+          booking.bookingPassengers as any,
+          'increment',
+          transactionContext as any
+        );
 
-      await this.bookingReservationService.updateVehicleCapacities(
-        booking.vehicles as any,
-        'increment',
-        transactionContext as any
-      );
+        await this.bookingReservationService.updateVehicleCapacities(
+          booking.bookingVehicles as any,
+          'increment',
+          transactionContext as any
+        );
+      }
     });
   }
 }

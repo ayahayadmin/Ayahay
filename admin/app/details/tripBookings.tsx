@@ -1,6 +1,5 @@
 import { IPassenger } from '@ayahay/models';
 import { mockBookingPassengers, mockPassengers } from '@ayahay/mocks';
-import { getAllBookingsOfTrip } from '@/services/booking.service';
 import { Table } from 'antd';
 import { find } from 'lodash';
 import { useEffect, useState } from 'react';
@@ -26,7 +25,7 @@ export default function TripBookings({ tripId }: TripBookingsProps) {
   const [passengerData, setPassengerData] = useState([] as IPassenger[]);
 
   useEffect(() => {
-    const fetchBookings = getAllBookingsOfTrip(tripId);
+    const fetchBookings: any[] = [];
     const bookingIds = fetchBookings.map((booking) => booking.id);
     const fetchPassengerIds = bookingIds.map((id) => {
       return find(mockBookingPassengers, { bookingId: id })?.passengerId;

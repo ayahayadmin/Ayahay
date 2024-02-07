@@ -11,6 +11,7 @@ const { Title } = Typography;
 interface BookingConfirmationProps {
   tentativeBooking?: IBooking;
   hasPrivilegedAccess: boolean;
+  onRequestBooking?: (tentativeBookingId: number) => void;
   onStartPayment?: (tentativeBookingId: number) => void;
   onPreviousStep?: () => void;
 }
@@ -19,26 +20,52 @@ export default function BookingConfirmation({
   tentativeBooking,
   hasPrivilegedAccess,
   onPreviousStep,
+  onRequestBooking,
   onStartPayment,
 }: BookingConfirmationProps) {
   const { loggedInAccount } = useAuth();
   const form = Form.useFormInstance();
 
-  const onClickPay = async () => {
-    if (tentativeBooking === undefined) {
+  const isBookingRequestFlow =
+    !hasPrivilegedAccess &&
+    tentativeBooking &&
+    tentativeBooking.bookingVehicles &&
+    tentativeBooking.bookingVehicles.length > 0;
+
+  const onClickRequestBooking = async () => {
+    const validationResult = await doFinalValidation();
+    if (!onRequestBooking || !validationResult) {
       return;
+    }
+
+    onRequestBooking(tentativeBooking?.id as any);
+  };
+
+  const onClickPay = async () => {
+    const validationResult = await doFinalValidation();
+    if (!onStartPayment || !validationResult) {
+      return;
+    }
+    onStartPayment(tentativeBooking?.id as any);
+  };
+
+  const doFinalValidation = async () => {
+    if (tentativeBooking === undefined) {
+      return false;
     }
 
     if (loggedInAccount === undefined) {
       try {
         await form.validateFields(['contactEmail']);
       } catch {
-        return;
+        return false;
       }
     }
 
-    onStartPayment && onStartPayment(tentativeBooking.id);
+    return true;
   };
+
+  const payButtonAction = hasPrivilegedAccess ? 'Receive' : 'Pay';
 
   return (
     <div>
@@ -77,7 +104,7 @@ export default function BookingConfirmation({
           </Form.Item>
         </div>
       )}
-      {!hasPrivilegedAccess && (
+      {!hasPrivilegedAccess && !isBookingRequestFlow && (
         <div>
           <Form.Item name='gateway' label='Payment Method' colon={false}>
             <Radio.Group>
@@ -92,9 +119,15 @@ export default function BookingConfirmation({
         </div>
       )}
       <div>
-        {tentativeBooking && (
+        {isBookingRequestFlow && (
+          <Button type='primary' onClick={onClickRequestBooking}>
+            Request Booking
+          </Button>
+        )}
+
+        {!isBookingRequestFlow && (
           <Button type='primary' onClick={onClickPay}>
-            Pay ₱{tentativeBooking.totalPrice}
+            {payButtonAction} ₱{tentativeBooking?.totalPrice}
           </Button>
         )}
         <Button onClick={() => onPreviousStep && onPreviousStep()}>

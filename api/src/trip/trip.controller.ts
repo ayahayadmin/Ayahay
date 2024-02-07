@@ -8,6 +8,7 @@ import {
   Post,
   Query,
   UseGuards,
+  ParseArrayPipe,
 } from '@nestjs/common';
 import { TripService } from './trip.service';
 import { IBooking, ITrip, SearchAvailableTrips } from '@ayahay/models';
@@ -31,12 +32,10 @@ export class TripController {
   ) {}
 
   @Get()
-  async getTrips(@Query() { tripIds }: { tripIds: string }): Promise<ITrip[]> {
-    if (tripIds?.length > 0) {
-      const idStrSplit = tripIds.split(',');
-      return this.tripService.getTripsByIds(idStrSplit.map((id) => Number(id)));
-    }
-    return await this.tripService.getTrips();
+  async getTrips(
+    @Query('tripIds', new ParseArrayPipe({ items: Number })) tripIds: number[]
+  ): Promise<ITrip[]> {
+    return this.tripService.getTripsByIds(tripIds);
   }
 
   @Get('available')

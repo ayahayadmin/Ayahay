@@ -1,9 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma, PrismaClient } from '@prisma/client';
 import { PrismaService } from '@/prisma.service';
-import { IBookingPassenger, IBookingVehicle, ITrip } from '@ayahay/models';
+import {
+  IBooking,
+  IBookingPassenger,
+  IBookingVehicle,
+  ITrip,
+} from '@ayahay/models';
 import { PassengerPreferences } from '@ayahay/http';
 import { AvailableBooking } from './booking.types';
+import { VoucherService } from '@/voucher/voucher.service';
+import { EmailService } from '@/email/email.service';
+import { BookingMapper } from '@/booking/booking.mapper';
+import { PassengerService } from '@/passenger/passenger.service';
+import { VehicleService } from '@/vehicle/vehicle.service';
 
 @Injectable()
 export class BookingReservationService {
@@ -12,7 +22,14 @@ export class BookingReservationService {
   private readonly CABIN_WEIGHT = 10;
   private readonly SEAT_TYPE_WEIGHT = 1;
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly bookingMapper: BookingMapper,
+    private readonly voucherService: VoucherService,
+    private readonly emailService: EmailService,
+    private readonly passengerService: PassengerService,
+    private readonly vehicleService: VehicleService
+  ) {}
 
   getAvailableBookingsInTripsWithoutSeatSelection(
     tripsWithoutSeatSelection: ITrip[],
@@ -174,6 +191,105 @@ WHERE row <= ${passengerPreferences.length}
       }
     });
     return bestSeat;
+  }
+
+  async saveConfirmedBooking(
+    booking: IBooking,
+    transactionContext: PrismaClient
+  ): Promise<IBooking> {
+    await this.saveNewPassengers(booking.bookingPassengers, transactionContext);
+    await this.saveNewVehicles(booking.bookingVehicles, transactionContext);
+
+    const bookingToCreate =
+      this.bookingMapper.convertBookingToEntityForCreation(booking);
+    const bookingEntity = await transactionContext.booking.create(
+      bookingToCreate
+    );
+
+    await this.onBookingConfirmation(booking, transactionContext);
+
+    return this.bookingMapper.convertBookingToBasicDto(bookingEntity);
+  }
+
+  // creates the passengers in booking with ID -1
+  // returns the created passengers' ID with the same order as BookingPassengers in booking
+  private async saveNewPassengers(
+    bookingPassengers: IBookingPassenger[],
+    transactionContext?: PrismaClient
+  ): Promise<void> {
+    transactionContext ??= this.prisma;
+
+    await Promise.all(
+      bookingPassengers.map(async ({ passenger }) => {
+        // if passenger already has an ID, do nothing
+        if (passenger.id > 0) {
+          return;
+        }
+        const createdPassenger = await this.passengerService.createPassenger(
+          passenger,
+          transactionContext
+        );
+        passenger.id = createdPassenger.id;
+        return createdPassenger.id;
+      })
+    );
+  }
+
+  // creates the vehicles in booking with ID -1
+  // returns the created vehicles' ID with the same order as BookingVehicles in booking
+  private async saveNewVehicles(
+    bookingVehicles: IBookingVehicle[],
+    transactionContext?: PrismaClient
+  ): Promise<void> {
+    transactionContext ??= this.prisma;
+
+    await Promise.all(
+      bookingVehicles.map(async ({ vehicle }) => {
+        // if passenger already has an ID, do nothing
+        if (vehicle.id > 0) {
+          return;
+        }
+
+        const createdVehicle = await this.vehicleService.createVehicle(
+          vehicle,
+          transactionContext
+        );
+        vehicle.id = createdVehicle.id;
+        return createdVehicle.id;
+      })
+    );
+  }
+
+  private async onBookingConfirmation(
+    booking: IBooking,
+    transactionContext: PrismaClient
+  ): Promise<void> {
+    transactionContext ??= this.prisma;
+
+    if (booking.contactEmail !== null) {
+      // we fire and forget; this operation will not affect the rest of the workflow
+      this.emailService.sendBookingConfirmedEmail({
+        recipient: booking.contactEmail,
+        bookingId: booking.id,
+      });
+    }
+
+    await this.updatePassengerCapacities(
+      booking.bookingPassengers,
+      'decrement',
+      transactionContext
+    );
+
+    await this.updateVehicleCapacities(
+      booking.bookingVehicles,
+      'decrement',
+      transactionContext
+    );
+
+    await this.voucherService.useVoucher(
+      booking.voucherCode,
+      transactionContext
+    );
   }
 
   async updatePassengerCapacities(

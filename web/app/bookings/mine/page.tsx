@@ -26,8 +26,8 @@ const bookingColumns: ColumnsType<IBooking> = [
   },
   {
     title: 'Status',
-    dataIndex: 'status',
-    key: 'status',
+    dataIndex: 'bookingStatus',
+    key: 'bookingStatus',
     responsive: ['md'],
   },
   {

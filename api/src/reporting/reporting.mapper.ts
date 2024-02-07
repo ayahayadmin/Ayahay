@@ -24,9 +24,9 @@ export class ReportingMapper {
       destPortId: trip.destPortId,
       destPort: this.portMapper.convertPortToDto(trip.destPort),
       departureDate: trip.departureDate.toISOString(),
-      totalPassengers: trip.passengers.length,
+      totalPassengers: trip.bookingPassengers.length,
       voyageNumber: trip.voyage?.number,
-      totalBoardedPassengers: trip.passengers.filter(
+      totalBoardedPassengers: trip.bookingPassengers.filter(
         (passenger) =>
           passenger.checkInDate &&
           passenger.booking.bookingStatus === 'Confirmed'
@@ -36,7 +36,7 @@ export class ReportingMapper {
 
   convertTripPassengersForReporting(passenger, adminFee) {
     return {
-      teller: passenger.booking.account?.email,
+      teller: passenger.booking.createdByAccount?.email,
       ticketReferenceNo: passenger.booking.referenceNo,
       accommodation: passenger.cabin.cabinType.name,
       discount: passenger.passenger.discountType ?? 'Adult',
@@ -45,8 +45,8 @@ export class ReportingMapper {
       adminFee,
       fare: passenger.totalPrice,
       paymentStatus:
-        passenger.booking.account?.role === 'Admin' ||
-        passenger.booking.account?.role === 'Staff'
+        passenger.booking.createdByAccount?.role === 'Admin' ||
+        passenger.booking.createdByAccount?.role === 'Staff'
           ? 'OTC'
           : 'PayMongo',
     };
@@ -58,8 +58,8 @@ export class ReportingMapper {
       adminFee: vehicleAdminFee,
       fare: vehicle.totalPrice,
       paymentStatus:
-        vehicle.booking.account?.role === 'Admin' ||
-        vehicle.booking.account?.role === 'Staff'
+        vehicle.booking.createdByAccount?.role === 'Admin' ||
+        vehicle.booking.createdByAccount?.role === 'Staff'
           ? 'OTC'
           : 'PayMongo',
     };
@@ -166,7 +166,7 @@ export class ReportingMapper {
   }
 
   convertTripToTripManifest(trip): TripManifest {
-    const passengers = trip.passengers.map(({ passenger }) => ({
+    const passengers = trip.bookingPassengers.map(({ passenger }) => ({
       fullName: `${passenger.firstName} ${passenger.lastName}`,
       birthDate: passenger.birthday.toISOString(),
       age: new Date().getFullYear() - passenger.birthday.getFullYear(),
@@ -185,21 +185,22 @@ export class ReportingMapper {
   }
 
   convertBookingToBillOfLading(booking): BillOfLading {
-    const passenger = booking.passengers.find(
+    const passenger = booking.bookingPassengers.find(
       ({ passenger }) => passenger.discountType === 'Driver'
     );
     const driverName = passenger
       ? passenger.passenger.firstName + ' ' + passenger.passenger.lastName
-      : booking.passengers[0].passenger.firstName +
+      : booking.bookingPassengers[0].passenger.firstName +
         ' ' +
-        booking.passengers[0].passenger.lastName;
-    const shipName = booking.vehicles[0].trip.ship.name;
-    const shippingLineName = booking.vehicles[0].trip.shippingLine.name;
-    const destPortName = booking.vehicles[0].trip.destPort.name;
-    const departureDate = booking.vehicles[0].trip.departureDate.toISOString();
-    const voyage = booking.vehicles[0].trip.voyage;
+        booking.bookingPassengers[0].passenger.lastName;
+    const shipName = booking.bookingVehicles[0].trip.ship.name;
+    const shippingLineName = booking.bookingVehicles[0].trip.shippingLine.name;
+    const destPortName = booking.bookingVehicles[0].trip.destPort.name;
+    const departureDate =
+      booking.bookingVehicles[0].trip.departureDate.toISOString();
+    const voyage = booking.bookingVehicles[0].trip.voyage;
 
-    const vehicles = booking.vehicles.map((vehicle) => ({
+    const vehicles = booking.bookingVehicles.map((vehicle) => ({
       classification: '', //If needed - Add a new column "class" in vehicle_type
       modelName: vehicle.vehicle.modelName,
       plateNo: vehicle.vehicle.plateNo,

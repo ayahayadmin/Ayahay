@@ -5,7 +5,6 @@ import React from 'react';
 import { message, Button, Upload, Typography, Spin } from 'antd';
 import { processTripCsv } from '@/services/csv.service';
 import { ITrip } from '@ayahay/models';
-import { addTrips } from '@/services/trip.service';
 import { useAuthState } from '@/hooks/auth';
 import { redirect } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
@@ -41,7 +40,6 @@ export default function UploadTrips() {
   };
 
   const onSuccessfulUpload = (trips: ITrip[]) => {
-    addTrips(trips);
     message.success(`Successfully uploaded ${trips.length} trips.`);
   };
 

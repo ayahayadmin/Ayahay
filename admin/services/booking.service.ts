@@ -16,3 +16,21 @@ export async function getBookingsToDownload(
   });
   return data;
 }
+
+export async function getBookingRequests(
+  pagination: PaginatedRequest
+): Promise<PaginatedResponse<IBooking>> {
+  const query = new URLSearchParams(pagination as any).toString();
+
+  const { data: bookings } = await axios.get<PaginatedResponse<IBooking>>(
+    `${BOOKING_API}/for-approval?${query}`
+  );
+
+  return bookings;
+}
+
+export async function approveBookingRequest(
+  tempBookingId: number
+): Promise<void> {
+  return axios.patch(`${BOOKING_API}/requests/${tempBookingId}/approve`);
+}

@@ -3,7 +3,6 @@ import React, { useEffect, useState } from 'react';
 import { ColumnsType } from 'antd/es/table';
 import { getBookingPassengersFromQuery } from '@/services/booking-passenger.service';
 import { TableRowSelection } from 'antd/es/table/interface';
-import { checkInPassenger } from '@/services/booking.service';
 import dayjs from 'dayjs';
 import 'dayjs/plugin/relativeTime';
 
@@ -56,7 +55,7 @@ export default function BookingPassengerResults({
   useEffect(performSearch, [query]);
 
   const onCheckIn = (passenger: DataType) => {
-    const updatedPassenger = checkInPassenger(passenger.id);
+    const updatedPassenger = undefined;
     if (updatedPassenger === undefined) {
       api.error({
         message: 'Check In Failed',

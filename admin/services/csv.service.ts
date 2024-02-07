@@ -1,6 +1,5 @@
 import { IBooking, ITrip } from '@ayahay/models';
 import { mockShip, mockShippingLine } from '@ayahay/mocks';
-import { addTrips, getTripByReferenceNo } from '@/services/trip.service';
 import { isEmpty, round } from 'lodash';
 
 export function processTripCsv(
@@ -244,7 +243,8 @@ export async function generateBookingCsv(
       )
       .map((booking) => {
         const payment =
-          isEmpty(booking.account) || booking.account.role === 'Passenger'
+          isEmpty(booking.createdByAccount) ||
+          booking.createdByAccount.role === 'Passenger'
             ? 'Ayahay'
             : 'OTC';
         return (
