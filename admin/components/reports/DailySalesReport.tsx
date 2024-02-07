@@ -6,6 +6,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { forwardRef } from 'react';
 import styles from './Reports.module.scss';
+import { MOPBreakdown } from './SummarySalesPerVessel';
 
 interface DailySalesReportProps {
   data: ITripReport;
@@ -37,10 +38,19 @@ const DailySalesReport = forwardRef(function (
   const user = loggedInAccount?.email;
   const date = getFullDate(new Date().toString(), true);
 
+  const mopBreakdown: MOPBreakdown = {
+    OTC: {
+      aggFare: 0,
+    },
+    Ayahay: {
+      aggFare: 0,
+    },
+  };
+
   let totalPassengers = data.passengers.length;
   let totalTicketCost = 0;
-  let totalAdminFee = 0;
-  let totalFare = 0;
+  // let totalAdminFee = 0;
+  let totalFareWithAdminFee = 0;
 
   return (
     <div ref={ref}>
@@ -121,7 +131,7 @@ const DailySalesReport = forwardRef(function (
                 <th>Accommodation</th>
                 <th>Discount</th>
                 <th>Ticket Cost</th>
-                <th>Transaction Fee</th>
+                {/* <th>Transaction Fee</th> */}
                 <th>Total Fare</th>
                 <th>Payment Status</th>
               </tr>
@@ -129,9 +139,15 @@ const DailySalesReport = forwardRef(function (
             <tbody>
               {data.passengers.map((passenger, idx) => {
                 totalTicketCost += passenger.ticketCost;
-                totalAdminFee += passenger.adminFee;
-                totalFare += passenger.fare;
+                // totalAdminFee += passenger.adminFee;
+                totalFareWithAdminFee += passenger.fare;
                 const paymentStatus = passenger.paymentStatus;
+
+                if (paymentStatus === 'PayMongo') {
+                  mopBreakdown.Ayahay.aggFare += passenger.ticketCost;
+                } else {
+                  mopBreakdown.OTC.aggFare += passenger.ticketCost;
+                }
 
                 return (
                   <tr>
@@ -152,7 +168,7 @@ const DailySalesReport = forwardRef(function (
                     <td>{passenger.accommodation}</td>
                     <td>{passenger.discount}</td>
                     <td>{passenger.ticketCost}</td>
-                    <td>{passenger.adminFee}</td>
+                    {/* <td>{passenger.adminFee}</td> */}
                     <td>{passenger.fare}</td>
                     <td>{paymentStatus}</td>
                   </tr>
@@ -164,9 +180,51 @@ const DailySalesReport = forwardRef(function (
                 <td colSpan={6}>TOTAL</td>
                 <td>{totalPassengers}</td>
                 <td>{totalTicketCost}</td>
-                <td>{totalAdminFee}</td>
-                <td>{totalFare}</td>
+                {/* <td>{totalAdminFee}</td> */}
+                <td>{totalFareWithAdminFee}</td>
                 <td>-</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+        <div
+          style={{
+            ...two_columns_grid,
+            marginTop: 15,
+            paddingLeft: 22,
+            paddingRight: 22,
+          }}
+        >
+          <table
+            style={{
+              borderCollapse: 'collapse',
+              textAlign: 'center',
+              fontSize: 8,
+            }}
+          >
+            <thead style={{ backgroundColor: '#ddebf7' }}>
+              <tr style={{ fontWeight: 'bold' }}>
+                <th className={styles['cell-border']}>Mode of Payment</th>
+                <th className={styles['cell-border']}>Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {Object.keys(mopBreakdown).map((mop: string) => {
+                return (
+                  <tr>
+                    <td className={styles['cell-border']}>{mop}</td>
+                    <td className={styles['cell-border']}>
+                      {mopBreakdown[mop as keyof MOPBreakdown].aggFare}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+            <tfoot style={{ backgroundColor: '#ddebf7' }}>
+              <tr style={{ fontWeight: 'bold' }}>
+                <td className={styles['cell-border']}>TOTAL SALES</td>
+                <td className={styles['cell-border']}>{totalTicketCost}</td>
               </tr>
             </tfoot>
           </table>
