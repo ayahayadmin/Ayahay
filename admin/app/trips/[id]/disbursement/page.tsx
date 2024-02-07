@@ -83,6 +83,11 @@ export default function DisbursementPage({ params }: any) {
               disbursement: [{ date: dayjs(trip.departureDateIso) }],
             }}
             onFinish={handleDisbursementSubmit}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+              }
+            }}
           >
             {contextHolder}
             <Disbursements tripDate={trip.departureDateIso} />
