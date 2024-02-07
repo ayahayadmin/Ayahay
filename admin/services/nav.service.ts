@@ -33,10 +33,6 @@ export const webLinks = {
       key: 'dashboard',
     },
     {
-      label: 'Bookings',
-      key: 'bookings/for-approval',
-    },
-    {
       label: 'Trips',
       key: 'trips',
     },

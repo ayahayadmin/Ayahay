@@ -159,10 +159,7 @@ export class BookingRequestService {
   }
 
   isRequestBookingFlow(booking: IBooking, loggedInAccount?: IAccount): boolean {
-    return (
-      !this.utilityService.hasPrivilegedAccess(loggedInAccount) &&
-      booking.bookingVehicles?.length > 0
-    );
+    return false;
   }
 
   async approveBookingRequest(

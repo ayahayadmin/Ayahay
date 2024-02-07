@@ -26,11 +26,7 @@ export default function BookingConfirmation({
   const { loggedInAccount } = useAuth();
   const form = Form.useFormInstance();
 
-  const isBookingRequestFlow =
-    !hasPrivilegedAccess &&
-    tentativeBooking &&
-    tentativeBooking.bookingVehicles &&
-    tentativeBooking.bookingVehicles.length > 0;
+  const isBookingRequestFlow = false;
 
   const onClickRequestBooking = async () => {
     const validationResult = await doFinalValidation();
