@@ -10,6 +10,7 @@ import { BookingReservationService } from './booking-reservation.service';
 import { BookingPricingService } from './booking-pricing.service';
 import { EmailModule } from '@/email/email.module';
 import { VoucherModule } from '@/voucher/voucher.module';
+import { BookingRequestService } from '@/booking/booking-request.service';
 
 @Module({
   imports: [
@@ -24,9 +25,15 @@ import { VoucherModule } from '@/voucher/voucher.module';
   providers: [
     BookingValidator,
     BookingService,
+    BookingRequestService,
     BookingReservationService,
     BookingPricingService,
   ],
-  exports: [BookingService, BookingReservationService, BookingPricingService],
+  exports: [
+    BookingService,
+    BookingRequestService,
+    BookingReservationService,
+    BookingPricingService,
+  ],
 })
 export class BookingModule {}

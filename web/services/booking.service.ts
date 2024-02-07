@@ -95,3 +95,29 @@ export function saveBookingInBrowser(bookingId: string): void {
   const oneMonthInMinutes = 60 * 24 * 30;
   cacheItem('saved-bookings', savedBookingIds, oneMonthInMinutes);
 }
+
+export async function requestBooking(
+  tentativeBookingId: number,
+  contactEmail?: string
+): Promise<IBooking | undefined> {
+  try {
+    const { data: response } = await axios.patch<IBooking>(
+      `${BOOKING_API}/requests/${tentativeBookingId}/create`,
+      contactEmail ? { email: contactEmail } : undefined
+    );
+    return response;
+  } catch (e) {
+    console.error(e);
+    return undefined;
+  }
+}
+
+export async function getBookingRequestById(
+  tempBookingId: number
+): Promise<IBooking | undefined> {
+  const { data: booking } = await axios.get<IBooking>(
+    `${BOOKING_API}/requests/${tempBookingId}`
+  );
+
+  return booking;
+}

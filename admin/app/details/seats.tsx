@@ -15,7 +15,6 @@ import { useEffect, useState } from 'react';
 import { ISeat, IBookingPassenger } from '@ayahay/models';
 import { Modal, Select } from 'antd';
 import { mockShips, mockTrip, mockBookingPassengers } from '@ayahay/mocks';
-import { getAllBookingsOfTrip } from '@/services/booking.service';
 import { ICabin } from '@ayahay/models/cabin.model';
 
 interface PassengerInfo {
@@ -60,7 +59,7 @@ export default function Seats({ shipId, cabinType, floor }: SeatProps) {
   useEffect(() => {
     const bookingPassengers: IBookingPassenger[] = [];
     const fetchShip = mockShips;
-    const fetchBookings = getAllBookingsOfTrip(trip.id); //getAllBookingsOfTrip should return bookings in a trip
+    const fetchBookings: any[] = [];
     const fetchBookingPassenger = mockBookingPassengers;
 
     const [type, name] = split(selectedCabin, ',');

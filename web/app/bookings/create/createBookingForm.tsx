@@ -1,13 +1,4 @@
-import {
-  Form,
-  Spin,
-  Steps,
-  Grid,
-  notification,
-  Modal,
-  Button,
-  Input,
-} from 'antd';
+import { Form, Spin, Steps, Grid, notification, Modal, Button } from 'antd';
 import styles from './createBookingForm.module.scss';
 import { IBooking } from '@ayahay/models';
 import PassengerInformationForm from '@/components/booking/PassengerInformationForm';
@@ -16,12 +7,12 @@ import PassengerPreferencesForm from '@/components/booking/PassengerPreferencesF
 import {
   createTentativeBooking,
   saveBookingInBrowser,
+  requestBooking as _requestBooking,
 } from '@/services/booking.service';
 import BookingConfirmation from '@/components/booking/BookingConfirmation';
 import { useTripFromSearchParams } from '@/hooks/trip';
 import { startPaymentForBooking } from '@/services/payment.service';
 import { InfoCircleOutlined } from '@ant-design/icons';
-import { invalidateItem } from '@ayahay/services/cache.service';
 import { useAuth } from '@/contexts/AuthContext';
 import { getAxiosError } from '@ayahay/services/error.service';
 import { FieldError } from '@ayahay/http';
@@ -41,7 +32,8 @@ export default function CreateBookingForm({
   onComplete,
 }: CreateBookingFormProps) {
   const { loggedInAccount, hasPrivilegedAccess } = useAuth();
-  const { trip } = useTripFromSearchParams();
+  const { trips } = useTripFromSearchParams();
+  const trip = trips?.[0];
   const screens = useBreakpoint();
   const [modal, contextHolder] = Modal.useModal();
   const [form] = Form.useForm();
@@ -114,6 +106,55 @@ export default function CreateBookingForm({
     }
   };
 
+  const requestBooking = async (tentativeBookingId: number): Promise<void> => {
+    setLoadingMessage('Creating booking request...');
+
+    const contactEmail = form.getFieldValue('contactEmail');
+    const createdBooking = await _requestBooking(
+      tentativeBookingId,
+      contactEmail
+    );
+
+    setLoadingMessage('');
+    if (createdBooking === undefined) {
+      onStartPaymentError();
+      return;
+    }
+
+    // TODO: save in booking request browser cache
+
+    informBookingRequested(createdBooking.id);
+  };
+
+  const informBookingRequested = (bookingId: string) => {
+    const redirectUrl = `/bookings/requests/${bookingId}`;
+    const partnerName = trip?.shippingLine?.name ?? 'our partner shipping line';
+
+    modal.info({
+      width: 'min(90vw, 512px)',
+      centered: true,
+      title: `Booking Requested`,
+      icon: <InfoCircleOutlined />,
+      content: (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <p>
+            A booking has been successfully requested. Please wait for&nbsp;
+            {partnerName} to process your request.
+          </p>
+          <p>
+            You can keep track of the status of your booking request in the link
+            below:
+          </p>
+          <Button type='link' href={redirectUrl} target='_blank'>
+            View Booking Request
+          </Button>
+        </div>
+      ),
+      okText: 'Book Again',
+      onOk: () => window.location.reload(),
+    });
+  };
+
   const payBooking = async (tentativeBookingId: number): Promise<void> => {
     setLoadingMessage('Initiating payment...');
 
@@ -133,12 +174,17 @@ export default function CreateBookingForm({
     if (!loggedInAccount) {
       saveBookingInBrowser(response.paymentReference);
     }
-    informPaymentInitiation(response.paymentReference, response.redirectUrl);
+    informPaymentInitiation(
+      response.paymentReference,
+      vehicles?.length > 0,
+      response.redirectUrl
+    );
     window.open(response.redirectUrl);
   };
 
   const informPaymentInitiation = (
     transactionId: string,
+    hasVehicle: boolean,
     redirectUrl: string
   ) => {
     modal.info({
@@ -148,6 +194,14 @@ export default function CreateBookingForm({
       icon: <InfoCircleOutlined />,
       content: (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {hasVehicle && (
+            <p style={{ fontSize: '16px' }}>
+              <strong>
+                IMPORTANT: PLEASE PRINT AND BRING THREE (3) COPIES OF THE BILL
+                OF LADING (BOL) AFTER PAYMENT CONFIRMATION.
+              </strong>
+            </p>
+          )}
           <p>
             You can safely close this tab or book again by clicking the button
             below.
@@ -244,6 +298,7 @@ export default function CreateBookingForm({
             tentativeBooking={bookingPreview}
             hasPrivilegedAccess={hasPrivilegedAccess}
             onPreviousStep={previousStep}
+            onRequestBooking={requestBooking}
             onStartPayment={payBooking}
           />
         </div>

@@ -24,6 +24,15 @@ export class BookingValidator {
         fieldName: ['trips'],
         message: 'A booking must have at least one trip.',
       });
+      return errorMessages;
+    }
+
+    const shippingLineId = trips[0].shippingLineId;
+    if (trips.some((trip) => trip.shippingLineId !== shippingLineId)) {
+      errorMessages.push({
+        fieldName: ['trips'],
+        message: 'All trips must be from the same shipping line',
+      });
     }
 
     if (passengers.length === 0 && vehicles.length === 0) {

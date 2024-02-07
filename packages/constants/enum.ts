@@ -48,14 +48,21 @@ export enum TRIP_STATUS {
 }
 
 export enum BOOKING_STATUS {
-  Requested = 'Booking Requested',
+  /**
+   * Slot/capacity reserved already for this booking
+   *
+   * NOTE: Confirmed bookings may still have a
+   * Pending payment status. These bookings will be automatically
+   * cancelled after not receiving a payment after a time period
+   * (this is not implemented yet)
+   */
   Confirmed = 'Booking Confirmed',
-  Failed = 'Booking Failed',
   Cancelled = 'Booking Cancelled',
 }
 
 export enum PAYMENT_STATUS {
-  Pending = 'Waiting For Payment',
+  None = 'Waiting for Payment',
+  Pending = 'Processing Payment',
   Failed = 'Payment Failed',
   TimedOut = 'Payment Timed Out',
   Success = 'Payment Success',

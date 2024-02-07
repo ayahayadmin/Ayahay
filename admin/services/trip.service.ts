@@ -19,27 +19,6 @@ import {
 dayjs.extend(isSameOrBefore);
 dayjs.extend(isSameOrAfter);
 
-export async function getTrips(): Promise<ITrip[] | undefined> {
-  const cachedTrips = fetchItem<ITrip[]>('trips');
-  if (cachedTrips !== undefined) {
-    return cachedTrips;
-  }
-
-  try {
-    const { data } = await axios.get(`${TRIP_API}`);
-    cacheItem('trips', data, 30);
-    return data;
-  } catch (e) {
-    console.error(e);
-    return undefined;
-  }
-}
-
-export async function getTrip(tripId: number): Promise<ITrip | undefined> {
-  const trips = await getTrips();
-  return trips?.find((trip) => trip.id === tripId);
-}
-
 export async function getTripsByDateRange(startDate: string, endDate: string) {
   const { data: trips } = await axios.get(`${TRIP_API}/to-edit`, {
     params: { startDate, endDate },
@@ -74,19 +53,6 @@ export async function getBookingsOfTrip(
   } catch (e) {
     console.error(e);
   }
-}
-
-export async function addTrips(newTrips: ITrip[] | any[]) {
-  const trips = await getTrips();
-  trips!.push(...newTrips);
-  localStorage.setItem('trips', JSON.stringify(trips));
-}
-
-export async function getTripByReferenceNo(
-  referenceNo: string
-): Promise<ITrip | undefined> {
-  const trips = await getTrips();
-  return trips!.find((trip) => trip.referenceNo === referenceNo);
 }
 
 export async function createTripsFromSchedules(

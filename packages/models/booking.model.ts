@@ -8,11 +8,22 @@ import {
 import { IPaymentItem } from './payment-item.model';
 import { IAccount } from './account.model';
 import { IVoucher } from './voucher.model';
+import { IShippingLine } from './shipping-line.model';
 
 export interface IBooking {
   id: string;
-  accountId?: string;
-  account?: IAccount;
+  /**
+   * we're enforcing that all trips in a booking comes from the
+   * same shipping line. this is so complaints, refunds,
+   * vouchers, booking approval, and other flows will be handled
+   * by the same shipping line
+   */
+  shippingLineId: number;
+  shippingLine?: IShippingLine;
+  createdByAccountId?: string;
+  createdByAccount?: IAccount;
+  approvedByAccountId?: string;
+  approvedByAccount?: IAccount;
   voucherCode?: string;
   voucher?: IVoucher;
 
@@ -29,6 +40,8 @@ export interface IBooking {
    */
   contactEmail?: string;
   createdAtIso: string;
+  // indicates if this is or was a booking request
+  isBookingRequest: boolean;
   /**
    * if booking status is failed or cancelled,
    * remarks (e.g. reason, actions) are saved here

@@ -29,16 +29,16 @@ export const webLinks = {
   ],
   Admin: [
     {
+      label: 'Dashboard',
+      key: 'dashboard',
+    },
+    {
       label: 'Trips',
       key: 'trips',
     },
     {
       label: 'Vessels',
       key: 'ships',
-    },
-    {
-      label: 'Dashboard',
-      key: 'dashboard',
     },
     {
       label: 'Reporting',

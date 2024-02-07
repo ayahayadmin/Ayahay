@@ -3,6 +3,7 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
+  NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '@/prisma.service';
 import { v4 as uuidv4 } from 'uuid';
@@ -12,10 +13,13 @@ import { createHash, createHmac } from 'crypto';
 import axios, { AxiosError } from 'axios';
 import { IAccount } from '@ayahay/models';
 import {
+  DragonpayPaymentInitiationResponse,
   PayMongoCheckoutPaidPostbackRequest,
   PayMongoCheckoutSession,
 } from './payment.types';
 import { UtilityService } from '@/utility.service';
+import { BookingMapper } from '@/booking/booking.mapper';
+import { BookingRequestService } from '@/booking/booking-request.service';
 
 @Injectable()
 export class PaymentService {
@@ -24,7 +28,9 @@ export class PaymentService {
   constructor(
     private prisma: PrismaService,
     private bookingService: BookingService,
-    private utilityService: UtilityService
+    private utilityService: UtilityService,
+    private bookingRequestService: BookingRequestService,
+    private bookingMapper: BookingMapper
   ) {}
 
   async startPaymentFlow(
@@ -41,6 +47,15 @@ export class PaymentService {
     if (tempBooking === null) {
       throw new Error(
         'This booking session has expired. Please create another booking.'
+      );
+    }
+
+    const booking = this.bookingMapper.convertTempBookingToBooking(tempBooking);
+    if (
+      this.bookingRequestService.isRequestBookingFlow(booking, loggedInAccount)
+    ) {
+      throw new BadRequestException(
+        'This booking is a request that must be approved first before paying.'
       );
     }
 
@@ -225,6 +240,51 @@ export class PaymentService {
     };
   }
 
+  async startPaymentFlowForBookingRequest(
+    bookingId: string
+  ): Promise<PaymentInitiationResponse> {
+    const bookingRequestEntity = await this.prisma.booking.findUnique({
+      where: {
+        id: bookingId,
+      },
+    });
+    if (bookingRequestEntity === null) {
+      throw new NotFoundException(
+        'This booking session has expired. Please create another booking.'
+      );
+    }
+    if (!bookingRequestEntity.isBookingRequest) {
+      throw new BadRequestException('The booking is not a booking request.');
+    }
+    if (bookingRequestEntity.paymentStatus === 'Pending') {
+      throw new BadRequestException(
+        'We are still processing your payment for this booking request'
+      );
+    }
+
+    const paymentReference = bookingRequestEntity.id;
+    const contactEmail = bookingRequestEntity.contactEmail;
+
+    if (process.env.NODE_ENV === 'local') {
+      await this.onSuccessfulTransaction(this.prisma, paymentReference);
+      return {
+        redirectUrl: `${process.env.WEB_URL}/bookings/${paymentReference}`,
+        paymentReference,
+      };
+    }
+
+    const response = await this.initiateCheckoutWithPayMongo(
+      paymentReference,
+      bookingRequestEntity.totalPrice,
+      contactEmail
+    );
+
+    return {
+      redirectUrl: response.redirectUrl,
+      paymentReference,
+    };
+  }
+
   async handleDragonpayPostback(
     transactionId: string,
     referenceNo: string,
@@ -313,7 +373,7 @@ export class PaymentService {
     });
 
     if (existingBooking === null) {
-      await this.bookingService.createBookingFromTempBooking(
+      await this.bookingService.createConfirmedBookingFromPaymentReference(
         transactionId,
         'Pending',
         transactionContext
@@ -338,7 +398,7 @@ export class PaymentService {
     });
 
     if (existingBooking === null) {
-      return this.bookingService.createBookingFromTempBooking(
+      return this.bookingService.createConfirmedBookingFromPaymentReference(
         transactionId,
         'Success',
         transactionContext
@@ -424,11 +484,4 @@ export class PaymentService {
     );
     throw new BadRequestException('Invalid signature');
   }
-}
-
-interface DragonpayPaymentInitiationResponse {
-  RefNo: string;
-  Status: string;
-  Message: string;
-  Url: string;
 }

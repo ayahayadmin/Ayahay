@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import BookingSummary from '@ayahay/components/descriptions/BookingSummary';
 import { getBookingById } from '@/services/booking.service';
 import { IBooking } from '@ayahay/models/booking.model';
-import { Button, notification, Typography } from 'antd';
+import { Button, Modal, notification, Typography } from 'antd';
 import {
   cancelBooking,
   checkInPassenger,
@@ -12,6 +12,8 @@ import {
 } from '@ayahay/services/booking.service';
 import { getAxiosError } from '@ayahay/services/error.service';
 import { useAuth } from '@/contexts/AuthContext';
+import { startPaymentForBookingRequest } from '@/services/payment.service';
+import { InfoCircleOutlined } from '@ant-design/icons';
 
 const { Title } = Typography;
 
@@ -19,7 +21,8 @@ const textCenter = { textAlign: 'center' };
 const noPadding = { padding: '0' };
 
 export default function GetBooking({ params }) {
-  const [api, contextHolder] = notification.useNotification();
+  const [api, notificationContext] = notification.useNotification();
+  const [modal, modalContext] = Modal.useModal();
   const { loggedInAccount, hasPrivilegedAccess } = useAuth();
   const [booking, setBooking] = useState<IBooking | undefined>();
   const [errorCode, setErrorCode] = useState<number | undefined>();
@@ -46,6 +49,48 @@ export default function GetBooking({ params }) {
     }
     loadBooking();
   }, [loggedInAccount]);
+
+  const payBooking = async (): Promise<void> => {
+    if (booking === undefined) {
+      return;
+    }
+
+    const response = await startPaymentForBookingRequest(booking.id);
+    if (response === undefined) {
+      return;
+    }
+
+    informPaymentInitiation(response.paymentReference, response.redirectUrl);
+    window.open(response.redirectUrl);
+  };
+
+  const informPaymentInitiation = (
+    transactionId: string,
+    redirectUrl: string
+  ) => {
+    modal.info({
+      width: 'min(90vw, 512px)',
+      centered: true,
+      title: `You will be redirected to the secure PayMongo Payment Gateway to pay for your booking.`,
+      icon: <InfoCircleOutlined />,
+      content: (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <p>
+            For any concerns, please email us at it@ayahay.com with the subject
+            header:
+          </p>
+          <p>
+            <strong>Booking {transactionId.toUpperCase()}</strong>
+          </p>
+          <Button type='link' href={redirectUrl} target='_blank'>
+            I was not redirected
+          </Button>
+        </div>
+      ),
+      okText: 'OK',
+      onOk: () => window.location.reload(),
+    });
+  };
 
   const onCancelBooking = async (remarks: string): Promise<void> => {
     if (booking === undefined) {
@@ -119,6 +164,7 @@ export default function GetBooking({ params }) {
             booking={booking}
             titleLevel={2}
             hasPrivilegedAccess={hasPrivilegedAccess}
+            onPayBooking={payBooking}
             onCancelBooking={onCancelBooking}
             onCheckInPassenger={checkInBookingPassenger}
             onCheckInVehicle={checkInBookingVehicle}
@@ -152,7 +198,8 @@ export default function GetBooking({ params }) {
         </p>
       )}
       {errorCode === 500 && <p style={textCenter}>Something went wrong.</p>}
-      {contextHolder}
+      {notificationContext}
+      {modalContext}
     </div>
   );
 }

@@ -1,17 +1,17 @@
 import useSWR from 'swr';
-import { getTrip } from '@/services/trip.service';
+import { getTrips } from '@ayahay/services/trip.service';
 import { useSearchParams } from 'next/navigation';
 
 export function useTripFromSearchParams() {
   const searchParams = useSearchParams();
-  const params = Object.fromEntries(searchParams.entries());
+  const tripIds = searchParams.getAll('tripId').map((tripId) => +tripId);
 
   const { data, error, isLoading } = useSWR(
-    { tripId: +params.tripId },
-    ({ tripId }) => getTrip(tripId)
+    { tripIds: tripIds },
+    ({ tripIds }) => getTrips(tripIds)
   );
   return {
-    trip: data,
+    trips: data,
     isLoading,
     error: error,
   };

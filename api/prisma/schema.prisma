@@ -33,8 +33,8 @@ model Trip {
   bookingCutOffDate DateTime @map("booking_cut_off_date")
   cancellationReason String? @map("cancellation_reason")
 
-  passengers BookingPassenger[]
-  vehicles BookingVehicle[]
+  bookingPassengers BookingPassenger[]
+  bookingVehicles BookingVehicle[]
   notifications Notification[]
   availableCabins TripCabin[]
   availableVehicleTypes TripVehicleType[]
@@ -102,7 +102,7 @@ model Cabin {
 
   tripSpecificInfo TripCabin[]
   schedules ShippingLineScheduleRate[]
-  bookings BookingPassenger[]
+  bookingPassengers BookingPassenger[]
 
   @@map("cabin")
 }
@@ -151,6 +151,8 @@ model ShippingLine {
   seatTypes SeatType[]
   seatPlans SeatPlan[]
   accounts Account[]
+  bookings Booking[]
+  tempBookings TempBooking[]
 
   @@map("shipping_line")
 }
@@ -208,8 +210,12 @@ model Port {
 
 model Booking {
   id String @id
-  accountId String? @map("account_id")
-  account Account? @relation(fields: [accountId], references: [id])
+  createdByAccountId String? @map("created_by_account_id")
+  createdByAccount Account? @relation("createdByAccount", fields: [createdByAccountId], references: [id])
+  approvedByAccountId String? @map("approved_by_account_id")
+  approvedByAccount Account? @relation("approvedByAccount", fields: [approvedByAccountId], references: [id])
+  shippingLineId Int @map("shipping_line_id")
+  shippingLine ShippingLine @relation(fields: [shippingLineId], references: [id])
   voucherCode String? @map("voucher_code")
   voucher Voucher? @relation(fields: [voucherCode], references: [code])
 
@@ -220,10 +226,11 @@ model Booking {
   bookingType String @map("booking_type")
   contactEmail String? @map("contact_email")
   createdAt DateTime @map("created_at")
+  isBookingRequest Boolean @map("is_booking_request")
   failureCancellationRemarks String? @map("failure_cancellation_remarks")
 
-  passengers BookingPassenger[]
-  vehicles BookingVehicle[]
+  bookingPassengers BookingPassenger[]
+  bookingVehicles BookingVehicle[]
   paymentItems PaymentItem[]
 
   @@map("booking")
@@ -268,7 +275,7 @@ model Passenger {
   discountType String? @map("discount_type")
 
   buddies Passenger[] @relation("PassengerBuddies")
-  bookings BookingPassenger[]
+  bookingPassengers BookingPassenger[]
 
   @@map("passenger")
 }
@@ -303,15 +310,19 @@ model Vehicle {
   officialReceiptUrl String @map("official_receipt_url")
   certificateOfRegistrationUrl String @map("certificate_of_registration_url")
 
-  bookings BookingVehicle[]
+  bookingVehicles BookingVehicle[]
 
   @@map("vehicle")
 }
 
 model TempBooking {
   id Int @default(autoincrement()) @id
-  accountId String? @map("account_id")
-  account Account? @relation(fields: [accountId], references: [id])
+  shippingLineId Int @map("shipping_line_id")
+  shippingLine ShippingLine @relation(fields: [shippingLineId], references: [id])
+  createdByAccountId String? @map("created_by_account_id")
+  createdByAccount Account? @relation("createdByAccount", fields: [createdByAccountId], references: [id])
+  approvedByAccountId String? @map("approved_by_account_id")
+  approvedByAccount Account? @relation("approvedByAccount", fields: [approvedByAccountId], references: [id])
   voucherCode String? @map("voucher_code")
   voucher Voucher? @relation(fields: [voucherCode], references: [code])
 
@@ -320,6 +331,8 @@ model TempBooking {
   paymentReference String? @map("payment_reference")
   contactEmail String? @map("contact_email")
   createdAt DateTime @map("created_at")
+  isBookingRequest Boolean @map("is_booking_request")
+  failureCancellationRemarks String? @map("failure_cancellation_remarks")
 
   passengersJson Json @map("passengers_json")
   vehiclesJson Json @map("vehicles_json")
@@ -338,9 +351,11 @@ model Account {
   email String
   role String
 
-  bookings Booking[]
+  bookingsCreated Booking[] @relation("createdByAccount")
+  bookingsApproved Booking[] @relation("approvedByAccount")
+  tempBookingsCreated TempBooking[] @relation("createdByAccount")
+  tempBookingsApproved TempBooking[] @relation("approvedByAccount")
   vehicles Vehicle[]
-  tempBookings TempBooking[]
   notifications AccountNotification[]
   myVouchers Voucher[]
 
@@ -469,7 +484,7 @@ model Disbursement {
 model Voucher {
   code String @id
   createdByAccountId String @map("created_by_account_id")
-  createdBy Account @relation(fields: [createdByAccountId], references: [id])
+  createdByAccount Account @relation(fields: [createdByAccountId], references: [id])
 
   description String
   discountFlat Float @map("discount_flat")

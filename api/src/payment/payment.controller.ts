@@ -21,21 +21,30 @@ import { PayMongoCheckoutPaidPostbackRequest } from './payment.types';
 export class PaymentController {
   constructor(private paymentService: PaymentService) {}
 
-  @Post('booking/:id')
+  @Post('bookings/:tempBookingId')
   @UseGuards(AuthGuard)
   @AllowUnauthenticated()
   async payBooking(
     @Request() req,
-    @Param('id') tempBookingId: string,
+    @Param('tempBookingId') tempBookingId: number,
     @Query() { gateway }: { gateway: string },
     @Body('email') email?: string
   ): Promise<PaymentInitiationResponse> {
     return this.paymentService.startPaymentFlow(
-      +tempBookingId,
+      tempBookingId,
       gateway,
       email,
       req.user
     );
+  }
+
+  @Post('bookings/requests/:bookingId')
+  @UseGuards(AuthGuard)
+  @AllowUnauthenticated()
+  async payBookingRequest(
+    @Param('bookingId') bookingId: string
+  ): Promise<PaymentInitiationResponse> {
+    return this.paymentService.startPaymentFlowForBookingRequest(bookingId);
   }
 
   @Post('postback/dpay')

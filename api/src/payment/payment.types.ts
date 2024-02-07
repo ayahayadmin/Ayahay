@@ -13,3 +13,10 @@ export interface PayMongoCheckoutSession {
     reference_number: string;
   };
 }
+
+export interface DragonpayPaymentInitiationResponse {
+  RefNo: string;
+  Status: string;
+  Message: string;
+  Url: string;
+}

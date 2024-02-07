@@ -17,6 +17,7 @@ interface BookingSummaryProps {
   booking?: IBooking;
   titleLevel: 1 | 2 | 3 | 4 | 5;
   hasPrivilegedAccess?: boolean;
+  onPayBooking?: () => Promise<void>;
   onCancelBooking?: (remarks: string) => Promise<void>;
   onCheckInPassenger?: (bookingPassengerId: number) => Promise<void>;
   onCheckInVehicle?: (bookingVehicleId: number) => Promise<void>;
@@ -26,6 +27,7 @@ export default function BookingSummary({
   booking,
   titleLevel,
   hasPrivilegedAccess,
+  onPayBooking,
   onCancelBooking,
   onCheckInPassenger,
   onCheckInVehicle,
@@ -38,7 +40,13 @@ export default function BookingSummary({
     booking?.bookingPassengers?.[0]?.trip ??
     booking?.bookingVehicles?.[0]?.trip;
   const showQrCode =
-    booking?.bookingStatus === 'Confirmed' && trip?.status === 'Awaiting';
+    booking?.bookingStatus === 'Confirmed' &&
+    booking?.paymentStatus === 'Success' &&
+    trip?.status === 'Awaiting';
+  const payable =
+    booking?.bookingStatus === 'Confirmed' &&
+    booking?.paymentStatus === 'None' &&
+    onPayBooking;
 
   useEffect(() => {
     if (isPrinting) {
@@ -82,12 +90,13 @@ export default function BookingSummary({
     onCancelBooking;
 
   const bookingActions = (
-    <div style={{ display: 'flex', gap: '8px' }}>
-      <Button
-        className='hide-on-print'
-        type='primary'
-        onClick={() => onClickPrint()}
-      >
+    <div style={{ display: 'flex', gap: '8px' }} className='hide-on-print'>
+      {payable && (
+        <Button type='primary' onClick={() => onPayBooking()}>
+          Pay
+        </Button>
+      )}
+      <Button type='primary' onClick={() => onClickPrint()}>
         <PrinterOutlined rev={undefined} />
         Print
       </Button>
@@ -95,7 +104,6 @@ export default function BookingSummary({
         booking.bookingVehicles &&
         booking.bookingVehicles.length > 0 && (
           <Button
-            className='hide-on-print'
             type='primary'
             href={`/bookings/${booking.id}/bol`}
             target='_blank'
@@ -105,11 +113,7 @@ export default function BookingSummary({
           </Button>
         )}
       {showCancelBookingButton && (
-        <Button
-          className='hide-on-print'
-          type='default'
-          onClick={() => setIsCancellationModalOpen(true)}
-        >
+        <Button type='default' onClick={() => setIsCancellationModalOpen(true)}>
           Void
         </Button>
       )}
@@ -125,7 +129,7 @@ export default function BookingSummary({
 
   const completeBookingSummary = (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-      {booking && booking.createdAtIso?.length > 0 && (
+      {booking && booking.bookingStatus === 'Confirmed' && (
         <section
           style={{
             display: 'flex',
@@ -221,7 +225,7 @@ export default function BookingSummary({
           />
         </section>
       )}
-      {booking && trip && (
+      {trip && (
         <section>
           <p>
             {trip.srcPort?.name} - {trip.destPort?.name}

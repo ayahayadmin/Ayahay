@@ -10,7 +10,8 @@ import { useTripFromSearchParams } from '@/hooks/trip';
 const { Title } = Typography;
 
 export default function CreateBooking() {
-  const { trip } = useTripFromSearchParams();
+  const { trips } = useTripFromSearchParams();
+  const trip = trips?.[0];
   const router = useRouter();
 
   const onComplete = (booking: IBooking) => {

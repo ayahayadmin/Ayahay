@@ -10,8 +10,22 @@ export async function startPaymentForBooking(
   const gatewayQuery = gateway ? `?gateway=${gateway}` : '';
   try {
     const { data: response } = await axios.post<PaymentInitiationResponse>(
-      `${PAYMENT_API}/booking/${tentativeBookingId}${gatewayQuery}`,
+      `${PAYMENT_API}/bookings/${tentativeBookingId}${gatewayQuery}`,
       contactEmail ? { email: contactEmail } : undefined
+    );
+    return response;
+  } catch (e) {
+    console.error(e);
+    return undefined;
+  }
+}
+
+export async function startPaymentForBookingRequest(
+  bookingId: string
+): Promise<PaymentInitiationResponse | undefined> {
+  try {
+    const { data: response } = await axios.post<PaymentInitiationResponse>(
+      `${PAYMENT_API}/bookings/requests/${bookingId}`
     );
     return response;
   } catch (e) {
