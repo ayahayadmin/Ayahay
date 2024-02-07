@@ -174,12 +174,17 @@ export default function CreateBookingForm({
     if (!loggedInAccount) {
       saveBookingInBrowser(response.paymentReference);
     }
-    informPaymentInitiation(response.paymentReference, response.redirectUrl);
+    informPaymentInitiation(
+      response.paymentReference,
+      vehicles?.length > 0,
+      response.redirectUrl
+    );
     window.open(response.redirectUrl);
   };
 
   const informPaymentInitiation = (
     transactionId: string,
+    hasVehicle: boolean,
     redirectUrl: string
   ) => {
     modal.info({
@@ -189,6 +194,14 @@ export default function CreateBookingForm({
       icon: <InfoCircleOutlined />,
       content: (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {hasVehicle && (
+            <p style={{ fontSize: '16px' }}>
+              <strong>
+                IMPORTANT: PLEASE PRINT AND BRING THREE (3) COPIES OF THE BILL
+                OF LADING (BOL) AFTER PAYMENT CONFIRMATION.
+              </strong>
+            </p>
+          )}
           <p>
             You can safely close this tab or book again by clicking the button
             below.
