@@ -86,7 +86,7 @@ export interface BillOfLading {
   shippingLineName: string;
   destPortName: string;
   departureDate: string;
-  voyage: number;
+  voyageNumber: number;
   vehicles: {
     classification?: string;
     modelName: string;

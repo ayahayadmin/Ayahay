@@ -274,13 +274,14 @@ export class ReportingService {
             },
             vehicle: {
               include: {
-                vehicleType: {
-                  include: {
-                    trips: true,
-                  },
-                },
+                vehicleType: true,
               },
             },
+          },
+        },
+        paymentItems: {
+          where: {
+            bookingId,
           },
         },
       },

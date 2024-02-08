@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ShippingLineMapper } from '@/shipping-line/shipping-line.mapper';
 import { PortMapper } from '@/port/port.mapper';
 import { BillOfLading, PortsByShip, TripManifest } from '@ayahay/http';
+import { uniqBy } from 'lodash';
 
 @Injectable()
 export class ReportingMapper {
@@ -198,7 +199,26 @@ export class ReportingMapper {
     const destPortName = booking.bookingVehicles[0].trip.destPort.name;
     const departureDate =
       booking.bookingVehicles[0].trip.departureDate.toISOString();
-    const voyage = booking.bookingVehicles[0].trip.voyage;
+    const voyageNumber = booking.bookingVehicles[0].trip.voyage?.number;
+
+    const vehicleFares = {};
+    const uniquePaymentItems: any = uniqBy(booking.paymentItems, 'description');
+    uniquePaymentItems.forEach((paymentItem) => {
+      if (!paymentItem.description.startsWith('Vehicle')) {
+        return;
+      }
+
+      const parenthesisValueRegExp = /\(([^)]+)\)/;
+      const [vehicleName] = parenthesisValueRegExp.exec(
+        paymentItem.description
+      );
+
+      if (vehicleFares.hasOwnProperty(vehicleName)) {
+        vehicleFares[vehicleName] += paymentItem.price;
+      } else {
+        vehicleFares[vehicleName] = paymentItem.price;
+      }
+    });
 
     const vehicles = booking.bookingVehicles.map((vehicle) => ({
       classification: '', //If needed - Add a new column "class" in vehicle_type
@@ -206,7 +226,7 @@ export class ReportingMapper {
       plateNo: vehicle.vehicle.plateNo,
       weight: '', //If needed - Add a new column "weight" in vehicle_type
       vehicleTypeDesc: vehicle.vehicle.vehicleType.description,
-      fare: vehicle.vehicle.vehicleType.trips[0].fare,
+      fare: vehicleFares[`(${vehicle.vehicle.vehicleType.name})`],
     }));
 
     return {
@@ -215,7 +235,7 @@ export class ReportingMapper {
       shippingLineName,
       destPortName,
       departureDate,
-      voyage,
+      voyageNumber,
       vehicles,
     };
   }
