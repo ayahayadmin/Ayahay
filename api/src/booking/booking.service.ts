@@ -471,7 +471,7 @@ export class BookingService {
   ): IPaymentItem[] {
     const paymentItems: IPaymentItem[] = [];
 
-    bookingPassengers?.forEach((bookingPassenger) =>
+    bookingPassengers?.forEach((bookingPassenger) => {
       paymentItems.push({
         id: -1,
         bookingId: -1,
@@ -480,18 +480,52 @@ export class BookingService {
           bookingPassenger.passenger.discountType || 'Adult'
         } Fare (${bookingPassenger.cabin.name})`,
         bookingPassengerId: bookingPassenger.id,
-      })
-    );
+      });
 
-    bookingVehicles?.forEach((bookingVehicle) =>
+      const voucherDiscount =
+        this.bookingPricingService.calculateVoucherDiscountForPassenger(
+          bookingPassenger,
+          voucher
+        );
+
+      if (voucherDiscount > 0) {
+        paymentItems.push({
+          id: -1,
+          bookingId: -1,
+          price: -voucherDiscount,
+          description: `${
+            bookingPassenger.passenger.discountType || 'Adult'
+          } Discount (${bookingPassenger.cabin.name})`,
+          bookingPassengerId: bookingPassenger.id,
+        });
+      }
+    });
+
+    bookingVehicles?.forEach((bookingVehicle) => {
       paymentItems.push({
         id: -1,
         bookingId: -1,
         price: bookingVehicle.totalPrice,
         description: `Vehicle Fare (${bookingVehicle.vehicle.vehicleType.name})`,
         bookingVehicleId: bookingVehicle.id,
-      })
-    );
+      });
+
+      const voucherDiscount =
+        this.bookingPricingService.calculateVoucherDiscountForVehicle(
+          bookingVehicle,
+          voucher
+        );
+
+      if (voucherDiscount > 0) {
+        paymentItems.push({
+          id: -1,
+          bookingId: -1,
+          price: -voucherDiscount,
+          description: `Vehicle Discount (${bookingVehicle.vehicle.vehicleType.name})`,
+          bookingVehicleId: bookingVehicle.id,
+        });
+      }
+    });
 
     const serviceCharge = this.bookingPricingService.calculateServiceCharge(
       bookingPassengers,
@@ -504,20 +538,6 @@ export class BookingService {
         bookingId: -1,
         price: serviceCharge,
         description: 'Administrative Fee',
-      });
-    }
-
-    const voucherDiscount = this.bookingPricingService.calculateVoucherDiscount(
-      bookingPassengers,
-      bookingVehicles,
-      voucher
-    );
-    if (voucherDiscount > 0) {
-      paymentItems.push({
-        id: -1,
-        bookingId: -1,
-        price: -voucherDiscount,
-        description: `Voucher Discount (Code: ${voucher.code})`,
       });
     }
 

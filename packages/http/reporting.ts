@@ -34,7 +34,8 @@ export interface TripReport {
 
   vehiclesBreakdown?: {
     typeOfVehicle: string;
-    fare: number;
+    baseFare: number;
+    totalSales: number;
     vehiclesBooked: {
       referenceNo: string;
       plateNo: string;
@@ -86,7 +87,7 @@ export interface BillOfLading {
   shippingLineName: string;
   destPortName: string;
   departureDate: string;
-  voyage: number;
+  voyageNumber: number;
   vehicles: {
     classification?: string;
     modelName: string;

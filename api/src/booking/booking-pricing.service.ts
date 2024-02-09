@@ -126,32 +126,35 @@ export class BookingPricingService {
     return vehicleFare * this.AYAHAY_MARKUP_PERCENT;
   }
 
-  calculateVoucherDiscount(
-    bookingPassengers: IBookingPassenger[],
-    bookingVehicles: IBookingVehicle[],
+  calculateVoucherDiscountForPassenger(
+    bookingPassenger: IBookingPassenger,
     voucher?: Voucher
   ): number {
-    if (!voucher) {
+    return this.calculateVoucherDiscount(bookingPassenger, voucher);
+  }
+
+  private calculateVoucherDiscount(
+    { totalPrice }: { totalPrice?: number },
+    voucher?: Voucher
+  ) {
+    if (!voucher || !totalPrice) {
       return 0;
     }
 
-    const passengersTotalPrice = bookingPassengers
-      .map((passenger) => passenger.totalPrice)
-      .reduce((priceA, priceB) => priceA + priceB, 0);
-
-    const vehiclesTotalPrice = bookingVehicles
-      .map((vehicle) => vehicle.totalPrice)
-      .reduce((priceA, priceB) => priceA + priceB, 0);
-
-    const totalDiscountablePrice = passengersTotalPrice + vehiclesTotalPrice;
-
     const totalDiscount =
-      totalDiscountablePrice * voucher.discountPercent + voucher.discountFlat;
+      totalPrice * voucher.discountPercent + voucher.discountFlat;
 
-    if (totalDiscount > totalDiscountablePrice) {
-      return totalDiscountablePrice;
+    if (totalDiscount > totalPrice) {
+      return totalPrice;
     }
 
     return totalDiscount;
+  }
+
+  calculateVoucherDiscountForVehicle(
+    bookingVehicle: IBookingVehicle,
+    voucher?: Voucher
+  ): number {
+    return this.calculateVoucherDiscount(bookingVehicle, voucher);
   }
 }

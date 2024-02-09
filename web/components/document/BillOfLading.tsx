@@ -103,7 +103,11 @@ export default function BillOfLading({ data }: BillOfLadingProps) {
                         {dayjs(data.departureDate).format('YY')}
                       </span>
                       &nbsp;VGE. No.&nbsp;
-                      <BlankUnderline width='20px' />
+                      {data.voyageNumber ? (
+                        <span style={underlined}>{data.voyageNumber}</span>
+                      ) : (
+                        <BlankUnderline width='20px' />
+                      )}
                     </p>
                     <p>
                       SHIPPER&nbsp;

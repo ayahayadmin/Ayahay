@@ -6,7 +6,6 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { forwardRef } from 'react';
 import styles from './Reports.module.scss';
-import { sumBy } from 'lodash';
 import { three_columns_grid, two_columns_grid } from './DailySalesReport';
 import { MOPBreakdown } from './SummarySalesPerVessel';
 
@@ -33,7 +32,7 @@ const CargoDailySalesReport = forwardRef(function (
   };
 
   let totalVehicles = data.vehicles?.length;
-  let totalSales = sumBy(data.vehicles, 'ticketCost');
+  let totalSales = 0;
 
   data.vehicles?.map((vehicle) => {
     if (vehicle.paymentStatus === 'PayMongo') {
@@ -127,14 +126,15 @@ const CargoDailySalesReport = forwardRef(function (
               {data.vehiclesBreakdown?.map((vehicleBreakdown) => {
                 const totalVehiclesBooked =
                   vehicleBreakdown.vehiclesBooked.length;
+                totalSales += vehicleBreakdown.totalSales;
                 const firstRow = (
                   <tr>
                     <td>{vehicleBreakdown.typeOfVehicle}</td>
                     <td></td>
                     <td></td>
                     <td>{totalVehiclesBooked}</td>
-                    <td>{vehicleBreakdown.fare}</td>
-                    <td>{vehicleBreakdown.fare * totalVehiclesBooked}</td>
+                    <td>{vehicleBreakdown.baseFare}</td>
+                    <td>{vehicleBreakdown.totalSales}</td>
                   </tr>
                 );
 

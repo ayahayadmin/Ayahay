@@ -72,14 +72,19 @@ export class ReportingService {
     );
 
     confirmedBookingVehicles.forEach((vehicle) => {
-      const vehicleFare =
-        trip.availableVehicleTypes[vehicle.vehicle.vehicleTypeId - 1].fare; // temporary
+      const baseFare =
+        trip.availableVehicleTypes[vehicle.vehicle.vehicleTypeId - 1].fare;
+      const vehicleFares =
+        this.reportingMapper.convertPaymentItemsToVehicleFaresMap(
+          vehicle.booking.paymentItems
+        );
 
       const vehicleBreakdownArr =
         this.reportingMapper.convertTripVehiclesToVehicleBreakdown(
           vehicle,
           vehiclesBreakdown,
-          vehicleFare
+          baseFare,
+          vehicleFares[`(${vehicle.vehicle.vehicleType.name})`]
         );
       vehiclesBreakdown = vehicleBreakdownArr;
     });
@@ -89,28 +94,39 @@ export class ReportingService {
       passengers: trip.bookingPassengers
         .filter((passenger) => passenger.booking.bookingStatus === 'Confirmed')
         .map((passenger) => {
+          const passengerFares =
+            this.reportingMapper.convertPaymentItemsToPassengerFaresMap(
+              passenger.booking.paymentItems
+            );
           const adminFee =
             this.bookingPricingService.calculateServiceChargeForPassenger(
               passenger.passenger,
               passenger.booking.createdByAccount?.role
             );
+          const discountType = passenger.passenger.discountType ?? 'Adult';
 
           return this.reportingMapper.convertTripPassengersForReporting(
             passenger,
+            passengerFares[`${discountType} (${passenger.cabin.name})`],
             adminFee
           );
         }),
       vehicles: confirmedBookingVehicles.map((vehicle) => {
-        const vehicleFare =
-          trip.availableVehicleTypes[vehicle.vehicle.vehicleTypeId - 1].fare; // temporary
+        const baseFare =
+          trip.availableVehicleTypes[vehicle.vehicle.vehicleTypeId - 1].fare;
+        const vehicleFares =
+          this.reportingMapper.convertPaymentItemsToVehicleFaresMap(
+            vehicle.booking.paymentItems
+          );
         const vehicleAdminFee =
           this.bookingPricingService.calculateServiceChargeForVehicle(
-            vehicleFare,
+            baseFare,
             vehicle.booking.createdByAccount?.role
           );
 
         return this.reportingMapper.convertTripVehiclesForReporting(
           vehicle,
+          vehicleFares[`(${vehicle.vehicle.vehicleType.name})`],
           vehicleAdminFee
         );
       }),
@@ -188,15 +204,21 @@ export class ReportingService {
       trip.bookingPassengers
         .filter((passenger) => passenger.booking.bookingStatus === 'Confirmed')
         .forEach((passenger) => {
+          const passengerFares =
+            this.reportingMapper.convertPaymentItemsToPassengerFaresMap(
+              passenger.booking.paymentItems
+            );
           const adminFee =
             this.bookingPricingService.calculateServiceChargeForPassenger(
               passenger.passenger,
               passenger.booking.createdByAccount.role
             );
+          const discountType = passenger.passenger.discountType ?? 'Adult';
 
           const { cabinPassengerArr, noShowArr } =
             this.reportingMapper.convertTripPassengersToCabinPassenger(
               passenger,
+              passengerFares[`${discountType} (${passenger.cabin.name})`],
               adminFee,
               cabinPassengerBreakdown,
               noShowBreakdown
@@ -207,6 +229,7 @@ export class ReportingService {
           passengers.push(
             this.reportingMapper.convertTripPassengersForReporting(
               passenger,
+              passengerFares[`${discountType} (${passenger.cabin.name})`],
               adminFee
             )
           );
@@ -274,13 +297,14 @@ export class ReportingService {
             },
             vehicle: {
               include: {
-                vehicleType: {
-                  include: {
-                    trips: true,
-                  },
-                },
+                vehicleType: true,
               },
             },
+          },
+        },
+        paymentItems: {
+          where: {
+            bookingId,
           },
         },
       },

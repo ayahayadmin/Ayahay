@@ -98,7 +98,7 @@ export default function BookingSummary({
       )}
       <Button type='primary' onClick={() => onClickPrint()}>
         <PrinterOutlined rev={undefined} />
-        Print
+        Print Ticket
       </Button>
       {booking &&
         booking.bookingVehicles &&
