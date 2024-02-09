@@ -35,16 +35,16 @@ export class ReportingMapper {
     };
   }
 
-  convertTripPassengersForReporting(passenger, adminFee) {
+  convertTripPassengersForReporting(passenger, passengerFare, adminFee) {
     return {
       teller: passenger.booking.createdByAccount?.email,
       ticketReferenceNo: passenger.booking.referenceNo,
       accommodation: passenger.cabin.cabinType.name,
       discount: passenger.passenger.discountType ?? 'Adult',
       checkedIn: !!passenger.checkInDate,
-      ticketCost: passenger.totalPrice,
+      ticketCost: passengerFare,
       adminFee,
-      fare: passenger.totalPrice + adminFee,
+      fare: passengerFare + adminFee,
       paymentStatus:
         passenger.booking.createdByAccount?.role === 'Admin' ||
         passenger.booking.createdByAccount?.role === 'Staff'
@@ -53,11 +53,11 @@ export class ReportingMapper {
     };
   }
 
-  convertTripVehiclesForReporting(vehicle, vehicleAdminFee) {
+  convertTripVehiclesForReporting(vehicle, vehicleFare, vehicleAdminFee) {
     return {
-      ticketCost: vehicle.totalPrice,
+      ticketCost: vehicleFare,
       adminFee: vehicleAdminFee,
-      fare: vehicle.totalPrice + vehicleAdminFee,
+      fare: vehicleFare + vehicleAdminFee,
       paymentStatus:
         vehicle.booking.createdByAccount?.role === 'Admin' ||
         vehicle.booking.createdByAccount?.role === 'Staff'
@@ -68,13 +68,14 @@ export class ReportingMapper {
 
   convertTripPassengersToCabinPassenger(
     passenger,
+    passengerFare,
     adminFee,
     cabinPassengerArr,
     noShowArr
   ) {
     const discountType = passenger.passenger.discountType ?? 'Adult';
     const boarded = passenger.checkInDate ? 1 : 0;
-    const costWithoutAdminFee = passenger.totalPrice - adminFee;
+    const costWithoutAdminFee = passengerFare - adminFee;
 
     if (boarded === 0) {
       const noShowIndex = noShowArr.findIndex(
@@ -132,6 +133,7 @@ export class ReportingMapper {
   convertTripVehiclesToVehicleBreakdown(
     vehicle,
     vehicleBreakdownArr,
+    baseFare,
     vehicleFare
   ) {
     const index = vehicleBreakdownArr.findIndex(
@@ -142,6 +144,7 @@ export class ReportingMapper {
     if (index !== -1) {
       vehicleBreakdownArr[index] = {
         ...vehicleBreakdownArr[index],
+        totalSales: vehicleBreakdownArr[index].totalSales + vehicleFare,
         vehiclesBooked: [
           ...vehicleBreakdownArr[index].vehiclesBooked,
           {
@@ -153,7 +156,8 @@ export class ReportingMapper {
     } else {
       vehicleBreakdownArr.push({
         typeOfVehicle: vehicle.vehicle.vehicleType.name,
-        fare: vehicleFare,
+        baseFare,
+        totalSales: vehicleFare,
         vehiclesBooked: [
           {
             referenceNo: vehicle.booking.referenceNo,
@@ -201,24 +205,9 @@ export class ReportingMapper {
       booking.bookingVehicles[0].trip.departureDate.toISOString();
     const voyageNumber = booking.bookingVehicles[0].trip.voyage?.number;
 
-    const vehicleFares = {};
-    const uniquePaymentItems: any = uniqBy(booking.paymentItems, 'description');
-    uniquePaymentItems.forEach((paymentItem) => {
-      if (!paymentItem.description.startsWith('Vehicle')) {
-        return;
-      }
-
-      const parenthesisValueRegExp = /\(([^)]+)\)/;
-      const [vehicleName] = parenthesisValueRegExp.exec(
-        paymentItem.description
-      );
-
-      if (vehicleFares.hasOwnProperty(vehicleName)) {
-        vehicleFares[vehicleName] += paymentItem.price;
-      } else {
-        vehicleFares[vehicleName] = paymentItem.price;
-      }
-    });
+    const vehicleFares = this.convertPaymentItemsToVehicleFaresMap(
+      booking.paymentItems
+    );
 
     const vehicles = booking.bookingVehicles.map((vehicle) => ({
       classification: '', //If needed - Add a new column "class" in vehicle_type
@@ -246,5 +235,50 @@ export class ReportingMapper {
       destPortId: data.dest_port_id,
       shipId: data.ship_id,
     };
+  }
+
+  convertPaymentItemsToPassengerFaresMap(paymentItems) {
+    const passengerFares = {};
+    const uniquePaymentItems: any = uniqBy(paymentItems, 'description');
+    uniquePaymentItems.forEach((paymentItem) => {
+      if (paymentItem.description.startsWith('Vehicle')) {
+        return;
+      }
+
+      const parenthesisValueRegExp = /\(([^)]+)\)/;
+      const [cabinName] = parenthesisValueRegExp.exec(paymentItem.description);
+      const [discountType] = paymentItem.description.split('(')[0].split(' ');
+
+      if (passengerFares.hasOwnProperty(`${discountType} ${cabinName}`)) {
+        passengerFares[`${discountType} ${cabinName}`] += paymentItem.price;
+      } else {
+        passengerFares[`${discountType} ${cabinName}`] = paymentItem.price;
+      }
+    });
+
+    return passengerFares;
+  }
+
+  convertPaymentItemsToVehicleFaresMap(paymentItems) {
+    const vehicleFares = {};
+    const uniquePaymentItems: any = uniqBy(paymentItems, 'description');
+    uniquePaymentItems.forEach((paymentItem) => {
+      if (!paymentItem.description.startsWith('Vehicle')) {
+        return;
+      }
+
+      const parenthesisValueRegExp = /\(([^)]+)\)/;
+      const [vehicleName] = parenthesisValueRegExp.exec(
+        paymentItem.description
+      );
+
+      if (vehicleFares.hasOwnProperty(vehicleName)) {
+        vehicleFares[vehicleName] += paymentItem.price;
+      } else {
+        vehicleFares[vehicleName] = paymentItem.price;
+      }
+    });
+
+    return vehicleFares;
   }
 }

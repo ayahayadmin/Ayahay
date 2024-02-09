@@ -37,15 +37,15 @@ const SummarySalesPerVoyage = forwardRef(function (
   };
 
   let totalPassengers = data.passengers.length;
-  let totalTicketCost = 0;
-  let totalRefund = 0;
-  let totalAdminFee = 0;
-  let totalFare = 0;
+  let totalPassengerSales = 0;
+  let totalPassengerRefund = 0;
+  let totalPassengerAdminFee = 0;
+  let totalPassengerFare = 0;
 
   data.passengers.map((passenger) => {
-    totalTicketCost += passenger.ticketCost;
-    totalAdminFee += passenger.adminFee;
-    totalFare += passenger.fare;
+    totalPassengerSales += passenger.ticketCost;
+    totalPassengerAdminFee += passenger.adminFee;
+    totalPassengerFare += passenger.fare;
 
     if (passenger.paymentStatus === 'PayMongo') {
       mopBreakdown.Ayahay.aggTicketCost! += passenger.ticketCost;
@@ -55,6 +55,28 @@ const SummarySalesPerVoyage = forwardRef(function (
       mopBreakdown.OTC.aggTicketCost! += passenger.ticketCost;
       mopBreakdown.OTC.aggAdminFee! += passenger.adminFee;
       mopBreakdown.OTC.aggFare += passenger.fare;
+    }
+  });
+
+  let totalVehicles = data.vehicles?.length;
+  let totalVehicleSales = 0;
+  let totalVehicleRefund = 0;
+  let totalVehicleAdminFee = 0;
+  let totalVehicleFare = 0;
+
+  data.vehicles?.map((vehicle) => {
+    totalVehicleSales += vehicle.ticketCost;
+    totalVehicleAdminFee += vehicle.adminFee;
+    totalVehicleFare += vehicle.fare;
+
+    if (vehicle.paymentStatus === 'PayMongo') {
+      mopBreakdown.Ayahay.aggTicketCost! += vehicle.ticketCost;
+      mopBreakdown.Ayahay.aggAdminFee! += vehicle.adminFee;
+      mopBreakdown.Ayahay.aggFare += vehicle.fare;
+    } else {
+      mopBreakdown.OTC.aggTicketCost! += vehicle.ticketCost;
+      mopBreakdown.OTC.aggAdminFee! += vehicle.adminFee;
+      mopBreakdown.OTC.aggFare += vehicle.fare;
     }
   });
 
@@ -134,6 +156,7 @@ const SummarySalesPerVoyage = forwardRef(function (
                 <th>Vessel</th>
                 <th>Voyage</th>
                 <th>Total Passengers</th>
+                <th>Total Vehicles</th>
                 <th>Total Sales</th>
                 <th>Refund</th>
                 <th>Net Sales</th>
@@ -149,9 +172,24 @@ const SummarySalesPerVoyage = forwardRef(function (
                   {getLocaleTimeString(data.departureDate)}
                 </td>
                 <td>{totalPassengers}</td>
-                <td>{totalTicketCost}</td>
+                <td></td>
+                <td>{totalPassengerSales}</td>
                 <td>-</td>
-                <td>{totalTicketCost - totalRefund}</td>
+                <td>{totalPassengerSales - totalPassengerRefund}</td>
+              </tr>
+              <tr>
+                <td>{vesselName}</td>
+                <td>
+                  {data.srcPort.code}-{data.destPort.code}/WT:&nbsp;
+                  {getFullDate(data.departureDate, true)}
+                  &nbsp;@&nbsp;
+                  {getLocaleTimeString(data.departureDate)}
+                </td>
+                <td></td>
+                <td>{totalVehicles}</td>
+                <td>{totalVehicleSales}</td>
+                <td>-</td>
+                <td>{totalVehicleSales - totalVehicleRefund}</td>
               </tr>
             </tbody>
           </table>
@@ -196,9 +234,15 @@ const SummarySalesPerVoyage = forwardRef(function (
             <tfoot style={{ backgroundColor: '#ddebf7' }}>
               <tr style={{ fontWeight: 'bold' }}>
                 <td className={styles['cell-border']}>TOTAL SALES</td>
-                <td className={styles['cell-border']}>{totalTicketCost}</td>
-                <td className={styles['cell-border']}>{totalAdminFee}</td>
-                <td className={styles['cell-border']}>{totalFare}</td>
+                <td className={styles['cell-border']}>
+                  {totalPassengerSales + totalVehicleSales}
+                </td>
+                <td className={styles['cell-border']}>
+                  {totalPassengerAdminFee + totalVehicleAdminFee}
+                </td>
+                <td className={styles['cell-border']}>
+                  {totalPassengerFare + totalVehicleFare}
+                </td>
               </tr>
             </tfoot>
           </table>
