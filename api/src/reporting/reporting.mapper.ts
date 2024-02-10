@@ -248,7 +248,7 @@ export class ReportingMapper {
         return;
       }
 
-      const parenthesisValueRegExp = /\(([^)]+)\)/;
+      const parenthesisValueRegExp = /\((.*)\)/;
       const [cabinName] = parenthesisValueRegExp.exec(paymentItem.description);
       const [discountType] = paymentItem.description.split('(')[0].split(' ');
 
@@ -270,7 +270,7 @@ export class ReportingMapper {
         return;
       }
 
-      const parenthesisValueRegExp = /\(([^)]+)\)/;
+      const parenthesisValueRegExp = /\((.*)\)/;
       const [vehicleName] = parenthesisValueRegExp.exec(
         paymentItem.description
       );
