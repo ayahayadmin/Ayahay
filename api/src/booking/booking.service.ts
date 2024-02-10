@@ -471,6 +471,12 @@ export class BookingService {
   ): IPaymentItem[] {
     const paymentItems: IPaymentItem[] = [];
 
+    const serviceCharge = this.bookingPricingService.calculateServiceCharge(
+      bookingPassengers,
+      bookingVehicles,
+      loggedInAccount
+    );
+
     bookingPassengers?.forEach((bookingPassenger) => {
       paymentItems.push({
         id: -1,
@@ -498,6 +504,8 @@ export class BookingService {
           } Discount (${bookingPassenger.cabin.name})`,
           bookingPassengerId: bookingPassenger.id,
         });
+
+        bookingPassenger.totalPrice -= voucherDiscount;
       }
     });
 
@@ -524,14 +532,11 @@ export class BookingService {
           description: `Vehicle Discount (${bookingVehicle.vehicle.vehicleType.name})`,
           bookingVehicleId: bookingVehicle.id,
         });
+
+        bookingVehicle.totalPrice -= voucherDiscount;
       }
     });
 
-    const serviceCharge = this.bookingPricingService.calculateServiceCharge(
-      bookingPassengers,
-      bookingVehicles,
-      loggedInAccount
-    );
     if (serviceCharge > 0) {
       paymentItems.push({
         id: -1,

@@ -241,11 +241,14 @@ export class ReportingMapper {
     const passengerFares = {};
     const uniquePaymentItems: any = uniqBy(paymentItems, 'description');
     uniquePaymentItems.forEach((paymentItem) => {
-      if (paymentItem.description.startsWith('Vehicle')) {
+      if (
+        paymentItem.description.startsWith('Vehicle') ||
+        paymentItem.description === 'Administrative Fee'
+      ) {
         return;
       }
 
-      const parenthesisValueRegExp = /\(([^)]+)\)/;
+      const parenthesisValueRegExp = /\((.*)\)/;
       const [cabinName] = parenthesisValueRegExp.exec(paymentItem.description);
       const [discountType] = paymentItem.description.split('(')[0].split(' ');
 
@@ -267,7 +270,7 @@ export class ReportingMapper {
         return;
       }
 
-      const parenthesisValueRegExp = /\(([^)]+)\)/;
+      const parenthesisValueRegExp = /\((.*)\)/;
       const [vehicleName] = parenthesisValueRegExp.exec(
         paymentItem.description
       );
