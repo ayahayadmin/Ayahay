@@ -241,7 +241,10 @@ export class ReportingMapper {
     const passengerFares = {};
     const uniquePaymentItems: any = uniqBy(paymentItems, 'description');
     uniquePaymentItems.forEach((paymentItem) => {
-      if (paymentItem.description.startsWith('Vehicle')) {
+      if (
+        paymentItem.description.startsWith('Vehicle') ||
+        paymentItem.description === 'Administrative Fee'
+      ) {
         return;
       }
 
