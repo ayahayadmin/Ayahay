@@ -49,8 +49,6 @@ const PassengerDailySalesReport = forwardRef(function (
 
   let totalPassengers = data.passengers.length;
   let totalTicketCost = 0;
-  // let totalAdminFee = 0;
-  let totalFareWithAdminFee = 0;
 
   return (
     <div ref={ref}>
@@ -131,16 +129,12 @@ const PassengerDailySalesReport = forwardRef(function (
                 <th>Accommodation</th>
                 <th>Discount</th>
                 <th>Ticket Cost</th>
-                {/* <th>Transaction Fee</th> */}
-                <th>Total Fare</th>
                 <th>Payment Status</th>
               </tr>
             </thead>
             <tbody>
               {data.passengers.map((passenger, idx) => {
                 totalTicketCost += passenger.ticketCost;
-                // totalAdminFee += passenger.adminFee;
-                totalFareWithAdminFee += passenger.fare;
                 const paymentStatus = passenger.paymentStatus;
 
                 if (paymentStatus === 'PayMongo') {
@@ -168,8 +162,6 @@ const PassengerDailySalesReport = forwardRef(function (
                     <td>{passenger.accommodation}</td>
                     <td>{passenger.discount}</td>
                     <td>{passenger.ticketCost}</td>
-                    {/* <td>{passenger.adminFee}</td> */}
-                    <td>{passenger.fare}</td>
                     <td>{paymentStatus}</td>
                   </tr>
                 );
@@ -180,8 +172,6 @@ const PassengerDailySalesReport = forwardRef(function (
                 <td colSpan={6}>TOTAL</td>
                 <td>{totalPassengers}</td>
                 <td>{totalTicketCost}</td>
-                {/* <td>{totalAdminFee}</td> */}
-                <td>{totalFareWithAdminFee}</td>
                 <td>-</td>
               </tr>
             </tfoot>
