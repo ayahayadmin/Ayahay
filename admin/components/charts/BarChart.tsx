@@ -1,6 +1,7 @@
 'use client';
 import { Chart as ChartJS, ArcElement } from 'chart.js/auto';
 import { Bar } from 'react-chartjs-2';
+import ChartDataLabels from 'chartjs-plugin-datalabels';
 ChartJS.register(ArcElement);
 
 interface ChartProp {
@@ -15,11 +16,12 @@ const options = {
       stacked: true,
     },
     y: {
-      stacked: false,
+      beginAtZero: true,
+      stacked: true,
     },
   },
 };
 
 export default function BarChart({ data }: ChartProp) {
-  return <Bar options={options} data={data} />;
+  return <Bar options={options} data={data} plugins={[ChartDataLabels]} />;
 }

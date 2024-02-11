@@ -658,6 +658,7 @@ __metadata:
     antd: ^5.2.3
     axios: ^1.4.0
     chart.js: ^4.2.1
+    chartjs-plugin-datalabels: ^2.2.0
     dayjs: ^1.11.7
     eslint: 8.35.0
     eslint-config-next: 13.2.3
@@ -5439,6 +5440,15 @@ __metadata:
   dependencies:
     "@kurkle/color": ^0.3.0
   checksum: 1d4b839b2bd3183dd10a380107df166a57a58d5dcbab92b61dcdd14518ceaaf5b98e0b30af34e77b638cca18c5cc1de649fec6be4742ac4bad0fd17ed8d210d5
+  languageName: node
+  linkType: hard
+
+"chartjs-plugin-datalabels@npm:^2.2.0":
+  version: 2.2.0
+  resolution: "chartjs-plugin-datalabels@npm:2.2.0"
+  peerDependencies:
+    chart.js: ">=3.0.0"
+  checksum: 26086a908a8e88507959b7aaf798b2d9794ea95f7a5889b8bb9f6b9f3437a7e2fdf18952d3ba403b2ff78e5b70452439fb323bd0dfe76e9d7d1dae1328dacb99
   languageName: node
   linkType: hard
 
