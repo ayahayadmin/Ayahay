@@ -6,7 +6,10 @@ import {
 } from '@ayahay/services/date.service';
 import { useAuth } from '@/contexts/AuthContext';
 import styles from './Reports.module.scss';
-import { three_columns_grid, two_columns_grid } from './DailySalesReport';
+import {
+  three_columns_grid,
+  two_columns_grid,
+} from './PassengerDailySalesReport';
 import { MOPBreakdown } from './SummarySalesPerVessel';
 
 interface SummarySalesPerVoyageProps {

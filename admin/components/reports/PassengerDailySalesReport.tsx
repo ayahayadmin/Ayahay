@@ -8,7 +8,7 @@ import { forwardRef } from 'react';
 import styles from './Reports.module.scss';
 import { MOPBreakdown } from './SummarySalesPerVessel';
 
-interface DailySalesReportProps {
+interface PassengerDailySalesReportProps {
   data: ITripReport;
   vesselName: string;
 }
@@ -30,8 +30,8 @@ function padZeroes(num: any, size: number) {
   return num;
 }
 
-const DailySalesReport = forwardRef(function (
-  { data, vesselName }: DailySalesReportProps,
+const PassengerDailySalesReport = forwardRef(function (
+  { data, vesselName }: PassengerDailySalesReportProps,
   ref
 ) {
   const { loggedInAccount } = useAuth();
@@ -78,7 +78,7 @@ const DailySalesReport = forwardRef(function (
             <span style={{ fontWeight: 'bold' }}>EB AZNAR SHIPPING</span>
           </div>
           <span className={styles['center-div']} style={{ fontWeight: 'bold' }}>
-            DAILY SALES REPORT
+            PASSENGER DAILY SALES REPORT
           </span>
         </div>
         <div
@@ -270,4 +270,4 @@ const DailySalesReport = forwardRef(function (
   );
 });
 
-export default DailySalesReport;
+export default PassengerDailySalesReport;
