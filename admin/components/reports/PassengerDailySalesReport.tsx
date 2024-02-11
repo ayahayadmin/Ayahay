@@ -8,7 +8,7 @@ import { forwardRef } from 'react';
 import styles from './Reports.module.scss';
 import { MOPBreakdown } from './SummarySalesPerVessel';
 
-interface DailySalesReportProps {
+interface PassengerDailySalesReportProps {
   data: ITripReport;
   vesselName: string;
 }
@@ -30,8 +30,8 @@ function padZeroes(num: any, size: number) {
   return num;
 }
 
-const DailySalesReport = forwardRef(function (
-  { data, vesselName }: DailySalesReportProps,
+const PassengerDailySalesReport = forwardRef(function (
+  { data, vesselName }: PassengerDailySalesReportProps,
   ref
 ) {
   const { loggedInAccount } = useAuth();
@@ -49,8 +49,6 @@ const DailySalesReport = forwardRef(function (
 
   let totalPassengers = data.passengers.length;
   let totalTicketCost = 0;
-  // let totalAdminFee = 0;
-  let totalFareWithAdminFee = 0;
 
   return (
     <div ref={ref}>
@@ -78,7 +76,7 @@ const DailySalesReport = forwardRef(function (
             <span style={{ fontWeight: 'bold' }}>EB AZNAR SHIPPING</span>
           </div>
           <span className={styles['center-div']} style={{ fontWeight: 'bold' }}>
-            DAILY SALES REPORT
+            PASSENGER DAILY SALES REPORT
           </span>
         </div>
         <div
@@ -131,16 +129,12 @@ const DailySalesReport = forwardRef(function (
                 <th>Accommodation</th>
                 <th>Discount</th>
                 <th>Ticket Cost</th>
-                {/* <th>Transaction Fee</th> */}
-                <th>Total Fare</th>
                 <th>Payment Status</th>
               </tr>
             </thead>
             <tbody>
               {data.passengers.map((passenger, idx) => {
                 totalTicketCost += passenger.ticketCost;
-                // totalAdminFee += passenger.adminFee;
-                totalFareWithAdminFee += passenger.fare;
                 const paymentStatus = passenger.paymentStatus;
 
                 if (paymentStatus === 'PayMongo') {
@@ -168,8 +162,6 @@ const DailySalesReport = forwardRef(function (
                     <td>{passenger.accommodation}</td>
                     <td>{passenger.discount}</td>
                     <td>{passenger.ticketCost}</td>
-                    {/* <td>{passenger.adminFee}</td> */}
-                    <td>{passenger.fare}</td>
                     <td>{paymentStatus}</td>
                   </tr>
                 );
@@ -180,8 +172,6 @@ const DailySalesReport = forwardRef(function (
                 <td colSpan={6}>TOTAL</td>
                 <td>{totalPassengers}</td>
                 <td>{totalTicketCost}</td>
-                {/* <td>{totalAdminFee}</td> */}
-                <td>{totalFareWithAdminFee}</td>
                 <td>-</td>
               </tr>
             </tfoot>
@@ -270,4 +260,4 @@ const DailySalesReport = forwardRef(function (
   );
 });
 
-export default DailySalesReport;
+export default PassengerDailySalesReport;

@@ -9,7 +9,7 @@ import { Button, Select, Typography } from 'antd';
 import { DownloadOutlined } from '@ant-design/icons';
 import { useAuthGuard } from '@/hooks/auth';
 import { useAuth } from '@/contexts/AuthContext';
-import DailySalesReport from '@/components/reports/DailySalesReport';
+import PassengerDailySalesReport from '@/components/reports/PassengerDailySalesReport';
 import jsPDF from 'jspdf';
 import SummarySalesPerVoyage from '@/components/reports/SummarySalesPerVoyage';
 import ProfitAndLossStatement from '@/components/reports/ProfitAndLossStatement';
@@ -80,7 +80,7 @@ export default function TripReportingPage({ params }: any) {
     const doc = new jsPDF('l', 'pt', 'a4', true);
     doc.html(dailySalesReportRef.current, {
       async callback(doc) {
-        await doc.save('daily-sales-report');
+        await doc.save('passenger-daily-sales-report');
       },
       margin: [25, 0, 25, 0],
     });
@@ -141,7 +141,7 @@ export default function TripReportingPage({ params }: any) {
       </Button>
       <div style={{ display: 'none' }}>
         {tripsReporting && vesselName && (
-          <DailySalesReport
+          <PassengerDailySalesReport
             data={tripsReporting}
             vesselName={vesselName}
             ref={dailySalesReportRef}

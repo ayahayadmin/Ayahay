@@ -6,7 +6,10 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { forwardRef } from 'react';
 import styles from './Reports.module.scss';
-import { three_columns_grid, two_columns_grid } from './DailySalesReport';
+import {
+  three_columns_grid,
+  two_columns_grid,
+} from './PassengerDailySalesReport';
 import { MOPBreakdown } from './SummarySalesPerVessel';
 
 interface CargoDailySalesReportProps {

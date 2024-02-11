@@ -6,7 +6,10 @@ import {
 } from '@ayahay/services/date.service';
 import { useAuth } from '@/contexts/AuthContext';
 import styles from './Reports.module.scss';
-import { three_columns_grid, two_columns_grid } from './DailySalesReport';
+import {
+  three_columns_grid,
+  two_columns_grid,
+} from './PassengerDailySalesReport';
 import { OPERATION_COSTS } from '@ayahay/constants';
 import { IDisbursement } from '@ayahay/models';
 
@@ -304,7 +307,7 @@ const ProfitAndLossStatement = forwardRef(function (
                   {totalTicketCost + totalVehicleTicketCost - totalExpenses}
                 </td>
               </tr>
-              <tr>
+              {/* <tr>
                 <td>LIABILITY</td>
                 <td>Ayahay Convenience Fee</td>
                 <td style={{ textAlign: 'right' }}>
@@ -322,7 +325,7 @@ const ProfitAndLossStatement = forwardRef(function (
                 <td style={{ textAlign: 'right' }}>
                   {totalFare + totalVehicleFare - totalExpenses}
                 </td>
-              </tr>
+              </tr> */}
             </tbody>
           </table>
         </div>
