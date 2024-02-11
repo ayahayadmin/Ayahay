@@ -1,4 +1,6 @@
 import { DashboardTrips } from '@ayahay/http';
+import { getLocaleTimeString } from '@ayahay/services/date.service';
+import dayjs from 'dayjs';
 
 export function buildPaxAndVehicleBookedData(tripData: DashboardTrips[]) {
   if (!tripData || tripData.length === 0) {
@@ -13,7 +15,11 @@ export function buildPaxAndVehicleBookedData(tripData: DashboardTrips[]) {
 
   tripData.forEach((trip) => {
     labels.push(
-      `${trip.srcPort?.name}-${trip.destPort?.name} (${trip.ship?.name})`
+      `${trip.srcPort?.code}-${trip.destPort?.code} ${dayjs(
+        trip.departureDateIso
+      ).format('MM/DD/YYYY')} ${getLocaleTimeString(trip.departureDateIso)} (${
+        trip.ship?.name
+      })`
     );
     paxBooked.push(trip.passengerCapacities - trip.availableCapacities);
     vehicleBooked.push(trip.vehicleCapacity - trip.availableVehicleCapacity);
