@@ -210,10 +210,10 @@ const SummarySalesPerVoyage = forwardRef(function (
               <tr style={{ fontWeight: 'bold' }}>
                 <th className={styles['cell-border']}>Mode of Payment</th>
                 <th className={styles['cell-border']}>Fare</th>
-                <th className={styles['cell-border']}>
+                {/* <th className={styles['cell-border']}>
                   Ayahay Convenience Fee
                 </th>
-                <th className={styles['cell-border']}>Amount</th>
+                <th className={styles['cell-border']}>Amount</th> */}
               </tr>
             </thead>
             <tbody>
@@ -224,12 +224,12 @@ const SummarySalesPerVoyage = forwardRef(function (
                     <td className={styles['cell-border']}>
                       {mopBreakdown[mop as keyof MOPBreakdown].aggTicketCost}
                     </td>
-                    <td className={styles['cell-border']}>
+                    {/* <td className={styles['cell-border']}>
                       {mopBreakdown[mop as keyof MOPBreakdown].aggAdminFee}
                     </td>
                     <td className={styles['cell-border']}>
                       {mopBreakdown[mop as keyof MOPBreakdown].aggFare}
-                    </td>
+                    </td> */}
                   </tr>
                 );
               })}
@@ -240,12 +240,12 @@ const SummarySalesPerVoyage = forwardRef(function (
                 <td className={styles['cell-border']}>
                   {totalPassengerSales + totalVehicleSales}
                 </td>
-                <td className={styles['cell-border']}>
+                {/* <td className={styles['cell-border']}>
                   {totalPassengerAdminFee + totalVehicleAdminFee}
-                </td>
-                <td className={styles['cell-border']}>
+                </td> */}
+                {/* <td className={styles['cell-border']}>
                   {totalPassengerFare + totalVehicleFare}
-                </td>
+                </td> */}
               </tr>
             </tfoot>
           </table>

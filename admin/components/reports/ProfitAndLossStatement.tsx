@@ -307,7 +307,7 @@ const ProfitAndLossStatement = forwardRef(function (
                   {totalTicketCost + totalVehicleTicketCost - totalExpenses}
                 </td>
               </tr>
-              <tr>
+              {/* <tr>
                 <td>LIABILITY</td>
                 <td>Ayahay Convenience Fee</td>
                 <td style={{ textAlign: 'right' }}>
@@ -325,7 +325,7 @@ const ProfitAndLossStatement = forwardRef(function (
                 <td style={{ textAlign: 'right' }}>
                   {totalFare + totalVehicleFare - totalExpenses}
                 </td>
-              </tr>
+              </tr> */}
             </tbody>
           </table>
         </div>
