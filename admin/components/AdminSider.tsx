@@ -19,28 +19,26 @@ export default function AdminSider() {
       : webLinks.Staff;
 
   return (
-    <div>
+    <Sider
+      breakpoint='md'
+      collapsedWidth='0'
+      reverseArrow
+      id={styles['admin-sider']}
+      className='hide-on-print'
+    >
       {loggedInAccount && (
-        <Sider
-          breakpoint='md'
-          collapsedWidth='0'
-          reverseArrow
-          id={styles['admin-sider']}
-          className='hide-on-print'
-        >
-          <nav id={styles['admin-sider-nav']}>
-            <Menu
-              theme='dark'
-              mode='inline'
-              defaultSelectedKeys={headerTabs
-                .filter((link) => pathName === `/${link.key}`)
-                .map((link) => link.key)}
-              items={headerTabs}
-              onClick={({ key }) => router.push(key)}
-            />
-          </nav>
-        </Sider>
+        <nav id={styles['admin-sider-nav']}>
+          <Menu
+            theme='dark'
+            mode='inline'
+            defaultSelectedKeys={headerTabs
+              .filter((link) => pathName === `/${link.key}`)
+              .map((link) => link.key)}
+            items={headerTabs}
+            onClick={({ key }) => router.push(key)}
+          />
+        </nav>
       )}
-    </div>
+    </Sider>
   );
 }
