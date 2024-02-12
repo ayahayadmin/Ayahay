@@ -35,7 +35,7 @@ export default function RootLayout({
             }}
           >
             <App>
-              <Layout>
+              <Layout hasSider>
                 <Layout className='body'>
                   <WebHeader />
                   <Content style={{ backgroundColor: 'white' }}>

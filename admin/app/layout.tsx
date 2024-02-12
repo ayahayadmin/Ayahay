@@ -29,7 +29,7 @@ export default function RootLayout({
             }}
           >
             <App>
-              <Layout>
+              <Layout hasSider>
                 <Layout className='body'>
                   <AdminHeader />
                   <Content style={{ backgroundColor: 'white' }}>
