@@ -82,6 +82,7 @@ export interface TripManifest {
 }
 
 export interface BillOfLading {
+  referenceNo: string;
   driverName: string;
   shipName: string;
   shippingLineName: string;
