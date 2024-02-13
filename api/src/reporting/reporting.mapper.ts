@@ -190,6 +190,7 @@ export class ReportingMapper {
   }
 
   convertBookingToBillOfLading(booking): BillOfLading {
+    const referenceNo = booking.referenceNo;
     const passenger = booking.bookingPassengers.find(
       ({ passenger }) => passenger.discountType === 'Driver'
     );
@@ -219,6 +220,7 @@ export class ReportingMapper {
     }));
 
     return {
+      referenceNo,
       driverName,
       shipName,
       shippingLineName,

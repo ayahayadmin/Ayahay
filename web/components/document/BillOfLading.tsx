@@ -66,7 +66,7 @@ export default function BillOfLading({ data }: BillOfLadingProps) {
                         fontWeight: 'bold',
                       }}
                     >
-                      <span>BOL #</span>
+                      <span>BOL #&nbsp;{data.referenceNo}</span>
                       <br></br>
                       <span>Original</span>
                     </p>
