@@ -11,6 +11,7 @@ import {
   two_columns_grid,
 } from './PassengerDailySalesReport';
 import { MOPBreakdown } from './SummarySalesPerVessel';
+import { round } from 'lodash';
 
 interface SummarySalesPerVoyageProps {
   data: ITripReport;
@@ -190,9 +191,9 @@ const SummarySalesPerVoyage = forwardRef(function (
                 </td>
                 <td></td>
                 <td>{totalVehicles}</td>
-                <td>{totalVehicleSales}</td>
+                <td>{round(totalVehicleSales, 2)}</td>
                 <td>-</td>
-                <td>{totalVehicleSales - totalVehicleRefund}</td>
+                <td>{round(totalVehicleSales - totalVehicleRefund, 2)}</td>
               </tr>
             </tbody>
           </table>
@@ -210,10 +211,6 @@ const SummarySalesPerVoyage = forwardRef(function (
               <tr style={{ fontWeight: 'bold' }}>
                 <th className={styles['cell-border']}>Mode of Payment</th>
                 <th className={styles['cell-border']}>Fare</th>
-                {/* <th className={styles['cell-border']}>
-                  Ayahay Convenience Fee
-                </th>
-                <th className={styles['cell-border']}>Amount</th> */}
               </tr>
             </thead>
             <tbody>
@@ -224,12 +221,6 @@ const SummarySalesPerVoyage = forwardRef(function (
                     <td className={styles['cell-border']}>
                       {mopBreakdown[mop as keyof MOPBreakdown].aggTicketCost}
                     </td>
-                    {/* <td className={styles['cell-border']}>
-                      {mopBreakdown[mop as keyof MOPBreakdown].aggAdminFee}
-                    </td>
-                    <td className={styles['cell-border']}>
-                      {mopBreakdown[mop as keyof MOPBreakdown].aggFare}
-                    </td> */}
                   </tr>
                 );
               })}
@@ -238,14 +229,8 @@ const SummarySalesPerVoyage = forwardRef(function (
               <tr style={{ fontWeight: 'bold' }}>
                 <td className={styles['cell-border']}>TOTAL SALES</td>
                 <td className={styles['cell-border']}>
-                  {totalPassengerSales + totalVehicleSales}
+                  {round(totalPassengerSales + totalVehicleSales, 2)}
                 </td>
-                {/* <td className={styles['cell-border']}>
-                  {totalPassengerAdminFee + totalVehicleAdminFee}
-                </td> */}
-                {/* <td className={styles['cell-border']}>
-                  {totalPassengerFare + totalVehicleFare}
-                </td> */}
               </tr>
             </tfoot>
           </table>

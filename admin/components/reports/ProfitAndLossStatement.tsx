@@ -12,6 +12,7 @@ import {
 } from './PassengerDailySalesReport';
 import { OPERATION_COSTS } from '@ayahay/constants';
 import { IDisbursement } from '@ayahay/models';
+import { round } from 'lodash';
 
 interface ProfitAndLossStatementProps {
   data: ITripReport;
@@ -233,7 +234,7 @@ const ProfitAndLossStatement = forwardRef(function (
             <tfoot style={{ backgroundColor: '#ddebf7' }}>
               <tr style={{ fontWeight: 'bold' }}>
                 <td colSpan={6}>TOTAL EXPENSES</td>
-                <td>{totalExpenses}</td>
+                <td>{round(totalExpenses, 2)}</td>
               </tr>
             </tfoot>
           </table>
@@ -291,7 +292,7 @@ const ProfitAndLossStatement = forwardRef(function (
                   );
                 })}
                 <td style={{ verticalAlign: 'top', textAlign: 'right' }}>
-                  {totalExpenses}
+                  {round(totalExpenses, 2)}
                 </td>
               </tr>
               <tr>
@@ -304,28 +305,12 @@ const ProfitAndLossStatement = forwardRef(function (
                 </td>
                 <td style={{ textAlign: 'right' }}>
                   {/* subtract here TOTAL refund (pax and cargo), but none for now */}
-                  {totalTicketCost + totalVehicleTicketCost - totalExpenses}
+                  {round(
+                    totalTicketCost + totalVehicleTicketCost - totalExpenses,
+                    2
+                  )}
                 </td>
               </tr>
-              {/* <tr>
-                <td>LIABILITY</td>
-                <td>Ayahay Convenience Fee</td>
-                <td style={{ textAlign: 'right' }}>
-                  {totalAdminFee + totalVehicleAdminFee}
-                </td>
-              </tr>
-              <tr style={{ fontWeight: 'bold' }}>
-                <td>INCOME</td>
-                <td>
-                  {data.srcPort.code}-{data.destPort.code}/WT:&nbsp;
-                  {getFullDate(data.departureDate, true)}
-                  &nbsp;@&nbsp;
-                  {getLocaleTimeString(data.departureDate)}
-                </td>
-                <td style={{ textAlign: 'right' }}>
-                  {totalFare + totalVehicleFare - totalExpenses}
-                </td>
-              </tr> */}
             </tbody>
           </table>
         </div>

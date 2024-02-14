@@ -11,6 +11,7 @@ import {
   two_columns_grid,
 } from './PassengerDailySalesReport';
 import { MOPBreakdown } from './SummarySalesPerVessel';
+import { round } from 'lodash';
 
 interface CargoDailySalesReportProps {
   data: ITripReport;
@@ -161,7 +162,7 @@ const CargoDailySalesReport = forwardRef(function (
                 <td colSpan={3}>TOTAL</td>
                 <td>{totalVehicles}</td>
                 <td></td>
-                <td>{totalSales}</td>
+                <td>{round(totalSales, 2)}</td>
               </tr>
             </tfoot>
           </table>
@@ -203,7 +204,9 @@ const CargoDailySalesReport = forwardRef(function (
             <tfoot style={{ backgroundColor: '#ddebf7' }}>
               <tr style={{ fontWeight: 'bold' }}>
                 <td className={styles['cell-border']}>TOTAL SALES</td>
-                <td className={styles['cell-border']}>{totalSales}</td>
+                <td className={styles['cell-border']}>
+                  {round(totalSales, 2)}
+                </td>
               </tr>
             </tfoot>
           </table>
