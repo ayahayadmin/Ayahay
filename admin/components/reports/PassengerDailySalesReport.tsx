@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { forwardRef } from 'react';
 import styles from './Reports.module.scss';
 import { MOPBreakdown } from './SummarySalesPerVessel';
+import { round } from 'lodash';
 
 interface PassengerDailySalesReportProps {
   data: ITripReport;
@@ -172,7 +173,7 @@ const PassengerDailySalesReport = forwardRef(function (
               <tr style={{ fontWeight: 'bold' }}>
                 <td colSpan={6}>TOTAL</td>
                 <td>{totalPassengers}</td>
-                <td>{totalTicketCost}</td>
+                <td>{round(totalTicketCost, 2)}</td>
                 <td>-</td>
               </tr>
             </tfoot>
@@ -215,7 +216,9 @@ const PassengerDailySalesReport = forwardRef(function (
             <tfoot style={{ backgroundColor: '#ddebf7' }}>
               <tr style={{ fontWeight: 'bold' }}>
                 <td className={styles['cell-border']}>TOTAL SALES</td>
-                <td className={styles['cell-border']}>{totalTicketCost}</td>
+                <td className={styles['cell-border']}>
+                  {round(totalTicketCost, 2)}
+                </td>
               </tr>
             </tfoot>
           </table>
