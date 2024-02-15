@@ -172,13 +172,13 @@ export class PaymentService {
           data: {
             attributes: {
               billing: contactEmail ? { email: contactEmail } : {},
-              description: `Payment for Booking ${transactionId}`,
+              description: `Booking ${transactionId} payment`,
               line_items: [
                 {
                   amount: totalPrice * 100,
                   currency: 'PHP',
                   name: `Booking ${transactionId}`,
-                  description: `Payment for Booking ${transactionId}`,
+                  description: `Booking ${transactionId} payment`,
                   quantity: 1,
                 },
               ],
