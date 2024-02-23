@@ -48,6 +48,7 @@ export class EmailService {
       select: {
         booking: {
           select: {
+            contactEmail: true,
             createdByAccount: {
               select: {
                 email: true,
@@ -63,14 +64,18 @@ export class EmailService {
       return;
     }
 
-    const passengerEmail = accounts
+    const passengerWithAccEmail = accounts
       .filter(
-        (account) => account.booking.createdByAccount.role === 'Passenger'
+        (account) => account.booking.createdByAccount?.role === 'Passenger'
       )
       .map((account) => account.booking.createdByAccount.email);
 
+    const passengerWithoutAccEmail = accounts
+      .filter((account) => account.booking.contactEmail !== null)
+      .map((account) => account.booking.contactEmail);
+
     await this.sendTripCancelledEmail({
-      recipients: passengerEmail,
+      recipients: [...passengerWithAccEmail, ...passengerWithoutAccEmail],
       subject: tripDetail,
       reason,
     });
