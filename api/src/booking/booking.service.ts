@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { PrismaClient, Voucher } from '@prisma/client';
+import { Prisma, PrismaClient, Voucher } from '@prisma/client';
 import { PrismaService } from '@/prisma.service';
 import {
   IBooking,
@@ -20,6 +20,7 @@ import {
 import {
   PaginatedRequest,
   PaginatedResponse,
+  PassengerBookingSearchResponse,
   PassengerPreferences,
   TripSearchByDateRange,
 } from '@ayahay/http';
@@ -226,6 +227,99 @@ export class BookingService {
     );
 
     return this.bookingMapper.convertBookingToSummary(booking);
+  }
+
+  async searchPassengerBookings(
+    searchQuery: string,
+    pagination: PaginatedRequest
+  ): Promise<PaginatedResponse<PassengerBookingSearchResponse>> {
+    const itemsPerPage = 10;
+    const skip = (pagination.page - 1) * itemsPerPage;
+
+    const where: Prisma.BookingTripPassengerWhereInput = {
+      OR: [
+        {
+          passenger: {
+            firstName: {
+              contains: searchQuery,
+              mode: 'insensitive',
+            },
+          },
+        },
+        {
+          passenger: {
+            lastName: {
+              contains: searchQuery,
+              mode: 'insensitive',
+            },
+          },
+        },
+        {
+          booking: {
+            referenceNo: {
+              contains: searchQuery,
+              mode: 'insensitive',
+            },
+          },
+        },
+      ],
+    };
+
+    const passengersMatchingQuery =
+      await this.prisma.bookingTripPassenger.findMany({
+        where,
+        select: {
+          checkInDate: true,
+          booking: {
+            select: {
+              id: true,
+              referenceNo: true,
+            },
+          },
+          trip: {
+            select: {
+              id: true,
+              departureDate: true,
+              srcPort: {
+                select: {
+                  name: true,
+                },
+              },
+              destPort: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          },
+          passenger: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
+        },
+        orderBy: {
+          booking: {
+            createdAt: 'desc',
+          },
+        },
+        take: itemsPerPage,
+        skip,
+      });
+
+    const passengersMatchingQueryCount =
+      await this.prisma.bookingTripPassenger.count({
+        where,
+      });
+
+    return {
+      total: passengersMatchingQueryCount,
+      data: passengersMatchingQuery.map((passenger) =>
+        this.bookingMapper.convertBookingToPassengerSearchResponse(passenger)
+      ),
+    };
   }
 
   async createTentativeBooking(
@@ -724,7 +818,7 @@ export class BookingService {
     tripId: number,
     passengerId: number
   ): Promise<void> {
-    const where = {
+    const where: Prisma.BookingTripPassengerWhereUniqueInput = {
       bookingId_tripId_passengerId: {
         bookingId,
         tripId,
@@ -758,7 +852,7 @@ export class BookingService {
     tripId: number,
     vehicleId: number
   ): Promise<void> {
-    const where = {
+    const where: Prisma.BookingTripVehicleWhereUniqueInput = {
       bookingId_tripId_vehicleId: {
         bookingId,
         tripId,

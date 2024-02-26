@@ -23,8 +23,18 @@ export const webLinks = {
       ],
     },
     {
-      label: 'Download Bookings',
-      key: 'download/bookings',
+      label: 'Bookings',
+      key: 'bookings',
+      children: [
+        {
+          label: 'Download Bookings',
+          key: 'download/bookings',
+        },
+        {
+          label: 'Search Bookings',
+          key: 'search',
+        },
+      ],
     },
   ],
   Admin: [
@@ -55,22 +65,22 @@ export const webLinks = {
       key: 'vouchers',
     },
     {
-      label: 'Upload',
-      key: 'upload',
+      label: 'Bookings',
+      key: 'bookings',
       children: [
         {
-          label: 'Upload Trips',
-          key: 'upload/trips',
+          label: 'Search Bookings',
+          key: 'search',
+        },
+        {
+          label: 'Download Bookings',
+          key: 'download/bookings',
         },
         {
           label: 'Upload Bookings',
           key: 'upload/bookings',
         },
       ],
-    },
-    {
-      label: 'Download Bookings',
-      key: 'download/bookings',
     },
   ],
 };

@@ -16,6 +16,7 @@ import {
   PaginatedRequest,
   PaginatedResponse,
   TripSearchByDateRange,
+  PassengerBookingSearchResponse,
 } from '@ayahay/http';
 import { AuthGuard } from '@/guard/auth.guard';
 import { Roles } from '@/decorator/roles.decorator';
@@ -91,6 +92,16 @@ export class BookingController {
       tempBookingId,
       req.user
     );
+  }
+
+  @Get('/search/passengers')
+  @UseGuards(AuthGuard)
+  @Roles('Staff', 'Admin', 'SuperAdmin')
+  async searchPassengerBookings(
+    @Query('q') searchQuery,
+    @Query() pagination: PaginatedRequest
+  ): Promise<PaginatedResponse<PassengerBookingSearchResponse>> {
+    return this.bookingService.searchPassengerBookings(searchQuery, pagination);
   }
 
   @Post()

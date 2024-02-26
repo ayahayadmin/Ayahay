@@ -12,7 +12,7 @@ import { PassengerMapper } from '@/passenger/passenger.mapper';
 import { CabinMapper } from '@/cabin/cabin.mapper';
 import { VehicleMapper } from '@/vehicle/vehicle.mapper';
 import { PaymentMapper } from '@/payment/payment.mapper';
-import { VehicleBookings } from '@ayahay/http';
+import { VehicleBookings, PassengerBookingSearchResponse } from '@ayahay/http';
 
 @Injectable()
 export class BookingMapper {
@@ -329,6 +329,25 @@ export class BookingMapper {
           },
         },
       },
+    };
+  }
+
+  convertBookingToPassengerSearchResponse(
+    bookingTripPassenger: any
+  ): PassengerBookingSearchResponse {
+    return {
+      bookingId: bookingTripPassenger.booking.id,
+      tripId: bookingTripPassenger.trip.id,
+      passengerId: bookingTripPassenger.passenger.id,
+      tripDepartureDateIso:
+        bookingTripPassenger.trip.departureDate.toISOString(),
+      tripSrcPortName: bookingTripPassenger.trip.srcPort.name,
+      tripDestPortName: bookingTripPassenger.trip.destPort.name,
+      firstName: bookingTripPassenger.passenger.firstName,
+      lastName: bookingTripPassenger.passenger.lastName,
+      checkInDateIso:
+        bookingTripPassenger.checkInDate?.toISOString() ?? undefined,
+      referenceNo: bookingTripPassenger.booking.referenceNo,
     };
   }
 }

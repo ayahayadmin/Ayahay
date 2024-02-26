@@ -1,5 +1,9 @@
 import { BOOKING_API } from '@ayahay/constants';
-import { PaginatedRequest, PaginatedResponse } from '@ayahay/http';
+import {
+  PaginatedRequest,
+  PaginatedResponse,
+  PassengerBookingSearchResponse,
+} from '@ayahay/http';
 import { IBooking } from '@ayahay/models';
 import axios from '@ayahay/services/axios';
 import dayjs from 'dayjs';
@@ -33,4 +37,20 @@ export async function approveBookingRequest(
   tempBookingId: number
 ): Promise<void> {
   return axios.patch(`${BOOKING_API}/requests/${tempBookingId}/approve`);
+}
+
+export async function searchPassengerBookings(
+  searchQuery: string,
+  pagination: PaginatedRequest
+): Promise<PaginatedResponse<PassengerBookingSearchResponse>> {
+  const query = new URLSearchParams({
+    q: searchQuery,
+    ...pagination,
+  } as any).toString();
+
+  const { data: bookings } = await axios.get<
+    PaginatedResponse<PassengerBookingSearchResponse>
+  >(`${BOOKING_API}/search/passengers?${query}`);
+
+  return bookings;
 }

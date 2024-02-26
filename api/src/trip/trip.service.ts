@@ -217,7 +217,7 @@ export class TripService {
 
     const bookingIdsStrArr = bookingIds.map(({ bookingId }) => bookingId);
 
-    const where = {
+    const where: Prisma.BookingWhereInput = {
       id: {
         in: bookingIdsStrArr,
       },

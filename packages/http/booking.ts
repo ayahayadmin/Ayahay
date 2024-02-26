@@ -1,9 +1,5 @@
 import { IBookingTripVehicle, IPassenger, IVehicle } from '@ayahay/models';
 
-export interface BookingSearchQuery {
-  id: string;
-}
-
 export interface CreateTentativeBookingRequest {
   tripIds: number[];
   passengers: IPassenger[];
@@ -23,4 +19,17 @@ export interface VehicleBookings {
   referenceNo: string;
   totalPrice: number;
   bookingTripVehicles: IBookingTripVehicle[];
+}
+
+export interface PassengerBookingSearchResponse {
+  bookingId: string;
+  tripId: number;
+  passengerId: number;
+  tripDepartureDateIso: string;
+  tripSrcPortName: string;
+  tripDestPortName: string;
+  firstName: string;
+  lastName: string;
+  checkInDateIso: string;
+  referenceNo: string;
 }

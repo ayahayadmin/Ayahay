@@ -5,13 +5,3 @@ export function getBookingPassengersByTripId(
 ): IBookingTripPassenger[] {
   return [];
 }
-
-export function getBookingPassengersFromQuery(
-  query: string
-): IBookingTripPassenger[] {
-  return [];
-}
-
-function getBookingPassengers(bookings: IBooking[]): IBookingTripPassenger[] {
-  return [];
-}
