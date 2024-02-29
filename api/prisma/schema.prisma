@@ -33,8 +33,9 @@ model Trip {
   bookingCutOffDate DateTime @map("booking_cut_off_date")
   cancellationReason String? @map("cancellation_reason")
 
-  bookingPassengers BookingPassenger[]
-  bookingVehicles BookingVehicle[]
+  bookingTrips BookingTrip[]
+  bookingTripPassengers BookingTripPassenger[]
+  bookingTripVehicles BookingTripVehicle[]
   notifications Notification[]
   availableCabins TripCabin[]
   availableVehicleTypes TripVehicleType[]
@@ -102,7 +103,7 @@ model Cabin {
 
   tripSpecificInfo TripCabin[]
   schedules ShippingLineScheduleRate[]
-  bookingPassengers BookingPassenger[]
+  bookingTripPassengers BookingTripPassenger[]
 
   @@map("cabin")
 }
@@ -134,7 +135,7 @@ model Seat {
   row Int
   column Int
 
-  bookingPassengers BookingPassenger[]
+  bookingTripPassengers BookingTripPassenger[]
 
   @@map("seat")
 }
@@ -193,7 +194,6 @@ model ShippingLineScheduleRate {
   @@map("shipping_line_schedule_rate")
 }
 
-
 model Port {
   id Int @default(autoincrement()) @id
 
@@ -206,6 +206,46 @@ model Port {
   schedulesDest ShippingLineSchedule[] @relation("destPort")
 
   @@map("port")
+}
+
+model Passenger {
+  id Int @default(autoincrement()) @id
+  buddyId Int? @map("buddy_id")
+  buddy Passenger? @relation("PassengerBuddies", fields: [buddyId], references: [id])
+  account Account?
+
+  firstName String @map("first_name")
+  lastName String @map("last_name")
+  occupation String
+  sex String
+  civilStatus String @map("civil_status")
+  birthday DateTime
+  address String
+  nationality String
+  discountType String? @map("discount_type")
+
+  buddies Passenger[] @relation("PassengerBuddies")
+  bookingTripPassengers BookingTripPassenger[]
+
+  @@map("passenger")
+}
+
+model Vehicle {
+  id Int @default(autoincrement()) @id
+  accountId String? @map("account_id")
+  account Account? @relation(fields: [accountId], references: [id])
+  vehicleTypeId Int @map("vehicle_type_id")
+  vehicleType VehicleType @relation(fields: [vehicleTypeId], references: [id])
+
+  plateNo String @map("plate_number")
+  modelName String @map("model_name")
+  modelYear Int @map("model_year")
+  officialReceiptUrl String @map("official_receipt_url")
+  certificateOfRegistrationUrl String @map("certificate_of_registration_url")
+
+  bookingTripVehicles BookingTripVehicle[]
+
+  @@map("vehicle")
 }
 
 model Booking {
@@ -229,19 +269,34 @@ model Booking {
   isBookingRequest Boolean @map("is_booking_request")
   failureCancellationRemarks String? @map("failure_cancellation_remarks")
 
-  bookingPassengers BookingPassenger[]
-  bookingVehicles BookingVehicle[]
-  paymentItems PaymentItem[]
+  bookingTrips BookingTrip[]
+  bookingTripPassengers BookingTripPassenger[]
+  bookingTripVehicles BookingTripVehicle[]
+
+  bookingPaymentItems BookingPaymentItem[]
 
   @@map("booking")
 }
 
-model BookingPassenger {
-  id Int @default(autoincrement()) @id
+model BookingTrip {
   bookingId String @map("booking_id")
   booking Booking @relation(fields: [bookingId], references: [id])
   tripId Int @map("trip_id")
   trip Trip @relation(fields: [tripId], references: [id])
+
+  bookingTripPassengers BookingTripPassenger[]
+  bookingTripVehicles BookingTripVehicle[]
+
+  @@map("booking_trip")
+  @@id([bookingId, tripId])
+}
+
+model BookingTripPassenger {
+  bookingId String @map("booking_id")
+  booking Booking @relation(fields: [bookingId], references: [id])
+  tripId Int @map("trip_id")
+  trip Trip @relation(fields: [tripId], references: [id])
+  bookingTrip BookingTrip @relation(fields: [bookingId, tripId], references: [bookingId, tripId])
   passengerId Int @map("passenger_id")
   passenger Passenger @relation(fields: [passengerId], references: [id])
   cabinId Int @map("cabin_id")
@@ -253,66 +308,28 @@ model BookingPassenger {
   totalPrice Float @map("total_price")
   checkInDate DateTime? @map("check_in_date")
 
-  paymentItems PaymentItem[]
+  bookingPaymentItems BookingPaymentItem[]
 
-  @@map("booking_passenger")
+  @@map("booking_trip_passenger")
+  @@id([bookingId, tripId, passengerId])
 }
 
-model Passenger {
-  id Int @default(autoincrement()) @id
-  buddyId Int? @map("buddy_id")
-  buddy Passenger? @relation("PassengerBuddies", fields: [buddyId], references: [id])
-  account Account?
-
-  firstName String @map("first_name")
-  lastName String @map("last_name")
-  occupation String
-  sex String
-  civilStatus String @map("civil_status")
-  birthday DateTime
-  address String
-  nationality String
-  discountType String? @map("discount_type")
-
-  buddies Passenger[] @relation("PassengerBuddies")
-  bookingPassengers BookingPassenger[]
-
-  @@map("passenger")
-}
-
-model BookingVehicle {
-  id Int @default(autoincrement()) @id
+model BookingTripVehicle {
   bookingId String @map("booking_id")
   booking Booking @relation(fields: [bookingId], references: [id])
   tripId Int @map("trip_id")
   trip Trip @relation(fields: [tripId], references: [id])
+  bookingTrip BookingTrip @relation(fields: [bookingId, tripId], references: [bookingId, tripId])
   vehicleId Int @map("vehicle_id")
   vehicle Vehicle @relation(fields: [vehicleId], references: [id])
 
   totalPrice Float @map("total_price")
   checkInDate DateTime? @map("check_in_date")
 
-  paymentItems PaymentItem[]
+  bookingPaymentItems BookingPaymentItem[]
 
-  @@map("booking_vehicle")
-}
-
-model Vehicle {
-  id Int @default(autoincrement()) @id
-  accountId String? @map("account_id")
-  account Account? @relation(fields: [accountId], references: [id])
-  vehicleTypeId Int @map("vehicle_type_id")
-  vehicleType VehicleType @relation(fields: [vehicleTypeId], references: [id])
-
-  plateNo String @map("plate_number")
-  modelName String @map("model_name")
-  modelYear Int @map("model_year")
-  officialReceiptUrl String @map("official_receipt_url")
-  certificateOfRegistrationUrl String @map("certificate_of_registration_url")
-
-  bookingVehicles BookingVehicle[]
-
-  @@map("vehicle")
+  @@map("booking_trip_vehicle")
+  @@id([bookingId, tripId, vehicleId])
 }
 
 model TempBooking {
@@ -334,9 +351,8 @@ model TempBooking {
   isBookingRequest Boolean @map("is_booking_request")
   failureCancellationRemarks String? @map("failure_cancellation_remarks")
 
-  passengersJson Json @map("passengers_json")
-  vehiclesJson Json @map("vehicles_json")
-  paymentItemsJson Json @map("payment_items_json")
+  bookingTripsJson Json @map("booking_trips_json")
+  bookingPaymentItemsJson Json @map("booking_payment_items_json")
 
   @@map("temp_booking")
 }
@@ -427,20 +443,22 @@ model VehicleType {
   @@map("vehicle_type")
 }
 
-model PaymentItem {
+model BookingPaymentItem {
   id Int @default(autoincrement()) @id
   bookingId String @map("booking_id")
   booking Booking @relation(fields: [bookingId], references: [id])
+  tripId Int? @map("trip_id")
+  passengerId Int? @map("passenger_id")
+  vehicleId Int? @map("vehicle_id")
+
+  bookingTripPassenger BookingTripPassenger? @relation(fields: [bookingId, tripId, passengerId], references: [bookingId, tripId, passengerId])
+  bookingTripVehicle BookingTripVehicle? @relation(fields: [bookingId, tripId, vehicleId], references: [bookingId, tripId, vehicleId])
 
   price Float
   description String
+  type String
 
-  bookingPassengerId Int? @map("booking_passenger_id")
-  bookingPassenger BookingPassenger? @relation(fields: [bookingPassengerId], references: [id])
-  bookingVehicleId Int? @map("booking_vehicle_id")
-  bookingVehicle BookingVehicle? @relation(fields: [bookingVehicleId], references: [id])
-
-  @@map("payment_item")
+  @@map("booking_payment_item")
 }
 
 model Voyage {

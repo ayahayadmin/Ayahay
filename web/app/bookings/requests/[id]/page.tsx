@@ -57,6 +57,7 @@ export default function BookingRequestPage({ params }) {
             booking={booking}
             titleLevel={2}
             hasPrivilegedAccess={hasPrivilegedAccess}
+            showTripSummary={true}
           />
         </>
       )}

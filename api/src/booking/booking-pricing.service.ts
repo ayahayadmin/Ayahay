@@ -1,25 +1,24 @@
 import { Injectable } from '@nestjs/common';
 import {
-  IBookingPassenger,
-  IBookingVehicle,
   IPassenger,
   IVehicle,
   ITrip,
   IAccount,
   IShippingLine,
-  IPaymentItem,
+  IBookingTrip,
 } from '@ayahay/models';
 import { AvailableBooking } from './booking.types';
 import { Voucher } from '@prisma/client';
+import { UtilityService } from '@/utility.service';
 
 @Injectable()
 export class BookingPricingService {
   private readonly AYAHAY_MARKUP_FLAT = 50;
   private readonly AYAHAY_MARKUP_PERCENT = 0.05;
 
-  constructor() {}
+  constructor(private readonly utilityService: UtilityService) {}
 
-  calculateTotalPriceForOnePassenger(
+  calculateTicketPriceForPassenger(
     passenger: IPassenger,
     matchedSeat: AvailableBooking
   ): number {
@@ -57,7 +56,7 @@ export class BookingPricingService {
     return originalPrice;
   }
 
-  calculateTotalPriceForOneVehicle(trip: ITrip, vehicle: IVehicle): number {
+  calculateTicketPriceForVehicle(trip: ITrip, vehicle: IVehicle): number {
     const { vehicleTypeId } = vehicle;
 
     const availableVehicleType = trip.availableVehicleTypes.find(
@@ -67,35 +66,8 @@ export class BookingPricingService {
     return availableVehicleType.fare;
   }
 
-  calculateServiceCharge(
-    bookingPassengers: IBookingPassenger[],
-    bookingVehicles: IBookingVehicle[],
-    loggedInAccount?: IAccount
-  ): number {
-    if (
-      loggedInAccount?.role === 'Staff' ||
-      loggedInAccount?.role === 'Admin' ||
-      loggedInAccount?.role === 'SuperAdmin'
-    ) {
-      return 0;
-    }
-
-    const payingPassengerCount = bookingPassengers.filter((bookingPassenger) =>
-      this.isPayingPassenger(bookingPassenger.passenger)
-    ).length;
-    const passengersServiceCharge =
-      payingPassengerCount * this.AYAHAY_MARKUP_FLAT;
-
-    const vehiclesTotalPrice = bookingVehicles
-      .map((bookingVehicle) => bookingVehicle.totalPrice)
-      .reduce(
-        (vehicleAPrice, vehicleBPrice) => vehicleAPrice + vehicleBPrice,
-        0
-      );
-    const vehiclesServiceCharge =
-      vehiclesTotalPrice * this.AYAHAY_MARKUP_PERCENT;
-
-    return passengersServiceCharge + vehiclesServiceCharge;
+  private roundToTwoDecimalPlaces(value: number): number {
+    return Math.floor(value * 100) / 100;
   }
 
   private isPayingPassenger(passenger: IPassenger) {
@@ -108,53 +80,83 @@ export class BookingPricingService {
   }
 
   calculateServiceChargeForPassenger(
-    passenger: IPassenger | any,
-    role: string
+    passenger: IPassenger,
+    chargeablePrice: number,
+    bookingCreator?: IAccount
   ): number {
-    if (role === 'Staff' || role === 'Admin' || role === 'SuperAdmin') {
+    if (
+      this.utilityService.hasPrivilegedAccess(bookingCreator) ||
+      !this.isPayingPassenger(passenger)
+    ) {
       return 0;
     }
 
-    return this.isPayingPassenger(passenger) ? 50 : 0;
+    return Math.max(
+      this.AYAHAY_MARKUP_FLAT,
+      chargeablePrice * this.AYAHAY_MARKUP_PERCENT
+    );
   }
 
-  calculateServiceChargeForVehicle(vehicleFare: number, role: string): number {
-    if (role === 'Staff' || role === 'Admin' || role === 'SuperAdmin') {
+  calculateServiceChargeForVehicle(
+    chargeablePrice: number,
+    bookingCreator?: IAccount
+  ): number {
+    if (this.utilityService.hasPrivilegedAccess(bookingCreator)) {
       return 0;
     }
 
-    return vehicleFare * this.AYAHAY_MARKUP_PERCENT;
+    return Math.max(
+      this.AYAHAY_MARKUP_FLAT,
+      chargeablePrice * this.AYAHAY_MARKUP_PERCENT
+    );
   }
 
   calculateVoucherDiscountForPassenger(
-    bookingPassenger: IBookingPassenger,
+    discountablePrice: number,
     voucher?: Voucher
   ): number {
-    return this.calculateVoucherDiscount(bookingPassenger, voucher);
+    return this.calculateVoucherDiscount(discountablePrice, voucher);
   }
 
   private calculateVoucherDiscount(
-    { totalPrice }: { totalPrice?: number },
+    discountablePrice: number,
     voucher?: Voucher
   ) {
-    if (!voucher || !totalPrice) {
+    if (!voucher) {
       return 0;
     }
 
     const totalDiscount =
-      totalPrice * voucher.discountPercent + voucher.discountFlat;
+      discountablePrice * voucher.discountPercent + voucher.discountFlat;
 
-    if (totalDiscount > totalPrice) {
-      return totalPrice;
+    if (totalDiscount > discountablePrice) {
+      return discountablePrice;
     }
 
-    return totalDiscount;
+    return this.roundToTwoDecimalPlaces(totalDiscount);
   }
 
   calculateVoucherDiscountForVehicle(
-    bookingVehicle: IBookingVehicle,
+    discountablePrice: number,
     voucher?: Voucher
   ): number {
-    return this.calculateVoucherDiscount(bookingVehicle, voucher);
+    return this.calculateVoucherDiscount(discountablePrice, voucher);
+  }
+
+  calculateTotalPriceOfBooking(bookingTrips: IBookingTrip[]): number {
+    let bookingTotalPrice = 0;
+
+    const { bookingTripPassengers, bookingTripVehicles } =
+      this.utilityService.combineAllBookingTripEntities(bookingTrips);
+
+    bookingTripPassengers.forEach((bookingPassenger) => {
+      bookingTotalPrice += bookingPassenger.totalPrice;
+    });
+
+    bookingTripVehicles.forEach((bookingVehicle) => {
+      bookingTotalPrice += bookingVehicle.totalPrice;
+    });
+
+    return bookingTotalPrice;
   }
 }

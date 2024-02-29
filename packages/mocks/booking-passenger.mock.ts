@@ -1,9 +1,9 @@
-import { IBookingPassenger } from '@ayahay/models';
+import { IBookingTripPassenger } from '@ayahay/models';
 import { mockFather, mockPassenger, mockSon, mockWife } from './passenger.mock';
 
 const today = new Date().toISOString();
 
-export const mockBookingPassenger: IBookingPassenger = {
+export const mockBookingPassenger: IBookingTripPassenger = {
   id: 1,
   bookingId: '1',
   tripId: 1,
@@ -13,7 +13,7 @@ export const mockBookingPassenger: IBookingPassenger = {
   meal: 'Tapsilog',
 };
 
-export const mockBookingPassengers: IBookingPassenger[] = [
+export const mockBookingPassengers: IBookingTripPassenger[] = [
   mockBookingPassenger,
   {
     id: 2,

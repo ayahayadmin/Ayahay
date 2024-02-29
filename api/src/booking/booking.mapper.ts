@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import {
   IBooking,
-  IBookingPassenger,
-  IBookingVehicle,
-  IPaymentItem,
+  IBookingTrip,
+  IBookingTripPassenger,
+  IBookingTripVehicle,
+  IBookingPaymentItem,
 } from '@ayahay/models';
 import { Prisma } from '@prisma/client';
 import { TripMapper } from '@/trip/trip.mapper';
@@ -11,6 +12,7 @@ import { PassengerMapper } from '@/passenger/passenger.mapper';
 import { CabinMapper } from '@/cabin/cabin.mapper';
 import { VehicleMapper } from '@/vehicle/vehicle.mapper';
 import { PaymentMapper } from '@/payment/payment.mapper';
+import { VehicleBookings } from '@ayahay/http';
 
 @Injectable()
 export class BookingMapper {
@@ -41,16 +43,16 @@ export class BookingMapper {
       createdAtIso: booking.createdAt.toISOString(),
       isBookingRequest: booking.isBookingRequest,
 
-      bookingPassengers: booking.bookingPassengers?.map((passenger) => {
+      bookingTrips: booking.bookingTrips?.map((bookingTrip) => {
         return {
-          ...passenger,
+          ...bookingTrip,
           trip: {
-            ...passenger.trip,
-            departureDateIso: passenger.trip?.departureDate?.toISOString(),
+            ...bookingTrip.trip,
+            departureDateIso: bookingTrip.trip?.departureDate?.toISOString(),
           },
         };
       }),
-      paymentItems: booking.paymentItems,
+      bookingPaymentItems: booking.bookingPaymentItems,
     };
   }
 
@@ -71,14 +73,84 @@ export class BookingMapper {
       createdAtIso: booking.createdAt.toISOString(),
       isBookingRequest: booking.isBookingRequest,
 
-      bookingPassengers: booking.bookingPassengers.map((bookingPassenger) =>
-        this.convertBookingPassengerToSummary(bookingPassenger)
+      bookingTrips: booking.bookingTrips.map((bookingTrip) =>
+        this.convertBookingTripToSummary(bookingTrip)
       ),
-      bookingVehicles: booking.bookingVehicles.map((bookingVehicle) =>
-        this.convertBookingVehicleToSummary(bookingVehicle)
-      ),
-      paymentItems: booking.paymentItems?.map((paymentItem) =>
+      bookingPaymentItems: booking.bookingPaymentItems?.map((paymentItem) =>
         this.paymentMapper.convertPaymentItemToDto(paymentItem)
+      ),
+    };
+  }
+
+  convertBookingToBookingTripVehicle(booking: any): VehicleBookings {
+    return {
+      id: booking.id,
+      referenceNo: booking.referenceNo,
+      totalPrice: booking.totalPrice,
+
+      bookingTripVehicles: booking.bookingTripVehicles.map(
+        (bookingTripVehicle) =>
+          this.convertBookingTripVehicleToSummary(bookingTripVehicle)
+      ),
+    };
+  }
+
+  private convertBookingTripToSummary(bookingTrip: any): IBookingTrip {
+    return {
+      bookingId: bookingTrip.bookingId,
+      tripId: bookingTrip.tripId,
+      trip: bookingTrip.trip
+        ? this.tripMapper.convertTripToBasicDto(bookingTrip.trip)
+        : undefined,
+      bookingTripPassengers: bookingTrip.bookingTripPassengers?.map(
+        (bookingTripPassenger) =>
+          this.convertBookingTripPassengerToSummary(bookingTripPassenger)
+      ),
+      bookingTripVehicles: bookingTrip.bookingTripVehicles?.map(
+        (bookingTripVehicle) =>
+          this.convertBookingTripVehicleToSummary(bookingTripVehicle)
+      ),
+    };
+  }
+
+  private convertBookingTripPassengerToSummary(
+    bookingPassenger: any
+  ): IBookingTripPassenger {
+    return {
+      bookingId: bookingPassenger.bookingId,
+      tripId: bookingPassenger.tripId,
+      passengerId: bookingPassenger.passengerId,
+      passenger: this.passengerMapper.convertPassengerToDto(
+        bookingPassenger.passenger
+      ),
+      cabinId: bookingPassenger.cabinId,
+      cabin: this.cabinMapper.convertCabinToDto(bookingPassenger.cabin),
+      seatId: bookingPassenger.seatId,
+
+      meal: bookingPassenger.meal,
+      totalPrice: bookingPassenger.totalPrice ?? undefined,
+      checkInDate: bookingPassenger.checkInDate ?? undefined,
+
+      bookingPaymentItems: bookingPassenger.bookingPaymentItems?.map(
+        (paymentItem) => this.paymentMapper.convertPaymentItemToDto(paymentItem)
+      ),
+    };
+  }
+
+  private convertBookingTripVehicleToSummary(
+    bookingVehicle: any
+  ): IBookingTripVehicle {
+    return {
+      bookingId: bookingVehicle.bookingId,
+      tripId: bookingVehicle.tripId,
+      vehicleId: bookingVehicle.vehicleId,
+      vehicle: this.vehicleMapper.convertVehicleToDto(bookingVehicle.vehicle),
+
+      totalPrice: bookingVehicle.totalPrice ?? undefined,
+      checkInDate: bookingVehicle.checkInDate ?? undefined,
+
+      bookingPaymentItems: bookingVehicle.bookingPaymentItems?.map(
+        (paymentItem) => this.paymentMapper.convertPaymentItemToDto(paymentItem)
       ),
     };
   }
@@ -88,9 +160,6 @@ export class BookingMapper {
    *  booking requests
    */
   convertBookingRequestToAdminDto(tempBooking: any): IBooking {
-    const bookingVehicles =
-      tempBooking.vehiclesJson as any[] as IBookingVehicle[];
-
     return {
       id: tempBooking.id.toString(),
       shippingLineId: tempBooking.shippingLineId,
@@ -107,57 +176,16 @@ export class BookingMapper {
       createdAtIso: tempBooking.createdAt.toISOString(),
       isBookingRequest: tempBooking.isBookingRequest,
 
-      bookingVehicles: bookingVehicles.map((bookingVehicle) =>
-        this.convertBookingVehicleToSummary(bookingVehicle)
-      ),
-    };
-  }
-
-  private convertBookingPassengerToSummary(
-    bookingPassenger: any
-  ): IBookingPassenger {
-    return {
-      id: bookingPassenger.id,
-      bookingId: bookingPassenger.bookingId,
-      tripId: bookingPassenger.tripId,
-      trip: this.tripMapper.convertTripToBasicDto(bookingPassenger.trip),
-      passengerId: bookingPassenger.passengerId,
-      passenger: this.passengerMapper.convertPassengerToDto(
-        bookingPassenger.passenger
-      ),
-      cabinId: bookingPassenger.cabinId,
-      cabin: this.cabinMapper.convertCabinToDto(bookingPassenger.cabin),
-      seatId: bookingPassenger.seatId,
-
-      meal: bookingPassenger.meal,
-      totalPrice: bookingPassenger.totalPrice ?? undefined,
-      checkInDate: bookingPassenger.checkInDate ?? undefined,
-    };
-  }
-
-  private convertBookingVehicleToSummary(bookingVehicle: any): IBookingVehicle {
-    return {
-      id: bookingVehicle.id,
-      bookingId: bookingVehicle.bookingId,
-      tripId: bookingVehicle.tripId,
-      trip: bookingVehicle.trip
-        ? this.tripMapper.convertTripToBasicDto(bookingVehicle.trip)
-        : undefined,
-      vehicleId: bookingVehicle.vehicleId,
-      vehicle: this.vehicleMapper.convertVehicleToDto(bookingVehicle.vehicle),
-
-      totalPrice: bookingVehicle.totalPrice ?? undefined,
-      checkInDate: bookingVehicle.checkInDate ?? undefined,
+      // TODO: fix populate bookingTrip.bookingVehicles here
     };
   }
 
   convertBookingToTempBookingEntityForCreation(
     booking: IBooking
   ): Prisma.TempBookingCreateArgs {
-    const paymentItemsJson = booking.paymentItems as any[] as Prisma.JsonArray;
-    const passengersJson =
-      booking.bookingPassengers as any[] as Prisma.JsonArray;
-    const vehiclesJson = booking.bookingVehicles as any[] as Prisma.JsonArray;
+    const bookingTripsJson = booking.bookingTrips as any[] as Prisma.JsonArray;
+    const bookingPaymentItemsJson =
+      booking.bookingPaymentItems as any[] as Prisma.JsonArray;
 
     return {
       data: {
@@ -172,20 +200,17 @@ export class BookingMapper {
         createdAt: new Date(),
         isBookingRequest: booking.isBookingRequest,
 
-        passengersJson,
-        vehiclesJson,
-        paymentItemsJson,
+        bookingTripsJson,
+        bookingPaymentItemsJson,
       },
     };
   }
 
   convertTempBookingToBooking(tempBooking: any): IBooking {
-    const bookingPassengers =
-      tempBooking.passengersJson as any[] as IBookingPassenger[];
-    const bookingVehicles =
-      tempBooking.vehiclesJson as any[] as IBookingVehicle[];
-    const paymentItems =
-      tempBooking.paymentItemsJson as any[] as IPaymentItem[];
+    const bookingTrips =
+      tempBooking.bookingTripsJson as any[] as IBookingTrip[];
+    const bookingPaymentItems =
+      tempBooking.bookingPaymentItemsJson as any[] as IBookingPaymentItem[];
 
     return {
       id: tempBooking.id.toString(),
@@ -203,44 +228,65 @@ export class BookingMapper {
       createdAtIso: tempBooking.createdAt.toISOString(),
       isBookingRequest: tempBooking.isBookingRequest,
 
-      bookingPassengers,
-      bookingVehicles,
-      paymentItems,
+      bookingTrips,
+      bookingPaymentItems,
     };
   }
 
   convertBookingToEntityForCreation(
     booking: IBooking
   ): Prisma.BookingCreateArgs {
-    const bookingPassengerData = booking.bookingPassengers.map(
-      (bookingPassenger) =>
-        ({
-          meal: bookingPassenger.meal ?? null,
+    const bookingTrips: Prisma.BookingTripCreateManyBookingInput[] = [];
+    const bookingTripPassengers: Prisma.BookingTripPassengerCreateManyBookingInput[] =
+      [];
+    const bookingTripVehicles: Prisma.BookingTripVehicleCreateManyBookingInput[] =
+      [];
+    const bookingPaymentItems: Prisma.BookingPaymentItemCreateManyBookingInput[] =
+      [];
+
+    booking.bookingTrips.forEach((bookingTrip) => {
+      bookingTrips.push({
+        tripId: bookingTrip.tripId,
+      });
+
+      bookingTrip.bookingTripPassengers.forEach((bookingTripPassenger) => {
+        bookingTripPassengers.push({
+          meal: bookingTripPassenger.meal ?? null,
           checkInDate: null,
-          tripId: bookingPassenger.tripId,
-          passengerId: bookingPassenger.passenger.id,
-          seatId: bookingPassenger.seatId ?? null,
-          cabinId: bookingPassenger.cabinId,
-          totalPrice: bookingPassenger.totalPrice ?? 0,
-        } as Prisma.BookingPassengerCreateManyInput)
-    );
+          tripId: bookingTripPassenger.tripId,
+          passengerId: bookingTripPassenger.passengerId,
+          seatId: bookingTripPassenger.seatId ?? null,
+          cabinId: bookingTripPassenger.cabinId,
+          totalPrice: bookingTripPassenger.totalPrice ?? 0,
+        });
+        bookingTripPassenger.bookingPaymentItems.forEach((paymentItem) =>
+          bookingPaymentItems.push({
+            tripId: paymentItem.tripId,
+            passengerId: paymentItem.passengerId,
+            price: paymentItem.price,
+            description: paymentItem.description,
+            type: paymentItem.type,
+          })
+        );
+      });
 
-    const bookingVehicleData = booking.bookingVehicles.map(
-      (bookingVehicle) =>
-        ({
-          tripId: bookingVehicle.tripId,
-          vehicleId: bookingVehicle.vehicle.id,
-          totalPrice: bookingVehicle.totalPrice ?? 0,
-        } as Prisma.BookingVehicleCreateManyInput)
-    );
-
-    const paymentItemData = booking.paymentItems.map(
-      (paymentItem) =>
-        ({
-          price: paymentItem.price,
-          description: paymentItem.description,
-        } as Prisma.PaymentItemCreateManyInput)
-    );
+      bookingTrip.bookingTripVehicles.forEach((bookingTripVehicle) => {
+        bookingTripVehicles.push({
+          tripId: bookingTripVehicle.tripId,
+          vehicleId: bookingTripVehicle.vehicleId,
+          totalPrice: bookingTripVehicle.totalPrice ?? 0,
+        });
+        bookingTripVehicle.bookingPaymentItems.forEach((paymentItem) =>
+          bookingPaymentItems.push({
+            tripId: paymentItem.tripId,
+            vehicleId: paymentItem.vehicleId,
+            price: paymentItem.price,
+            description: paymentItem.description,
+            type: paymentItem.type,
+          })
+        );
+      });
+    });
 
     return {
       data: {
@@ -259,19 +305,24 @@ export class BookingMapper {
         createdAt: booking.createdAtIso,
         isBookingRequest: booking.isBookingRequest,
 
-        bookingPassengers: {
+        bookingTrips: {
           createMany: {
-            data: bookingPassengerData,
+            data: bookingTrips,
           },
         },
-        bookingVehicles: {
+        bookingTripPassengers: {
           createMany: {
-            data: bookingVehicleData,
+            data: bookingTripPassengers,
           },
         },
-        paymentItems: {
+        bookingTripVehicles: {
           createMany: {
-            data: paymentItemData,
+            data: bookingTripVehicles,
+          },
+        },
+        bookingPaymentItems: {
+          createMany: {
+            data: bookingPaymentItems,
           },
         },
       },

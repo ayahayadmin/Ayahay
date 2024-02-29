@@ -1,20 +1,17 @@
-import { IBooking, IShippingLineSchedule, ITrip } from '@ayahay/models';
+import { IShippingLineSchedule, ITrip } from '@ayahay/models';
 import { TRIP_API } from '@ayahay/constants';
 import {
   CreateTripsFromSchedulesRequest,
   PaginatedRequest,
   PaginatedResponse,
   UpdateTripCapacityRequest,
+  VehicleBookings,
 } from '@ayahay/http';
 import axios from '@ayahay/services/axios';
-import { cacheItem, fetchItem } from '@ayahay/services/cache.service';
 import dayjs from 'dayjs';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
-import {
-  fetchAssociatedEntitiesToTrip,
-  fetchAssociatedEntitiesToTrips,
-} from '@ayahay/services/trip.service';
+import { fetchAssociatedEntitiesToTrips } from '@ayahay/services/trip.service';
 
 dayjs.extend(isSameOrBefore);
 dayjs.extend(isSameOrAfter);
@@ -42,11 +39,11 @@ export async function getTripDetails(
 export async function getBookingsOfTrip(
   tripId: number,
   pagination: PaginatedRequest
-): Promise<PaginatedResponse<IBooking> | undefined> {
+): Promise<PaginatedResponse<VehicleBookings> | undefined> {
   const query = new URLSearchParams(pagination as any).toString();
 
   try {
-    const { data } = await axios.get<PaginatedResponse<IBooking>>(
+    const { data } = await axios.get<PaginatedResponse<VehicleBookings>>(
       `${TRIP_API}/${tripId}/bookings?${query}`
     );
     return data;

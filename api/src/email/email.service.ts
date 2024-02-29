@@ -41,7 +41,7 @@ export class EmailService {
       timeZone: 'Asia/Shanghai',
     })})`;
 
-    const accounts = await transactionContext.bookingPassenger.findMany({
+    const accounts = await transactionContext.bookingTripPassenger.findMany({
       where: {
         tripId,
       },

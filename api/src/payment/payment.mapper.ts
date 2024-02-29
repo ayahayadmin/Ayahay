@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { IPaymentItem } from '@ayahay/models';
+import { IBookingPaymentItem } from '@ayahay/models';
 
 @Injectable()
 export class PaymentMapper {
-  convertPaymentItemToDto(paymentItem: any): IPaymentItem {
+  convertPaymentItemToDto(paymentItem: any): IBookingPaymentItem {
     return {
       id: paymentItem.id,
       bookingId: paymentItem.bookingId,

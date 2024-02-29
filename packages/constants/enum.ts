@@ -68,6 +68,13 @@ export enum PAYMENT_STATUS {
   Success = 'Payment Success',
 }
 
+export enum BOOKING_PAYMENT_ITEM_TYPE {
+  Fare = 'Fare',
+  ServiceCharge = 'Service Charge',
+  VoucherDiscount = 'Voucher Discount',
+  Miscellaneous = 'Miscellaneous',
+}
+
 export enum OPERATION_COSTS {
   FuelCosts = 'Fuel Costs',
   CrewWagesAndBenefits = 'Crew Wages and Benefits',

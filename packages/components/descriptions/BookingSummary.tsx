@@ -9,6 +9,8 @@ import VehiclesSummary from './VehiclesSummary';
 import PaymentSummary from './PaymentSummary';
 import { PrinterOutlined } from '@ant-design/icons';
 import BookingCancellationModal from '@ayahay/web/components/booking/BookingCancellationModal';
+import BookingTripSummary from './BookingTripSummary';
+import { combineBookingPaymentItems } from '@ayahay/services/booking.service';
 
 const { useBreakpoint } = Grid;
 const { Title } = Typography;
@@ -17,16 +19,18 @@ interface BookingSummaryProps {
   booking?: IBooking;
   titleLevel: 1 | 2 | 3 | 4 | 5;
   hasPrivilegedAccess?: boolean;
+  showTripSummary: boolean;
   onPayBooking?: () => Promise<void>;
   onCancelBooking?: (remarks: string) => Promise<void>;
-  onCheckInPassenger?: (bookingPassengerId: number) => Promise<void>;
-  onCheckInVehicle?: (bookingVehicleId: number) => Promise<void>;
+  onCheckInPassenger?: (tripId: number, passengerId: number) => Promise<void>;
+  onCheckInVehicle?: (tripId: number, vehicleId: number) => Promise<void>;
 }
 
 export default function BookingSummary({
   booking,
   titleLevel,
   hasPrivilegedAccess,
+  showTripSummary,
   onPayBooking,
   onCancelBooking,
   onCheckInPassenger,
@@ -36,9 +40,12 @@ export default function BookingSummary({
   const [isPrinting, setIsPrinting] = useState(false);
   const [isCancellationModalOpen, setIsCancellationModalOpen] = useState(false);
 
-  const trip =
-    booking?.bookingPassengers?.[0]?.trip ??
-    booking?.bookingVehicles?.[0]?.trip;
+  const bookingTrip = booking?.bookingTrips?.[0];
+  const trip = bookingTrip?.trip;
+  const bookingPaymentItems = booking
+    ? combineBookingPaymentItems(booking)
+    : [];
+
   const showQrCode =
     booking?.bookingStatus === 'Confirmed' &&
     booking?.paymentStatus === 'Success' &&
@@ -84,8 +91,7 @@ export default function BookingSummary({
   };
 
   const showCancelBookingButton =
-    (booking?.bookingStatus === 'Confirmed' ||
-      booking?.bookingStatus === 'Requested') &&
+    booking?.bookingStatus === 'Confirmed' &&
     hasPrivilegedAccess &&
     onCancelBooking;
 
@@ -100,9 +106,9 @@ export default function BookingSummary({
         <PrinterOutlined rev={undefined} />
         Print Ticket
       </Button>
-      {booking &&
-        booking.bookingVehicles &&
-        booking.bookingVehicles.length > 0 && (
+      {bookingTrip &&
+        bookingTrip.bookingTripVehicles &&
+        bookingTrip.bookingTripVehicles.length > 0 && (
           <Button
             type='primary'
             href={`/bookings/${booking.id}/bol`}
@@ -165,48 +171,26 @@ export default function BookingSummary({
               <Descriptions.Item label='Booking Reference No'>
                 {booking.referenceNo}
               </Descriptions.Item>
-              <Descriptions.Item label='Number of Passengers'>
-                {booking.bookingPassengers?.length}
-              </Descriptions.Item>
             </Descriptions>
             {bookingActions}
           </article>
         </section>
       )}
-      {booking && trip && (
-        <section>
-          <Title level={titleLevel}>Trip Details</Title>
-          <TripSummary trip={trip} />
-        </section>
-      )}
       {booking &&
-        booking.bookingPassengers &&
-        booking.bookingPassengers.length > 0 && (
-          <section>
-            <Title level={titleLevel}>Passengers</Title>
-            <PassengersSummary
-              passengers={booking.bookingPassengers}
-              hasPrivilegedAccess={hasPrivilegedAccess}
-              onCheckInPassenger={onCheckInPassenger}
-            />
-          </section>
-        )}
-      {booking &&
-        booking.bookingVehicles &&
-        booking.bookingVehicles.length > 0 && (
-          <section>
-            <Title level={titleLevel}>Vehicles</Title>
-            <VehiclesSummary
-              vehicles={booking.bookingVehicles}
-              hasPrivilegedAccess={hasPrivilegedAccess}
-              onCheckInVehicle={onCheckInVehicle}
-            />
-          </section>
-        )}
-      {booking && booking.paymentItems && booking.paymentItems.length > 0 && (
+        booking.bookingTrips?.map((bookingTrip) => (
+          <BookingTripSummary
+            bookingTrip={bookingTrip}
+            titleLevel={titleLevel}
+            hasPrivilegedAccess={hasPrivilegedAccess}
+            showTripSummary={showTripSummary}
+            onCheckInPassenger={onCheckInPassenger}
+            onCheckInVehicle={onCheckInVehicle}
+          />
+        ))}
+      {bookingPaymentItems.length > 0 && (
         <section id='payment-summary'>
           <Title level={titleLevel}>Payment Summary</Title>
-          <PaymentSummary paymentItems={booking.paymentItems} />
+          <PaymentSummary paymentItems={bookingPaymentItems} />
         </section>
       )}
     </div>
@@ -235,22 +219,24 @@ export default function BookingSummary({
           </p>
         </section>
       )}
-      {booking &&
-        booking.bookingPassengers &&
-        booking.bookingPassengers.length > 0 && (
+      {bookingTrip &&
+        bookingTrip.bookingTripPassengers &&
+        bookingTrip.bookingTripPassengers.length > 0 && (
           <section>
-            <p>Pax {booking.bookingPassengers.length} NAC</p>
+            <p>Pax {bookingTrip.bookingTripPassengers.length} NAC</p>
             <table style={{ tableLayout: 'fixed', width: '100%' }}>
               <tbody>
-                {booking.bookingPassengers.map((bookingPassenger) => (
-                  <tr key={bookingPassenger.id}>
-                    <td>
-                      {bookingPassenger.passenger?.firstName}&nbsp;
-                      {bookingPassenger.passenger?.lastName}
-                    </td>
-                    <td>₱{bookingPassenger.totalPrice}</td>
-                  </tr>
-                ))}
+                {bookingTrip.bookingTripPassengers.map(
+                  (bookingTripPassenger, index) => (
+                    <tr key={index}>
+                      <td>
+                        {bookingTripPassenger.passenger?.firstName}&nbsp;
+                        {bookingTripPassenger.passenger?.lastName}
+                      </td>
+                      <td>₱{bookingTripPassenger.totalPrice}</td>
+                    </tr>
+                  )
+                )}
                 <tr>
                   <td>Total</td>
                   <td>₱{booking.totalPrice}</td>

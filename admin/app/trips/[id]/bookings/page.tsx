@@ -1,18 +1,17 @@
 'use client';
 import { useAuthGuard } from '@/hooks/auth';
 import { getBookingsOfTrip } from '@/services/trip.service';
-import { IBooking } from '@ayahay/models';
 import styles from './page.module.scss';
 import { ColumnsType } from 'antd/es/table';
 import { CarOutlined } from '@ant-design/icons';
 import { Button, Popover, Table, Typography } from 'antd';
-import { PaginatedRequest } from '@ayahay/http';
+import { PaginatedRequest, VehicleBookings } from '@ayahay/http';
 import { BookedVehiclesModal } from '@/components/modal/BookedVehiclesModal';
 import { useServerPagination } from '@ayahay/hooks';
 
 const { Title } = Typography;
 
-const bookingColumns: ColumnsType<IBooking> = [
+const bookingColumns: ColumnsType<VehicleBookings> = [
   {
     title: 'Reference No',
     key: 'referenceNo',
@@ -28,12 +27,17 @@ const bookingColumns: ColumnsType<IBooking> = [
   {
     title: 'Vehicles',
     key: 'vehicles',
-    render: (_: string, record: IBooking) => {
-      const vehicles = record.bookingVehicles!.map((bookingVehicle) => ({
-        vehicleDescription: bookingVehicle.vehicle.vehicleType!.description,
-        vehiclePrice: bookingVehicle.totalPrice!,
-        checkedIn: bookingVehicle.hasOwnProperty('checkInDate') ? 'Yes' : 'No',
-      }));
+    render: (_: string, record: VehicleBookings) => {
+      const vehicles = record.bookingTripVehicles!.map(
+        (bookingTripVehicle) => ({
+          vehicleDescription:
+            bookingTripVehicle.vehicle!.vehicleType!.description,
+          vehiclePrice: bookingTripVehicle.totalPrice!,
+          checkedIn: bookingTripVehicle.hasOwnProperty('checkInDate')
+            ? 'Yes'
+            : 'No',
+        })
+      );
 
       return (
         <div>
@@ -61,7 +65,7 @@ export default function TripBookingsPage({ params }: any) {
   };
 
   const { dataInPage, antdPagination, antdOnChange } =
-    useServerPagination<IBooking>(fetchBookings, true);
+    useServerPagination<VehicleBookings>(fetchBookings, true);
 
   return (
     <div className={styles['main-container']}>

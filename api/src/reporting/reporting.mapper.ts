@@ -25,9 +25,9 @@ export class ReportingMapper {
       destPortId: trip.destPortId,
       destPort: this.portMapper.convertPortToDto(trip.destPort),
       departureDate: trip.departureDate.toISOString(),
-      totalPassengers: trip.bookingPassengers.length,
+      totalPassengers: trip.bookingTripPassengers.length,
       voyageNumber: trip.voyage?.number,
-      totalBoardedPassengers: trip.bookingPassengers.filter(
+      totalBoardedPassengers: trip.bookingTripPassengers.filter(
         (passenger) =>
           passenger.checkInDate &&
           passenger.booking.bookingStatus === 'Confirmed'
@@ -171,7 +171,7 @@ export class ReportingMapper {
   }
 
   convertTripToTripManifest(trip): TripManifest {
-    const passengers = trip.bookingPassengers.map(({ passenger }) => ({
+    const passengers = trip.bookingTripPassengers.map(({ passenger }) => ({
       fullName: `${passenger.firstName} ${passenger.lastName}`,
       birthDate: passenger.birthday.toISOString(),
       age: new Date().getFullYear() - passenger.birthday.getFullYear(),
@@ -191,32 +191,31 @@ export class ReportingMapper {
 
   convertBookingToBillOfLading(booking): BillOfLading {
     const referenceNo = booking.referenceNo;
-    const passenger = booking.bookingPassengers.find(
+    // TO DO: There will be improvements with regards to getting the driver's name
+    const passenger = booking.bookingTripPassengers.find(
       ({ passenger }) => passenger.discountType === 'Driver'
     );
+
     const driverName = passenger
       ? passenger.passenger.firstName + ' ' + passenger.passenger.lastName
-      : booking.bookingPassengers[0].passenger.firstName +
+      : booking.bookingTripPassengers[0].passenger.firstName +
         ' ' +
-        booking.bookingPassengers[0].passenger.lastName;
-    const shipName = booking.bookingVehicles[0].trip.ship.name;
-    const shippingLineName = booking.bookingVehicles[0].trip.shippingLine.name;
-    const destPortName = booking.bookingVehicles[0].trip.destPort.name;
+        booking.bookingTripPassengers[0].passenger.lastName;
+    const shipName = booking.bookingTripVehicles[0].trip.ship.name;
+    const shippingLineName =
+      booking.bookingTripVehicles[0].trip.shippingLine.name;
+    const destPortName = booking.bookingTripVehicles[0].trip.destPort.name;
     const departureDate =
-      booking.bookingVehicles[0].trip.departureDate.toISOString();
-    const voyageNumber = booking.bookingVehicles[0].trip.voyage?.number;
+      booking.bookingTripVehicles[0].trip.departureDate.toISOString();
+    const voyageNumber = booking.bookingTripVehicles[0].trip.voyage?.number;
 
-    const vehicleFares = this.convertPaymentItemsToVehicleFaresMap(
-      booking.paymentItems
-    );
-
-    const vehicles = booking.bookingVehicles.map((vehicle) => ({
+    const vehicles = booking.bookingTripVehicles.map((vehicle) => ({
       classification: '', //If needed - Add a new column "class" in vehicle_type
       modelName: vehicle.vehicle.modelName,
       plateNo: vehicle.vehicle.plateNo,
       weight: '', //If needed - Add a new column "weight" in vehicle_type
       vehicleTypeDesc: vehicle.vehicle.vehicleType.description,
-      fare: vehicleFares[`(${vehicle.vehicle.vehicleType.name})`],
+      fare: vehicle.totalPrice,
     }));
 
     return {
@@ -237,53 +236,5 @@ export class ReportingMapper {
       destPortId: data.dest_port_id,
       shipId: data.ship_id,
     };
-  }
-
-  convertPaymentItemsToPassengerFaresMap(paymentItems) {
-    const passengerFares = {};
-    const uniquePaymentItems: any = uniqBy(paymentItems, 'description');
-    uniquePaymentItems.forEach((paymentItem) => {
-      if (
-        paymentItem.description.startsWith('Vehicle') ||
-        paymentItem.description === 'Administrative Fee'
-      ) {
-        return;
-      }
-
-      const parenthesisValueRegExp = /\((.*)\)/;
-      const [cabinName] = parenthesisValueRegExp.exec(paymentItem.description);
-      const [discountType] = paymentItem.description.split('(')[0].split(' ');
-
-      if (passengerFares.hasOwnProperty(`${discountType} ${cabinName}`)) {
-        passengerFares[`${discountType} ${cabinName}`] += paymentItem.price;
-      } else {
-        passengerFares[`${discountType} ${cabinName}`] = paymentItem.price;
-      }
-    });
-
-    return passengerFares;
-  }
-
-  convertPaymentItemsToVehicleFaresMap(paymentItems) {
-    const vehicleFares = {};
-    const uniquePaymentItems: any = uniqBy(paymentItems, 'description');
-    uniquePaymentItems.forEach((paymentItem) => {
-      if (!paymentItem.description.startsWith('Vehicle')) {
-        return;
-      }
-
-      const parenthesisValueRegExp = /\((.*)\)/;
-      const [vehicleName] = parenthesisValueRegExp.exec(
-        paymentItem.description
-      );
-
-      if (vehicleFares.hasOwnProperty(vehicleName)) {
-        vehicleFares[vehicleName] += paymentItem.price;
-      } else {
-        vehicleFares[vehicleName] = paymentItem.price;
-      }
-    });
-
-    return vehicleFares;
   }
 }

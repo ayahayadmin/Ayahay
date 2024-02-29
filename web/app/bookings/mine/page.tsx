@@ -22,7 +22,7 @@ const bookingColumns: ColumnsType<IBooking> = [
   {
     title: 'Route',
     render: (_, booking) =>
-      `${booking.bookingPassengers?.[0]?.trip?.srcPort?.name} -> ${booking.bookingPassengers?.[0]?.trip?.destPort?.name}`,
+      `${booking.bookingTrips?.[0]?.trip?.srcPort?.name} -> ${booking.bookingTrips?.[0]?.trip?.destPort?.name}`,
   },
   {
     title: 'Status',
@@ -46,7 +46,7 @@ const bookingColumns: ColumnsType<IBooking> = [
   {
     title: '# Passengers',
     render: (_, booking) => {
-      return booking.bookingPassengers?.length;
+      return booking.bookingTrips?.[0]?.bookingTripPassengers?.length;
     },
     responsive: ['lg'],
   },
