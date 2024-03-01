@@ -7,6 +7,7 @@ import { Button, Typography } from 'antd';
 import { getAxiosError } from '@ayahay/services/error.service';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
+import { getTrips } from '@ayahay/services/trip.service';
 
 const { Title } = Typography;
 
@@ -23,11 +24,28 @@ export default function BookingRequestPage({ params }) {
     const bookingId = +params.id;
     try {
       const booking = await getBookingRequestById(bookingId);
-      if (booking?.approvedByAccountId !== undefined) {
+      if (booking === undefined) {
+        return;
+      }
+      if (booking.approvedByAccountId !== undefined) {
         // redirect to actual booking page if approved
         router.push(`/bookings/${booking.id}`);
         return;
       }
+      if (booking.bookingTrips === undefined) {
+        return;
+      }
+      const tripIds: any = booking.bookingTrips.map(
+        (bookingTrip) => bookingTrip.tripId
+      );
+      const trips = await getTrips(tripIds);
+
+      if (trips === undefined) {
+        return;
+      }
+      booking.bookingTrips.forEach(
+        (bookingTrip, index) => (bookingTrip.trip = trips[index])
+      );
       setBooking(booking);
       setErrorCode(undefined);
     } catch (e) {

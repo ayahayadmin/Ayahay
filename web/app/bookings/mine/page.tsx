@@ -64,15 +64,8 @@ const bookingColumns: ColumnsType<IBooking> = [
 
 export default function MyBookings() {
   const { loggedInAccount } = useAuth();
-  const {
-    dataInPage: myBookings,
-    antdPagination,
-    antdOnChange,
-    resetData: resetMyBookingsTable,
-  } = useServerPagination<IBooking>(
-    getMyBookings,
-    loggedInAccount !== null && loggedInAccount !== undefined
-  );
+  const { dataInPage, antdPagination, antdOnChange, resetData } =
+    useServerPagination<IBooking>(getMyBookings, true);
   const [savedBookings, setSavedBookings] = useState<IBooking[] | undefined>();
 
   const loadSavedBookings = async () => {
@@ -85,13 +78,7 @@ export default function MyBookings() {
   }, []);
 
   useEffect(() => {
-    if (
-      myBookings &&
-      myBookings.length > 0 &&
-      (loggedInAccount === null || loggedInAccount === undefined)
-    ) {
-      resetMyBookingsTable();
-    }
+    resetData();
   }, [loggedInAccount]);
 
   return (
@@ -99,11 +86,11 @@ export default function MyBookings() {
       <section>
         <Title level={1}>My Bookings</Title>
         <Table
-          dataSource={myBookings}
+          dataSource={dataInPage}
           columns={bookingColumns}
           pagination={antdPagination}
           onChange={antdOnChange}
-          loading={myBookings === undefined}
+          loading={dataInPage === undefined}
           tableLayout='fixed'
           rowKey={(booking) => booking.id}
         />

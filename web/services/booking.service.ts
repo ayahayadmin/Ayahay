@@ -53,7 +53,10 @@ export async function getMyBookings(
 ): Promise<PaginatedResponse<IBooking> | undefined> {
   const authToken = await firebase.currentUser?.getIdToken();
   if (authToken === undefined) {
-    return undefined;
+    return {
+      total: 0,
+      data: [],
+    };
   }
 
   const query = new URLSearchParams(pagination as any).toString();
@@ -66,7 +69,10 @@ export async function getMyBookings(
     return bookings;
   } catch (e) {
     console.error(e);
-    return undefined;
+    return {
+      total: 0,
+      data: [],
+    };
   }
 }
 

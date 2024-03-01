@@ -160,6 +160,9 @@ export class BookingMapper {
    *  booking requests
    */
   convertBookingRequestToAdminDto(tempBooking: any): IBooking {
+    const bookingTrips =
+      tempBooking.bookingTripsJson as any[] as IBookingTrip[];
+
     return {
       id: tempBooking.id.toString(),
       shippingLineId: tempBooking.shippingLineId,
@@ -176,7 +179,7 @@ export class BookingMapper {
       createdAtIso: tempBooking.createdAt.toISOString(),
       isBookingRequest: tempBooking.isBookingRequest,
 
-      // TODO: fix populate bookingTrip.bookingVehicles here
+      bookingTrips,
     };
   }
 
