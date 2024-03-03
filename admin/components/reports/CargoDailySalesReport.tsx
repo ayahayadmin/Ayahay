@@ -36,7 +36,7 @@ const CargoDailySalesReport = forwardRef(function (
   };
 
   let totalVehicles = data.vehicles?.length;
-  let totalSales = 0;
+  let totalTicketCost = 0;
 
   data.vehicles?.map((vehicle) => {
     if (vehicle.paymentStatus === 'PayMongo') {
@@ -118,59 +118,62 @@ const CargoDailySalesReport = forwardRef(function (
           >
             <thead style={{ backgroundColor: '#ddebf7' }}>
               <tr>
-                <th>Type of Vehicle</th>
+                <th>Vessel</th>
+                <th>Outlet</th>
+                <th>Teller</th>
                 <th>BOL #</th>
-                <th>Plate No.</th>
-                <th>Total</th>
-                <th>Freight Cost</th>
-                <th>Total Sales</th>
+                <th>Vehicle Type</th>
+                <th>Plate #</th>
+                <th>Ticket Cost</th>
+                <th>Payment Method</th>
+                <th>Collect</th>
               </tr>
             </thead>
             <tbody>
-              {data.vehiclesBreakdown?.map((vehicleBreakdown) => {
-                const totalVehiclesBooked =
-                  vehicleBreakdown.vehiclesBooked.length;
-                totalSales += vehicleBreakdown.totalSales;
-                const firstRow = (
+              {data.vehicles.map((vehicle) => {
+                totalTicketCost += vehicle.ticketCost;
+                const paymentStatus = vehicle.paymentStatus;
+
+                if (paymentStatus === 'PayMongo') {
+                  mopBreakdown.Ayahay.aggFare += vehicle.ticketCost;
+                } else {
+                  mopBreakdown.OTC.aggFare += vehicle.ticketCost;
+                }
+
+                return (
                   <tr>
-                    <td>{vehicleBreakdown.typeOfVehicle}</td>
-                    <td></td>
-                    <td></td>
-                    <td>{totalVehiclesBooked}</td>
-                    <td>{vehicleBreakdown.baseFare}</td>
-                    <td>{vehicleBreakdown.totalSales}</td>
+                    <td>{vesselName}</td>
+                    <td>
+                      {paymentStatus === 'PayMongo'
+                        ? 'Ayahay'
+                        : data.srcPort.name}
+                    </td>
+                    <td>{vehicle.teller}</td>
+                    <td>{vehicle.referenceNo}</td>
+                    <td>{vehicle.typeOfVehicle}</td>
+                    <td>{vehicle.plateNo}</td>
+                    <td>{vehicle.ticketCost}</td>
+                    <td>{paymentStatus}</td>
+                    <td>{vehicle.collect ? 'Yes' : ''}</td>
                   </tr>
                 );
-
-                const vehicleList = vehicleBreakdown.vehiclesBooked.map(
-                  (vehicle) => {
-                    return (
-                      <tr>
-                        <td>{vehicleBreakdown.typeOfVehicle}</td>
-                        <td>{vehicle.referenceNo}</td>
-                        <td>{vehicle.plateNo}</td>
-                      </tr>
-                    );
-                  }
-                );
-
-                return [firstRow, ...vehicleList];
               })}
             </tbody>
             <tfoot style={{ backgroundColor: '#ddebf7' }}>
               <tr style={{ fontWeight: 'bold' }}>
-                <td colSpan={3}>TOTAL</td>
+                <td colSpan={5}>TOTAL</td>
                 <td>{totalVehicles}</td>
-                <td></td>
-                <td>{round(totalSales, 2)}</td>
+                <td>{round(totalTicketCost, 2)}</td>
+                <td>-</td>
+                <td>-</td>
               </tr>
             </tfoot>
           </table>
         </div>
 
         <div
+          className={styles['three-uneven-columns-grid']}
           style={{
-            ...two_columns_grid,
             marginTop: 15,
             paddingLeft: 22,
             paddingRight: 22,
@@ -181,10 +184,11 @@ const CargoDailySalesReport = forwardRef(function (
               borderCollapse: 'collapse',
               textAlign: 'center',
               fontSize: 8,
+              maxHeight: 10,
             }}
           >
             <thead style={{ backgroundColor: '#ddebf7' }}>
-              <tr style={{ fontWeight: 'bold' }}>
+              <tr>
                 <th className={styles['cell-border']}>Mode of Payment</th>
                 <th className={styles['cell-border']}>Amount</th>
               </tr>
@@ -202,13 +206,53 @@ const CargoDailySalesReport = forwardRef(function (
               })}
             </tbody>
             <tfoot style={{ backgroundColor: '#ddebf7' }}>
-              <tr style={{ fontWeight: 'bold' }}>
-                <td className={styles['cell-border']}>TOTAL SALES</td>
+              <tr>
+                <td
+                  className={styles['cell-border']}
+                  style={{ wordSpacing: 3 }}
+                >
+                  TOTAL SALES
+                </td>
                 <td className={styles['cell-border']}>
-                  {round(totalSales, 2)}
+                  {round(totalTicketCost, 2)}
                 </td>
               </tr>
             </tfoot>
+          </table>
+
+          <div></div>
+
+          <table
+            style={{
+              borderCollapse: 'collapse',
+              textAlign: 'center',
+              fontSize: 8,
+            }}
+          >
+            <thead style={{ backgroundColor: '#ddebf7' }}>
+              <tr>
+                <th className={styles['cell-border']}>Vehicle Type</th>
+                <th className={styles['cell-border']}>Total</th>
+                <th className={styles['cell-border']}>Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.vehicleTypesBreakdown?.map((vehicleType) => {
+                return (
+                  <tr style={{ wordSpacing: 3 }}>
+                    <td className={styles['cell-border']}>
+                      {vehicleType.typeOfVehicle}
+                    </td>
+                    <td className={styles['cell-border']}>
+                      {vehicleType.totalBooked}
+                    </td>
+                    <td className={styles['cell-border']}>
+                      {vehicleType.totalSales}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
           </table>
         </div>
 

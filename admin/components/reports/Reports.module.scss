@@ -17,3 +17,9 @@
   text-align: left;
   word-wrap: break-word;
 }
+
+.three-uneven-columns-grid {
+  display: grid;
+  grid-auto-rows: 1fr;
+  grid-template-columns: 2fr 1fr 2fr;
+}

@@ -1,45 +1,45 @@
-import { IPort, IShip, IShippingLine } from '@ayahay/models';
+import { IPort, IShip } from '@ayahay/models';
 
 export interface TripReport {
   id: number;
-  shipId: number;
-  shipName: string;
-  shippingLineId: number;
-  shippingLine: IShippingLine;
-  srcPortId: number;
   srcPort: IPort;
-  destPortId: number;
   destPort: IPort;
   departureDate: string;
   voyageNumber?: number;
 
   passengers: {
     teller: string;
-    ticketReferenceNo: string;
     accommodation: string;
     discount: string;
-    checkedIn: boolean;
+    collect: boolean;
     ticketCost: number;
     adminFee: number;
     fare: number;
     paymentStatus: string;
   }[];
 
-  vehicles?: {
-    ticketCost: number;
-    adminFee: number;
-    fare: number;
-    paymentStatus: string;
-  }[];
-
-  vehiclesBreakdown?: {
-    typeOfVehicle: string;
-    baseFare: number;
+  passengerDiscountsBreakdown?: {
+    typeOfDiscount: string;
+    totalBooked: number;
     totalSales: number;
-    vehiclesBooked: {
-      referenceNo: string;
-      plateNo: string;
-    }[];
+  }[];
+
+  vehicles: {
+    teller: string;
+    referenceNo: string;
+    typeOfVehicle: string;
+    plateNo: string;
+    collect: boolean;
+    ticketCost: number;
+    adminFee: number;
+    fare: number;
+    paymentStatus: string;
+  }[];
+
+  vehicleTypesBreakdown?: {
+    typeOfVehicle: string;
+    totalBooked: number;
+    totalSales: number;
   }[];
 }
 

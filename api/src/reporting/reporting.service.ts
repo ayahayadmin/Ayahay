@@ -9,14 +9,12 @@ import {
   BillOfLading,
 } from '@ayahay/http';
 import { ReportingMapper } from './reporting.mapper';
-import { BookingPricingService } from '@/booking/booking-pricing.service';
 
 @Injectable()
 export class ReportingService {
   constructor(
     private prisma: PrismaService,
-    private readonly reportingMapper: ReportingMapper,
-    private readonly bookingPricingService: BookingPricingService
+    private readonly reportingMapper: ReportingMapper
   ) {}
 
   async getTripsReporting(tripId: number): Promise<TripReport> {
@@ -27,8 +25,6 @@ export class ReportingService {
       include: {
         srcPort: true,
         destPort: true,
-        ship: true,
-        shippingLine: true,
         bookingTripPassengers: {
           include: {
             booking: {
@@ -61,44 +57,52 @@ export class ReportingService {
           },
         },
         voyage: true,
-        availableVehicleTypes: true, // TODO: Temporary. If BookingVehicle is already linked to PaymentItems, this is not needed
       },
     });
 
-    let vehiclesBreakdown = [];
+    let passengerDiscountsBreakdown = [];
+    let vehicleTypesBreakdown = [];
 
+    const confirmedBookingPassengers = trip.bookingTripPassengers.filter(
+      (passenger) => passenger.booking.bookingStatus === 'Confirmed'
+    );
     const confirmedBookingVehicles = trip.bookingTripVehicles.filter(
       (vehicle) => vehicle.booking.bookingStatus === 'Confirmed'
     );
 
+    confirmedBookingPassengers.forEach((passenger) => {
+      const passengerDiscountsBreakdownArr =
+        this.reportingMapper.convertTripPassengersToPassengerBreakdown(
+          passenger,
+          passenger.totalPrice,
+          passengerDiscountsBreakdown
+        );
+      passengerDiscountsBreakdown = passengerDiscountsBreakdownArr;
+    });
+
     confirmedBookingVehicles.forEach((vehicle) => {
-      const baseFare =
-        trip.availableVehicleTypes[vehicle.vehicle.vehicleTypeId - 1].fare;
-      const vehicleBreakdownArr =
+      const vehicleTypesBreakdownArr =
         this.reportingMapper.convertTripVehiclesToVehicleBreakdown(
           vehicle,
-          vehiclesBreakdown,
-          baseFare,
-          vehicle.totalPrice
+          vehicle.totalPrice,
+          vehicleTypesBreakdown
         );
-      vehiclesBreakdown = vehicleBreakdownArr;
+      vehicleTypesBreakdown = vehicleTypesBreakdownArr;
     });
 
     return {
       ...this.reportingMapper.convertTripsForReporting(trip),
-      passengers: trip.bookingTripPassengers
-        .filter((passenger) => passenger.booking.bookingStatus === 'Confirmed')
-        .map((passenger) => {
-          const adminFee = passenger.booking.bookingPaymentItems.find(
-            (paymentItem) => paymentItem.type === 'ServiceCharge'
-          );
+      passengers: confirmedBookingPassengers.map((passenger) => {
+        const adminFee = passenger.booking.bookingPaymentItems.find(
+          (paymentItem) => paymentItem.type === 'ServiceCharge'
+        );
 
-          return this.reportingMapper.convertTripPassengersForReporting(
-            passenger,
-            passenger.totalPrice,
-            adminFee ?? 0
-          );
-        }),
+        return this.reportingMapper.convertTripPassengersForReporting(
+          passenger,
+          passenger.totalPrice,
+          adminFee ?? 0
+        );
+      }),
       vehicles: confirmedBookingVehicles.map((vehicle) => {
         const vehicleAdminFee = vehicle.booking.bookingPaymentItems.find(
           (paymentItem) => paymentItem.type === 'ServiceCharge'
@@ -110,7 +114,8 @@ export class ReportingService {
           vehicleAdminFee ?? 0
         );
       }),
-      vehiclesBreakdown,
+      passengerDiscountsBreakdown,
+      vehicleTypesBreakdown,
     };
   }
 
@@ -212,6 +217,7 @@ export class ReportingService {
         ...this.reportingMapper.convertTripsForReporting(trip),
         breakdown: { cabinPassengerBreakdown, noShowBreakdown },
         passengers,
+        vehicles: [],
       };
     });
   }

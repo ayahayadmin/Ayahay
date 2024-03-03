@@ -127,11 +127,11 @@ const PassengerDailySalesReport = forwardRef(function (
                 <th>Outlet</th>
                 <th>Teller</th>
                 <th>Reference</th>
-                <th>Voyage</th>
                 <th>Accommodation</th>
                 <th>Discount</th>
                 <th>Ticket Cost</th>
-                <th>Payment Status</th>
+                <th>Payment Method</th>
+                <th>Collect</th>
               </tr>
             </thead>
             <tbody>
@@ -155,25 +155,21 @@ const PassengerDailySalesReport = forwardRef(function (
                     </td>
                     <td>{passenger.teller}</td>
                     <td>{padZeroes(idx + 1, 4)}</td>
-                    <td>
-                      {data.srcPort.code}-{data.destPort.code}/WT:&nbsp;
-                      {getFullDate(data.departureDate, true)}
-                      &nbsp;@&nbsp;
-                      {getLocaleTimeString(data.departureDate)}
-                    </td>
                     <td>{passenger.accommodation}</td>
                     <td>{passenger.discount}</td>
                     <td>{passenger.ticketCost}</td>
                     <td>{paymentStatus}</td>
+                    <td>{passenger.collect ? 'Yes' : ''}</td>
                   </tr>
                 );
               })}
             </tbody>
             <tfoot style={{ backgroundColor: '#ddebf7' }}>
               <tr style={{ fontWeight: 'bold' }}>
-                <td colSpan={6}>TOTAL</td>
+                <td colSpan={5}>TOTAL</td>
                 <td>{totalPassengers}</td>
                 <td>{round(totalTicketCost, 2)}</td>
+                <td>-</td>
                 <td>-</td>
               </tr>
             </tfoot>
@@ -181,8 +177,8 @@ const PassengerDailySalesReport = forwardRef(function (
         </div>
 
         <div
+          className={styles['three-uneven-columns-grid']}
           style={{
-            ...two_columns_grid,
             marginTop: 15,
             paddingLeft: 22,
             paddingRight: 22,
@@ -193,6 +189,7 @@ const PassengerDailySalesReport = forwardRef(function (
               borderCollapse: 'collapse',
               textAlign: 'center',
               fontSize: 8,
+              maxHeight: 10,
             }}
           >
             <thead style={{ backgroundColor: '#ddebf7' }}>
@@ -215,12 +212,52 @@ const PassengerDailySalesReport = forwardRef(function (
             </tbody>
             <tfoot style={{ backgroundColor: '#ddebf7' }}>
               <tr style={{ fontWeight: 'bold' }}>
-                <td className={styles['cell-border']}>TOTAL SALES</td>
+                <td
+                  className={styles['cell-border']}
+                  style={{ wordSpacing: 3 }}
+                >
+                  TOTAL SALES
+                </td>
                 <td className={styles['cell-border']}>
                   {round(totalTicketCost, 2)}
                 </td>
               </tr>
             </tfoot>
+          </table>
+
+          <div></div>
+
+          <table
+            style={{
+              borderCollapse: 'collapse',
+              textAlign: 'center',
+              fontSize: 8,
+            }}
+          >
+            <thead style={{ backgroundColor: '#ddebf7' }}>
+              <tr>
+                <th className={styles['cell-border']}>Discount Type</th>
+                <th className={styles['cell-border']}>Total</th>
+                <th className={styles['cell-border']}>Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.passengerDiscountsBreakdown?.map((discountType) => {
+                return (
+                  <tr>
+                    <td className={styles['cell-border']}>
+                      {discountType.typeOfDiscount}
+                    </td>
+                    <td className={styles['cell-border']}>
+                      {discountType.totalBooked}
+                    </td>
+                    <td className={styles['cell-border']}>
+                      {discountType.totalSales}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
           </table>
         </div>
 
