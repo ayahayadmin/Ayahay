@@ -1,14 +1,13 @@
-import { IBookingPassenger } from './booking-passenger.model';
-import { IBookingVehicle } from './booking-vehicle.model';
 import {
   PAYMENT_STATUS,
   BOOKING_TYPE,
   BOOKING_STATUS,
 } from '@ayahay/constants/enum';
-import { IPaymentItem } from './payment-item.model';
+import { IBookingPaymentItem } from './booking-payment-item.model';
 import { IAccount } from './account.model';
 import { IVoucher } from './voucher.model';
 import { IShippingLine } from './shipping-line.model';
+import { IBookingTrip } from './booking-trip.model';
 
 export interface IBooking {
   id: string;
@@ -48,7 +47,6 @@ export interface IBooking {
    */
   failureCancellationRemarks?: string;
 
-  bookingPassengers?: IBookingPassenger[];
-  bookingVehicles?: IBookingVehicle[];
-  paymentItems?: IPaymentItem[];
+  bookingTrips?: IBookingTrip[];
+  bookingPaymentItems?: IBookingPaymentItem[];
 }

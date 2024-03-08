@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Badge } from 'antd';
-import { IBookingVehicle } from '@ayahay/models';
+import { IBookingTripVehicle } from '@ayahay/models';
 import Table, { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 
 interface VehiclesSummaryProps {
-  vehicles?: IBookingVehicle[];
+  vehicles?: IBookingTripVehicle[];
   hasPrivilegedAccess?: boolean;
-  onCheckInVehicle?: (bookingVehicleId: number) => Promise<void>;
+  onCheckInVehicle?: (tripId: number, vehicleId: number) => Promise<void>;
 }
 
 const vehicleColumnsWithoutActions: ColumnsType<VehicleInformation> = [
@@ -46,9 +46,11 @@ export default function VehiclesSummary({
     }
 
     setVehicleRows(
-      vehicles.map(({ vehicle, ...bookingVehicle }) => ({
-        key: bookingVehicle.id,
+      vehicles.map(({ vehicle, ...bookingVehicle }, index) => ({
+        key: index,
         bookingId: bookingVehicle.bookingId,
+        tripId: bookingVehicle.tripId,
+        vehicleId: bookingVehicle.vehicleId,
         plateNo: vehicle.plateNo,
         model: vehicle.modelName,
         vehicleTypeName: vehicle.vehicleType?.name ?? '',
@@ -69,7 +71,9 @@ export default function VehiclesSummary({
             return (
               <Button
                 type='primary'
-                onClick={() => onCheckInVehicle(vehicle.key)}
+                onClick={() =>
+                  onCheckInVehicle(vehicle.tripId, vehicle.vehicleId)
+                }
               >
                 Check In
               </Button>
@@ -103,6 +107,8 @@ export default function VehiclesSummary({
 interface VehicleInformation {
   key: number;
   bookingId: string;
+  tripId: number;
+  vehicleId: number;
   plateNo: string;
   model: string;
   vehicleTypeName: string;

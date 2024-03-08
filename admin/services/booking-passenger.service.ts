@@ -1,17 +1,17 @@
-import { IBooking, IBookingPassenger } from '@ayahay/models';
+import { IBooking, IBookingTripPassenger } from '@ayahay/models';
 
 export function getBookingPassengersByTripId(
   tripId: number
-): IBookingPassenger[] {
+): IBookingTripPassenger[] {
   return [];
 }
 
 export function getBookingPassengersFromQuery(
   query: string
-): IBookingPassenger[] {
+): IBookingTripPassenger[] {
   return [];
 }
 
-function getBookingPassengers(bookings: IBooking[]): IBookingPassenger[] {
+function getBookingPassengers(bookings: IBooking[]): IBookingTripPassenger[] {
   return [];
 }

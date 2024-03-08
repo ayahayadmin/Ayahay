@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Badge } from 'antd';
-import { IBookingPassenger } from '@ayahay/models';
+import { IBookingTripPassenger } from '@ayahay/models';
 import { DISCOUNT_TYPE } from '@ayahay/constants/enum';
 import Table, { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
@@ -10,9 +10,9 @@ const relativeTime = require('dayjs/plugin/relativeTime');
 dayjs.extend(relativeTime);
 
 interface PassengersSummaryProps {
-  passengers?: IBookingPassenger[];
+  passengers?: IBookingTripPassenger[];
   hasPrivilegedAccess?: boolean;
-  onCheckInPassenger?: (bookingPassengerId: number) => Promise<void>;
+  onCheckInPassenger?: (tripId: number, passengerId: number) => Promise<void>;
 }
 
 const passengerColumnsWithoutActions: ColumnsType<PassengerInformation> = [
@@ -53,9 +53,11 @@ export default function PassengersSummary({
     }
 
     setPassengerRows(
-      passengers.map(({ passenger, ...bookingPassenger }) => ({
-        key: bookingPassenger.id,
+      passengers.map(({ passenger, ...bookingPassenger }, index) => ({
+        key: index,
         bookingId: bookingPassenger.bookingId,
+        tripId: bookingPassenger.tripId,
+        passengerId: bookingPassenger.passengerId,
         name: `${passenger?.sex === 'Male' ? 'MR' : 'MS'} ${
           passenger?.firstName
         } ${passenger?.lastName}`,
@@ -81,7 +83,9 @@ export default function PassengersSummary({
             return (
               <Button
                 type='primary'
-                onClick={() => onCheckInPassenger(passenger.key)}
+                onClick={() =>
+                  onCheckInPassenger(passenger.tripId, passenger.passengerId)
+                }
               >
                 Check In
               </Button>
@@ -111,6 +115,8 @@ export default function PassengersSummary({
 interface PassengerInformation {
   key: number;
   bookingId: string;
+  tripId: number;
+  passengerId: number;
   name: string;
   discountType: DISCOUNT_TYPE | 'Adult';
   cabinTypeName: string;

@@ -1,12 +1,12 @@
-import { IPaymentItem } from '@ayahay/models';
+import { IBookingPaymentItem } from '@ayahay/models';
 import Table, { ColumnsType } from 'antd/es/table';
 import React from 'react';
 
 interface PaymentSummaryProps {
-  paymentItems?: IPaymentItem[];
+  paymentItems?: IBookingPaymentItem[];
 }
 
-const paymentItemColumns: ColumnsType<IPaymentItem> = [
+const paymentItemColumns: ColumnsType<IBookingPaymentItem> = [
   {
     title: 'Description',
     dataIndex: 'description',
@@ -22,7 +22,7 @@ const paymentItemColumns: ColumnsType<IPaymentItem> = [
   },
 ];
 
-const paymentItemTotal = (paymentItems: readonly IPaymentItem[]) => {
+const paymentItemTotal = (paymentItems: readonly IBookingPaymentItem[]) => {
   let totalPrice = 0;
   paymentItems.forEach((item) => (totalPrice += item.price));
 

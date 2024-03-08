@@ -12,7 +12,7 @@ import {
 } from 'lodash';
 import styles from './page.module.scss';
 import { useEffect, useState } from 'react';
-import { ISeat, IBookingPassenger } from '@ayahay/models';
+import { ISeat, IBookingTripPassenger } from '@ayahay/models';
 import { Modal, Select } from 'antd';
 import { mockShips, mockTrip, mockBookingPassengers } from '@ayahay/mocks';
 import { ICabin } from '@ayahay/models/cabin.model';
@@ -49,7 +49,7 @@ export default function Seats({ shipId, cabinType, floor }: SeatProps) {
   const [selectedCabin, setSelectedCabin] = useState(preSelectedValue);
   const [capacity, setCapacity] = useState(0);
   const [passengersBooked, setPassengersBooked] = useState(
-    [] as IBookingPassenger[]
+    [] as IBookingTripPassenger[]
   );
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -57,7 +57,7 @@ export default function Seats({ shipId, cabinType, floor }: SeatProps) {
   const [passengerInfo, setPassengerInfo] = useState([] as PassengerInfo[]);
 
   useEffect(() => {
-    const bookingPassengers: IBookingPassenger[] = [];
+    const bookingPassengers: IBookingTripPassenger[] = [];
     const fetchShip = mockShips;
     const fetchBookings: any[] = [];
     const fetchBookingPassenger = mockBookingPassengers;
@@ -112,7 +112,7 @@ export default function Seats({ shipId, cabinType, floor }: SeatProps) {
       blockElement?.classList.contains(`${styles.block}`) &&
       blockElement?.classList.contains(`${styles.sold}`)
     ) {
-      const passengersInSeat: IBookingPassenger[] = passengersBooked.filter(
+      const passengersInSeat: IBookingTripPassenger[] = passengersBooked.filter(
         (passenger) =>
           passenger.seat?.rowNumber === row &&
           passenger.seat.columnNumber === col

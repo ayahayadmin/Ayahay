@@ -111,7 +111,7 @@ export default function BillOfLading({ data }: BillOfLadingProps) {
                     </p>
                     <p>
                       SHIPPER&nbsp;
-                      <span style={underlined}>{data.shippingLineName}</span>
+                      <BlankUnderline width='100px' />
                     </p>
                     <p>
                       CONSIGNEE&nbsp;

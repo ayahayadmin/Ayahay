@@ -162,6 +162,7 @@ export class PaymentService {
     contactEmail?: string
   ): Promise<PaymentInitiationResponse> {
     const checkoutUrl = `${process.env.PAYMONGO_URL}/checkout_sessions`;
+    const shortenedTransactionId = transactionId.substring(0, 6).toUpperCase();
 
     try {
       const { data: response } = await axios.post<{
@@ -172,13 +173,13 @@ export class PaymentService {
           data: {
             attributes: {
               billing: contactEmail ? { email: contactEmail } : {},
-              description: `Payment for Booking ${transactionId}`,
+              description: `Booking #${shortenedTransactionId} payment`,
               line_items: [
                 {
                   amount: totalPrice * 100,
                   currency: 'PHP',
-                  name: `Booking ${transactionId}`,
-                  description: `Payment for Booking ${transactionId}`,
+                  name: `Booking #${shortenedTransactionId}`,
+                  description: `Booking #${shortenedTransactionId} payment`,
                   quantity: 1,
                 },
               ],

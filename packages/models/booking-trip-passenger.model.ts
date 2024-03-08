@@ -3,9 +3,9 @@ import { IPassenger } from './passenger.model';
 import { ISeat } from './seat.model';
 import { ITrip } from './trip.model';
 import { ICabin } from './cabin.model';
+import { IBookingPaymentItem } from './booking-payment-item.model';
 
-export interface IBookingPassenger {
-  id: number;
+export interface IBookingTripPassenger {
   bookingId: string;
   booking?: IBooking;
   tripId: number;
@@ -20,4 +20,6 @@ export interface IBookingPassenger {
   meal?: string;
   totalPrice?: number;
   checkInDate?: string;
+
+  bookingPaymentItems?: IBookingPaymentItem[];
 }

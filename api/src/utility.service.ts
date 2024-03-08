@@ -1,5 +1,10 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
-import { IAccount } from '@ayahay/models';
+import {
+  IAccount,
+  IBookingTrip,
+  IBookingTripPassenger,
+  IBookingTripVehicle,
+} from '@ayahay/models';
 
 @Injectable()
 export class UtilityService {
@@ -49,5 +54,23 @@ export class UtilityService {
 
     const privilegedAccessRoles = ['Staff', 'Admin', 'SuperAdmin'];
     return privilegedAccessRoles.includes(loggedInAccount.role);
+  }
+
+  combineAllBookingTripEntities(bookingTrips: IBookingTrip[]): {
+    bookingTripPassengers: IBookingTripPassenger[];
+    bookingTripVehicles: IBookingTripVehicle[];
+  } {
+    const bookingTripPassengers: IBookingTripPassenger[] = [];
+    const bookingTripVehicles: IBookingTripVehicle[] = [];
+
+    bookingTrips.forEach((bookingTrip) => {
+      bookingTripPassengers.push(...bookingTrip.bookingTripPassengers);
+      bookingTripVehicles.push(...bookingTrip.bookingTripVehicles);
+    });
+
+    return {
+      bookingTripPassengers,
+      bookingTripVehicles,
+    };
   }
 }

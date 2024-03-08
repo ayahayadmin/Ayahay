@@ -29,12 +29,12 @@ export class ReportingService {
         destPort: true,
         ship: true,
         shippingLine: true,
-        bookingPassengers: {
+        bookingTripPassengers: {
           include: {
             booking: {
               include: {
                 createdByAccount: true,
-                paymentItems: true,
+                bookingPaymentItems: true,
               },
             },
             cabin: {
@@ -45,12 +45,12 @@ export class ReportingService {
             passenger: true,
           },
         },
-        bookingVehicles: {
+        bookingTripVehicles: {
           include: {
             booking: {
               include: {
                 createdByAccount: true,
-                paymentItems: true,
+                bookingPaymentItems: true,
               },
             },
             vehicle: {
@@ -67,67 +67,47 @@ export class ReportingService {
 
     let vehiclesBreakdown = [];
 
-    const confirmedBookingVehicles = trip.bookingVehicles.filter(
+    const confirmedBookingVehicles = trip.bookingTripVehicles.filter(
       (vehicle) => vehicle.booking.bookingStatus === 'Confirmed'
     );
 
     confirmedBookingVehicles.forEach((vehicle) => {
       const baseFare =
         trip.availableVehicleTypes[vehicle.vehicle.vehicleTypeId - 1].fare;
-      const vehicleFares =
-        this.reportingMapper.convertPaymentItemsToVehicleFaresMap(
-          vehicle.booking.paymentItems
-        );
-
       const vehicleBreakdownArr =
         this.reportingMapper.convertTripVehiclesToVehicleBreakdown(
           vehicle,
           vehiclesBreakdown,
           baseFare,
-          vehicleFares[`(${vehicle.vehicle.vehicleType.name})`]
+          vehicle.totalPrice
         );
       vehiclesBreakdown = vehicleBreakdownArr;
     });
 
     return {
       ...this.reportingMapper.convertTripsForReporting(trip),
-      passengers: trip.bookingPassengers
+      passengers: trip.bookingTripPassengers
         .filter((passenger) => passenger.booking.bookingStatus === 'Confirmed')
         .map((passenger) => {
-          const passengerFares =
-            this.reportingMapper.convertPaymentItemsToPassengerFaresMap(
-              passenger.booking.paymentItems
-            );
-          const adminFee =
-            this.bookingPricingService.calculateServiceChargeForPassenger(
-              passenger.passenger,
-              passenger.booking.createdByAccount?.role
-            );
-          const discountType = passenger.passenger.discountType ?? 'Adult';
+          const adminFee = passenger.booking.bookingPaymentItems.find(
+            (paymentItem) => paymentItem.type === 'ServiceCharge'
+          );
 
           return this.reportingMapper.convertTripPassengersForReporting(
             passenger,
-            passengerFares[`${discountType} (${passenger.cabin.name})`],
-            adminFee
+            passenger.totalPrice,
+            adminFee ?? 0
           );
         }),
       vehicles: confirmedBookingVehicles.map((vehicle) => {
-        const baseFare =
-          trip.availableVehicleTypes[vehicle.vehicle.vehicleTypeId - 1].fare;
-        const vehicleFares =
-          this.reportingMapper.convertPaymentItemsToVehicleFaresMap(
-            vehicle.booking.paymentItems
-          );
-        const vehicleAdminFee =
-          this.bookingPricingService.calculateServiceChargeForVehicle(
-            baseFare,
-            vehicle.booking.createdByAccount?.role
-          );
+        const vehicleAdminFee = vehicle.booking.bookingPaymentItems.find(
+          (paymentItem) => paymentItem.type === 'ServiceCharge'
+        );
 
         return this.reportingMapper.convertTripVehiclesForReporting(
           vehicle,
-          vehicleFares[`(${vehicle.vehicle.vehicleType.name})`],
-          vehicleAdminFee
+          vehicle.totalPrice,
+          vehicleAdminFee ?? 0
         );
       }),
       vehiclesBreakdown,
@@ -176,12 +156,12 @@ export class ReportingService {
         destPort: true,
         ship: true,
         shippingLine: true,
-        bookingPassengers: {
+        bookingTripPassengers: {
           include: {
             booking: {
               include: {
                 createdByAccount: true,
-                paymentItems: true,
+                bookingPaymentItems: true,
               },
             },
             cabin: {
@@ -201,25 +181,18 @@ export class ReportingService {
       let noShowBreakdown = [];
       let passengers = [];
 
-      trip.bookingPassengers
+      trip.bookingTripPassengers
         .filter((passenger) => passenger.booking.bookingStatus === 'Confirmed')
         .forEach((passenger) => {
-          const passengerFares =
-            this.reportingMapper.convertPaymentItemsToPassengerFaresMap(
-              passenger.booking.paymentItems
-            );
-          const adminFee =
-            this.bookingPricingService.calculateServiceChargeForPassenger(
-              passenger.passenger,
-              passenger.booking.createdByAccount.role
-            );
-          const discountType = passenger.passenger.discountType ?? 'Adult';
+          const adminFee = passenger.booking.bookingPaymentItems.find(
+            (paymentItem) => paymentItem.type === 'ServiceCharge'
+          );
 
           const { cabinPassengerArr, noShowArr } =
             this.reportingMapper.convertTripPassengersToCabinPassenger(
               passenger,
-              passengerFares[`${discountType} (${passenger.cabin.name})`],
-              adminFee,
+              passenger.totalPrice,
+              adminFee ?? 0,
               cabinPassengerBreakdown,
               noShowBreakdown
             );
@@ -229,8 +202,8 @@ export class ReportingService {
           passengers.push(
             this.reportingMapper.convertTripPassengersForReporting(
               passenger,
-              passengerFares[`${discountType} (${passenger.cabin.name})`],
-              adminFee
+              passenger.totalPrice,
+              adminFee ?? 0
             )
           );
         });
@@ -252,7 +225,7 @@ export class ReportingService {
         ship: true,
         srcPort: true,
         destPort: true,
-        bookingPassengers: {
+        bookingTripPassengers: {
           where: {
             booking: {
               bookingStatus: {
@@ -280,12 +253,12 @@ export class ReportingService {
         id: bookingId,
       },
       include: {
-        bookingPassengers: {
+        bookingTripPassengers: {
           include: {
             passenger: true,
           },
         },
-        bookingVehicles: {
+        bookingTripVehicles: {
           include: {
             trip: {
               include: {
@@ -302,7 +275,7 @@ export class ReportingService {
             },
           },
         },
-        paymentItems: {
+        bookingPaymentItems: {
           where: {
             bookingId,
           },

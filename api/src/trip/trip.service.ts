@@ -9,7 +9,6 @@ import { PrismaService } from '@/prisma.service';
 import {
   AvailableTrips,
   IAccount,
-  IBooking,
   ITrip,
   SearchAvailableTrips,
 } from '@ayahay/models';
@@ -21,6 +20,7 @@ import {
   PaginatedResponse,
   TripSearchByDateRange,
   UpdateTripCapacityRequest,
+  VehicleBookings,
 } from '@ayahay/http';
 import { TripValidator } from './trip.validator';
 import { ShippingLineService } from '@/shipping-line/shipping-line.service';
@@ -202,11 +202,11 @@ export class TripService {
   async getBookingsOfTrip(
     pagination: PaginatedRequest,
     tripId: number
-  ): Promise<PaginatedResponse<IBooking>> {
+  ): Promise<PaginatedResponse<VehicleBookings>> {
     const itemsPerPage = 10;
     const skip = (pagination.page - 1) * itemsPerPage;
 
-    const bookingIds = await this.prisma.bookingVehicle.findMany({
+    const bookingIds = await this.prisma.bookingTripVehicle.findMany({
       where: {
         tripId,
       },
@@ -229,7 +229,7 @@ export class TripService {
     const bookings = await this.prisma.booking.findMany({
       where,
       include: {
-        bookingVehicles: {
+        bookingTripVehicles: {
           include: {
             vehicle: {
               include: {
@@ -250,7 +250,7 @@ export class TripService {
     return {
       total: bookingsCount,
       data: bookings.map((booking) =>
-        this.bookingMapper.convertBookingToSummary(booking)
+        this.bookingMapper.convertBookingToBookingTripVehicle(booking)
       ),
     };
   }
@@ -645,7 +645,7 @@ export class TripService {
     transactionContext?: PrismaClient
   ): Promise<void> {
     transactionContext ??= this.prisma;
-    const bookingIds = await transactionContext.bookingPassenger.findMany({
+    const bookingIds = await transactionContext.bookingTripPassenger.findMany({
       where: {
         tripId,
       },

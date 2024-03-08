@@ -26,21 +26,16 @@ export default function BookingRequestsPage() {
 
     // fetch trips associated to each bookingVehicle
     const tripIds: any = paginatedBookingRequests.data.map(
-      (booking) => booking.bookingVehicles?.[0]?.tripId
+      (booking) => booking.bookingTrips?.[0]?.tripId
     );
     const trips = await getTrips(tripIds);
 
     for (let i = 0; i < paginatedBookingRequests.data.length; i++) {
       const booking = paginatedBookingRequests.data[i];
-      if (
-        !(booking.bookingVehicles && booking.bookingVehicles.length > 0) ||
-        trips === undefined
-      ) {
+      if (!booking.bookingTrips || trips === undefined) {
         continue;
       }
-      booking.bookingVehicles.forEach(
-        (bookingVehicle) => (bookingVehicle.trip = trips[i])
-      );
+      booking.bookingTrips[0].trip = trips[i];
     }
 
     return paginatedBookingRequests;
@@ -69,7 +64,7 @@ export default function BookingRequestsPage() {
     {
       title: 'Trip',
       render: (_, booking) => {
-        const trip = booking.bookingVehicles?.[0]?.trip;
+        const trip = booking.bookingTrips?.[0]?.trip;
         if (trip === undefined) {
           return '';
         }
@@ -101,12 +96,17 @@ export default function BookingRequestsPage() {
     {
       title: 'Vehicles',
       render: (_, booking) => {
-        if (booking.bookingVehicles === undefined) {
+        if (
+          booking.bookingTrips === undefined ||
+          booking.bookingTrips[0].bookingTripVehicles === undefined
+        ) {
           return '';
         }
 
-        return booking.bookingVehicles
-          .map((bookingVehicle) => bookingVehicle.vehicle.vehicleType?.name)
+        return booking.bookingTrips[0].bookingTripVehicles
+          .map(
+            (bookingTripVehicle) => bookingTripVehicle.vehicle.vehicleType?.name
+          )
           .join(', ');
       },
       responsive: ['lg'],

@@ -121,13 +121,16 @@ export default function GetBooking({ params }) {
     });
   };
 
-  const checkInBookingPassenger = async (bookingPassengerId: number) => {
+  const checkInBookingPassenger = async (
+    tripId: number,
+    passengerId: number
+  ) => {
     if (booking === undefined) {
       return;
     }
 
     try {
-      await checkInPassenger(booking.id, bookingPassengerId);
+      await checkInPassenger(booking.id, tripId, passengerId);
       api.success({
         message: 'Check In Success',
         description: 'The selected passenger has checked in successfully.',
@@ -138,13 +141,13 @@ export default function GetBooking({ params }) {
     }
   };
 
-  const checkInBookingVehicle = async (bookingVehicleId: number) => {
+  const checkInBookingVehicle = async (tripId: number, vehicleId: number) => {
     if (booking === undefined) {
       return;
     }
 
     try {
-      await checkInVehicle(booking.id, bookingVehicleId);
+      await checkInVehicle(booking.id, tripId, vehicleId);
       api.success({
         message: 'Check In Success',
         description: 'The selected vehicle has checked in successfully.',
@@ -164,6 +167,7 @@ export default function GetBooking({ params }) {
             booking={booking}
             titleLevel={2}
             hasPrivilegedAccess={hasPrivilegedAccess}
+            showTripSummary={true}
             onPayBooking={payBooking}
             onCancelBooking={onCancelBooking}
             onCheckInPassenger={checkInBookingPassenger}

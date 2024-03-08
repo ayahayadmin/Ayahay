@@ -121,24 +121,26 @@ export class BookingController {
     );
   }
 
-  @Patch(':bookingId/passengers/:bookingPassengerId/check-in')
+  @Patch(':bookingId/trips/:tripId/passengers/:passengerId/check-in')
   @UseGuards(AuthGuard)
   @Roles('Staff', 'Admin', 'SuperAdmin')
   async checkInPassenger(
     @Param('bookingId') bookingId: string,
-    @Param('bookingPassengerId') bookingPassengerId: number
+    @Param('tripId') tripId: number,
+    @Param('passengerId') passengerId: number
   ): Promise<void> {
-    return this.bookingService.checkInPassenger(bookingId, bookingPassengerId);
+    return this.bookingService.checkInPassenger(bookingId, tripId, passengerId);
   }
 
-  @Patch(':bookingId/vehicles/:bookingVehicleId/check-in')
+  @Patch(':bookingId/trips/:tripId/vehicles/:vehicleId/check-in')
   @UseGuards(AuthGuard)
   @Roles('Staff', 'Admin', 'SuperAdmin')
   async checkInVehicle(
     @Param('bookingId') bookingId: string,
-    @Param('bookingVehicleId') bookingVehicleId: number
+    @Param('tripId') tripId: number,
+    @Param('vehicleId') vehicleId: number
   ): Promise<void> {
-    return this.bookingService.checkInVehicle(bookingId, bookingVehicleId);
+    return this.bookingService.checkInVehicle(bookingId, tripId, vehicleId);
   }
 
   @Patch(':bookingId/cancel')

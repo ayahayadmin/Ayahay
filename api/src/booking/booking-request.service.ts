@@ -59,13 +59,8 @@ export class BookingRequestService {
       bookingRequest.id = bookingRequestEntity.paymentReference;
     }
 
-    bookingRequest.bookingPassengers.sort(
-      (passengerA, passengerB) => passengerA.id - passengerB.id
-    );
-    bookingRequest.bookingVehicles.sort(
-      (vehicleA, vehicleB) => vehicleA.id - vehicleB.id
-    );
-    bookingRequest.paymentItems.sort(
+    // TODO: populate booking trip passengers & vehicles
+    bookingRequest.bookingPaymentItems.sort(
       (paymentItemA, paymentItemB) => paymentItemA.id - paymentItemB.id
     );
 
