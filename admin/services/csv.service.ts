@@ -246,6 +246,7 @@ export async function generateBookingCsv(
           booking.createdByAccount.role === 'Passenger'
             ? 'Ayahay'
             : 'OTC';
+        const trip = booking.bookingTrips[0].trip;
         return (
           booking.bookingTrips[0].bookingTripPassengers &&
           booking.bookingTrips[0].bookingTripPassengers
@@ -259,7 +260,7 @@ export async function generateBookingCsv(
               );
               const age = computeAge(bookingTripPassenger.passenger.birthday);
               const departureDate = changeDateFormat(
-                bookingTripPassenger.trip?.departureDateIso,
+                trip?.departureDateIso,
                 true
               );
 
@@ -272,8 +273,8 @@ export async function generateBookingCsv(
                 bookingTripPassenger.passenger?.nationality ?? '',
                 bookingTripPassenger.passenger?.address ?? '',
                 bookingTripPassenger.passenger?.discountType ?? 'Adult',
-                bookingTripPassenger.trip?.srcPort.name ?? '',
-                bookingTripPassenger.trip?.destPort.name ?? '',
+                trip?.srcPort.name ?? '',
+                trip?.destPort.name ?? '',
                 departureDate ?? '',
                 round(bookingTripPassenger.totalPrice, 2) ?? '',
                 bookingTripPassenger.checkInDate ? 'Yes' : 'No',
