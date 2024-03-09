@@ -238,8 +238,7 @@ export async function generateBookingCsv(
   content.push(
     bookings
       .filter(
-        (booking) =>
-          booking.bookingPassengers && booking.bookingPassengers.length > 0
+        (booking) => booking.bookingTrips && booking.bookingTrips.length > 0
       )
       .map((booking) => {
         const payment =
@@ -248,19 +247,19 @@ export async function generateBookingCsv(
             ? 'Ayahay'
             : 'OTC';
         return (
-          booking.bookingPassengers &&
-          booking.bookingPassengers
-            .map((bookingPassenger: any) => {
+          booking.bookingTrips[0].bookingTripPassengers &&
+          booking.bookingTrips[0].bookingTripPassengers
+            .map((bookingTripPassenger: any) => {
               const name =
-                bookingPassenger.passenger.firstName +
+                bookingTripPassenger.passenger.firstName +
                 ' ' +
-                bookingPassenger.passenger.lastName;
+                bookingTripPassenger.passenger.lastName;
               const birthDate = changeDateFormat(
-                bookingPassenger.passenger.birthday
+                bookingTripPassenger.passenger.birthday
               );
-              const age = computeAge(bookingPassenger.passenger.birthday);
+              const age = computeAge(bookingTripPassenger.passenger.birthday);
               const departureDate = changeDateFormat(
-                bookingPassenger.trip?.departureDateIso,
+                bookingTripPassenger.trip?.departureDateIso,
                 true
               );
 
@@ -268,16 +267,16 @@ export async function generateBookingCsv(
                 name ?? '',
                 birthDate ?? '',
                 age ?? '',
-                bookingPassenger.passenger?.sex ?? '',
+                bookingTripPassenger.passenger?.sex ?? '',
                 // booking?.referenceNo ?? '',
-                bookingPassenger.passenger?.nationality ?? '',
-                bookingPassenger.passenger?.address ?? '',
-                bookingPassenger.passenger?.discountType ?? 'Adult',
-                bookingPassenger.trip?.srcPort.name ?? '',
-                bookingPassenger.trip?.destPort.name ?? '',
+                bookingTripPassenger.passenger?.nationality ?? '',
+                bookingTripPassenger.passenger?.address ?? '',
+                bookingTripPassenger.passenger?.discountType ?? 'Adult',
+                bookingTripPassenger.trip?.srcPort.name ?? '',
+                bookingTripPassenger.trip?.destPort.name ?? '',
                 departureDate ?? '',
-                round(bookingPassenger.totalPrice, 2) ?? '',
-                bookingPassenger.checkInDate ? 'Yes' : 'No',
+                round(bookingTripPassenger.totalPrice, 2) ?? '',
+                bookingTripPassenger.checkInDate ? 'Yes' : 'No',
                 payment,
               ]
                 .map(String) // convert every value to String
