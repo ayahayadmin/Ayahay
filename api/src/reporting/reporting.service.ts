@@ -9,11 +9,13 @@ import {
   BillOfLading,
 } from '@ayahay/http';
 import { ReportingMapper } from './reporting.mapper';
+import { BookingPricingService } from '@/booking/booking-pricing.service';
 
 @Injectable()
 export class ReportingService {
   constructor(
     private prisma: PrismaService,
+    private bookingPricingService: BookingPricingService,
     private readonly reportingMapper: ReportingMapper
   ) {}
 
@@ -30,9 +32,9 @@ export class ReportingService {
             booking: {
               include: {
                 createdByAccount: true,
-                bookingPaymentItems: true,
               },
             },
+            bookingPaymentItems: true,
             cabin: {
               include: {
                 cabinType: true,
@@ -46,12 +48,21 @@ export class ReportingService {
             booking: {
               include: {
                 createdByAccount: true,
-                bookingPaymentItems: true,
               },
             },
+            bookingPaymentItems: true,
             vehicle: {
               include: {
-                vehicleType: true,
+                vehicleType: {
+                  include: {
+                    trips: {
+                      select: {
+                        fare: true,
+                      },
+                      take: 1,
+                    },
+                  },
+                },
               },
             },
           },
@@ -93,9 +104,9 @@ export class ReportingService {
     return {
       ...this.reportingMapper.convertTripsForReporting(trip),
       passengers: confirmedBookingPassengers.map((passenger) => {
-        const adminFee = passenger.booking.bookingPaymentItems.find(
-          (paymentItem) => paymentItem.type === 'ServiceCharge'
-        );
+        const adminFee = passenger.bookingPaymentItems.find(
+          ({ type }) => type === 'ServiceCharge'
+        )?.price;
 
         return this.reportingMapper.convertTripPassengersForReporting(
           passenger,
@@ -104,9 +115,9 @@ export class ReportingService {
         );
       }),
       vehicles: confirmedBookingVehicles.map((vehicle) => {
-        const vehicleAdminFee = vehicle.booking.bookingPaymentItems.find(
-          (paymentItem) => paymentItem.type === 'ServiceCharge'
-        );
+        const vehicleAdminFee = vehicle.bookingPaymentItems.find(
+          ({ type }) => type === 'ServiceCharge'
+        )?.price;
 
         return this.reportingMapper.convertTripVehiclesForReporting(
           vehicle,

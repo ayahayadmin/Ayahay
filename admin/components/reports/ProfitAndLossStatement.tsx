@@ -145,9 +145,9 @@ const ProfitAndLossStatement = forwardRef(function (
                   {getLocaleTimeString(data.departureDate)}
                 </td>
                 <td>PAX INCOME</td>
-                <td>{totalTicketCost}</td>
+                <td>PHP{totalTicketCost.toLocaleString()}</td>
                 <td>-</td>
-                <td>{totalTicketCost - totalRefund}</td>
+                <td>PHP{(totalTicketCost - totalRefund).toLocaleString()}</td>
               </tr>
               <tr>
                 <td>{vesselName}</td>
@@ -160,18 +160,24 @@ const ProfitAndLossStatement = forwardRef(function (
                   {getLocaleTimeString(data.departureDate)}
                 </td>
                 <td>CARGO INCOME</td>
-                <td>{totalVehicleTicketCost}</td>
+                <td>PHP{totalVehicleTicketCost.toLocaleString()}</td>
                 <td>-</td>
-                <td>{totalVehicleTicketCost - totalVehicleRefund}</td>
+                <td>PHP{totalVehicleTicketCost.toLocaleString()}</td>
               </tr>
             </tbody>
             <tfoot style={{ backgroundColor: '#ddebf7' }}>
               <tr style={{ fontWeight: 'bold' }}>
                 <td colSpan={4}>TOTAL SALES</td>
-                <td>{totalTicketCost + totalVehicleTicketCost}</td>
+                <td>
+                  PHP
+                  {(totalTicketCost + totalVehicleTicketCost).toLocaleString()}
+                </td>
                 <td>-</td>
                 {/* subtract here TOTAL refund (pax and cargo), but none for now */}
-                <td>{totalTicketCost + totalVehicleTicketCost}</td>
+                <td>
+                  PHP
+                  {(totalTicketCost + totalVehicleTicketCost).toLocaleString()}
+                </td>
               </tr>
             </tfoot>
           </table>
@@ -226,7 +232,7 @@ const ProfitAndLossStatement = forwardRef(function (
                     <td className={styles['td-text-wrap']}>
                       {disbursement.purpose}
                     </td>
-                    <td>{disbursement.amount}</td>
+                    <td>PHP{disbursement.amount.toLocaleString()}</td>
                   </tr>
                 );
               })}
@@ -234,7 +240,7 @@ const ProfitAndLossStatement = forwardRef(function (
             <tfoot style={{ backgroundColor: '#ddebf7' }}>
               <tr style={{ fontWeight: 'bold' }}>
                 <td colSpan={6}>TOTAL EXPENSES</td>
-                <td>{round(totalExpenses, 2)}</td>
+                <td>PHP{round(totalExpenses, 2).toLocaleString()}</td>
               </tr>
             </tfoot>
           </table>
@@ -265,7 +271,8 @@ const ProfitAndLossStatement = forwardRef(function (
                 </td>
                 {/* subtract here TOTAL refund (pax and cargo), but none for now */}
                 <td style={{ textAlign: 'right' }}>
-                  {totalTicketCost + totalVehicleTicketCost}
+                  PHP
+                  {(totalTicketCost + totalVehicleTicketCost).toLocaleString()}
                 </td>
               </tr>
               <tr>
@@ -286,13 +293,13 @@ const ProfitAndLossStatement = forwardRef(function (
                         }
                       </div>
                       <div style={{ textAlign: 'right', maxWidth: 50 }}>
-                        {expenses[expense]}
+                        PHP{expenses[expense].toLocaleString()}
                       </div>
                     </td>
                   );
                 })}
                 <td style={{ verticalAlign: 'top', textAlign: 'right' }}>
-                  {round(totalExpenses, 2)}
+                  PHP{round(totalExpenses, 2).toLocaleString()}
                 </td>
               </tr>
               <tr>
@@ -305,10 +312,11 @@ const ProfitAndLossStatement = forwardRef(function (
                 </td>
                 <td style={{ textAlign: 'right' }}>
                   {/* subtract here TOTAL refund (pax and cargo), but none for now */}
+                  PHP
                   {round(
                     totalTicketCost + totalVehicleTicketCost - totalExpenses,
                     2
-                  )}
+                  ).toLocaleString()}
                 </td>
               </tr>
             </tbody>

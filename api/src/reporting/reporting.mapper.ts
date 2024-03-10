@@ -23,11 +23,15 @@ export class ReportingMapper {
   }
 
   convertTripPassengersForReporting(passenger, passengerFare, adminFee) {
+    const discountAmount = passenger.bookingPaymentItems.find(
+      ({ type }) => type === 'VoucherDiscount'
+    )?.price;
     return {
       teller: passenger.booking.createdByAccount?.email,
       accommodation: passenger.cabin.cabinType.name,
       discount: passenger.passenger.discountType ?? 'Adult',
       collect: passenger.booking.voucherCode === 'AZNAR_COLLECT',
+      discountAmount: discountAmount ?? 0,
       ticketCost: passengerFare,
       adminFee,
       fare: passengerFare + adminFee,
@@ -40,12 +44,16 @@ export class ReportingMapper {
   }
 
   convertTripVehiclesForReporting(vehicle, vehicleFare, vehicleAdminFee) {
+    const discountAmount = vehicle.bookingPaymentItems.find(
+      ({ type }) => type === 'VoucherDiscount'
+    )?.price;
     return {
       teller: vehicle.booking.createdByAccount?.email,
       referenceNo: vehicle.booking.referenceNo,
       typeOfVehicle: vehicle.vehicle.vehicleType.description,
       plateNo: vehicle.vehicle.plateNo,
       collect: vehicle.booking.voucherCode === 'AZNAR_COLLECT',
+      discountAmount: discountAmount ?? 0,
       ticketCost: vehicleFare,
       adminFee: vehicleAdminFee,
       fare: vehicleFare + vehicleAdminFee,

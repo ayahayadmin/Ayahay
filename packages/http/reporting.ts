@@ -12,6 +12,7 @@ export interface TripReport {
     accommodation: string;
     discount: string;
     collect: boolean;
+    discountAmount: number;
     ticketCost: number;
     adminFee: number;
     fare: number;
@@ -30,6 +31,7 @@ export interface TripReport {
     typeOfVehicle: string;
     plateNo: string;
     collect: boolean;
+    discountAmount: number;
     ticketCost: number;
     adminFee: number;
     fare: number;

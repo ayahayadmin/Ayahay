@@ -170,9 +170,11 @@ const SummarySalesPerVessel = forwardRef(function (
                           <td>{cabinPassenger.accommodation}</td>
                           <td>REGULAR</td>
                           <td>{cabinPassenger.discountType}</td>
-                          <td>{cabinPassenger.ticketCost}</td>
+                          <td>
+                            PHP{cabinPassenger.ticketCost.toLocaleString()}
+                          </td>
                           <td>{cabinPassenger.boarded}</td>
-                          <td>{cabinPassenger.total}</td>
+                          <td>PHP{cabinPassenger.total.toLocaleString()}</td>
                         </tr>
                       );
                     }
@@ -187,9 +189,9 @@ const SummarySalesPerVessel = forwardRef(function (
                         <td>NO SHOW</td>
                         <td>REGULAR</td>
                         <td>{noShow.discountType}</td>
-                        <td>{noShow.ticketCost}</td>
+                        <td>PHP{noShow.ticketCost.toLocaleString()}</td>
                         <td>{noShow.count}</td>
-                        <td>{noShow.total}</td>
+                        <td>PHP{noShow.total.toLocaleString()}</td>
                       </tr>
                     );
                   }
@@ -203,7 +205,7 @@ const SummarySalesPerVessel = forwardRef(function (
                     <td></td>
                     <td></td>
                     <td>{boarded}</td>
-                    <td>{total}</td>
+                    <td>PHP{total.toLocaleString()}</td>
                   </tr>
                 );
                 totalBoardedArr.push(boarded);
@@ -216,7 +218,7 @@ const SummarySalesPerVessel = forwardRef(function (
                     <td></td>
                     <td></td>
                     <td></td>
-                    <td>{totalSales}</td>
+                    <td>PHP{totalSales.toLocaleString()}</td>
                   </tr>
                 );
                 totalSalesArr.push(totalSales);
@@ -232,9 +234,9 @@ const SummarySalesPerVessel = forwardRef(function (
                     <td></td>
                     <td></td>
                     <td>Ayahay Convenience Fee</td>
-                    <td>50</td>
+                    <td>PHP50</td>
                     <td>{totalPassengersWithAdminFee}</td>
-                    <td>{totalAdminFee}</td>
+                    <td>PHP{totalAdminFee.toLocaleString()}</td>
                   </tr>
                 );
                 totalAdminFeeArr.push(totalAdminFee);
@@ -252,7 +254,13 @@ const SummarySalesPerVessel = forwardRef(function (
               <tr>
                 <td colSpan={5}>OVERALL TOTAL</td>
                 <td>{sum(totalBoardedArr)}</td>
-                <td>{sum([...totalSalesArr, ...totalAdminFeeArr])}</td>
+                <td>
+                  PHP
+                  {sum([
+                    ...totalSalesArr,
+                    ...totalAdminFeeArr,
+                  ]).toLocaleString()}
+                </td>
               </tr>
             </tfoot>
           </table>
@@ -285,7 +293,10 @@ const SummarySalesPerVessel = forwardRef(function (
                   <tr>
                     <td className={styles['cell-border']}>{mop}</td>
                     <td className={styles['cell-border']}>
-                      {mopBreakdown[mop as keyof MOPBreakdown].aggFare}
+                      PHP&nbsp;
+                      {mopBreakdown[
+                        mop as keyof MOPBreakdown
+                      ].aggFare.toLocaleString()}
                     </td>
                   </tr>
                 );
@@ -294,38 +305,48 @@ const SummarySalesPerVessel = forwardRef(function (
             <tfoot style={{ backgroundColor: '#ddebf7' }}>
               <tr style={{ fontWeight: 'bold' }}>
                 <td className={styles['cell-border']}>TOTAL SALES</td>
-                <td className={styles['cell-border']}>{totalFare}</td>
+                <td className={styles['cell-border']}>
+                  PHP&nbsp;{totalFare.toLocaleString()}
+                </td>
               </tr>
             </tfoot>
           </table>
 
           <table
             style={{
-              width: '45%',
+              width: '50%',
               borderCollapse: 'collapse',
               fontSize: 8,
               marginLeft: 'auto',
               marginRight: 4,
             }}
           >
-            <tbody>
+            <tbody style={{ wordSpacing: 3 }}>
               <tr>
                 <td style={{ textAlign: 'left', width: '50%' }}>Ticket Cost</td>
-                <td style={{ textAlign: 'right' }}>{sum(totalSalesArr)}</td>
+                <td style={{ textAlign: 'right' }}>
+                  PHP&nbsp;{sum(totalSalesArr).toLocaleString()}
+                </td>
                 <td></td>
               </tr>
               <tr>
                 <td style={{ textAlign: 'left', width: '50%' }}>
                   Ayahay Convenience Fee
                 </td>
-                <td style={{ textAlign: 'right' }}>{sum(totalAdminFeeArr)}</td>
+                <td style={{ textAlign: 'right' }}>
+                  PHP&nbsp;{sum(totalAdminFeeArr).toLocaleString()}
+                </td>
                 <td></td>
               </tr>
               <tr style={{ fontWeight: 'bold' }}>
                 <td style={{ textAlign: 'left', width: '50%' }}>TOTAL SALES</td>
                 <td></td>
                 <td style={{ textAlign: 'right' }}>
-                  {sum([...totalSalesArr, ...totalAdminFeeArr])}
+                  PHP
+                  {sum([
+                    ...totalSalesArr,
+                    ...totalAdminFeeArr,
+                  ]).toLocaleString()}
                 </td>
               </tr>
             </tbody>

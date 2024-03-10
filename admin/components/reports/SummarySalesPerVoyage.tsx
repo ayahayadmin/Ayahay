@@ -177,9 +177,9 @@ const SummarySalesPerVoyage = forwardRef(function (
                 </td>
                 <td>{totalPassengers}</td>
                 <td></td>
-                <td>{totalPassengerSales}</td>
+                <td>PHP{totalPassengerSales.toLocaleString()}</td>
                 <td>-</td>
-                <td>{totalPassengerSales - totalPassengerRefund}</td>
+                <td>PHP{totalPassengerSales.toLocaleString()}</td>
               </tr>
               <tr>
                 <td>{vesselName}</td>
@@ -191,9 +191,15 @@ const SummarySalesPerVoyage = forwardRef(function (
                 </td>
                 <td></td>
                 <td>{totalVehicles}</td>
-                <td>{round(totalVehicleSales, 2)}</td>
+                <td>PHP{round(totalVehicleSales, 2).toLocaleString()}</td>
                 <td>-</td>
-                <td>{round(totalVehicleSales - totalVehicleRefund, 2)}</td>
+                <td>
+                  PHP
+                  {round(
+                    totalVehicleSales - totalVehicleRefund,
+                    2
+                  ).toLocaleString()}
+                </td>
               </tr>
             </tbody>
           </table>
@@ -219,7 +225,10 @@ const SummarySalesPerVoyage = forwardRef(function (
                   <tr>
                     <td className={styles['cell-border']}>{mop}</td>
                     <td className={styles['cell-border']}>
-                      {mopBreakdown[mop as keyof MOPBreakdown].aggTicketCost}
+                      PHP&nbsp;
+                      {mopBreakdown[
+                        mop as keyof MOPBreakdown
+                      ].aggTicketCost?.toLocaleString()}
                     </td>
                   </tr>
                 );
@@ -229,7 +238,11 @@ const SummarySalesPerVoyage = forwardRef(function (
               <tr style={{ fontWeight: 'bold' }}>
                 <td className={styles['cell-border']}>TOTAL SALES</td>
                 <td className={styles['cell-border']}>
-                  {round(totalPassengerSales + totalVehicleSales, 2)}
+                  PHP&nbsp;
+                  {round(
+                    totalPassengerSales + totalVehicleSales,
+                    2
+                  ).toLocaleString()}
                 </td>
               </tr>
             </tfoot>

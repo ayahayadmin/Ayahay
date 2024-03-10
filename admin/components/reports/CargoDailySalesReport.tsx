@@ -124,6 +124,7 @@ const CargoDailySalesReport = forwardRef(function (
                 <th>BOL #</th>
                 <th>Vehicle Type</th>
                 <th>Plate #</th>
+                <th>Discount</th>
                 <th>Ticket Cost</th>
                 <th>Payment Method</th>
                 <th>Collect</th>
@@ -140,6 +141,10 @@ const CargoDailySalesReport = forwardRef(function (
                   mopBreakdown.OTC.aggFare += vehicle.ticketCost;
                 }
 
+                const discountAmount = vehicle.discountAmount
+                  ? `PHP${vehicle.discountAmount.toLocaleString()}`
+                  : '';
+
                 return (
                   <tr>
                     <td>{vesselName}</td>
@@ -152,7 +157,8 @@ const CargoDailySalesReport = forwardRef(function (
                     <td>{vehicle.referenceNo}</td>
                     <td>{vehicle.typeOfVehicle}</td>
                     <td>{vehicle.plateNo}</td>
-                    <td>{vehicle.ticketCost}</td>
+                    <td>{discountAmount}</td>
+                    <td>PHP{vehicle.ticketCost.toLocaleString()}</td>
                     <td>{paymentStatus}</td>
                     <td>{vehicle.collect ? 'Yes' : ''}</td>
                   </tr>
@@ -163,7 +169,8 @@ const CargoDailySalesReport = forwardRef(function (
               <tr style={{ fontWeight: 'bold' }}>
                 <td colSpan={5}>TOTAL</td>
                 <td>{totalVehicles}</td>
-                <td>{round(totalTicketCost, 2)}</td>
+                <td>-</td>
+                <td>PHP{round(totalTicketCost, 2).toLocaleString()}</td>
                 <td>-</td>
                 <td>-</td>
               </tr>
@@ -199,7 +206,10 @@ const CargoDailySalesReport = forwardRef(function (
                   <tr>
                     <td className={styles['cell-border']}>{mop}</td>
                     <td className={styles['cell-border']}>
-                      {mopBreakdown[mop as keyof MOPBreakdown].aggFare}
+                      PHP&nbsp;
+                      {mopBreakdown[
+                        mop as keyof MOPBreakdown
+                      ].aggFare.toLocaleString()}
                     </td>
                   </tr>
                 );
@@ -214,7 +224,7 @@ const CargoDailySalesReport = forwardRef(function (
                   TOTAL SALES
                 </td>
                 <td className={styles['cell-border']}>
-                  {round(totalTicketCost, 2)}
+                  PHP&nbsp;{round(totalTicketCost, 2).toLocaleString()}
                 </td>
               </tr>
             </tfoot>
@@ -247,7 +257,7 @@ const CargoDailySalesReport = forwardRef(function (
                       {vehicleType.totalBooked}
                     </td>
                     <td className={styles['cell-border']}>
-                      {vehicleType.totalSales}
+                      PHP&nbsp;{vehicleType.totalSales.toLocaleString()}
                     </td>
                   </tr>
                 );
