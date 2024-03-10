@@ -194,13 +194,11 @@ export class BookingMapper {
       data: {
         shippingLineId: booking.shippingLineId,
         createdByAccountId: booking.createdByAccountId ?? null,
-        approvedByAccountId: booking.approvedByAccountId ?? null,
         voucherCode: booking.voucherCode ?? null,
 
         totalPrice: booking.totalPrice,
         bookingType: booking.bookingType,
-        paymentReference: null,
-        createdAt: new Date(),
+        createdAt: new Date(booking.createdAtIso),
         isBookingRequest: booking.isBookingRequest,
 
         bookingTripsJson,

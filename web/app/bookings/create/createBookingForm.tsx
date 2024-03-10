@@ -16,6 +16,7 @@ import { InfoCircleOutlined } from '@ant-design/icons';
 import { useAuth } from '@/contexts/AuthContext';
 import { getAxiosError } from '@ayahay/services/error.service';
 import { FieldError } from '@ayahay/http';
+import { getInitialPassengerFormValue } from '@ayahay/services/form.service';
 
 const { useBreakpoint } = Grid;
 
@@ -32,14 +33,15 @@ export default function CreateBookingForm({
   onComplete,
 }: CreateBookingFormProps) {
   const { loggedInAccount, hasPrivilegedAccess } = useAuth();
-  const { trips } = useTripFromSearchParams();
+  const { tripIds, trips } = useTripFromSearchParams();
   const trip = trips?.[0];
   const screens = useBreakpoint();
   const [modal, contextHolder] = Modal.useModal();
   const [form] = Form.useForm();
-  const passengers = Form.useWatch('passengers', form);
-  const vehicles = Form.useWatch('vehicles', form);
-  const preferences = Form.useWatch('preferences', form);
+  const vehicles = Form.useWatch(
+    ['bookingTrips', 0, 'bookingTripVehicles'],
+    form
+  );
   const gateway = Form.useWatch('gateway', form);
   const [loadingMessage, setLoadingMessage] = useState<string>('');
   const [bookingPreview, setBookingPreview] = useState<IBooking>();
@@ -53,7 +55,7 @@ export default function CreateBookingForm({
     setCurrentStep(currentStep - 1);
   };
 
-  const findSeats = async () => {
+  const createTempBooking = async () => {
     setLoadingMessage(
       'Looking for available seats that match your preferences...'
     );
@@ -63,18 +65,9 @@ export default function CreateBookingForm({
       return;
     }
 
-    const pref: any[] = [];
-    passengers.forEach((_: any) => pref.push({}));
-
-    const voucherCode = form.getFieldValue('voucherCode');
-
     try {
       const tentativeBooking = await createTentativeBooking(
-        [trip?.id],
-        passengers,
-        pref,
-        vehicles,
-        voucherCode
+        form.getFieldsValue(true)
       );
       setBookingPreview(tentativeBooking);
       nextStep();
@@ -245,10 +238,18 @@ export default function CreateBookingForm({
       form={form}
       id={styles['create-booking-form']}
       initialValues={{
-        passengers: [{ nationality: 'Filipino', discountType: undefined }],
-        vehicles: [],
-        preferences: [],
+        bookingTrips: [
+          {
+            tripId: tripIds[0],
+            passengerId: 0,
+            bookingTripPassengers: [
+              getInitialPassengerFormValue(tripIds[0], 0),
+            ],
+            bookingTripVehicles: [],
+          },
+        ],
         gateway: 'PayMongo',
+        bookingType: 'Single',
       }}
       onFieldsChange={onFieldsChange}
     >
@@ -268,23 +269,8 @@ export default function CreateBookingForm({
           }}
         >
           <PassengerInformationForm
-            availableVehicleTypes={trip?.availableVehicleTypes.map(
-              (tripVehicleType) => tripVehicleType.vehicleType
-            )}
-            onNextStep={findSeats}
-            onPreviousStep={previousStep}
-          />
-        </div>
-        <div
-          style={{
-            display:
-              steps[currentStep].title === 'Passenger Preferences'
-                ? 'block'
-                : 'none',
-          }}
-        >
-          <PassengerPreferencesForm
-            onNextStep={findSeats}
+            trip={trip}
+            onNextStep={createTempBooking}
             onPreviousStep={previousStep}
           />
         </div>

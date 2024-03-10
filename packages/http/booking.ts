@@ -1,18 +1,4 @@
-import { IBookingTripVehicle, IPassenger, IVehicle } from '@ayahay/models';
-
-export interface CreateTentativeBookingRequest {
-  tripIds: number[];
-  passengers: IPassenger[];
-  passengerPreferences: PassengerPreferences[];
-  vehicles: IVehicle[];
-  voucherCode: string;
-}
-
-export interface PassengerPreferences {
-  seatTypeId?: number;
-  cabinTypeId?: number;
-  meal?: string;
-}
+import { IBookingTripVehicle } from '@ayahay/models';
 
 export interface VehicleBookings {
   id: string;

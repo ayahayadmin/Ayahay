@@ -12,7 +12,6 @@ import {
 import { BookingService } from './booking.service';
 import { IBooking } from '@ayahay/models';
 import {
-  CreateTentativeBookingRequest,
   PaginatedRequest,
   PaginatedResponse,
   TripSearchByDateRange,
@@ -109,27 +108,13 @@ export class BookingController {
   @AllowUnauthenticated()
   async createTemporaryBooking(
     @Request() req,
-    @Body()
-    {
-      tripIds,
-      passengers,
-      passengerPreferences,
-      vehicles,
-      voucherCode,
-    }: CreateTentativeBookingRequest
+    @Body() booking: IBooking
   ): Promise<IBooking> {
     const loggedInAccount = req.user
       ? await this.accountService.getMyAccountInformation(req.user)
       : undefined;
 
-    return this.bookingService.createTentativeBooking(
-      tripIds,
-      passengers,
-      passengerPreferences,
-      vehicles,
-      voucherCode,
-      loggedInAccount
-    );
+    return this.bookingService.createTentativeBooking(booking, loggedInAccount);
   }
 
   @Patch(':bookingId/trips/:tripId/passengers/:passengerId/check-in')

@@ -68,6 +68,8 @@ model TripCabin {
   passengerCapacity Int @map("passenger_capacity")
   adultFare Float @map("adult_fare")
 
+  bookingTripPassengers BookingTripPassenger[]
+
   @@map("trip_cabin")
   @@id([tripId, cabinId])
 }
@@ -301,8 +303,11 @@ model BookingTripPassenger {
   passenger Passenger @relation(fields: [passengerId], references: [id])
   cabinId Int @map("cabin_id")
   cabin Cabin @relation(fields: [cabinId], references: [id])
+  tripCabin TripCabin @relation(fields: [tripId, cabinId], references: [tripId, cabinId])
   seatId Int? @map("seat_id")
   seat Seat? @relation(fields: [seatId], references: [id])
+  drivesVehicleId Int? @map("drives_vehicle_id")
+  drivesVehicle BookingTripVehicle? @relation(fields: [bookingId, tripId, drivesVehicleId], references: [bookingId, tripId, vehicleId])
 
   meal String?
   totalPrice Float @map("total_price")
@@ -312,6 +317,7 @@ model BookingTripPassenger {
 
   @@map("booking_trip_passenger")
   @@id([bookingId, tripId, passengerId])
+  @@unique([bookingId, tripId, drivesVehicleId])
 }
 
 model BookingTripVehicle {
@@ -322,6 +328,7 @@ model BookingTripVehicle {
   bookingTrip BookingTrip @relation(fields: [bookingId, tripId], references: [bookingId, tripId])
   vehicleId Int @map("vehicle_id")
   vehicle Vehicle @relation(fields: [vehicleId], references: [id])
+  passengerDriver BookingTripPassenger?
 
   totalPrice Float @map("total_price")
   checkInDate DateTime? @map("check_in_date")

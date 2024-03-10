@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { Prisma, PrismaClient } from '@prisma/client';
 import { PrismaService } from '@/prisma.service';
 import {
@@ -7,10 +7,9 @@ import {
   IBookingTripPassenger,
   IBookingTripVehicle,
   IPassenger,
-  ITrip,
+  ITripCabin,
   IVehicle,
 } from '@ayahay/models';
-import { PassengerPreferences } from '@ayahay/http';
 import { AvailableBooking } from './booking.types';
 import { VoucherService } from '@/voucher/voucher.service';
 import { EmailService } from '@/email/email.service';
@@ -36,69 +35,145 @@ export class BookingReservationService {
     private readonly utilityService: UtilityService
   ) {}
 
-  getAvailableBookingsInTripsWithoutSeatSelection(
-    tripsWithoutSeatSelection: ITrip[],
-    passengerPreferences: PassengerPreferences[]
-  ): AvailableBooking[] {
-    const availableBookings: AvailableBooking[] = [];
+  /**
+   * Assigns cabin and seat information for all passengers
+   * in a booking
+   * @param bookingTrips
+   */
+  async assignCabinsAndSeatsToPassengers(
+    bookingTrips: IBookingTrip[]
+  ): Promise<void> {
+    const tripsWithSeatSelection = bookingTrips.filter(
+      (bookingTrip) => bookingTrip.trip.seatSelection === true
+    );
+    const tripsWithoutSeatSelection = bookingTrips.filter(
+      (bookingTrip) => bookingTrip.trip.seatSelection === false
+    );
 
-    for (const trip of tripsWithoutSeatSelection) {
-      trip.availableCabins
-        // by default, get the cheapest cabin
-        .sort((cabinA, cabinB) => cabinA.adultFare - cabinB.adultFare);
+    tripsWithoutSeatSelection.forEach((bookingTrip) =>
+      this.assignCabinsToPassengersInTripWithoutSeatSelection(bookingTrip)
+    );
 
-      for (const preferences of passengerPreferences) {
-        let cabinIndex = trip.availableCabins.findIndex(
-          (tripCabin) => tripCabin.availablePassengerCapacity > 0
-        );
+    await this.assignCabinsAndSeatsToPassengersInTripsWithSeatSelection(
+      tripsWithSeatSelection
+    );
+  }
 
-        if (preferences.cabinTypeId !== undefined) {
-          const cabinIndexWithPreference = trip.availableCabins.findIndex(
-            (tripCabin) =>
-              tripCabin.cabin.cabinTypeId === preferences.cabinTypeId &&
-              tripCabin.availablePassengerCapacity > 0
-          );
+  private assignCabinsToPassengersInTripWithoutSeatSelection(
+    bookingTrip: IBookingTrip
+  ): void {
+    bookingTrip.trip.availableCabins
+      // by default, get the cheapest cabin
+      .sort((cabinA, cabinB) => cabinA.adultFare - cabinB.adultFare);
 
-          if (cabinIndexWithPreference !== -1) {
-            cabinIndex = cabinIndexWithPreference;
-          }
-        }
+    bookingTrip.bookingTripPassengers.forEach((bookingTripPassenger) => {
+      const assignedCabinIndex = this.getAssignedCabinIndexToPassenger(
+        bookingTrip.trip.availableCabins,
+        bookingTripPassenger
+      );
 
-        const availableCabin = trip.availableCabins[cabinIndex];
+      if (assignedCabinIndex === -1) {
+        throw new BadRequestException('No available bookings');
+      }
 
-        availableBookings.push({
-          cabinId: availableCabin.cabinId,
-          cabinName: availableCabin.cabin.name,
-          cabinTypeName: availableCabin.cabin.cabinType.name,
-          cabinTypeShippingLineId:
-            availableCabin.cabin.cabinType.shippingLineId,
-          cabinTypeDescription: availableCabin.cabin.cabinType.description,
-          cabinTypeId: availableCabin.cabin.cabinTypeId,
-          cabinAdultFare: availableCabin.adultFare,
-          tripId: trip.id,
-        });
+      const assignedCabin =
+        bookingTrip.trip.availableCabins[assignedCabinIndex];
 
-        trip.availableCabins[cabinIndex].availablePassengerCapacity--;
+      bookingTripPassenger.cabinId = assignedCabin.cabinId;
+      bookingTripPassenger.cabin = assignedCabin.cabin;
+      bookingTripPassenger.tripCabin = assignedCabin;
+
+      bookingTrip.trip.availableCabins[assignedCabinIndex]
+        .availablePassengerCapacity--;
+    });
+  }
+
+  private getAssignedCabinIndexToPassenger(
+    availableCabins: ITripCabin[],
+    bookingTripPassenger: IBookingTripPassenger
+  ): number {
+    let cabinIndex = availableCabins.findIndex(
+      (tripCabin) => tripCabin.availablePassengerCapacity > 0
+    );
+    const preferredCabinId = bookingTripPassenger.cabinId;
+    if (preferredCabinId !== undefined) {
+      const preferredCabinIndex = availableCabins.findIndex(
+        (tripCabin) =>
+          tripCabin.cabin.id === preferredCabinId &&
+          tripCabin.availablePassengerCapacity > 0
+      );
+
+      if (preferredCabinIndex !== -1) {
+        cabinIndex = preferredCabinIndex;
       }
     }
 
-    return availableBookings;
+    return cabinIndex;
   }
 
-  async getAvailableBookingsInTripsWithSeatSelection(
-    tripsWithSeatSelection: ITrip[],
-    passengerPreferences: PassengerPreferences[]
-  ): Promise<AvailableBooking[]> {
-    if (tripsWithSeatSelection.length === 0) {
-      return [];
+  private async assignCabinsAndSeatsToPassengersInTripsWithSeatSelection(
+    bookingTrips: IBookingTrip[]
+  ): Promise<void> {
+    if (bookingTrips.length === 0) {
+      return;
     }
 
-    const tripIds = tripsWithSeatSelection.map((trip) => trip.id);
-    const preferredCabinTypes = passengerPreferences.map(
-      (preferences) => preferences.cabinTypeId
+    const availableBookings =
+      await this.getAvailableBookingsInTripsWithSeatSelection(bookingTrips);
+
+    bookingTrips.forEach((bookingTrip) => {
+      bookingTrip.bookingTripPassengers.forEach((bookingTripPassenger) => {
+        const bestBookingIndex = this.getBestBookingIndex(
+          availableBookings,
+          bookingTripPassenger
+        );
+
+        if (bestBookingIndex === -1) {
+          throw new BadRequestException('No available booking');
+        }
+
+        const bestBooking = availableBookings[bestBookingIndex];
+
+        bookingTripPassenger.cabinId = bestBooking.cabinId;
+        bookingTripPassenger.cabin = {
+          id: bestBooking.cabinId,
+          cabinTypeId: bestBooking.cabinTypeId,
+          cabinType: {
+            id: bestBooking.cabinTypeId,
+            shippingLineId: bestBooking.cabinTypeShippingLineId,
+            name: bestBooking.cabinTypeName,
+            description: bestBooking.cabinTypeDescription,
+          },
+          name: bestBooking.cabinName,
+        } as any;
+        bookingTripPassenger.tripCabin = {
+          adultFare: bestBooking.cabinAdultFare,
+        } as any;
+        bookingTripPassenger.seatId = bestBooking.seatId;
+        bookingTripPassenger.seat = {
+          id: bestBooking.seatId,
+          cabinId: bestBooking.cabinId,
+          seatTypeId: bestBooking.seatTypeId,
+          name: bestBooking.seatName,
+        } as any;
+
+        availableBookings.splice(bestBookingIndex, 1);
+      });
+    });
+  }
+
+  private async getAvailableBookingsInTripsWithSeatSelection(
+    bookingTrips: IBookingTrip[]
+  ): Promise<AvailableBooking[]> {
+    const { bookingTripPassengers } =
+      this.utilityService.combineAllBookingTripEntities(bookingTrips);
+
+    const tripIds = bookingTrips.map((bookingTrip) => bookingTrip.tripId);
+    const preferredCabinTypes = bookingTripPassengers.map(
+      (bookingTripPassenger) => bookingTripPassenger.cabinId
     );
-    const preferredSeatTypes = passengerPreferences.map(
-      (preferences) => preferences.seatTypeId
+    const preferredSeatTypes = bookingTripPassengers.map(
+      (bookingTripPassenger) => bookingTripPassenger.preferredSeatTypeId
     );
 
     // TODO: update seat check after schema update
@@ -132,47 +207,36 @@ FROM (
     )
   ) 
 ) partitioned_results
-WHERE row <= ${passengerPreferences.length}
+WHERE row <= ${bookingTripPassengers.length}
 ;
 `;
   }
 
-  getBestBooking(
+  getBestBookingIndex(
     availableBookings: AvailableBooking[],
-    passengerPreferences: PassengerPreferences,
-    seatSelection: boolean
-  ): AvailableBooking | undefined {
+    bookingTripPassenger: IBookingTripPassenger
+  ): number {
     if (availableBookings.length === 0) {
       return undefined;
     }
 
-    const { cabinTypeId: preferredCabin, seatTypeId: preferredSeatType } =
-      passengerPreferences;
-
-    if (seatSelection === false) {
-      return (
-        availableBookings.find(
-          (booking) =>
-            preferredCabin === undefined ||
-            preferredCabin === booking.cabinTypeId
-        ) ?? availableBookings[0]
-      );
-    }
+    const { cabinId: preferredCabinId, preferredSeatTypeId } =
+      bookingTripPassenger;
 
     let seatsInPreferredCabin = availableBookings;
     let seatsWithPreferredSeatType = availableBookings;
     seatsInPreferredCabin = seatsInPreferredCabin.filter(
-      (seat) => seat.cabinTypeId === preferredCabin
+      (seat) => seat.cabinId === preferredCabinId
     );
-    if (preferredSeatType !== undefined) {
+    if (preferredSeatTypeId !== undefined) {
       seatsWithPreferredSeatType = seatsWithPreferredSeatType.filter(
-        (seat) => seat.seatTypeId === preferredSeatType
+        (seat) => seat.seatTypeId === preferredSeatTypeId
       );
     }
 
     // score that determines how "preferred" a seat is; the higher, the more preferred
     let bestScore = -1;
-    let bestSeat = availableBookings[0];
+    let bestSeatIndex = -1;
 
     const idsOfSeatsInPreferredCabin = new Set<number>();
     const idsOfSeatsWithPreferredSeatType = new Set<number>();
@@ -182,7 +246,7 @@ WHERE row <= ${passengerPreferences.length}
     seatsWithPreferredSeatType
       .map((seat) => seat.seatId)
       .forEach((id) => idsOfSeatsWithPreferredSeatType.add(id));
-    availableBookings.forEach((seat) => {
+    availableBookings.forEach((seat, index) => {
       let currentSeatScore = 0;
       if (idsOfSeatsInPreferredCabin.has(seat.seatId)) {
         currentSeatScore += this.CABIN_WEIGHT;
@@ -192,10 +256,10 @@ WHERE row <= ${passengerPreferences.length}
       }
       if (currentSeatScore > bestScore) {
         bestScore = currentSeatScore;
-        bestSeat = seat;
+        bestSeatIndex = index;
       }
     });
-    return bestSeat;
+    return bestSeatIndex;
   }
 
   async saveConfirmedBooking(
@@ -213,6 +277,7 @@ WHERE row <= ${passengerPreferences.length}
       bookingToCreate
     );
 
+    // TODO: connect BTP drivesVehicleId to BTV
     await this.onBookingConfirmation(booking, transactionContext);
 
     return this.bookingMapper.convertBookingToBasicDto(bookingEntity);
@@ -224,64 +289,98 @@ WHERE row <= ${passengerPreferences.length}
   ): Promise<void> {
     // all trips of the same booking have the same passengers and vehicles,
     // so we just get passengers and vehicles of the first trip
-    const createdPassengerIds = await this.saveNewPassengers(
+    const passengerIdMap = await this.saveNewPassengers(
       bookingTrips[0].bookingTripPassengers.map(({ passenger }) => passenger),
       transactionContext
     );
-    const createdVehicleIds = await this.saveNewVehicles(
+    const vehicleIdMap = await this.saveNewVehicles(
       bookingTrips[0].bookingTripVehicles.map(({ vehicle }) => vehicle),
       transactionContext
     );
 
-    // update all bookingTripPassenger.passengerId/bookingTripVehicle.vehicleId
     bookingTrips.forEach((bookingTrip) => {
-      for (let i = 0; i < createdPassengerIds.length; i++) {
-        const createdPassengerId = createdPassengerIds[i];
-        const bookingTripPassenger = bookingTrip.bookingTripPassengers[i];
-        if (!bookingTripPassenger.passengerId) {
-          bookingTripPassenger.passengerId = createdPassengerId;
-        }
-        bookingTripPassenger.bookingPaymentItems.forEach(
-          (bookingPaymentItem) =>
-            (bookingPaymentItem.passengerId = createdPassengerId)
-        );
-      }
+      this.updateOldPassengerAndVehicleIdsInBookingTrip(
+        bookingTrip,
+        passengerIdMap,
+        vehicleIdMap
+      );
+    });
+  }
 
-      for (let i = 0; i < createdVehicleIds.length; i++) {
-        const createdVehicleId = createdVehicleIds[i];
-        const bookingTripVehicle = bookingTrip.bookingTripVehicles[i];
-        if (!bookingTripVehicle.vehicleId) {
-          bookingTripVehicle.vehicleId = createdVehicleId;
-        }
-        bookingTripVehicle.bookingPaymentItems.forEach(
-          (bookingPaymentItem) =>
-            (bookingPaymentItem.vehicleId = createdVehicleId)
-        );
+  /**
+   * Temp bookings can have passengers and vehicles
+   * not present in the DB yet, so their IDs are negative.
+   * Assuming we have already created DB entries for them
+   * and mapped their old negative IDs to their new counterpart,
+   * this function updates the negative IDs in all booking items
+   * @param bookingTrip
+   * @param passengerIdMap
+   * @param vehicleIdMap
+   * @private
+   */
+  private updateOldPassengerAndVehicleIdsInBookingTrip(
+    bookingTrip: IBookingTrip,
+    passengerIdMap: Map<number, number>,
+    vehicleIdMap: Map<number, number>
+  ): void {
+    bookingTrip.bookingTripPassengers.forEach((bookingTripPassenger) => {
+      const newPassengerId = passengerIdMap[bookingTripPassenger.passengerId];
+      const newVehicleId = vehicleIdMap[bookingTripPassenger.drivesVehicleId];
+
+      if (!(bookingTripPassenger.passengerId > 0)) {
+        bookingTripPassenger.passengerId = newPassengerId;
       }
+      bookingTripPassenger.bookingPaymentItems
+        .filter((bookingPaymentItem) => !(bookingPaymentItem.passengerId > 0))
+        .forEach(
+          (bookingPaymentItem) =>
+            (bookingPaymentItem.passengerId = newPassengerId)
+        );
+      if (!(bookingTripPassenger.drivesVehicleId > 0)) {
+        bookingTripPassenger.drivesVehicleId = newVehicleId;
+      }
+    });
+
+    bookingTrip.bookingTripVehicles.forEach((bookingTripVehicle) => {
+      const newVehicleId = vehicleIdMap[bookingTripVehicle.vehicleId];
+
+      if (!(bookingTripVehicle.vehicleId > 0)) {
+        bookingTripVehicle.vehicleId = newVehicleId;
+      }
+      bookingTripVehicle.bookingPaymentItems
+        .filter((bookingPaymentItem) => !(bookingPaymentItem.vehicleId > 0))
+        .forEach(
+          (bookingPaymentItem) => (bookingPaymentItem.vehicleId = newVehicleId)
+        );
     });
   }
 
   // creates the passengers in booking with ID -1
-  // returns the created passengers' ID with the same order as BookingPassengers in booking
+  // returns the old ID -> new ID map of created passengers
   private async saveNewPassengers(
     passengers: IPassenger[],
     transactionContext?: PrismaClient
-  ): Promise<number[]> {
+  ): Promise<Map<number, number>> {
     transactionContext ??= this.prisma;
 
-    return Promise.all(
+    const oldIdToNewIdMap = new Map<number, number>();
+
+    await Promise.all(
       passengers.map(async (passenger) => {
         // if passenger already has an ID, do nothing
-        if (passenger.id) {
+        if (passenger.id > 0) {
           return passenger.id;
         }
         const createdPassenger = await this.passengerService.createPassenger(
           passenger,
           transactionContext
         );
-        return createdPassenger.id;
+
+        oldIdToNewIdMap[passenger.id] = createdPassenger.id;
       })
     );
+
+    return oldIdToNewIdMap;
   }
 
   // creates the vehicles in booking with ID -1
@@ -289,13 +388,15 @@ WHERE row <= ${passengerPreferences.length}
   private async saveNewVehicles(
     vehicles: IVehicle[],
     transactionContext?: PrismaClient
-  ): Promise<number[]> {
+  ): Promise<Map<number, number>> {
     transactionContext ??= this.prisma;
 
-    return Promise.all(
+    const oldIdToNewIdMap = new Map<number, number>();
+
+    await Promise.all(
       vehicles.map(async (vehicle) => {
-        // if passenger already has an ID, do nothing
-        if (vehicle.id) {
+        // if vehicle already has an ID, do nothing
+        if (vehicle.id > 0) {
           return;
         }
 
@@ -303,9 +404,12 @@ WHERE row <= ${passengerPreferences.length}
           vehicle,
           transactionContext
         );
-        return createdVehicle.id;
+
+        oldIdToNewIdMap[vehicle.id] = createdVehicle.id;
       })
     );
+
+    return oldIdToNewIdMap;
   }
 
   private async onBookingConfirmation(

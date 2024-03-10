@@ -5,16 +5,21 @@ import {
   Form,
   Input,
   InputNumber,
+  Radio,
   Select,
   Typography,
 } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { DISCOUNT_TYPE, SEX } from '@ayahay/constants/enum';
-import { IPassenger, IVehicle, IVehicleType } from '@ayahay/models';
+import { IPassenger, ITrip, IVehicle } from '@ayahay/models';
 import EnumRadio from '@/components/form/EnumRadio';
 import AddCompanionsModal from '@/components/booking/AddCompanionsModal';
 import AddVehiclesModal from '@/components/booking/AddVehiclesModal';
-import { toPassengerFormValue } from '@ayahay/services/form.service';
+import {
+  getInitialPassengerFormValue,
+  getInitialVehicleFormValue,
+  toPassengerFormValue,
+} from '@ayahay/services/form.service';
 import { useAuth } from '@/contexts/AuthContext';
 import { DATE_FORMAT_LIST, DATE_PLACEHOLDER } from '@ayahay/constants';
 import { computeAge, computeBirthday } from '@ayahay/services/date.service';
@@ -24,36 +29,29 @@ import { RangePickerProps } from 'antd/es/date-picker';
 const { Text, Title } = Typography;
 
 interface PassengerInformationFormProps {
-  availableVehicleTypes: IVehicleType[];
+  trip: ITrip;
   onNextStep?: () => void;
   onPreviousStep?: () => void;
 }
 
-const passengerFieldsToValidate = [
-  'firstName',
-  'lastName',
-  'sex',
-  'birthdayIso',
-  'age',
-  'address',
-  'nationality',
-  'discountType',
-];
-
-const vehicleFieldsToValidate = ['plateNo', 'modelName', 'vehicleTypeId'];
-
 export default function PassengerInformationForm({
-  availableVehicleTypes,
+  trip,
   onNextStep,
   onPreviousStep,
 }: PassengerInformationFormProps) {
   const { loggedInAccount, hasPrivilegedAccess } = useAuth();
-
   const form = Form.useFormInstance();
-  const passengers = Form.useWatch<any[]>('passengers', form);
-  const vehicles = Form.useWatch<any[]>('vehicles', form);
+  const passengers = Form.useWatch(
+    ['bookingTrips', 0, 'bookingTripPassengers'],
+    form
+  );
+  const vehicles = Form.useWatch(
+    ['bookingTrips', 0, 'bookingTripVehicles'],
+    form
+  );
   const [companionModalOpen, setCompanionModalOpen] = useState(false);
   const [vehicleModalOpen, setVehicleModalOpen] = useState(false);
+  const [newEntityId, setNewEntityId] = useState(-1);
 
   useEffect(() => {
     if (loggedInAccount === null) {
@@ -68,13 +66,21 @@ export default function PassengerInformationForm({
     }
   }, [loggedInAccount]);
 
+  const tripNamePath = ['bookingTrips', 0];
+  const availableVehicleTypes = trip?.availableVehicleTypes.map(
+    (tripVehicleType) => tripVehicleType.vehicleType
+  );
+
   const insertPassengerAtFirstIndex = (passenger?: IPassenger) => {
     if (passenger === undefined) {
       return;
     }
 
     if (passengers.length === 1 && passengers[0].firstName === undefined) {
-      form.setFieldValue(['passengers', 0], toPassengerFormValue(passenger));
+      form.setFieldValue(
+        [...tripNamePath, 'bookingTripPassengers', 0],
+        toPassengerFormValue(trip.id, passenger)
+      );
       return;
     }
 
@@ -88,8 +94,8 @@ export default function PassengerInformationForm({
 
     for (let i = 0; i < newPassengerOrder.length; i++) {
       form.setFieldValue(
-        ['passengers', i],
-        toPassengerFormValue(newPassengerOrder[i])
+        [...tripNamePath, 'bookingTripPassengers', i],
+        toPassengerFormValue(trip.id, newPassengerOrder[i])
       );
     }
   };
@@ -102,7 +108,7 @@ export default function PassengerInformationForm({
     const nonCompanions = [];
 
     for (const passenger of passengers) {
-      if (passenger.id === undefined) {
+      if (passenger.id <= 0) {
         nonCompanions.push(passenger);
       }
     }
@@ -110,7 +116,10 @@ export default function PassengerInformationForm({
     form.resetFields();
 
     for (let i = 0; i < nonCompanions.length; i++) {
-      form.setFieldValue(['passengers', i], nonCompanions[i]);
+      form.setFieldValue(
+        [...tripNamePath, 'bookingTripPassengers', i, 'passenger'],
+        nonCompanions[i]
+      );
     }
   };
 
@@ -122,7 +131,7 @@ export default function PassengerInformationForm({
     const nonRegisteredVehicles = [];
 
     for (const vehicle of vehicles) {
-      if (vehicle.id === undefined) {
+      if (vehicle.id <= 0) {
         nonRegisteredVehicles.push(vehicle);
       }
     }
@@ -130,29 +139,48 @@ export default function PassengerInformationForm({
     form.resetFields();
 
     for (let i = 0; i < nonRegisteredVehicles.length; i++) {
-      form.setFieldValue(['vehicles', i], nonRegisteredVehicles[i]);
+      form.setFieldValue(
+        [...tripNamePath, 'bookingTripVehicles', i, 'vehicle'],
+        nonRegisteredVehicles[i]
+      );
     }
   };
 
-  const addPassengers = (companions: IPassenger[]) => {
+  const addCompanions = (companions: IPassenger[]) => {
     setCompanionModalOpen(false);
     let nextIndex = passengers.length;
     companions.forEach((companion) => {
       form.setFieldValue(
-        ['passengers', nextIndex],
-        toPassengerFormValue(companion)
+        [...tripNamePath, 'bookingTripPassengers', nextIndex],
+        toPassengerFormValue(trip.id, companion)
       );
       nextIndex++;
     });
   };
 
-  const addVehicles = (registeredVehicles: IVehicle[]) => {
+  const addRegisteredVehicles = (registeredVehicles: IVehicle[]) => {
     setVehicleModalOpen(false);
     let nextIndex = vehicles.length;
     registeredVehicles.forEach((vehicle) => {
-      form.setFieldValue(['vehicles', nextIndex], vehicle);
+      form.setFieldValue([...tripNamePath, 'bookingTripVehicles', nextIndex], {
+        tripId: trip.id,
+        vehicleId: vehicle.id,
+        vehicle,
+      });
       nextIndex++;
     });
+  };
+
+  const addNewPassenger = (addFn: any) => {
+    const newPassenger = getInitialPassengerFormValue(trip.id, newEntityId);
+    addFn(newPassenger);
+    setNewEntityId(newEntityId - 1);
+  };
+
+  const addNewVehicle = (addFn: any) => {
+    const newVehicle = getInitialVehicleFormValue(trip.id, newEntityId);
+    addFn(newVehicle);
+    setNewEntityId(newEntityId - 1);
   };
 
   const validateFieldsInCurrentStep = async () => {
@@ -160,19 +188,13 @@ export default function PassengerInformationForm({
       return;
     }
     try {
-      const namePaths: (string | number)[][] = [['passengers'], ['vehicles']];
-      passengers.forEach((_, index) => {
-        passengerFieldsToValidate.forEach((fieldName) =>
-          namePaths.push(['passengers', index, fieldName])
-        );
-      });
-      vehicles.forEach((_, index) => {
-        vehicleFieldsToValidate.forEach((fieldName) =>
-          namePaths.push(['vehicles', index, fieldName])
-        );
-      });
+      const namePaths: (string | number)[][] = [
+        [...tripNamePath, 'bookingTripPassengers'],
+        [...tripNamePath, 'bookingTripVehicles'],
+        ['voucherCode'],
+      ];
 
-      await form.validateFields(namePaths);
+      await form.validateFields(namePaths, { recursive: true });
 
       if (onNextStep) {
         onNextStep();
@@ -220,7 +242,7 @@ export default function PassengerInformationForm({
         </Button>
       )}
       <Form.List
-        name='passengers'
+        name={['bookingTrips', 0, 'bookingTripPassengers']}
         rules={[
           {
             message: 'Please add a passenger',
@@ -236,40 +258,40 @@ export default function PassengerInformationForm({
                 {index > 0 && <Divider>Companion {index} Information</Divider>}
                 <Form.Item
                   {...restField}
-                  name={[name, 'firstName']}
+                  name={[name, 'passenger', 'firstName']}
                   label='First Name'
                   colon={false}
                   rules={[{ required: true, message: 'Missing first name' }]}
                 >
                   <Input
-                    disabled={passengers?.[index]?.id !== undefined}
+                    disabled={passengers?.[index]?.passenger?.id > 0}
                     placeholder='First Name'
                   />
                 </Form.Item>
                 <Form.Item
                   {...restField}
-                  name={[name, 'lastName']}
+                  name={[name, 'passenger', 'lastName']}
                   label='Last Name'
                   colon={false}
                   rules={[{ required: true, message: 'Missing last name' }]}
                 >
                   <Input
-                    disabled={passengers?.[index]?.id !== undefined}
+                    disabled={passengers?.[index]?.passenger?.id > 0}
                     placeholder='Last Name'
                   />
                 </Form.Item>
                 <EnumRadio
                   _enum={SEX}
-                  disabled={passengers?.[index]?.id !== undefined}
+                  disabled={passengers?.[index]?.passenger?.id > 0}
                   {...restField}
-                  name={[name, 'sex']}
+                  name={[name, 'passenger', 'sex']}
                   label='Sex'
                   colon={false}
                   rules={[{ required: true, message: 'Missing sex' }]}
                 />
                 <Form.Item
                   {...restField}
-                  name={[name, 'birthdayIso']}
+                  name={[name, 'passenger', 'birthdayIso']}
                   label='Date of Birth'
                   colon={false}
                   rules={[
@@ -278,9 +300,27 @@ export default function PassengerInformationForm({
                       async validator(_, value) {
                         if (value) {
                           const age = computeAge(value);
-                          setFieldValue(['passengers', name, 'age'], age);
+                          setFieldValue(
+                            [
+                              ...tripNamePath,
+                              'bookingTripPassengers',
+                              name,
+                              'passenger',
+                              'age',
+                            ],
+                            age
+                          );
                           setFields([
-                            { name: ['passengers', name, 'age'], errors: [] },
+                            {
+                              name: [
+                                ...tripNamePath,
+                                'bookingTripPassengers',
+                                name,
+                                'passenger',
+                                'age',
+                              ],
+                              errors: [],
+                            },
                           ]);
 
                           if (!hasPrivilegedAccess) {
@@ -289,12 +329,24 @@ export default function PassengerInformationForm({
 
                           const discountType = getDiscountTypeFromAge(age);
                           setFieldValue(
-                            ['passengers', name, 'discountType'],
+                            [
+                              ...tripNamePath,
+                              'bookingTripPassengers',
+                              name,
+                              'passenger',
+                              'discountType',
+                            ],
                             discountType
                           );
                           setFields([
                             {
-                              name: ['passengers', name, 'discountType'],
+                              name: [
+                                ...tripNamePath,
+                                'bookingTripPassengers',
+                                name,
+                                'passenger',
+                                'discountType',
+                              ],
                               errors: [],
                             },
                           ]);
@@ -307,7 +359,7 @@ export default function PassengerInformationForm({
                   ]}
                 >
                   <DatePicker
-                    disabled={passengers?.[index]?.id !== undefined}
+                    disabled={passengers?.[index]?.passenger?.id > 0}
                     format={DATE_FORMAT_LIST}
                     placeholder={DATE_PLACEHOLDER}
                     style={{ minWidth: '20%' }}
@@ -317,7 +369,7 @@ export default function PassengerInformationForm({
                 {hasPrivilegedAccess && (
                   <Form.Item
                     {...restField}
-                    name={[name, 'age']}
+                    name={[name, 'passenger', 'age']}
                     label='Age'
                     colon={false}
                     rules={[
@@ -335,21 +387,45 @@ export default function PassengerInformationForm({
                               inputtedBirthday
                             );
                             setFieldValue(
-                              ['passengers', name, 'birthdayIso'],
+                              [
+                                ...tripNamePath,
+                                'bookingTripPassengers',
+                                name,
+                                'passenger',
+                                'birthdayIso',
+                              ],
                               dayjs(birthday)
                             );
                             setFieldValue(
-                              ['passengers', name, 'discountType'],
+                              [
+                                ...tripNamePath,
+                                'bookingTripPassengers',
+                                name,
+                                'passenger',
+                                'discountType',
+                              ],
                               discountType
                             );
 
                             setFields([
                               {
-                                name: ['passengers', name, 'birthdayIso'],
+                                name: [
+                                  ...tripNamePath,
+                                  'bookingTripPassengers',
+                                  name,
+                                  'passenger',
+                                  'birthdayIso',
+                                ],
                                 errors: [],
                               },
                               {
-                                name: ['passengers', name, 'discountType'],
+                                name: [
+                                  ...tripNamePath,
+                                  'bookingTripPassengers',
+                                  name,
+                                  'passenger',
+                                  'discountType',
+                                ],
                                 errors: [],
                               },
                             ]);
@@ -362,7 +438,7 @@ export default function PassengerInformationForm({
                     ]}
                   >
                     <InputNumber
-                      disabled={passengers?.[index]?.id !== undefined}
+                      disabled={passengers?.[index]?.passenger?.id > 0}
                       min={0}
                       placeholder='Age'
                     />
@@ -370,25 +446,25 @@ export default function PassengerInformationForm({
                 )}
                 <Form.Item
                   {...restField}
-                  name={[name, 'address']}
+                  name={[name, 'passenger', 'address']}
                   label='Address'
                   colon={false}
                   rules={[{ required: true, message: 'Missing address' }]}
                 >
                   <Input
-                    disabled={passengers?.[index]?.id !== undefined}
+                    disabled={passengers?.[index]?.passenger?.id > 0}
                     placeholder='Region, Province, Municipality'
                   />
                 </Form.Item>
                 <Form.Item
                   {...restField}
-                  name={[name, 'nationality']}
+                  name={[name, 'passenger', 'nationality']}
                   label='Nationality'
                   colon={false}
                   rules={[{ required: true, message: 'Missing nationality' }]}
                 >
                   <Input
-                    disabled={passengers?.[index]?.id !== undefined}
+                    disabled={passengers?.[index]?.passenger?.id > 0}
                     placeholder='Filipino, Chinese, American, etc.'
                   />
                 </Form.Item>
@@ -397,10 +473,54 @@ export default function PassengerInformationForm({
                     _enum={DISCOUNT_TYPE}
                     nullChoiceLabel={'Adult'}
                     {...restField}
-                    name={[name, 'discountType']}
+                    name={[name, 'passenger', 'discountType']}
                     label='Discount Type'
                     colon={false}
                   />
+                )}
+                {!hasPrivilegedAccess && vehicles?.length > 0 && (
+                  <Form.Item
+                    {...restField}
+                    name={[name, 'drivesVehicleId']}
+                    label='Driver of Vehicle'
+                    colon={false}
+                    rules={[
+                      ({ getFieldValue }) => ({
+                        async validator(_, value) {
+                          if (!value) {
+                            return Promise.resolve();
+                          }
+                          const passengerId = getFieldValue([
+                            'bookingTrips',
+                            0,
+                            'bookingTripPassengers',
+                            name,
+                            'passenger',
+                            'id',
+                          ]);
+                          const drivesSameVehicle = passengers.find(
+                            ({ drivesVehicleId, passenger }) =>
+                              drivesVehicleId === value &&
+                              passenger.id !== passengerId
+                          );
+                          if (drivesSameVehicle) {
+                            return Promise.reject(
+                              'A vehicle can only be driven by one passenger.'
+                            );
+                          }
+                        },
+                      }),
+                    ]}
+                  >
+                    <Radio.Group>
+                      <Radio value={undefined}>None</Radio>
+                      {vehicles.map(({ vehicle }) => (
+                        <Radio value={vehicle.id} key={vehicle.id}>
+                          {vehicle.plateNo}
+                        </Radio>
+                      ))}
+                    </Radio.Group>
+                  </Form.Item>
                 )}
                 <Button
                   danger
@@ -416,17 +536,11 @@ export default function PassengerInformationForm({
               <p>
                 <Text type='danger'>
                   At least one passenger or vehicle is required.
-                </Text>{' '}
+                </Text>
               </p>
             )}
 
-            <Button
-              type='dashed'
-              onClick={() =>
-                add({ nationality: 'Filipino', discountType: undefined })
-              }
-              block
-            >
+            <Button type='dashed' onClick={() => addNewPassenger(add)} block>
               Add Companion
             </Button>
             {loggedInAccount &&
@@ -448,7 +562,7 @@ export default function PassengerInformationForm({
                 <AddCompanionsModal
                   open={companionModalOpen}
                   companions={loggedInAccount.passenger.companions}
-                  onSubmitCompanions={addPassengers}
+                  onSubmitCompanions={addCompanions}
                   onCancel={() => setCompanionModalOpen(false)}
                 />
               )}
@@ -456,7 +570,7 @@ export default function PassengerInformationForm({
         )}
       </Form.List>
       <Form.List
-        name='vehicles'
+        name={['bookingTrips', 0, 'bookingTripVehicles']}
         rules={[
           {
             message: 'Please add a vehicle',
@@ -471,31 +585,31 @@ export default function PassengerInformationForm({
                 <Divider>Vehicle {index + 1} Information</Divider>
                 <Form.Item
                   {...restField}
-                  name={[name, 'plateNo']}
+                  name={[name, 'vehicle', 'plateNo']}
                   label='Plate Number'
                   colon={false}
                   rules={[{ required: true, message: 'Missing plate number' }]}
                 >
                   <Input
-                    disabled={vehicles?.[index]?.id !== undefined}
+                    disabled={vehicles?.[index]?.vehicle?.id > 0}
                     placeholder='Plate Number'
                   />
                 </Form.Item>
                 <Form.Item
                   {...restField}
-                  name={[name, 'modelName']}
+                  name={[name, 'vehicle', 'modelName']}
                   label='Model Name'
                   colon={false}
                   rules={[{ required: true, message: 'Missing model name' }]}
                 >
                   <Input
-                    disabled={vehicles?.[index]?.id !== undefined}
+                    disabled={vehicles?.[index]?.vehicle?.id > 0}
                     placeholder='Toyota Innova, Lexus GX'
                   />
                 </Form.Item>
                 <Form.Item
                   {...restField}
-                  name={[name, 'vehicleTypeId']}
+                  name={[name, 'vehicle', 'vehicleTypeId']}
                   label='Model Body'
                   colon={false}
                   rules={[
@@ -511,9 +625,9 @@ export default function PassengerInformationForm({
                     filterOption={(input, option) =>
                       option.label.toLowerCase().includes(input.toLowerCase())
                     }
-                    disabled={vehicles?.[index]?.id !== undefined}
+                    disabled={vehicles?.[index]?.vehicle?.id > 0}
                     placeholder='Select an option...'
-                    options={availableVehicleTypes.map((vehicleType) => ({
+                    options={availableVehicleTypes?.map((vehicleType) => ({
                       label: vehicleType.name,
                       value: vehicleType.id,
                     }))}
@@ -521,21 +635,21 @@ export default function PassengerInformationForm({
                 </Form.Item>
                 <Form.Item
                   {...restField}
-                  name={[name, 'certificateOfRegistrationUrl']}
+                  name={[name, 'vehicle', 'certificateOfRegistrationUrl']}
                   hidden={true}
                 >
                   <Input
-                    disabled={vehicles?.[index]?.id !== undefined}
+                    disabled={vehicles?.[index]?.vehicle?.id > 0}
                     placeholder='Certificate of Registration'
                   />
                 </Form.Item>
                 <Form.Item
                   {...restField}
-                  name={[name, 'officialReceiptUrl']}
+                  name={[name, 'vehicle', 'officialReceiptUrl']}
                   hidden={true}
                 >
                   <Input
-                    disabled={vehicles?.[index]?.id !== undefined}
+                    disabled={vehicles?.[index]?.vehicle?.id > 0}
                     placeholder='Official Receipt URL'
                   />
                 </Form.Item>
@@ -549,7 +663,7 @@ export default function PassengerInformationForm({
               </div>
             ))}
 
-            <Button type='dashed' onClick={() => add()} block>
+            <Button type='dashed' onClick={() => addNewVehicle(add)} block>
               Add Vehicle
             </Button>
             {loggedInAccount &&
@@ -569,7 +683,7 @@ export default function PassengerInformationForm({
                 <AddVehiclesModal
                   open={vehicleModalOpen}
                   vehicles={loggedInAccount.vehicles}
-                  onSubmitVehicles={addVehicles}
+                  onSubmitVehicles={addRegisteredVehicles}
                   onCancel={() => setVehicleModalOpen(false)}
                 />
               )}
