@@ -825,7 +825,7 @@ export class BookingService {
       if (booking.bookingStatus === 'Confirmed') {
         await this.bookingReservationService.updateTripsCapacities(
           booking.bookingTrips as any[],
-          'decrement',
+          'increment',
           transactionContext as any
         );
       }
