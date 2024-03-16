@@ -11,6 +11,7 @@ import {
   two_columns_grid,
 } from './PassengerDailySalesReport';
 import { first, sum, sumBy } from 'lodash';
+import { roundToTwoDecimalPlacesAndAddCommas } from '@/services/reporting.service';
 
 interface SummarySalesPerVoyageProps {
   data: IPerVesselReport[];
@@ -132,9 +133,9 @@ const SummarySalesPerVessel = forwardRef(function (
                 <th>Accommodation</th>
                 <th>Model</th>
                 <th>Class</th>
-                <th>Ticket Amount</th>
-                <th>Board</th>
-                <th>Total</th>
+                <th style={{ textAlign: 'left' }}>Ticket Amount</th>
+                <th style={{ textAlign: 'left' }}>Board</th>
+                <th style={{ textAlign: 'left' }}>Total</th>
               </tr>
             </thead>
             <tbody>
@@ -152,7 +153,7 @@ const SummarySalesPerVessel = forwardRef(function (
                   shipData.departureDate,
                   true
                 )} @ ${getLocaleTimeString(shipData.departureDate)} (Voyage: ${
-                  shipData.voyageNumber
+                  shipData.voyageNumber ?? '__'
                 })`;
                 const boarded = shipData.totalBoardedPassengers;
                 const total = sumBy(
@@ -170,11 +171,21 @@ const SummarySalesPerVessel = forwardRef(function (
                           <td>{cabinPassenger.accommodation}</td>
                           <td>REGULAR</td>
                           <td>{cabinPassenger.discountType}</td>
-                          <td>
-                            PHP{cabinPassenger.ticketCost.toLocaleString()}
+                          <td style={{ textAlign: 'left' }}>
+                            PHP&nbsp;
+                            {roundToTwoDecimalPlacesAndAddCommas(
+                              cabinPassenger.ticketCost
+                            )}
                           </td>
-                          <td>{cabinPassenger.boarded}</td>
-                          <td>PHP{cabinPassenger.total.toLocaleString()}</td>
+                          <td style={{ textAlign: 'left' }}>
+                            {cabinPassenger.boarded}
+                          </td>
+                          <td style={{ textAlign: 'left' }}>
+                            PHP&nbsp;
+                            {roundToTwoDecimalPlacesAndAddCommas(
+                              cabinPassenger.total
+                            )}
+                          </td>
                         </tr>
                       );
                     }
@@ -189,9 +200,17 @@ const SummarySalesPerVessel = forwardRef(function (
                         <td>NO SHOW</td>
                         <td>REGULAR</td>
                         <td>{noShow.discountType}</td>
-                        <td>PHP{noShow.ticketCost.toLocaleString()}</td>
-                        <td>{noShow.count}</td>
-                        <td>PHP{noShow.total.toLocaleString()}</td>
+                        <td style={{ textAlign: 'left' }}>
+                          PHP&nbsp;
+                          {roundToTwoDecimalPlacesAndAddCommas(
+                            noShow.ticketCost
+                          )}
+                        </td>
+                        <td style={{ textAlign: 'left' }}>{noShow.count}</td>
+                        <td style={{ textAlign: 'left' }}>
+                          PHP&nbsp;
+                          {roundToTwoDecimalPlacesAndAddCommas(noShow.total)}
+                        </td>
                       </tr>
                     );
                   }
@@ -204,8 +223,10 @@ const SummarySalesPerVessel = forwardRef(function (
                     <td></td>
                     <td></td>
                     <td></td>
-                    <td>{boarded}</td>
-                    <td>PHP{total.toLocaleString()}</td>
+                    <td style={{ textAlign: 'left' }}>{boarded}</td>
+                    <td style={{ textAlign: 'left' }}>
+                      PHP&nbsp;{roundToTwoDecimalPlacesAndAddCommas(total)}
+                    </td>
                   </tr>
                 );
                 totalBoardedArr.push(boarded);
@@ -218,7 +239,9 @@ const SummarySalesPerVessel = forwardRef(function (
                     <td></td>
                     <td></td>
                     <td></td>
-                    <td>PHP{totalSales.toLocaleString()}</td>
+                    <td style={{ textAlign: 'left' }}>
+                      PHP&nbsp;{roundToTwoDecimalPlacesAndAddCommas(totalSales)}
+                    </td>
                   </tr>
                 );
                 totalSalesArr.push(totalSales);
@@ -234,9 +257,14 @@ const SummarySalesPerVessel = forwardRef(function (
                     <td></td>
                     <td></td>
                     <td>Ayahay Convenience Fee</td>
-                    <td>PHP50</td>
-                    <td>{totalPassengersWithAdminFee}</td>
-                    <td>PHP{totalAdminFee.toLocaleString()}</td>
+                    <td style={{ textAlign: 'left' }}>PHP&nbsp;50.00</td>
+                    <td style={{ textAlign: 'left' }}>
+                      {totalPassengersWithAdminFee}
+                    </td>
+                    <td style={{ textAlign: 'left' }}>
+                      PHP&nbsp;
+                      {roundToTwoDecimalPlacesAndAddCommas(totalAdminFee)}
+                    </td>
                   </tr>
                 );
                 totalAdminFeeArr.push(totalAdminFee);
@@ -253,13 +281,12 @@ const SummarySalesPerVessel = forwardRef(function (
             <tfoot style={{ backgroundColor: '#ddebf7' }}>
               <tr>
                 <td colSpan={5}>OVERALL TOTAL</td>
-                <td>{sum(totalBoardedArr)}</td>
-                <td>
-                  PHP
-                  {sum([
-                    ...totalSalesArr,
-                    ...totalAdminFeeArr,
-                  ]).toLocaleString()}
+                <td style={{ textAlign: 'left' }}>{sum(totalBoardedArr)}</td>
+                <td style={{ textAlign: 'left' }}>
+                  PHP&nbsp;
+                  {roundToTwoDecimalPlacesAndAddCommas(
+                    sum([...totalSalesArr, ...totalAdminFeeArr])
+                  )}
                 </td>
               </tr>
             </tfoot>
@@ -267,6 +294,7 @@ const SummarySalesPerVessel = forwardRef(function (
         </div>
 
         <div
+          className={styles['font-style']}
           style={{
             ...two_columns_grid,
             marginTop: 15,
@@ -283,20 +311,34 @@ const SummarySalesPerVessel = forwardRef(function (
           >
             <thead style={{ backgroundColor: '#ddebf7' }}>
               <tr style={{ fontWeight: 'bold' }}>
-                <th className={styles['cell-border']}>Mode of Payment</th>
-                <th className={styles['cell-border']}>Amount</th>
+                <th
+                  className={styles['header-border']}
+                  style={{ borderLeft: '0.001px solid black' }}
+                >
+                  Mode of Payment
+                </th>
+                <th className={styles['header-border']}>Amount</th>
               </tr>
             </thead>
             <tbody>
               {Object.keys(mopBreakdown).map((mop: string) => {
                 return (
                   <tr>
-                    <td className={styles['cell-border']}>{mop}</td>
+                    <td
+                      className={styles['cell-border']}
+                      style={{ borderLeft: '0.001px solid black' }}
+                    >
+                      {mop}
+                    </td>
                     <td className={styles['cell-border']}>
-                      PHP&nbsp;
-                      {mopBreakdown[
-                        mop as keyof MOPBreakdown
-                      ].aggFare.toLocaleString()}
+                      <div className={styles['wrap']}>
+                        <div style={{ textAlign: 'left' }}>
+                          PHP&nbsp;
+                          {roundToTwoDecimalPlacesAndAddCommas(
+                            mopBreakdown[mop as keyof MOPBreakdown].aggFare
+                          )}
+                        </div>
+                      </div>
                     </td>
                   </tr>
                 );
@@ -304,9 +346,18 @@ const SummarySalesPerVessel = forwardRef(function (
             </tbody>
             <tfoot style={{ backgroundColor: '#ddebf7' }}>
               <tr style={{ fontWeight: 'bold' }}>
-                <td className={styles['cell-border']}>TOTAL SALES</td>
+                <td
+                  className={styles['cell-border']}
+                  style={{ borderLeft: '0.001px solid black' }}
+                >
+                  TOTAL SALES
+                </td>
                 <td className={styles['cell-border']}>
-                  PHP&nbsp;{totalFare.toLocaleString()}
+                  <div className={styles['wrap']}>
+                    <div style={{ textAlign: 'left' }}>
+                      PHP&nbsp;{roundToTwoDecimalPlacesAndAddCommas(totalFare)}
+                    </div>
+                  </div>
                 </td>
               </tr>
             </tfoot>
@@ -321,11 +372,12 @@ const SummarySalesPerVessel = forwardRef(function (
               marginRight: 4,
             }}
           >
-            <tbody style={{ wordSpacing: 3 }}>
+            <tbody>
               <tr>
                 <td style={{ textAlign: 'left', width: '50%' }}>Ticket Cost</td>
                 <td style={{ textAlign: 'right' }}>
-                  PHP&nbsp;{sum(totalSalesArr).toLocaleString()}
+                  PHP&nbsp;
+                  {roundToTwoDecimalPlacesAndAddCommas(sum(totalSalesArr))}
                 </td>
                 <td></td>
               </tr>
@@ -334,7 +386,8 @@ const SummarySalesPerVessel = forwardRef(function (
                   Ayahay Convenience Fee
                 </td>
                 <td style={{ textAlign: 'right' }}>
-                  PHP&nbsp;{sum(totalAdminFeeArr).toLocaleString()}
+                  PHP&nbsp;
+                  {roundToTwoDecimalPlacesAndAddCommas(sum(totalAdminFeeArr))}
                 </td>
                 <td></td>
               </tr>
@@ -342,11 +395,10 @@ const SummarySalesPerVessel = forwardRef(function (
                 <td style={{ textAlign: 'left', width: '50%' }}>TOTAL SALES</td>
                 <td></td>
                 <td style={{ textAlign: 'right' }}>
-                  PHP
-                  {sum([
-                    ...totalSalesArr,
-                    ...totalAdminFeeArr,
-                  ]).toLocaleString()}
+                  PHP&nbsp;
+                  {roundToTwoDecimalPlacesAndAddCommas(
+                    sum([...totalSalesArr, ...totalAdminFeeArr])
+                  )}
                 </td>
               </tr>
             </tbody>

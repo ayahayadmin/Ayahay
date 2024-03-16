@@ -8,6 +8,7 @@ export interface TripReport {
   voyageNumber?: number;
 
   passengers: {
+    passengerName: string;
     teller: string;
     accommodation: string;
     discount: string;
@@ -27,6 +28,7 @@ export interface TripReport {
 
   vehicles: {
     teller: string;
+    FRR?: string; // TODO: add FRR after implementing FRR in BOL printing
     referenceNo: string;
     typeOfVehicle: string;
     plateNo: string;

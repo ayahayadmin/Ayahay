@@ -11,7 +11,7 @@ import {
   two_columns_grid,
 } from './PassengerDailySalesReport';
 import { MOPBreakdown } from './SummarySalesPerVessel';
-import { round } from 'lodash';
+import { roundToTwoDecimalPlacesAndAddCommas } from '@/services/reporting.service';
 
 interface CargoDailySalesReportProps {
   data: ITripReport;
@@ -37,14 +37,6 @@ const CargoDailySalesReport = forwardRef(function (
 
   let totalVehicles = data.vehicles?.length;
   let totalTicketCost = 0;
-
-  data.vehicles?.map((vehicle) => {
-    if (vehicle.paymentStatus === 'PayMongo') {
-      mopBreakdown.Ayahay.aggFare += vehicle.ticketCost;
-    } else {
-      mopBreakdown.OTC.aggFare += vehicle.ticketCost;
-    }
-  });
 
   return (
     <div ref={ref}>
@@ -118,14 +110,12 @@ const CargoDailySalesReport = forwardRef(function (
           >
             <thead style={{ backgroundColor: '#ddebf7' }}>
               <tr>
-                <th>Vessel</th>
-                <th>Outlet</th>
                 <th>Teller</th>
                 <th>BOL #</th>
                 <th>Vehicle Type</th>
                 <th>Plate #</th>
-                <th>Discount</th>
-                <th>Ticket Cost</th>
+                <th style={{ textAlign: 'left' }}>Discount</th>
+                <th style={{ textAlign: 'left' }}>Ticket Cost</th>
                 <th>Payment Method</th>
                 <th>Collect</th>
               </tr>
@@ -142,23 +132,22 @@ const CargoDailySalesReport = forwardRef(function (
                 }
 
                 const discountAmount = vehicle.discountAmount
-                  ? `PHP${vehicle.discountAmount.toLocaleString()}`
+                  ? `PHP ${roundToTwoDecimalPlacesAndAddCommas(
+                      vehicle.discountAmount
+                    )}`
                   : '';
 
                 return (
                   <tr>
-                    <td>{vesselName}</td>
-                    <td>
-                      {paymentStatus === 'PayMongo'
-                        ? 'Ayahay'
-                        : data.srcPort.name}
-                    </td>
                     <td>{vehicle.teller}</td>
                     <td>{vehicle.referenceNo}</td>
                     <td>{vehicle.typeOfVehicle}</td>
                     <td>{vehicle.plateNo}</td>
-                    <td>{discountAmount}</td>
-                    <td>PHP{vehicle.ticketCost.toLocaleString()}</td>
+                    <td style={{ textAlign: 'left' }}>{discountAmount}</td>
+                    <td style={{ textAlign: 'left' }}>
+                      PHP&nbsp;
+                      {roundToTwoDecimalPlacesAndAddCommas(vehicle.ticketCost)}
+                    </td>
                     <td>{paymentStatus}</td>
                     <td>{vehicle.collect ? 'Yes' : ''}</td>
                   </tr>
@@ -167,10 +156,13 @@ const CargoDailySalesReport = forwardRef(function (
             </tbody>
             <tfoot style={{ backgroundColor: '#ddebf7' }}>
               <tr style={{ fontWeight: 'bold' }}>
-                <td colSpan={5}>TOTAL</td>
+                <td colSpan={3}>TOTAL</td>
                 <td>{totalVehicles}</td>
-                <td>-</td>
-                <td>PHP{round(totalTicketCost, 2).toLocaleString()}</td>
+                <td style={{ textAlign: 'left' }}>-</td>
+                <td style={{ textAlign: 'left' }}>
+                  PHP&nbsp;
+                  {roundToTwoDecimalPlacesAndAddCommas(totalTicketCost)}
+                </td>
                 <td>-</td>
                 <td>-</td>
               </tr>
@@ -179,7 +171,7 @@ const CargoDailySalesReport = forwardRef(function (
         </div>
 
         <div
-          className={styles['three-uneven-columns-grid']}
+          className={`${styles['three-uneven-columns-grid']} ${styles['font-style']}`}
           style={{
             marginTop: 15,
             paddingLeft: 22,
@@ -196,35 +188,54 @@ const CargoDailySalesReport = forwardRef(function (
           >
             <thead style={{ backgroundColor: '#ddebf7' }}>
               <tr>
-                <th className={styles['cell-border']}>Mode of Payment</th>
-                <th className={styles['cell-border']}>Amount</th>
+                <th
+                  className={styles['header-border']}
+                  style={{ borderLeft: '0.001px solid black' }}
+                >
+                  Mode of Payment
+                </th>
+                <th className={styles['header-border']}>Amount</th>
               </tr>
             </thead>
             <tbody>
               {Object.keys(mopBreakdown).map((mop: string) => {
                 return (
                   <tr>
-                    <td className={styles['cell-border']}>{mop}</td>
+                    <td
+                      className={styles['cell-border']}
+                      style={{ borderLeft: '0.001px solid black' }}
+                    >
+                      {mop}
+                    </td>
                     <td className={styles['cell-border']}>
-                      PHP&nbsp;
-                      {mopBreakdown[
-                        mop as keyof MOPBreakdown
-                      ].aggFare.toLocaleString()}
+                      <div className={styles['wrap']}>
+                        <div style={{ textAlign: 'left' }}>
+                          PHP&nbsp;
+                          {roundToTwoDecimalPlacesAndAddCommas(
+                            mopBreakdown[mop as keyof MOPBreakdown].aggFare
+                          )}
+                        </div>
+                      </div>
                     </td>
                   </tr>
                 );
               })}
             </tbody>
             <tfoot style={{ backgroundColor: '#ddebf7' }}>
-              <tr>
+              <tr style={{ fontWeight: 'bold' }}>
                 <td
                   className={styles['cell-border']}
-                  style={{ wordSpacing: 3 }}
+                  style={{ borderLeft: '0.001px solid black' }}
                 >
                   TOTAL SALES
                 </td>
                 <td className={styles['cell-border']}>
-                  PHP&nbsp;{round(totalTicketCost, 2).toLocaleString()}
+                  <div className={styles['wrap']}>
+                    <div style={{ textAlign: 'left' }}>
+                      PHP&nbsp;
+                      {roundToTwoDecimalPlacesAndAddCommas(totalTicketCost)}
+                    </div>
+                  </div>
                 </td>
               </tr>
             </tfoot>
@@ -241,23 +252,38 @@ const CargoDailySalesReport = forwardRef(function (
           >
             <thead style={{ backgroundColor: '#ddebf7' }}>
               <tr>
-                <th className={styles['cell-border']}>Vehicle Type</th>
-                <th className={styles['cell-border']}>Total</th>
-                <th className={styles['cell-border']}>Amount</th>
+                <th
+                  className={styles['header-border']}
+                  style={{ borderLeft: '0.001px solid black' }}
+                >
+                  Vehicle Type
+                </th>
+                <th className={styles['header-border']}>Total</th>
+                <th className={styles['header-border']}>Amount</th>
               </tr>
             </thead>
             <tbody>
               {data.vehicleTypesBreakdown?.map((vehicleType) => {
                 return (
-                  <tr style={{ wordSpacing: 3 }}>
-                    <td className={styles['cell-border']}>
+                  <tr>
+                    <td
+                      className={styles['cell-border']}
+                      style={{ borderLeft: '0.001px solid black' }}
+                    >
                       {vehicleType.typeOfVehicle}
                     </td>
                     <td className={styles['cell-border']}>
                       {vehicleType.totalBooked}
                     </td>
                     <td className={styles['cell-border']}>
-                      PHP&nbsp;{vehicleType.totalSales.toLocaleString()}
+                      <div className={styles['wrap']}>
+                        <div style={{ textAlign: 'left' }}>
+                          PHP&nbsp;
+                          {roundToTwoDecimalPlacesAndAddCommas(
+                            vehicleType.totalSales
+                          )}
+                        </div>
+                      </div>
                     </td>
                   </tr>
                 );

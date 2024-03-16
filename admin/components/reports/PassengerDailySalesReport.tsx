@@ -7,7 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { forwardRef } from 'react';
 import styles from './Reports.module.scss';
 import { MOPBreakdown } from './SummarySalesPerVessel';
-import { round } from 'lodash';
+import { roundToTwoDecimalPlacesAndAddCommas } from '@/services/reporting.service';
 
 interface PassengerDailySalesReportProps {
   data: ITripReport;
@@ -123,14 +123,13 @@ const PassengerDailySalesReport = forwardRef(function (
           >
             <thead style={{ backgroundColor: '#ddebf7' }}>
               <tr>
-                <th>Vessel</th>
-                <th>Outlet</th>
+                <th>Passenger Name</th>
                 <th>Teller</th>
                 <th>Reference</th>
                 <th>Accommodation</th>
                 <th>Discount Type</th>
-                <th>Discount</th>
-                <th>Ticket Cost</th>
+                <th style={{ textAlign: 'left' }}>Discount</th>
+                <th style={{ textAlign: 'left' }}>Ticket Cost</th>
                 <th>Payment Method</th>
                 <th>Collect</th>
               </tr>
@@ -147,23 +146,25 @@ const PassengerDailySalesReport = forwardRef(function (
                 }
 
                 const discountAmount = passenger.discountAmount
-                  ? `PHP${passenger.discountAmount.toLocaleString()}`
+                  ? `PHP ${roundToTwoDecimalPlacesAndAddCommas(
+                      passenger.discountAmount
+                    )}`
                   : '';
 
                 return (
                   <tr>
-                    <td>{vesselName}</td>
-                    <td>
-                      {paymentStatus === 'PayMongo'
-                        ? 'Ayahay'
-                        : data.srcPort.name}
-                    </td>
+                    <td>{passenger.passengerName}</td>
                     <td>{passenger.teller}</td>
                     <td>{padZeroes(idx + 1, 4)}</td>
                     <td>{passenger.accommodation}</td>
                     <td>{passenger.discount}</td>
-                    <td>{discountAmount}</td>
-                    <td>PHP{passenger.ticketCost.toLocaleString()}</td>
+                    <td style={{ textAlign: 'left' }}>{discountAmount}</td>
+                    <td style={{ textAlign: 'left' }}>
+                      PHP&nbsp;
+                      {roundToTwoDecimalPlacesAndAddCommas(
+                        passenger.ticketCost
+                      )}
+                    </td>
                     <td>{paymentStatus}</td>
                     <td>{passenger.collect ? 'Yes' : ''}</td>
                   </tr>
@@ -172,10 +173,13 @@ const PassengerDailySalesReport = forwardRef(function (
             </tbody>
             <tfoot style={{ backgroundColor: '#ddebf7' }}>
               <tr style={{ fontWeight: 'bold' }}>
-                <td colSpan={5}>TOTAL</td>
+                <td colSpan={4}>TOTAL</td>
                 <td>{totalPassengers}</td>
-                <td>-</td>
-                <td>PHP{round(totalTicketCost, 2).toLocaleString()}</td>
+                <td style={{ textAlign: 'left' }}>-</td>
+                <td style={{ textAlign: 'left' }}>
+                  PHP&nbsp;
+                  {roundToTwoDecimalPlacesAndAddCommas(totalTicketCost)}
+                </td>
                 <td>-</td>
                 <td>-</td>
               </tr>
@@ -184,7 +188,7 @@ const PassengerDailySalesReport = forwardRef(function (
         </div>
 
         <div
-          className={styles['three-uneven-columns-grid']}
+          className={`${styles['three-uneven-columns-grid']} ${styles['font-style']}`}
           style={{
             marginTop: 15,
             paddingLeft: 22,
@@ -201,20 +205,34 @@ const PassengerDailySalesReport = forwardRef(function (
           >
             <thead style={{ backgroundColor: '#ddebf7' }}>
               <tr style={{ fontWeight: 'bold' }}>
-                <th className={styles['cell-border']}>Mode of Payment</th>
-                <th className={styles['cell-border']}>Amount</th>
+                <th
+                  className={styles['header-border']}
+                  style={{ borderLeft: '0.001px solid black' }}
+                >
+                  Mode of Payment
+                </th>
+                <th className={styles['header-border']}>Amount</th>
               </tr>
             </thead>
             <tbody>
               {Object.keys(mopBreakdown).map((mop: string) => {
                 return (
                   <tr>
-                    <td className={styles['cell-border']}>{mop}</td>
+                    <td
+                      className={styles['cell-border']}
+                      style={{ borderLeft: '0.001px solid black' }}
+                    >
+                      {mop}
+                    </td>
                     <td className={styles['cell-border']}>
-                      PHP&nbsp;
-                      {mopBreakdown[
-                        mop as keyof MOPBreakdown
-                      ].aggFare.toLocaleString()}
+                      <div className={styles['wrap']}>
+                        <div style={{ textAlign: 'left' }}>
+                          PHP&nbsp;
+                          {roundToTwoDecimalPlacesAndAddCommas(
+                            mopBreakdown[mop as keyof MOPBreakdown].aggFare
+                          )}
+                        </div>
+                      </div>
                     </td>
                   </tr>
                 );
@@ -224,12 +242,17 @@ const PassengerDailySalesReport = forwardRef(function (
               <tr style={{ fontWeight: 'bold' }}>
                 <td
                   className={styles['cell-border']}
-                  style={{ wordSpacing: 3 }}
+                  style={{ borderLeft: '0.001px solid black' }}
                 >
                   TOTAL SALES
                 </td>
                 <td className={styles['cell-border']}>
-                  PHP&nbsp;{round(totalTicketCost, 2).toLocaleString()}
+                  <div className={styles['wrap']}>
+                    <div style={{ textAlign: 'left' }}>
+                      PHP&nbsp;
+                      {roundToTwoDecimalPlacesAndAddCommas(totalTicketCost)}
+                    </div>
+                  </div>
                 </td>
               </tr>
             </tfoot>
@@ -246,23 +269,38 @@ const PassengerDailySalesReport = forwardRef(function (
           >
             <thead style={{ backgroundColor: '#ddebf7' }}>
               <tr>
-                <th className={styles['cell-border']}>Discount Type</th>
-                <th className={styles['cell-border']}>Total</th>
-                <th className={styles['cell-border']}>Amount</th>
+                <th
+                  className={styles['header-border']}
+                  style={{ borderLeft: '0.001px solid black' }}
+                >
+                  Discount Type
+                </th>
+                <th className={styles['header-border']}>Total</th>
+                <th className={styles['header-border']}>Amount</th>
               </tr>
             </thead>
             <tbody>
               {data.passengerDiscountsBreakdown?.map((discountType) => {
                 return (
                   <tr>
-                    <td className={styles['cell-border']}>
+                    <td
+                      className={styles['cell-border']}
+                      style={{ borderLeft: '0.001px solid black' }}
+                    >
                       {discountType.typeOfDiscount}
                     </td>
                     <td className={styles['cell-border']}>
                       {discountType.totalBooked}
                     </td>
                     <td className={styles['cell-border']}>
-                      PHP&nbsp;{discountType.totalSales.toLocaleString()}
+                      <div className={styles['wrap']}>
+                        <div style={{ textAlign: 'left' }}>
+                          PHP&nbsp;
+                          {roundToTwoDecimalPlacesAndAddCommas(
+                            discountType.totalSales
+                          )}
+                        </div>
+                      </div>
                     </td>
                   </tr>
                 );

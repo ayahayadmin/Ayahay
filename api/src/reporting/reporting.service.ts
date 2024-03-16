@@ -9,13 +9,11 @@ import {
   BillOfLading,
 } from '@ayahay/http';
 import { ReportingMapper } from './reporting.mapper';
-import { BookingPricingService } from '@/booking/booking-pricing.service';
 
 @Injectable()
 export class ReportingService {
   constructor(
     private prisma: PrismaService,
-    private bookingPricingService: BookingPricingService,
     private readonly reportingMapper: ReportingMapper
   ) {}
 
@@ -177,9 +175,9 @@ export class ReportingService {
             booking: {
               include: {
                 createdByAccount: true,
-                bookingPaymentItems: true,
               },
             },
+            bookingPaymentItems: true,
             cabin: {
               include: {
                 cabinType: true,
@@ -200,9 +198,9 @@ export class ReportingService {
       trip.bookingTripPassengers
         .filter((passenger) => passenger.booking.bookingStatus === 'Confirmed')
         .forEach((passenger) => {
-          const adminFee = passenger.booking.bookingPaymentItems.find(
-            (paymentItem) => paymentItem.type === 'ServiceCharge'
-          );
+          const adminFee = passenger.bookingPaymentItems.find(
+            ({ type }) => type === 'ServiceCharge'
+          )?.price;
 
           const { cabinPassengerArr, noShowArr } =
             this.reportingMapper.convertTripPassengersToCabinPassenger(

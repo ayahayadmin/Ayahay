@@ -187,18 +187,19 @@ export default function TripReportingPage({ params }: any) {
       <Button
         type='primary'
         htmlType='submit'
-        loading={tripsReporting === undefined}
+        loading={tripsReporting === undefined || disbursements === undefined}
         disabled={vesselName === undefined}
         onClick={handleDownloadSummarySalesPerVoyage}
       >
         <DownloadOutlined rev={undefined} /> Download
       </Button>
       <div style={{ display: 'none' }}>
-        {tripsReporting && vesselName && (
+        {tripsReporting && vesselName && disbursements && (
           <SummarySalesPerVoyage
             data={tripsReporting}
             status={status}
             vesselName={vesselName}
+            disbursements={disbursements}
             ref={summarySalesPerVoyageRef}
           />
         )}

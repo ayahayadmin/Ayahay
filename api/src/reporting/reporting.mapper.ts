@@ -27,6 +27,9 @@ export class ReportingMapper {
       ({ type }) => type === 'VoucherDiscount'
     )?.price;
     return {
+      passengerName: `${passenger.passenger.firstName.trim() ?? ''} ${
+        passenger.passenger.lastName.trim() ?? ''
+      }`,
       teller: passenger.booking.createdByAccount?.email,
       accommodation: passenger.cabin.cabinType.name,
       discount: passenger.passenger.discountType ?? 'Adult',
