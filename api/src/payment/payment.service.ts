@@ -37,6 +37,7 @@ export class PaymentService {
     tempBookingId: number,
     paymentGateway: string,
     email?: string,
+    consignee?: string,
     loggedInAccount?: IAccount
   ): Promise<PaymentInitiationResponse> {
     const tempBooking = await this.prisma.tempBooking.findUnique({
@@ -66,7 +67,9 @@ export class PaymentService {
       return this.skipPaymentFlow(
         tempBookingId,
         paymentReference,
-        `${process.env.WEB_URL}/bookings/${paymentReference}`
+        `${process.env.WEB_URL}/bookings/${paymentReference}`,
+        undefined,
+        consignee
       );
     }
 
@@ -93,7 +96,8 @@ export class PaymentService {
       tempBookingId,
       paymentReference,
       response.redirectUrl,
-      contactEmail
+      contactEmail,
+      consignee
     );
   }
 
@@ -109,12 +113,16 @@ export class PaymentService {
   private async skipPaymentFlow(
     tempBookingId: number,
     paymentReference: string,
-    redirectUrl: string
+    redirectUrl: string,
+    contactEmail?: string,
+    consigneeName?: string
   ): Promise<PaymentInitiationResponse> {
     const response = await this.onSuccessfulPaymentInitiation(
       tempBookingId,
       paymentReference,
-      redirectUrl
+      redirectUrl,
+      contactEmail,
+      consigneeName
     );
 
     await this.prisma.$transaction(
@@ -225,7 +233,8 @@ export class PaymentService {
     tempBookingId: number,
     paymentReference: string,
     redirectUrl: string,
-    contactEmail?: string
+    contactEmail?: string,
+    consigneeName?: string
   ): Promise<PaymentInitiationResponse> {
     await this.prisma.tempBooking.update({
       where: {
@@ -234,6 +243,7 @@ export class PaymentService {
       data: {
         paymentReference,
         contactEmail,
+        consigneeName,
       },
     });
 

@@ -228,6 +228,7 @@ export class BookingMapper {
       contactEmail: tempBooking.contactEmail,
       createdAtIso: tempBooking.createdAt.toISOString(),
       isBookingRequest: tempBooking.isBookingRequest,
+      consigneeName: tempBooking.consigneeName ?? undefined,
 
       bookingTrips,
       bookingPaymentItems,
@@ -305,6 +306,7 @@ export class BookingMapper {
         contactEmail: booking.contactEmail,
         createdAt: booking.createdAtIso,
         isBookingRequest: booking.isBookingRequest,
+        consigneeName: booking.consigneeName,
 
         bookingTrips: {
           createMany: {

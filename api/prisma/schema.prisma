@@ -270,6 +270,7 @@ model Booking {
   createdAt DateTime @map("created_at")
   isBookingRequest Boolean @map("is_booking_request")
   failureCancellationRemarks String? @map("failure_cancellation_remarks")
+  consigneeName String? @map("consignee_name")
 
   bookingTrips BookingTrip[]
   bookingTripPassengers BookingTripPassenger[]
@@ -357,6 +358,7 @@ model TempBooking {
   createdAt DateTime @map("created_at")
   isBookingRequest Boolean @map("is_booking_request")
   failureCancellationRemarks String? @map("failure_cancellation_remarks")
+  consigneeName String? @map("consignee_name")
 
   bookingTripsJson Json @map("booking_trips_json")
   bookingPaymentItemsJson Json @map("booking_payment_items_json")

@@ -152,10 +152,12 @@ export default function CreateBookingForm({
     setLoadingMessage('Initiating payment...');
 
     const contactEmail = form.getFieldValue('contactEmail');
+    const consignee = form.getFieldValue('consigneeName');
     const response = await startPaymentForBooking(
       tentativeBookingId,
+      gateway,
       contactEmail,
-      gateway
+      consignee
     );
 
     setLoadingMessage('');

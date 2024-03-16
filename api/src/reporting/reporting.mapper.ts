@@ -207,16 +207,7 @@ export class ReportingMapper {
 
   convertBookingToBillOfLading(booking): BillOfLading {
     const referenceNo = booking.referenceNo;
-    // TO DO: There will be improvements with regards to getting the driver's name
-    const passenger = booking.bookingTripPassengers.find(
-      ({ passenger }) => passenger.discountType === 'Driver'
-    );
-
-    const driverName = passenger
-      ? passenger.passenger.firstName + ' ' + passenger.passenger.lastName
-      : booking.bookingTripPassengers[0].passenger.firstName +
-        ' ' +
-        booking.bookingTripPassengers[0].passenger.lastName;
+    const consigneeName = booking.consigneeName;
     const shipName = booking.bookingTripVehicles[0].trip.ship.name;
     const shippingLineName =
       booking.bookingTripVehicles[0].trip.shippingLine.name;
@@ -236,7 +227,7 @@ export class ReportingMapper {
 
     return {
       referenceNo,
-      driverName,
+      consigneeName,
       shipName,
       shippingLineName,
       destPortName,

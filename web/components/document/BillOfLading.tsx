@@ -115,7 +115,7 @@ export default function BillOfLading({ data }: BillOfLadingProps) {
                     </p>
                     <p>
                       CONSIGNEE&nbsp;
-                      <span style={underlined}>{data.driverName}</span>
+                      <span style={underlined}>{data.consigneeName}</span>
                     </p>
                     <p>
                       DESTINATION&nbsp;
