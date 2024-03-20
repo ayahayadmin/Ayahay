@@ -56,7 +56,8 @@ export class BookingValidator {
       ...this.validateBookingTrips(booking.bookingTrips, loggedInAccount),
       ...this.validateVoucher(
         booking.bookingTrips[0].bookingTripVehicles,
-        booking.voucher
+        booking.voucher,
+        loggedInAccount
       )
     );
 
@@ -241,7 +242,8 @@ export class BookingValidator {
 
   private validateVoucher(
     bookingTripVehicles: IBookingTripVehicle[],
-    voucher?: IVoucher
+    voucher?: IVoucher,
+    loggedInAccount?: IAccount
   ): FieldError[] {
     const errorMessages = [];
 
@@ -269,6 +271,16 @@ export class BookingValidator {
       errorMessages.push({
         fieldName: ['voucherCode'],
         message: 'The selected voucher cannot be used anymore.',
+      });
+    }
+
+    if (
+      !voucher.canBookOnline &&
+      !this.utilityService.hasPrivilegedAccess(loggedInAccount)
+    ) {
+      errorMessages.push({
+        fieldName: ['voucherCode'],
+        message: 'The selected voucher cannot be used right now.',
       });
     }
 

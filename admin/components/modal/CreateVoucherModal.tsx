@@ -1,4 +1,5 @@
 import {
+  Checkbox,
   DatePicker,
   Form,
   Input,
@@ -45,6 +46,7 @@ export default function CreateVoucherModal({
         initialValues={{
           discountFlat: 0,
           discountPercent: 0,
+          canBookOnline: true,
         }}
         layout='vertical'
       >
@@ -112,6 +114,9 @@ export default function CreateVoucherModal({
           }}
         >
           <InputNumber min={0} addonAfter='time(s)' controls={false} />
+        </Form.Item>
+        <Form.Item name='canBookOnline' valuePropName='checked'>
+          <Checkbox>Available for Online Booking</Checkbox>
         </Form.Item>
       </Form>
     </Modal>

@@ -691,6 +691,13 @@ export default function PassengerInformationForm({
         )}
       </Form.List>
       <div style={{ marginTop: '24px' }}>
+        {hasPrivilegedAccess && (
+          <Form.Item name='voucherCode'>
+            <Radio.Group>
+              <Radio value='AZNAR_COLLECT'>Collect Voucher</Radio>
+            </Radio.Group>
+          </Form.Item>
+        )}
         <Form.Item label='Voucher Code' name='voucherCode' colon={false}>
           <Input />
         </Form.Item>

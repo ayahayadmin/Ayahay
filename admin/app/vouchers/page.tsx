@@ -12,6 +12,7 @@ import {
 } from '@/services/voucher.service';
 import { ColumnsType } from 'antd/es/table';
 import CreateVoucherModal from '@/components/modal/CreateVoucherModal';
+import dayjs from 'dayjs';
 
 const { Title } = Typography;
 
@@ -41,11 +42,25 @@ const voucherColumns: ColumnsType<IVoucher> = [
     title: 'Expiry Date',
     key: 'expiryIso',
     dataIndex: 'expiryIso',
+    render: (dateIso: string) =>
+      dayjs(dateIso).format('MMM D, YYYY [at] h:mm A'),
   },
   {
     title: 'Remaining Uses',
     key: 'remainingUses',
     dataIndex: 'remainingUses',
+  },
+  {
+    title: 'Online Booking',
+    key: 'canBookOnline',
+    dataIndex: 'canBookOnline',
+    render: (canBookOnline: boolean) => {
+      if (canBookOnline) {
+        return '✔️';
+      } else {
+        return '❌';
+      }
+    },
   },
 ];
 

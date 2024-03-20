@@ -519,6 +519,7 @@ model Voucher {
   numberOfUses Int? @map("number_of_uses")
   remainingUses Int? @map("remaining_uses")
   expiry DateTime
+  canBookOnline Boolean @map("can_book_online")
 
   minVehicles Int? @map("min_vehicles")
 

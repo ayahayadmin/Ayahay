@@ -4,8 +4,6 @@ import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class VoucherMapper {
-  constructor() {}
-
   convertVoucherToDto(voucher: any): IVoucher {
     return {
       code: voucher.code,
@@ -17,6 +15,7 @@ export class VoucherMapper {
       numberOfUses: voucher.numberOfUses ?? undefined,
       remainingUses: voucher.remainingUses ?? undefined,
       expiryIso: voucher.expiry.toISOString(),
+      canBookOnline: voucher.canBookOnline,
 
       minVehicles: voucher.minVehicles ?? undefined,
     };
@@ -36,6 +35,7 @@ export class VoucherMapper {
         numberOfUses: voucher.numberOfUses ?? null,
         remainingUses: voucher.remainingUses ?? null,
         expiry: voucher.expiryIso,
+        canBookOnline: voucher.canBookOnline,
 
         minVehicles: voucher.minVehicles ?? null,
       },
