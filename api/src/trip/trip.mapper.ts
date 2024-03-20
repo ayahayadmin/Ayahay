@@ -202,6 +202,7 @@ export class TripMapper {
           vehicleNames[idx]
         ),
         fare: vehicleFares[idx],
+        canBookOnline: false,
       };
     });
   }
@@ -276,6 +277,7 @@ export class TripMapper {
       tripId: -1,
       vehicleTypeId: tripVehicleType.vehicleTypeId,
       fare: tripVehicleType.fare,
+      canBookOnline: tripVehicleType.canBookOnline
     };
   }
 }

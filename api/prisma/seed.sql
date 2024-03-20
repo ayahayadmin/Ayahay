@@ -240,10 +240,11 @@ INSERT INTO ayahay.shipping_line_schedule_rate
         schedule_id,
         cabin_id,
         vehicle_type_id,
-        fare
+        fare,
+        can_book_online
     )
     (
-        SELECT schedule.id, rate.cabin_id, rate.vehicle_type_id, rate.fare
+        SELECT schedule.id, rate.cabin_id, rate.vehicle_type_id, rate.fare, TRUE
         FROM ayahay.shipping_line_schedule schedule
         LEFT JOIN (
             VALUES

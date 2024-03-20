@@ -67,9 +67,6 @@ export default function PassengerInformationForm({
   }, [loggedInAccount]);
 
   const tripNamePath = ['bookingTrips', 0];
-  const availableVehicleTypes = trip?.availableVehicleTypes.map(
-    (tripVehicleType) => tripVehicleType.vehicleType
-  );
 
   const insertPassengerAtFirstIndex = (passenger?: IPassenger) => {
     if (passenger === undefined) {
@@ -627,10 +624,15 @@ export default function PassengerInformationForm({
                     }
                     disabled={vehicles?.[index]?.vehicle?.id > 0}
                     placeholder='Select an option...'
-                    options={availableVehicleTypes?.map((vehicleType) => ({
-                      label: vehicleType.name,
-                      value: vehicleType.id,
-                    }))}
+                    options={trip.availableVehicleTypes
+                      ?.filter(
+                        (tripVehicleType) =>
+                          hasPrivilegedAccess || tripVehicleType.canBookOnline
+                      )
+                      ?.map(({ vehicleType }) => ({
+                        label: vehicleType.name,
+                        value: vehicleType.id,
+                      }))}
                   />
                 </Form.Item>
                 <Form.Item

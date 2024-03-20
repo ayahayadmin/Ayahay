@@ -51,6 +51,7 @@ model TripVehicleType {
   vehicleType VehicleType @relation(fields: [vehicleTypeId], references: [id])
 
   fare Float
+  canBookOnline Boolean @map("can_book_online")
 
   @@map("trip_vehicle_type")
   @@id([tripId, vehicleTypeId])
@@ -192,6 +193,7 @@ model ShippingLineScheduleRate {
   vehicleType VehicleType? @relation(fields: [vehicleTypeId], references: [id])
 
   fare Float
+  canBookOnline Boolean @map("can_book_online")
 
   @@map("shipping_line_schedule_rate")
 }

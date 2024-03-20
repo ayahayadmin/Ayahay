@@ -90,7 +90,7 @@ export class BookingValidator {
       errorMessages.push(
         ...this.validateDrivers(index, passengers, vehicles),
         ...this.validatePassengers(index, passengers, loggedInAccount),
-        ...this.validateVehicles(index, vehicles),
+        ...this.validateVehicles(trip, index, vehicles),
         ...this.validateTripCapacity(trip, index, passengers, vehicles)
       );
     });
@@ -191,8 +191,10 @@ export class BookingValidator {
   }
 
   private validateVehicles(
+    { availableVehicleTypes }: ITrip,
     tripIndex: number,
-    vehicles: IBookingTripVehicle[]
+    vehicles: IBookingTripVehicle[],
+    loggedInAccount?: IAccount
   ): FieldError[] {
     const errorMessages: FieldError[] = [];
 
@@ -202,6 +204,35 @@ export class BookingValidator {
         message: `Number of vehicles for one booking trip exceeded the maximum of ${this.MAX_VEHICLES_PER_BOOKING}`,
       });
     }
+
+    const availableVehicleTypeIds = new Set<number>();
+    const onlineVehicleTypeIds = new Set<number>();
+    availableVehicleTypes?.forEach(({ vehicleTypeId, canBookOnline }) => {
+      availableVehicleTypeIds.add(vehicleTypeId);
+
+      if (canBookOnline) {
+        onlineVehicleTypeIds.add(vehicleTypeId);
+      }
+    });
+
+    vehicles.forEach(({ vehicle }, index) => {
+      const vehicleTypeId = vehicle.vehicleTypeId;
+      if (!availableVehicleTypeIds.has(vehicleTypeId)) {
+        errorMessages.push({
+          fieldName: ['bookingTrips', tripIndex, 'vehicles', index],
+          message: `Vehicle type is not available for this trip`,
+        });
+      }
+      if (
+        !this.utilityService.hasPrivilegedAccess(loggedInAccount) &&
+        !onlineVehicleTypeIds.has(vehicleTypeId)
+      ) {
+        errorMessages.push({
+          fieldName: ['bookingTrips', tripIndex, 'vehicles', index],
+          message: `Vehicle type is not available for online booking`,
+        });
+      }
+    });
 
     return errorMessages;
   }
