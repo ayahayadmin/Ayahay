@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ShippingLine } from '@prisma/client';
+import { ShippingLine, ShippingLineScheduleRate } from '@prisma/client';
 import {
   IShippingLine,
   IShippingLineSchedule,
@@ -75,35 +75,41 @@ export class ShippingLineMapper {
           ? this.cabinMapper.convertCabinToDto(shippingLineScheduleRate.cabin)
           : undefined,
       fare: shippingLineScheduleRate.fare,
+      canBookOnline: shippingLineScheduleRate.canBookOnline,
     };
   }
 
   convertScheduleToTrip(schedule: any): ITrip {
-    const ratesPerCabin: { [cabinId: number]: number } = {};
-    const ratesPerVehicleType: { [vehicleTypeId: number]: number } = {};
+    const ratesPerCabin: { [cabinId: number]: ShippingLineScheduleRate } = {};
+    const ratesPerVehicleType: {
+      [vehicleTypeId: number]: ShippingLineScheduleRate;
+    } = {};
     schedule.rates.forEach((rate) => {
       if (rate.cabinId !== null) {
-        ratesPerCabin[rate.cabinId] = rate.fare;
+        ratesPerCabin[rate.cabinId] = rate;
       }
       if (rate.vehicleTypeId !== null) {
-        ratesPerVehicleType[rate.vehicleTypeId] = rate.fare;
+        ratesPerVehicleType[rate.vehicleTypeId] = rate;
       }
     });
 
-    const availableCabins: ITripCabin[] = schedule.ship.cabins.map((cabin) => ({
-      tripId: -1,
-      cabinId: cabin.id,
-      availablePassengerCapacity: cabin.recommendedPassengerCapacity,
-      passengerCapacity: cabin.recommendedPassengerCapacity,
-      adultFare: ratesPerCabin[cabin.id],
-    }));
+    const availableCabins: ITripCabin[] = schedule.ship.cabins
+      .filter((cabin) => ratesPerCabin[cabin.id])
+      .map((cabin) => ({
+        tripId: -1,
+        cabinId: cabin.id,
+        availablePassengerCapacity: cabin.recommendedPassengerCapacity,
+        passengerCapacity: cabin.recommendedPassengerCapacity,
+        adultFare: ratesPerCabin[cabin.id].fare,
+      }));
 
     const availableVehicleTypes: ITripVehicleType[] = Object.keys(
       ratesPerVehicleType
     ).map((vehicleTypeIdStr) => ({
       tripId: -1,
       vehicleTypeId: Number(vehicleTypeIdStr),
-      fare: ratesPerVehicleType[vehicleTypeIdStr],
+      fare: ratesPerVehicleType[vehicleTypeIdStr].fare,
+      canBookOnline: ratesPerVehicleType[vehicleTypeIdStr].canBookOnline,
     }));
 
     return {

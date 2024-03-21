@@ -7,11 +7,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import { forwardRef } from 'react';
 import styles from './Reports.module.scss';
 import { MOPBreakdown } from './SummarySalesPerVessel';
-import { round } from 'lodash';
+import { roundToTwoDecimalPlacesAndAddCommas } from '@/services/reporting.service';
 
 interface PassengerDailySalesReportProps {
   data: ITripReport;
-  vesselName: string;
 }
 
 export const two_columns_grid = {
@@ -32,7 +31,7 @@ function padZeroes(num: any, size: number) {
 }
 
 const PassengerDailySalesReport = forwardRef(function (
-  { data, vesselName }: PassengerDailySalesReportProps,
+  { data }: PassengerDailySalesReportProps,
   ref
 ) {
   const { loggedInAccount } = useAuth();
@@ -88,7 +87,7 @@ const PassengerDailySalesReport = forwardRef(function (
           }}
         >
           <div>
-            <p>VESSEL NAME: {vesselName}</p>
+            <p>VESSEL NAME: {data.shipName}</p>
             <p>VOYAGE: {data.voyageNumber}</p>
             <p>
               ROUTE: {data.srcPort.name} to {data.destPort.name}
@@ -123,15 +122,15 @@ const PassengerDailySalesReport = forwardRef(function (
           >
             <thead style={{ backgroundColor: '#ddebf7' }}>
               <tr>
-                <th>Vessel</th>
-                <th>Outlet</th>
+                <th>Passenger Name</th>
                 <th>Teller</th>
                 <th>Reference</th>
-                <th>Voyage</th>
                 <th>Accommodation</th>
-                <th>Discount</th>
-                <th>Ticket Cost</th>
-                <th>Payment Status</th>
+                <th>Discount Type</th>
+                <th style={{ textAlign: 'left' }}>Discount</th>
+                <th style={{ textAlign: 'left' }}>Ticket Cost</th>
+                <th>Payment Method</th>
+                <th>Collect</th>
               </tr>
             </thead>
             <tbody>
@@ -145,35 +144,42 @@ const PassengerDailySalesReport = forwardRef(function (
                   mopBreakdown.OTC.aggFare += passenger.ticketCost;
                 }
 
+                const discountAmount = passenger.discountAmount
+                  ? `PHP ${roundToTwoDecimalPlacesAndAddCommas(
+                      passenger.discountAmount
+                    )}`
+                  : '';
+
                 return (
                   <tr>
-                    <td>{vesselName}</td>
-                    <td>
-                      {paymentStatus === 'PayMongo'
-                        ? 'Ayahay'
-                        : data.srcPort.name}
-                    </td>
+                    <td>{passenger.passengerName}</td>
                     <td>{passenger.teller}</td>
                     <td>{padZeroes(idx + 1, 4)}</td>
-                    <td>
-                      {data.srcPort.code}-{data.destPort.code}/WT:&nbsp;
-                      {getFullDate(data.departureDate, true)}
-                      &nbsp;@&nbsp;
-                      {getLocaleTimeString(data.departureDate)}
-                    </td>
                     <td>{passenger.accommodation}</td>
                     <td>{passenger.discount}</td>
-                    <td>{passenger.ticketCost}</td>
+                    <td style={{ textAlign: 'left' }}>{discountAmount}</td>
+                    <td style={{ textAlign: 'left' }}>
+                      PHP&nbsp;
+                      {roundToTwoDecimalPlacesAndAddCommas(
+                        passenger.ticketCost
+                      )}
+                    </td>
                     <td>{paymentStatus}</td>
+                    <td>{passenger.collect ? 'Yes' : ''}</td>
                   </tr>
                 );
               })}
             </tbody>
             <tfoot style={{ backgroundColor: '#ddebf7' }}>
               <tr style={{ fontWeight: 'bold' }}>
-                <td colSpan={6}>TOTAL</td>
+                <td colSpan={4}>TOTAL</td>
                 <td>{totalPassengers}</td>
-                <td>{round(totalTicketCost, 2)}</td>
+                <td style={{ textAlign: 'left' }}>-</td>
+                <td style={{ textAlign: 'left' }}>
+                  PHP&nbsp;
+                  {roundToTwoDecimalPlacesAndAddCommas(totalTicketCost)}
+                </td>
+                <td>-</td>
                 <td>-</td>
               </tr>
             </tfoot>
@@ -181,8 +187,8 @@ const PassengerDailySalesReport = forwardRef(function (
         </div>
 
         <div
+          className={`${styles['three-uneven-columns-grid']} ${styles['font-style']}`}
           style={{
-            ...two_columns_grid,
             marginTop: 15,
             paddingLeft: 22,
             paddingRight: 22,
@@ -193,21 +199,39 @@ const PassengerDailySalesReport = forwardRef(function (
               borderCollapse: 'collapse',
               textAlign: 'center',
               fontSize: 8,
+              maxHeight: 10,
             }}
           >
             <thead style={{ backgroundColor: '#ddebf7' }}>
               <tr style={{ fontWeight: 'bold' }}>
-                <th className={styles['cell-border']}>Mode of Payment</th>
-                <th className={styles['cell-border']}>Amount</th>
+                <th
+                  className={styles['header-border']}
+                  style={{ borderLeft: '0.001px solid black' }}
+                >
+                  Mode of Payment
+                </th>
+                <th className={styles['header-border']}>Amount</th>
               </tr>
             </thead>
             <tbody>
               {Object.keys(mopBreakdown).map((mop: string) => {
                 return (
                   <tr>
-                    <td className={styles['cell-border']}>{mop}</td>
+                    <td
+                      className={styles['cell-border']}
+                      style={{ borderLeft: '0.001px solid black' }}
+                    >
+                      {mop}
+                    </td>
                     <td className={styles['cell-border']}>
-                      {mopBreakdown[mop as keyof MOPBreakdown].aggFare}
+                      <div className={styles['wrap']}>
+                        <div style={{ textAlign: 'left' }}>
+                          PHP&nbsp;
+                          {roundToTwoDecimalPlacesAndAddCommas(
+                            mopBreakdown[mop as keyof MOPBreakdown].aggFare
+                          )}
+                        </div>
+                      </div>
                     </td>
                   </tr>
                 );
@@ -215,12 +239,72 @@ const PassengerDailySalesReport = forwardRef(function (
             </tbody>
             <tfoot style={{ backgroundColor: '#ddebf7' }}>
               <tr style={{ fontWeight: 'bold' }}>
-                <td className={styles['cell-border']}>TOTAL SALES</td>
+                <td
+                  className={styles['cell-border']}
+                  style={{ borderLeft: '0.001px solid black' }}
+                >
+                  TOTAL SALES
+                </td>
                 <td className={styles['cell-border']}>
-                  {round(totalTicketCost, 2)}
+                  <div className={styles['wrap']}>
+                    <div style={{ textAlign: 'left' }}>
+                      PHP&nbsp;
+                      {roundToTwoDecimalPlacesAndAddCommas(totalTicketCost)}
+                    </div>
+                  </div>
                 </td>
               </tr>
             </tfoot>
+          </table>
+
+          <div></div>
+
+          <table
+            style={{
+              borderCollapse: 'collapse',
+              textAlign: 'center',
+              fontSize: 8,
+            }}
+          >
+            <thead style={{ backgroundColor: '#ddebf7' }}>
+              <tr>
+                <th
+                  className={styles['header-border']}
+                  style={{ borderLeft: '0.001px solid black' }}
+                >
+                  Discount Type
+                </th>
+                <th className={styles['header-border']}>Total</th>
+                <th className={styles['header-border']}>Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.passengerDiscountsBreakdown?.map((discountType) => {
+                return (
+                  <tr>
+                    <td
+                      className={styles['cell-border']}
+                      style={{ borderLeft: '0.001px solid black' }}
+                    >
+                      {discountType.typeOfDiscount}
+                    </td>
+                    <td className={styles['cell-border']}>
+                      {discountType.totalBooked}
+                    </td>
+                    <td className={styles['cell-border']}>
+                      <div className={styles['wrap']}>
+                        <div style={{ textAlign: 'left' }}>
+                          PHP&nbsp;
+                          {roundToTwoDecimalPlacesAndAddCommas(
+                            discountType.totalSales
+                          )}
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
           </table>
         </div>
 

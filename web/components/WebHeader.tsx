@@ -18,7 +18,7 @@ export default function WebHeader() {
   return (
     <nav className={`hide-on-print ${styles['nav-container']}`}>
       <div className={styles['nav-main']}>
-        <Image src={AyahayLogo} alt='Ayahay' height={80} />
+        <Image src={AyahayLogo} alt='Ayahay' height={48} />
         <ul className={styles['nav-links']}>
           <Menu
             mode='horizontal'

@@ -38,5 +38,6 @@ export function buildVoucherFromCreateVoucherForm(
     discountPercent: form.getFieldValue('discountPercent') / 100.0,
     numberOfUses: form.getFieldValue('numberOfUses'),
     expiryIso: form.getFieldValue('expiry').toISOString(),
+    canBookOnline: form.getFieldValue('canBookOnline'),
   };
 }

@@ -12,17 +12,16 @@ import {
 } from './PassengerDailySalesReport';
 import { OPERATION_COSTS } from '@ayahay/constants';
 import { IDisbursement } from '@ayahay/models';
-import { round } from 'lodash';
+import { roundToTwoDecimalPlacesAndAddCommas } from '@/services/reporting.service';
 
 interface ProfitAndLossStatementProps {
   data: ITripReport;
-  vesselName: string;
   disbursements: IDisbursement[];
   expenses: any;
 }
 
 const ProfitAndLossStatement = forwardRef(function (
-  { expenses, data, disbursements, vesselName }: ProfitAndLossStatementProps,
+  { expenses, data, disbursements }: ProfitAndLossStatementProps,
   ref
 ) {
   const { loggedInAccount } = useAuth();
@@ -90,7 +89,7 @@ const ProfitAndLossStatement = forwardRef(function (
           }}
         >
           <div>
-            <p>VESSEL NAME: {vesselName}</p>
+            <p>VESSEL NAME: {data.shipName}</p>
             <p>VOYAGE: {data.voyageNumber}</p>
             <p>
               ROUTE: {data.srcPort.name} to {data.destPort.name}
@@ -126,7 +125,6 @@ const ProfitAndLossStatement = forwardRef(function (
               <tr>
                 <th>Vessel</th>
                 <th>Teller</th>
-                <th>Voyage</th>
                 <th>Description</th>
                 <th>Total Sales</th>
                 <th>Refund</th>
@@ -135,43 +133,55 @@ const ProfitAndLossStatement = forwardRef(function (
             </thead>
             <tbody>
               <tr>
-                <td>{vesselName}</td>
+                <td>{data.shipName}</td>
                 {/* will still discuss what if there are more than 1 teller in a trip */}
                 <td>{data.passengers[0]?.teller}</td>
-                <td>
-                  {data.srcPort.code}-{data.destPort.code}/WT:&nbsp;
-                  {getFullDate(data.departureDate, true)}
-                  &nbsp;@&nbsp;
-                  {getLocaleTimeString(data.departureDate)}
-                </td>
                 <td>PAX INCOME</td>
-                <td>{totalTicketCost}</td>
+                <td style={{ textAlign: 'left' }}>
+                  PHP&nbsp;
+                  {roundToTwoDecimalPlacesAndAddCommas(totalTicketCost)}
+                </td>
                 <td>-</td>
-                <td>{totalTicketCost - totalRefund}</td>
+                <td style={{ textAlign: 'left' }}>
+                  PHP&nbsp;
+                  {roundToTwoDecimalPlacesAndAddCommas(
+                    totalTicketCost - totalRefund
+                  )}
+                </td>
               </tr>
               <tr>
-                <td>{vesselName}</td>
+                <td>{data.shipName}</td>
                 {/* will still discuss what if there are more than 1 teller in a trip */}
                 <td>{data.passengers[0]?.teller}</td>
-                <td>
-                  {data.srcPort.code}-{data.destPort.code}/WT:&nbsp;
-                  {getFullDate(data.departureDate, true)}
-                  &nbsp;@&nbsp;
-                  {getLocaleTimeString(data.departureDate)}
-                </td>
                 <td>CARGO INCOME</td>
-                <td>{totalVehicleTicketCost}</td>
+                <td style={{ textAlign: 'left' }}>
+                  PHP&nbsp;
+                  {roundToTwoDecimalPlacesAndAddCommas(totalVehicleTicketCost)}
+                </td>
                 <td>-</td>
-                <td>{totalVehicleTicketCost - totalVehicleRefund}</td>
+                <td style={{ textAlign: 'left' }}>
+                  PHP&nbsp;
+                  {roundToTwoDecimalPlacesAndAddCommas(totalVehicleTicketCost)}
+                </td>
               </tr>
             </tbody>
             <tfoot style={{ backgroundColor: '#ddebf7' }}>
               <tr style={{ fontWeight: 'bold' }}>
-                <td colSpan={4}>TOTAL SALES</td>
-                <td>{totalTicketCost + totalVehicleTicketCost}</td>
+                <td colSpan={3}>TOTAL SALES</td>
+                <td style={{ textAlign: 'left' }}>
+                  PHP&nbsp;
+                  {roundToTwoDecimalPlacesAndAddCommas(
+                    totalTicketCost + totalVehicleTicketCost
+                  )}
+                </td>
                 <td>-</td>
                 {/* subtract here TOTAL refund (pax and cargo), but none for now */}
-                <td>{totalTicketCost + totalVehicleTicketCost}</td>
+                <td style={{ textAlign: 'left' }}>
+                  PHP&nbsp;
+                  {roundToTwoDecimalPlacesAndAddCommas(
+                    totalTicketCost + totalVehicleTicketCost
+                  )}
+                </td>
               </tr>
             </tfoot>
           </table>
@@ -199,7 +209,7 @@ const ProfitAndLossStatement = forwardRef(function (
                 <th>Paid To</th>
                 <th>Description</th>
                 <th>Purpose</th>
-                <th>Amount</th>
+                <th style={{ textAlign: 'left' }}>Amount</th>
               </tr>
             </thead>
             <tbody>
@@ -226,7 +236,10 @@ const ProfitAndLossStatement = forwardRef(function (
                     <td className={styles['td-text-wrap']}>
                       {disbursement.purpose}
                     </td>
-                    <td>{disbursement.amount}</td>
+                    <td style={{ textAlign: 'left' }}>
+                      PHP&nbsp;
+                      {roundToTwoDecimalPlacesAndAddCommas(disbursement.amount)}
+                    </td>
                   </tr>
                 );
               })}
@@ -234,7 +247,9 @@ const ProfitAndLossStatement = forwardRef(function (
             <tfoot style={{ backgroundColor: '#ddebf7' }}>
               <tr style={{ fontWeight: 'bold' }}>
                 <td colSpan={6}>TOTAL EXPENSES</td>
-                <td>{round(totalExpenses, 2)}</td>
+                <td style={{ textAlign: 'left' }}>
+                  PHP&nbsp;{roundToTwoDecimalPlacesAndAddCommas(totalExpenses)}
+                </td>
               </tr>
             </tfoot>
           </table>
@@ -265,7 +280,10 @@ const ProfitAndLossStatement = forwardRef(function (
                 </td>
                 {/* subtract here TOTAL refund (pax and cargo), but none for now */}
                 <td style={{ textAlign: 'right' }}>
-                  {totalTicketCost + totalVehicleTicketCost}
+                  PHP&nbsp;
+                  {roundToTwoDecimalPlacesAndAddCommas(
+                    totalTicketCost + totalVehicleTicketCost
+                  )}
                 </td>
               </tr>
               <tr>
@@ -286,13 +304,14 @@ const ProfitAndLossStatement = forwardRef(function (
                         }
                       </div>
                       <div style={{ textAlign: 'right', maxWidth: 50 }}>
-                        {expenses[expense]}
+                        PHP&nbsp;
+                        {roundToTwoDecimalPlacesAndAddCommas(expenses[expense])}
                       </div>
                     </td>
                   );
                 })}
                 <td style={{ verticalAlign: 'top', textAlign: 'right' }}>
-                  {round(totalExpenses, 2)}
+                  PHP&nbsp;{roundToTwoDecimalPlacesAndAddCommas(totalExpenses)}
                 </td>
               </tr>
               <tr>
@@ -305,9 +324,9 @@ const ProfitAndLossStatement = forwardRef(function (
                 </td>
                 <td style={{ textAlign: 'right' }}>
                   {/* subtract here TOTAL refund (pax and cargo), but none for now */}
-                  {round(
-                    totalTicketCost + totalVehicleTicketCost - totalExpenses,
-                    2
+                  PHP&nbsp;
+                  {roundToTwoDecimalPlacesAndAddCommas(
+                    totalTicketCost + totalVehicleTicketCost - totalExpenses
                   )}
                 </td>
               </tr>

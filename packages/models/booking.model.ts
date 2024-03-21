@@ -46,6 +46,11 @@ export interface IBooking {
    * remarks (e.g. reason, actions) are saved here
    */
   failureCancellationRemarks?: string;
+  /**
+   * mostly for BoL (vehicle bookings) purposes only
+   * undefined if booking has no vehicles
+   */
+  consigneeName?: string;
 
   bookingTrips?: IBookingTrip[];
   bookingPaymentItems?: IBookingPaymentItem[];

@@ -15,6 +15,7 @@ import {
 import { TripMapper } from './trip.mapper';
 import { isEmpty } from 'lodash';
 import {
+  CancelledTrips,
   CreateTripsFromSchedulesRequest,
   PaginatedRequest,
   PaginatedResponse,
@@ -199,6 +200,58 @@ export class TripService {
     );
   }
 
+  async getCancelledTrips(
+    pagination: PaginatedRequest,
+    { startDate, endDate }: TripSearchByDateRange
+  ): Promise<PaginatedResponse<CancelledTrips>> {
+    const itemsPerPage = 10;
+    const skip = (pagination.page - 1) * itemsPerPage;
+
+    const where: Prisma.TripWhereInput = {
+      departureDate: {
+        gte: new Date(startDate).toISOString(),
+        lte: new Date(endDate).toISOString(),
+      },
+      status: 'Cancelled',
+    };
+
+    const cancelledTrips = await this.prisma.trip.findMany({
+      where,
+      select: {
+        srcPort: {
+          select: {
+            name: true,
+          },
+        },
+        destPort: {
+          select: {
+            name: true,
+          },
+        },
+        ship: {
+          select: {
+            name: true,
+          },
+        },
+        departureDate: true,
+        cancellationReason: true,
+      },
+      take: itemsPerPage,
+      skip,
+    });
+
+    const cancelledTripsCount = await this.prisma.trip.count({
+      where,
+    });
+
+    return {
+      total: cancelledTripsCount,
+      data: cancelledTrips.map((trip) =>
+        this.tripMapper.convertCancelledTripsToDto(trip)
+      ),
+    };
+  }
+
   async getBookingsOfTrip(
     pagination: PaginatedRequest,
     tripId: number
@@ -217,7 +270,7 @@ export class TripService {
 
     const bookingIdsStrArr = bookingIds.map(({ bookingId }) => bookingId);
 
-    const where = {
+    const where: Prisma.BookingWhereInput = {
       id: {
         in: bookingIdsStrArr,
       },
@@ -623,6 +676,7 @@ export class TripService {
         },
         data: {
           status: 'Cancelled',
+          cancellationReason: reason,
         },
       });
 

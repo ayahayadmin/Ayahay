@@ -1,45 +1,50 @@
-import { IPort, IShip, IShippingLine } from '@ayahay/models';
+import { IPort, IShip } from '@ayahay/models';
 
 export interface TripReport {
   id: number;
-  shipId: number;
-  shipName: string;
-  shippingLineId: number;
-  shippingLine: IShippingLine;
-  srcPortId: number;
   srcPort: IPort;
-  destPortId: number;
   destPort: IPort;
+  shipName: string;
   departureDate: string;
   voyageNumber?: number;
 
   passengers: {
+    passengerName: string;
     teller: string;
-    ticketReferenceNo: string;
     accommodation: string;
     discount: string;
-    checkedIn: boolean;
+    collect: boolean;
+    discountAmount: number;
     ticketCost: number;
     adminFee: number;
     fare: number;
     paymentStatus: string;
   }[];
 
-  vehicles?: {
-    ticketCost: number;
-    adminFee: number;
-    fare: number;
-    paymentStatus: string;
-  }[];
-
-  vehiclesBreakdown?: {
-    typeOfVehicle: string;
-    baseFare: number;
+  passengerDiscountsBreakdown?: {
+    typeOfDiscount: string;
+    totalBooked: number;
     totalSales: number;
-    vehiclesBooked: {
-      referenceNo: string;
-      plateNo: string;
-    }[];
+  }[];
+
+  vehicles: {
+    teller: string;
+    FRR?: string; // TODO: add FRR after implementing FRR in BOL printing
+    referenceNo: string;
+    typeOfVehicle: string;
+    plateNo: string;
+    collect: boolean;
+    discountAmount: number;
+    ticketCost: number;
+    adminFee: number;
+    fare: number;
+    paymentStatus: string;
+  }[];
+
+  vehicleTypesBreakdown?: {
+    typeOfVehicle: string;
+    totalBooked: number;
+    totalSales: number;
   }[];
 }
 
@@ -83,7 +88,7 @@ export interface TripManifest {
 
 export interface BillOfLading {
   referenceNo: string;
-  driverName: string;
+  consigneeName: string;
   shipName: string;
   shippingLineName: string;
   destPortName: string;

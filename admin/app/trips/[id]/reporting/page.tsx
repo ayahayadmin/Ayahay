@@ -14,8 +14,7 @@ import jsPDF from 'jspdf';
 import SummarySalesPerVoyage from '@/components/reports/SummarySalesPerVoyage';
 import ProfitAndLossStatement from '@/components/reports/ProfitAndLossStatement';
 import CargoDailySalesReport from '@/components/reports/CargoDailySalesReport';
-import { IDisbursement, IShip } from '@ayahay/models';
-import { getShips } from '@ayahay/services/ship.service';
+import { IDisbursement } from '@ayahay/models';
 import { getDisbursements } from '@/services/disbursement.service';
 
 const { Title } = Typography;
@@ -32,11 +31,9 @@ export default function TripReportingPage({ params }: any) {
   const cargoDailySalesReportRef = useRef();
   const summarySalesPerVoyageRef = useRef();
   const profitAndLossStatementRef = useRef();
-  const [ships, setShips] = useState<IShip[] | undefined>();
   const [tripsReporting, setTripsReporting] = useState<
     ITripReport | undefined
   >();
-  const [vesselName, setVesselName] = useState<string | undefined>();
   const [status, setStatus] = useState(STATUS.ON_TIME);
   const [disbursements, setDisbursements] = useState<
     IDisbursement[] | undefined
@@ -49,16 +46,11 @@ export default function TripReportingPage({ params }: any) {
     }
     const tripId = params.id;
     fetchTripsReporting(tripId);
-    fetchShips();
     fetchDisbursements(tripId);
   }, [loggedInAccount]);
 
   const fetchTripsReporting = async (tripId: number): Promise<void> => {
     setTripsReporting(await getTripsReporting(tripId));
-  };
-
-  const fetchShips = async (): Promise<void> => {
-    setShips(await getShips());
   };
 
   const fetchDisbursements = async (tripId: number) => {
@@ -70,10 +62,6 @@ export default function TripReportingPage({ params }: any) {
 
   const handleStatusChange = (value: string) => {
     setStatus(STATUS[value as keyof typeof STATUS]);
-  };
-
-  const handleVesselNameChange = (value: string) => {
-    setVesselName(value);
   };
 
   const handleDownloadDailySales = async () => {
@@ -118,15 +106,6 @@ export default function TripReportingPage({ params }: any) {
 
   return (
     <div style={{ padding: '32px' }}>
-      Vessel Name:&nbsp;
-      <Select
-        options={ships?.map((ship) => ({
-          value: ship.name,
-          label: ship.name,
-        }))}
-        onChange={handleVesselNameChange}
-        style={{ minWidth: '20%' }}
-      />
       <Title level={1} style={{ fontSize: 25 }}>
         Passenger Daily Sales Report
       </Title>
@@ -134,16 +113,14 @@ export default function TripReportingPage({ params }: any) {
         type='primary'
         htmlType='submit'
         loading={tripsReporting === undefined}
-        disabled={vesselName === undefined}
         onClick={handleDownloadDailySales}
       >
         <DownloadOutlined rev={undefined} /> Download
       </Button>
       <div style={{ display: 'none' }}>
-        {tripsReporting && vesselName && (
+        {tripsReporting && (
           <PassengerDailySalesReport
             data={tripsReporting}
-            vesselName={vesselName}
             ref={dailySalesReportRef}
           />
         )}
@@ -155,16 +132,14 @@ export default function TripReportingPage({ params }: any) {
         type='primary'
         htmlType='submit'
         loading={tripsReporting === undefined}
-        disabled={vesselName === undefined}
         onClick={handleDownloadCargoDailySales}
       >
         <DownloadOutlined rev={undefined} /> Download
       </Button>
       <div style={{ display: 'none' }}>
-        {tripsReporting && vesselName && (
+        {tripsReporting && (
           <CargoDailySalesReport
             data={tripsReporting}
-            vesselName={vesselName}
             ref={cargoDailySalesReportRef}
           />
         )}
@@ -187,18 +162,17 @@ export default function TripReportingPage({ params }: any) {
       <Button
         type='primary'
         htmlType='submit'
-        loading={tripsReporting === undefined}
-        disabled={vesselName === undefined}
+        loading={tripsReporting === undefined || disbursements === undefined}
         onClick={handleDownloadSummarySalesPerVoyage}
       >
         <DownloadOutlined rev={undefined} /> Download
       </Button>
       <div style={{ display: 'none' }}>
-        {tripsReporting && vesselName && (
+        {tripsReporting && disbursements && (
           <SummarySalesPerVoyage
             data={tripsReporting}
             status={status}
-            vesselName={vesselName}
+            disbursements={disbursements}
             ref={summarySalesPerVoyageRef}
           />
         )}
@@ -213,16 +187,14 @@ export default function TripReportingPage({ params }: any) {
           tripsReporting === undefined ||
           (disbursements === undefined && expenses === undefined)
         }
-        disabled={vesselName === undefined}
         onClick={handleDownloadProfitAndLossStatement}
       >
         <DownloadOutlined rev={undefined} /> Download
       </Button>
       <div style={{ display: 'none' }}>
-        {tripsReporting && vesselName && disbursements && expenses && (
+        {tripsReporting && disbursements && expenses && (
           <ProfitAndLossStatement
             data={tripsReporting}
-            vesselName={vesselName}
             disbursements={disbursements}
             expenses={expenses}
             ref={profitAndLossStatementRef}

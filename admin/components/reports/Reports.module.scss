@@ -1,3 +1,5 @@
+$border: 0.001px solid black;
+
 .center-div {
   display: flex;
   align-items: center;
@@ -8,12 +10,33 @@
   font-family: sans-serif;
 }
 
-.cell-border {
-  border: 0.001px solid black;
+.header-border {
+  border-top: $border;
+  border-right: $border;
+  border-bottom: $border;
   border-color: '#454545';
+}
+
+.cell-border {
+  border-right: $border;
+  border-bottom: $border;
+  border-color: '#454545';
+  padding-bottom: 1px;
 }
 
 .td-text-wrap {
   text-align: left;
   word-wrap: break-word;
+}
+
+.three-uneven-columns-grid {
+  display: grid;
+  grid-auto-rows: 1fr;
+  grid-template-columns: 2fr 1fr 2fr;
+}
+
+.wrap {
+  float: left;
+  position: relative;
+  left: 30%;
 }

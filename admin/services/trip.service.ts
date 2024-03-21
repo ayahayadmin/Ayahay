@@ -1,9 +1,11 @@
 import { IShippingLineSchedule, ITrip } from '@ayahay/models';
 import { TRIP_API } from '@ayahay/constants';
 import {
+  CancelledTrips,
   CreateTripsFromSchedulesRequest,
   PaginatedRequest,
   PaginatedResponse,
+  TripSearchByDateRange,
   UpdateTripCapacityRequest,
   VehicleBookings,
 } from '@ayahay/http';
@@ -12,6 +14,7 @@ import dayjs from 'dayjs';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import { fetchAssociatedEntitiesToTrips } from '@ayahay/services/trip.service';
+import { isEmpty } from 'lodash';
 
 dayjs.extend(isSameOrBefore);
 dayjs.extend(isSameOrAfter);
@@ -45,6 +48,26 @@ export async function getBookingsOfTrip(
   try {
     const { data } = await axios.get<PaginatedResponse<VehicleBookings>>(
       `${TRIP_API}/${tripId}/bookings?${query}`
+    );
+    return data;
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+export async function getCancelledTrips(
+  searchQuery: TripSearchByDateRange | undefined,
+  pagination: PaginatedRequest
+): Promise<PaginatedResponse<CancelledTrips> | undefined> {
+  if (isEmpty(searchQuery)) {
+    return;
+  }
+  const { startDate, endDate } = searchQuery;
+  const query = new URLSearchParams(pagination as any).toString();
+
+  try {
+    const { data } = await axios.get<PaginatedResponse<CancelledTrips>>(
+      `${TRIP_API}/cancelled-trips?startDate=${startDate}&endDate=${endDate}&${query}`
     );
     return data;
   } catch (e) {

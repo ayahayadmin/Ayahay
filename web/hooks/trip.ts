@@ -11,6 +11,7 @@ export function useTripFromSearchParams() {
     ({ tripIds }) => getTrips(tripIds)
   );
   return {
+    tripIds: tripIds,
     trips: data,
     isLoading,
     error: error,

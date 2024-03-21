@@ -106,3 +106,9 @@ export async function fetchAssociatedEntitiesForReport(
   data.destPort = destPort.status === 'fulfilled' ? destPort.value : undefined;
   data.ship = ship.status === 'fulfilled' ? ship.value : undefined;
 }
+
+export function roundToTwoDecimalPlacesAndAddCommas(amount: number): string {
+  return (Math.round(amount * 100) / 100)
+    .toFixed(2)
+    .replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ',');
+}

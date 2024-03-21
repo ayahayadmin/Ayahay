@@ -27,13 +27,15 @@ export class PaymentController {
   async payBooking(
     @Request() req,
     @Param('tempBookingId') tempBookingId: number,
-    @Query() { gateway }: { gateway: string },
-    @Body('email') email?: string
+    @Body('gateway') gateway?: string,
+    @Body('email') email?: string,
+    @Body('consignee') consignee?: string
   ): Promise<PaymentInitiationResponse> {
     return this.paymentService.startPaymentFlow(
       tempBookingId,
       gateway,
       email,
+      consignee,
       req.user
     );
   }

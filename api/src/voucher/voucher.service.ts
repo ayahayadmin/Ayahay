@@ -21,7 +21,7 @@ export class VoucherService {
     const itemsPerPage = 10;
     const skip = (pagination.page - 1) * itemsPerPage;
 
-    const where =
+    const where: Prisma.VoucherWhereInput =
       loggedInAccount.role === 'SuperAdmin'
         ? undefined
         : {

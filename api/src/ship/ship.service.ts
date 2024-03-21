@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '@/prisma.service';
 import { IAccount, IShip, IVoyage } from '@ayahay/models';
 import { ShipMapper } from './ship.mapper';
-import { PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 import { PaginatedRequest, PaginatedResponse } from '@ayahay/http';
 import { UtilityService } from '@/utility.service';
 
@@ -184,7 +184,7 @@ export class ShipService {
       };
     }
 
-    const where =
+    const where: Prisma.VoyageWhereInput =
       mostRecentDryDock === null
         ? {
             shipId,

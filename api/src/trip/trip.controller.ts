@@ -17,6 +17,7 @@ import { TripMapper } from './trip.mapper';
 import { Roles } from '@/decorator/roles.decorator';
 import { AuthGuard } from '@/guard/auth.guard';
 import {
+  CancelledTrips,
   CreateTripsFromSchedulesRequest,
   PaginatedRequest,
   PaginatedResponse,
@@ -65,6 +66,16 @@ export class TripController {
   @Get('to-edit')
   async getTripByDateRange(@Query() query: TripSearchByDateRange) {
     return await this.tripService.getTripsByDateRange(query);
+  }
+
+  @Get('cancelled-trips')
+  @UseGuards(AuthGuard)
+  @Roles('Staff', 'Admin', 'SuperAdmin')
+  async getCancelledTrips(
+    @Query() pagination: PaginatedRequest,
+    @Query() query: TripSearchByDateRange
+  ): Promise<PaginatedResponse<CancelledTrips>> {
+    return await this.tripService.getCancelledTrips(pagination, query);
   }
 
   @Get(':tripId/bookings')

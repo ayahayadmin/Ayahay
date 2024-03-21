@@ -77,3 +77,11 @@ export interface TripSearchByDateRange {
   startDate: string;
   endDate: string;
 }
+
+export interface CancelledTrips {
+  srcPortName: string;
+  destPortName: string;
+  shipName: string;
+  departureDateIso: string;
+  cancellationReason: string;
+}

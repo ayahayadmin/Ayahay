@@ -15,6 +15,7 @@ export interface IVoucher {
   numberOfUses?: number;
   remainingUses?: number;
   expiryIso: string;
+  canBookOnline: boolean;
 
   /**
    * TODO: add more conditions for voucher validity, e.g.:

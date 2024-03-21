@@ -1,8 +1,7 @@
 import { IBooking } from '@ayahay/models/booking.model';
 import React from 'react';
 import BookingSummary from '@ayahay/components/descriptions/BookingSummary';
-import { Button, Form, Input, notification, Radio, Typography } from 'antd';
-import { startPaymentForBooking } from '@/services/payment.service';
+import { Button, Form, Input, Radio, Typography } from 'antd';
 import { useAuth } from '@/contexts/AuthContext';
 import { InfoCircleOutlined } from '@ant-design/icons';
 
@@ -23,8 +22,17 @@ export default function BookingConfirmation({
   onRequestBooking,
   onStartPayment,
 }: BookingConfirmationProps) {
-  const { loggedInAccount } = useAuth();
   const form = Form.useFormInstance();
+
+  const passengers = Form.useWatch(
+    ['bookingTrips', 0, 'bookingTripPassengers'],
+    form
+  );
+  const vehicles = Form.useWatch(
+    ['bookingTrips', 0, 'bookingTripVehicles'],
+    form
+  );
+  const { loggedInAccount } = useAuth();
 
   const isBookingRequestFlow = false;
 
@@ -50,12 +58,10 @@ export default function BookingConfirmation({
       return false;
     }
 
-    if (loggedInAccount === undefined) {
-      try {
-        await form.validateFields(['contactEmail']);
-      } catch {
-        return false;
-      }
+    try {
+      await form.validateFields([['contactEmail'], ['consigneeName']]);
+    } catch {
+      return false;
     }
 
     return true;
@@ -101,6 +107,29 @@ export default function BookingConfirmation({
               type='email'
               style={{ width: 256 }}
             />
+          </Form.Item>
+        </div>
+      )}
+      {vehicles?.length > 0 && (
+        <div>
+          <Form.Item
+            name='consigneeName'
+            label='Consignee'
+            colon={false}
+            rules={[{ required: true, message: 'Missing consignee' }]}
+          >
+            {passengers.length > 0 && (
+              <Radio.Group>
+                {passengers.map(({ passenger }: any) => (
+                  <Radio
+                    value={`${passenger?.firstName} ${passenger?.lastName}`}
+                  >{`${passenger?.firstName} ${passenger?.lastName}`}</Radio>
+                ))}
+              </Radio.Group>
+            )}
+            {passengers.length === 0 && (
+              <Input type='text' style={{ width: 256 }} />
+            )}
           </Form.Item>
         </div>
       )}

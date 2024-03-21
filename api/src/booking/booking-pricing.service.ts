@@ -1,14 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import {
   IPassenger,
-  IVehicle,
-  ITrip,
   IAccount,
   IShippingLine,
-  IBookingTrip,
+  IBooking,
+  IBookingPaymentItem,
+  IBookingTripPassenger,
+  IVoucher,
+  IBookingTripVehicle,
+  ITripVehicleType,
 } from '@ayahay/models';
-import { AvailableBooking } from './booking.types';
-import { Voucher } from '@prisma/client';
 import { UtilityService } from '@/utility.service';
 
 @Injectable()
@@ -18,13 +19,116 @@ export class BookingPricingService {
 
   constructor(private readonly utilityService: UtilityService) {}
 
-  calculateTicketPriceForPassenger(
-    passenger: IPassenger,
-    matchedSeat: AvailableBooking
-  ): number {
-    const cabinFeeWithVat = matchedSeat.cabinAdultFare;
+  /**
+   * Populates Payment Items and calculates Total Prices for all
+   * booking items
+   * @param booking
+   * @param loggedInAccount
+   */
+  async assignBookingPricing(
+    booking: IBooking,
+    loggedInAccount?: IAccount
+  ): Promise<void> {
+    booking.bookingTrips.forEach((bookingTrip) => {
+      bookingTrip.bookingTripPassengers.forEach((bookingTripPassenger) => {
+        this.assignBookingTripPassengerPricing(
+          bookingTripPassenger,
+          bookingTrip.trip.shippingLine,
+          booking.voucher,
+          loggedInAccount
+        );
+      });
 
-    switch (passenger.discountType) {
+      bookingTrip.bookingTripVehicles.forEach((bookingTripVehicle) => {
+        this.assignBookingTripVehiclePricing(
+          bookingTripVehicle,
+          bookingTrip.trip.availableVehicleTypes,
+          booking.voucher,
+          loggedInAccount
+        );
+      });
+    });
+    booking.totalPrice = this.calculateTotalPriceOfBooking(booking);
+    booking.bookingPaymentItems = [];
+  }
+
+  private assignBookingTripPassengerPricing(
+    bookingTripPassenger: IBookingTripPassenger,
+    shippingLine: IShippingLine,
+    voucher?: IVoucher,
+    loggedInAccount?: IAccount
+  ): void {
+    const passenger = bookingTripPassenger.passenger;
+    const tripCabin = bookingTripPassenger.tripCabin;
+    const bookingPaymentItems: IBookingPaymentItem[] = [];
+
+    const ticketPrice =
+      this.calculateTicketPriceForBookingTripPassenger(bookingTripPassenger);
+
+    const roundedTicketPrice = this.roundPassengerPriceBasedOnShippingLine(
+      ticketPrice,
+      shippingLine
+    );
+
+    const passengerType = this.getPassengerType(bookingTripPassenger);
+    bookingPaymentItems.push({
+      id: -1,
+      bookingId: '',
+      tripId: bookingTripPassenger.tripId,
+      passengerId: bookingTripPassenger.passengerId,
+      price: roundedTicketPrice,
+      description: `${passengerType} Fare (${tripCabin.cabin.name})`,
+      type: 'Fare',
+    });
+
+    const voucherDiscount = this.calculateVoucherDiscountForPassenger(
+      roundedTicketPrice,
+      voucher
+    );
+    if (voucherDiscount > 0) {
+      bookingPaymentItems.push({
+        id: -1,
+        bookingId: '',
+        tripId: bookingTripPassenger.tripId,
+        passengerId: bookingTripPassenger.passengerId,
+        price: -voucherDiscount,
+        description: `${passengerType} Discount (${tripCabin.cabin.name})`,
+        type: 'VoucherDiscount',
+      });
+    }
+
+    const serviceCharge = this.calculateServiceChargeForPassenger(
+      passenger,
+      roundedTicketPrice,
+      loggedInAccount
+    );
+    if (serviceCharge > 0) {
+      bookingPaymentItems.push({
+        id: -1,
+        bookingId: '',
+        tripId: bookingTripPassenger.tripId,
+        passengerId: bookingTripPassenger.passengerId,
+        price: serviceCharge,
+        description: `${passengerType} Service Charge (${tripCabin.cabin.name})`,
+        type: 'ServiceCharge',
+      });
+    }
+
+    bookingTripPassenger.bookingPaymentItems = bookingPaymentItems;
+    bookingTripPassenger.totalPrice =
+      this.calculateTotalPriceOfPaymentItems(bookingPaymentItems);
+  }
+
+  private calculateTicketPriceForBookingTripPassenger(
+    bookingTripPassenger: IBookingTripPassenger
+  ): number {
+    if (bookingTripPassenger.drivesVehicleId !== undefined) {
+      return 0;
+    }
+
+    const cabinFeeWithVat = bookingTripPassenger.tripCabin.adultFare;
+
+    switch (bookingTripPassenger.passenger.discountType) {
       case 'Infant':
       case 'Driver':
       case 'Passes':
@@ -44,10 +148,10 @@ export class BookingPricingService {
     }
   }
 
-  roundPassengerPriceBasedOnShippingLine(
+  private roundPassengerPriceBasedOnShippingLine(
     originalPrice: number,
     shippingLine: IShippingLine
-  ) {
+  ): number {
     if (shippingLine.name === 'Aznar Shipping') {
       const wholePrice = Math.floor(originalPrice);
       return wholePrice - (wholePrice % 5);
@@ -56,11 +160,90 @@ export class BookingPricingService {
     return originalPrice;
   }
 
-  calculateTicketPriceForVehicle(trip: ITrip, vehicle: IVehicle): number {
-    const { vehicleTypeId } = vehicle;
+  private getPassengerType({
+    drivesVehicleId,
+    passenger,
+  }: IBookingTripPassenger): string {
+    if (passenger.discountType !== undefined) {
+      return passenger.discountType;
+    }
 
-    const availableVehicleType = trip.availableVehicleTypes.find(
-      (tripVehicleType) => tripVehicleType.vehicleTypeId === vehicleTypeId
+    if (drivesVehicleId !== undefined) {
+      return 'Driver';
+    }
+
+    return 'Adult';
+  }
+
+  private assignBookingTripVehiclePricing(
+    bookingTripVehicle: IBookingTripVehicle,
+    availableVehicleTypes: ITripVehicleType[],
+    voucher?: IVoucher,
+    loggedInAccount?: IAccount
+  ): void {
+    const vehicle = bookingTripVehicle.vehicle;
+    const bookingPaymentItems: IBookingPaymentItem[] = [];
+
+    const ticketPrice = this.calculateTicketPriceForBookingTripVehicle(
+      bookingTripVehicle,
+      availableVehicleTypes
+    );
+
+    bookingPaymentItems.push({
+      id: -1,
+      bookingId: '',
+      tripId: bookingTripVehicle.tripId,
+      vehicleId: bookingTripVehicle.vehicleId,
+      price: ticketPrice,
+      description: `Vehicle Fare (${vehicle.vehicleType.name})`,
+      type: 'Fare',
+    });
+
+    const voucherDiscount = this.calculateVoucherDiscountForVehicle(
+      ticketPrice,
+      voucher
+    );
+    if (voucherDiscount > 0) {
+      bookingPaymentItems.push({
+        id: -1,
+        bookingId: '',
+        tripId: bookingTripVehicle.tripId,
+        vehicleId: bookingTripVehicle.vehicleId,
+        price: -voucherDiscount,
+        description: `Vehicle Discount (${vehicle.vehicleType.name})`,
+        type: 'VoucherDiscount',
+      });
+    }
+
+    const serviceCharge = this.calculateServiceChargeForVehicle(
+      ticketPrice,
+      loggedInAccount
+    );
+    if (serviceCharge > 0) {
+      bookingPaymentItems.push({
+        id: -1,
+        bookingId: '',
+        tripId: bookingTripVehicle.tripId,
+        vehicleId: bookingTripVehicle.vehicleId,
+        price: serviceCharge,
+        description: `Vehicle Service Charge (${vehicle.vehicleType.name})`,
+        type: 'ServiceCharge',
+      });
+    }
+
+    bookingTripVehicle.bookingPaymentItems = bookingPaymentItems;
+    bookingTripVehicle.totalPrice =
+      this.calculateTotalPriceOfPaymentItems(bookingPaymentItems);
+  }
+
+  private calculateTicketPriceForBookingTripVehicle(
+    bookingTripVehicle: IBookingTripVehicle,
+    availableVehicleTypes: ITripVehicleType[]
+  ): number {
+    const availableVehicleType = availableVehicleTypes.find(
+      (tripVehicleType) =>
+        tripVehicleType.vehicleTypeId ===
+        bookingTripVehicle.vehicle.vehicleTypeId
     );
 
     return availableVehicleType.fare;
@@ -79,7 +262,7 @@ export class BookingPricingService {
     );
   }
 
-  calculateServiceChargeForPassenger(
+  private calculateServiceChargeForPassenger(
     passenger: IPassenger,
     chargeablePrice: number,
     bookingCreator?: IAccount
@@ -97,7 +280,7 @@ export class BookingPricingService {
     );
   }
 
-  calculateServiceChargeForVehicle(
+  private calculateServiceChargeForVehicle(
     chargeablePrice: number,
     bookingCreator?: IAccount
   ): number {
@@ -111,17 +294,17 @@ export class BookingPricingService {
     );
   }
 
-  calculateVoucherDiscountForPassenger(
+  private calculateVoucherDiscountForPassenger(
     discountablePrice: number,
-    voucher?: Voucher
+    voucher?: IVoucher
   ): number {
     return this.calculateVoucherDiscount(discountablePrice, voucher);
   }
 
   private calculateVoucherDiscount(
     discountablePrice: number,
-    voucher?: Voucher
-  ) {
+    voucher?: IVoucher
+  ): number {
     if (!voucher) {
       return 0;
     }
@@ -136,18 +319,19 @@ export class BookingPricingService {
     return this.roundToTwoDecimalPlaces(totalDiscount);
   }
 
-  calculateVoucherDiscountForVehicle(
-    discountablePrice: number,
-    voucher?: Voucher
+  private calculateTotalPriceOfPaymentItems(
+    bookingPaymentItems: IBookingPaymentItem[]
   ): number {
-    return this.calculateVoucherDiscount(discountablePrice, voucher);
+    return bookingPaymentItems
+      .map((item) => item.price)
+      .reduce((itemAPrice, itemBPrice) => itemAPrice + itemBPrice, 0);
   }
 
-  calculateTotalPriceOfBooking(bookingTrips: IBookingTrip[]): number {
+  private calculateTotalPriceOfBooking(booking: IBooking): number {
     let bookingTotalPrice = 0;
 
     const { bookingTripPassengers, bookingTripVehicles } =
-      this.utilityService.combineAllBookingTripEntities(bookingTrips);
+      this.utilityService.combineAllBookingTripEntities(booking.bookingTrips);
 
     bookingTripPassengers.forEach((bookingPassenger) => {
       bookingTotalPrice += bookingPassenger.totalPrice;
@@ -158,5 +342,12 @@ export class BookingPricingService {
     });
 
     return bookingTotalPrice;
+  }
+
+  private calculateVoucherDiscountForVehicle(
+    discountablePrice: number,
+    voucher?: IVoucher
+  ): number {
+    return this.calculateVoucherDiscount(discountablePrice, voucher);
   }
 }

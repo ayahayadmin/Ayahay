@@ -12,4 +12,5 @@ export interface ITripVehicleType {
   vehicleType?: IVehicleType;
 
   fare: number;
+  canBookOnline: boolean;
 }

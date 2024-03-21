@@ -1,32 +1,20 @@
 import { Injectable } from '@nestjs/common';
-import { ShippingLineMapper } from '@/shipping-line/shipping-line.mapper';
 import { PortMapper } from '@/port/port.mapper';
 import { BillOfLading, PortsByShip, TripManifest } from '@ayahay/http';
-import { uniqBy } from 'lodash';
 
 @Injectable()
 export class ReportingMapper {
-  constructor(
-    private readonly shippingLineMapper: ShippingLineMapper,
-    private readonly portMapper: PortMapper
-  ) {}
+  constructor(private readonly portMapper: PortMapper) {}
 
   convertTripsForReporting(trip) {
     return {
       id: trip.id,
-      shipId: trip.shipId,
-      shipName: trip.ship.name,
-      shippingLineId: trip.shippingLineId,
-      shippingLine: this.shippingLineMapper.convertShippingLineToDto(
-        trip.shippingLine
-      ),
-      srcPortId: trip.srcPortId,
       srcPort: this.portMapper.convertPortToDto(trip.srcPort),
-      destPortId: trip.destPortId,
       destPort: this.portMapper.convertPortToDto(trip.destPort),
+      shipName: trip.ship.name,
       departureDate: trip.departureDate.toISOString(),
-      totalPassengers: trip.bookingTripPassengers.length,
       voyageNumber: trip.voyage?.number,
+      totalPassengers: trip.bookingTripPassengers.length,
       totalBoardedPassengers: trip.bookingTripPassengers.filter(
         (passenger) =>
           passenger.checkInDate &&
@@ -36,12 +24,18 @@ export class ReportingMapper {
   }
 
   convertTripPassengersForReporting(passenger, passengerFare, adminFee) {
+    const discountAmount = passenger.bookingPaymentItems.find(
+      ({ type }) => type === 'VoucherDiscount'
+    )?.price;
     return {
+      passengerName: `${passenger.passenger.firstName.trim() ?? ''} ${
+        passenger.passenger.lastName.trim() ?? ''
+      }`,
       teller: passenger.booking.createdByAccount?.email,
-      ticketReferenceNo: passenger.booking.referenceNo,
       accommodation: passenger.cabin.cabinType.name,
       discount: passenger.passenger.discountType ?? 'Adult',
-      checkedIn: !!passenger.checkInDate,
+      collect: passenger.booking.voucherCode === 'AZNAR_COLLECT',
+      discountAmount: discountAmount ?? 0,
       ticketCost: passengerFare,
       adminFee,
       fare: passengerFare + adminFee,
@@ -54,7 +48,16 @@ export class ReportingMapper {
   }
 
   convertTripVehiclesForReporting(vehicle, vehicleFare, vehicleAdminFee) {
+    const discountAmount = vehicle.bookingPaymentItems.find(
+      ({ type }) => type === 'VoucherDiscount'
+    )?.price;
     return {
+      teller: vehicle.booking.createdByAccount?.email,
+      referenceNo: vehicle.booking.referenceNo,
+      typeOfVehicle: vehicle.vehicle.vehicleType.description,
+      plateNo: vehicle.vehicle.plateNo,
+      collect: vehicle.booking.voucherCode === 'AZNAR_COLLECT',
+      discountAmount: discountAmount ?? 0,
       ticketCost: vehicleFare,
       adminFee: vehicleAdminFee,
       fare: vehicleFare + vehicleAdminFee,
@@ -130,44 +133,61 @@ export class ReportingMapper {
     return { cabinPassengerArr, noShowArr };
   }
 
-  convertTripVehiclesToVehicleBreakdown(
-    vehicle,
-    vehicleBreakdownArr,
-    baseFare,
-    vehicleFare
+  convertTripPassengersToPassengerBreakdown(
+    passenger,
+    passengerFare,
+    passengerDiscountsBreakdown
   ) {
-    const index = vehicleBreakdownArr.findIndex(
-      (vehicleBreakdown) =>
-        vehicleBreakdown.typeOfVehicle === vehicle.vehicle.vehicleType.name
+    const discountType = passenger.passenger.discountType ?? 'Adult';
+
+    const index = passengerDiscountsBreakdown.findIndex(
+      (passengerBreakdown) => passengerBreakdown.typeOfDiscount === discountType
     );
 
     if (index !== -1) {
-      vehicleBreakdownArr[index] = {
-        ...vehicleBreakdownArr[index],
-        totalSales: vehicleBreakdownArr[index].totalSales + vehicleFare,
-        vehiclesBooked: [
-          ...vehicleBreakdownArr[index].vehiclesBooked,
-          {
-            referenceNo: vehicle.booking.referenceNo,
-            plateNo: vehicle.vehicle.plateNo,
-          },
-        ],
+      passengerDiscountsBreakdown[index] = {
+        ...passengerDiscountsBreakdown[index],
+        totalBooked: passengerDiscountsBreakdown[index].totalBooked + 1,
+        totalSales:
+          passengerDiscountsBreakdown[index].totalSales + passengerFare,
       };
     } else {
-      vehicleBreakdownArr.push({
-        typeOfVehicle: vehicle.vehicle.vehicleType.name,
-        baseFare,
-        totalSales: vehicleFare,
-        vehiclesBooked: [
-          {
-            referenceNo: vehicle.booking.referenceNo,
-            plateNo: vehicle.vehicle.plateNo,
-          },
-        ],
+      passengerDiscountsBreakdown.push({
+        typeOfDiscount: discountType,
+        totalBooked: 1,
+        totalSales: passengerFare,
       });
     }
 
-    return vehicleBreakdownArr;
+    return passengerDiscountsBreakdown;
+  }
+
+  convertTripVehiclesToVehicleBreakdown(
+    vehicle,
+    vehicleFare,
+    vehicleTypesBreakdown
+  ) {
+    const index = vehicleTypesBreakdown.findIndex(
+      (vehicleBreakdown) =>
+        vehicleBreakdown.typeOfVehicle ===
+        vehicle.vehicle.vehicleType.description
+    );
+
+    if (index !== -1) {
+      vehicleTypesBreakdown[index] = {
+        ...vehicleTypesBreakdown[index],
+        totalBooked: vehicleTypesBreakdown[index].totalBooked + 1,
+        totalSales: vehicleTypesBreakdown[index].totalSales + vehicleFare,
+      };
+    } else {
+      vehicleTypesBreakdown.push({
+        typeOfVehicle: vehicle.vehicle.vehicleType.description,
+        totalBooked: 1,
+        totalSales: vehicleFare,
+      });
+    }
+
+    return vehicleTypesBreakdown;
   }
 
   convertTripToTripManifest(trip): TripManifest {
@@ -191,16 +211,7 @@ export class ReportingMapper {
 
   convertBookingToBillOfLading(booking): BillOfLading {
     const referenceNo = booking.referenceNo;
-    // TO DO: There will be improvements with regards to getting the driver's name
-    const passenger = booking.bookingTripPassengers.find(
-      ({ passenger }) => passenger.discountType === 'Driver'
-    );
-
-    const driverName = passenger
-      ? passenger.passenger.firstName + ' ' + passenger.passenger.lastName
-      : booking.bookingTripPassengers[0].passenger.firstName +
-        ' ' +
-        booking.bookingTripPassengers[0].passenger.lastName;
+    const consigneeName = booking.consigneeName;
     const shipName = booking.bookingTripVehicles[0].trip.ship.name;
     const shippingLineName =
       booking.bookingTripVehicles[0].trip.shippingLine.name;
@@ -220,7 +231,7 @@ export class ReportingMapper {
 
     return {
       referenceNo,
-      driverName,
+      consigneeName,
       shipName,
       shippingLineName,
       destPortName,

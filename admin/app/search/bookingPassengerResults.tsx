@@ -1,10 +1,15 @@
-import { Badge, Button, notification, Table } from 'antd';
-import React, { useEffect, useState } from 'react';
+import { Badge, Button, Table } from 'antd';
+import React, { useEffect } from 'react';
 import { ColumnsType } from 'antd/es/table';
-import { getBookingPassengersFromQuery } from '@/services/booking-passenger.service';
-import { TableRowSelection } from 'antd/es/table/interface';
 import dayjs from 'dayjs';
 import 'dayjs/plugin/relativeTime';
+import { useServerPagination } from '@ayahay/hooks';
+import {
+  PaginatedRequest,
+  PaginatedResponse,
+  PassengerBookingSearchResponse,
+} from '@ayahay/http';
+import { searchPassengerBookings } from '@/services/booking.service';
 
 const relativeTime = require('dayjs/plugin/relativeTime');
 dayjs.extend(relativeTime);
@@ -13,88 +18,46 @@ interface BookingPassengerResultsProps {
   query: string;
 }
 
-interface DataType {
-  key: React.Key;
-  id: number;
-  tripSrcPortName: string;
-  tripDestPortName: string;
-  tripDepartureDateIso: string;
-  passengerName: string;
-  seatName: string;
-  referenceNo: string;
-  checkInDate: string | undefined;
-}
-
 export default function BookingPassengerResults({
   query,
 }: BookingPassengerResultsProps) {
-  const [api, contextHolder] = notification.useNotification();
-  const [passengers, setPassengers] = useState<DataType[]>([]);
-  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
-
-  const performSearch = () => {
-    const bookingPassengers = getBookingPassengersFromQuery(query);
-    setPassengers(
-      bookingPassengers.map((bookingPassenger, index) => ({
-        key: index,
-        id: bookingPassenger.id,
-        tripSrcPortName: bookingPassenger.booking?.trip?.srcPort?.name ?? '',
-        tripDestPortName: bookingPassenger.booking?.trip?.destPort?.name ?? '',
-        tripDepartureDateIso:
-          bookingPassenger.booking?.trip?.departureDateIso ?? '',
-        passengerName: `${bookingPassenger.passenger?.firstName ?? ''} ${
-          bookingPassenger.passenger?.lastName
-        }`,
-        seatName: bookingPassenger.seat?.name ?? '',
-        referenceNo: bookingPassenger.referenceNo,
-        checkInDate: bookingPassenger.checkInDate,
-      }))
-    );
-  };
-
-  useEffect(performSearch, [query]);
-
-  const onCheckIn = (passenger: DataType) => {
-    const updatedPassenger = undefined;
-    if (updatedPassenger === undefined) {
-      api.error({
-        message: 'Check In Failed',
-        description: 'The selected passenger has already checked in.',
-      });
-    } else {
-      api.success({
-        message: 'Check In Success',
-        description: 'The selected passenger has checked in successfully.',
-      });
+  const fetchSearchResults = async (
+    pagination: PaginatedRequest
+  ): Promise<PaginatedResponse<PassengerBookingSearchResponse>> => {
+    if (query.trim().length < 2) {
+      return { data: [], total: 0 };
     }
-    performSearch();
+    return searchPassengerBookings(query.trim(), pagination);
   };
 
-  const columns: ColumnsType<DataType> = [
+  const { dataInPage, antdPagination, antdOnChange, resetData } =
+    useServerPagination<PassengerBookingSearchResponse>(
+      fetchSearchResults,
+      true
+    );
+
+  useEffect(() => resetData(), [query]);
+
+  const columns: ColumnsType<PassengerBookingSearchResponse> = [
     {
-      key: 'tripSrcPortName',
-      dataIndex: 'tripSrcPortName',
-      title: 'Origin Port',
-    },
-    {
-      key: 'tripDestPortName',
-      dataIndex: 'tripDestPortName',
-      title: 'Destination Port',
-    },
-    {
-      key: 'tripDepartureDateIso',
-      dataIndex: 'tripDepartureDateIso',
-      title: 'Departure Date',
+      key: 'trip',
+      title: 'Trip',
+      render: (_, passengerBooking) => (
+        <div>
+          {passengerBooking.tripSrcPortName} -&gt;&nbsp;
+          {passengerBooking.tripDestPortName}
+          <br />
+          {dayjs(passengerBooking.tripDepartureDateIso).format(
+            'MM/DD/YYYY hh:mm'
+          )}
+        </div>
+      ),
     },
     {
       key: 'passengerName',
-      dataIndex: 'passengerName',
       title: 'Passenger',
-    },
-    {
-      key: 'seatName',
-      dataIndex: 'seatName',
-      title: 'Seat',
+      render: (_, passengerBooking) =>
+        `${passengerBooking.firstName} ${passengerBooking.lastName}`,
     },
     {
       key: 'referenceNo',
@@ -102,8 +65,8 @@ export default function BookingPassengerResults({
       title: 'Reference Number',
     },
     {
-      dataIndex: 'checkInDate',
-      key: 'checkInDate',
+      dataIndex: 'checkInDateIso',
+      key: 'checkInDateIso',
       title: 'Check-In Status',
       render: (checkInDate) => {
         if (checkInDate === undefined) {
@@ -118,31 +81,28 @@ export default function BookingPassengerResults({
     },
     {
       title: 'Actions',
-      render: (_, passenger) => {
-        if (passenger.checkInDate !== undefined) {
-          return <></>;
-        }
+      render: (_, passengerBooking) => {
         return (
-          <Button type='primary' onClick={() => onCheckIn(passenger)}>
-            Check In
+          <Button
+            type='primary'
+            href={`${process.env.NEXT_PUBLIC_WEB_URL}/bookings/${passengerBooking.bookingId}`}
+            target='_blank'
+          >
+            View Booking
           </Button>
         );
       },
     },
   ];
 
-  const rowSelection: TableRowSelection<DataType> = {
-    selectedRowKeys: selectedRowKeys,
-    onChange: (_selectedRowKeys) => setSelectedRowKeys(_selectedRowKeys),
-  };
-
   return (
     <div>
-      {contextHolder}
       <Table
-        rowSelection={rowSelection}
         columns={columns}
-        dataSource={passengers}
+        dataSource={dataInPage}
+        loading={dataInPage === undefined}
+        pagination={antdPagination}
+        onChange={antdOnChange}
       ></Table>
     </div>
   );

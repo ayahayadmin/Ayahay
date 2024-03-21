@@ -9,16 +9,15 @@ import { PaginatedRequest, PaginatedResponse } from '@ayahay/http';
 import { IAccount, IBooking } from '@ayahay/models';
 import { BookingMapper } from '@/booking/booking.mapper';
 import { BookingReservationService } from '@/booking/booking-reservation.service';
-import { UtilityService } from '@/utility.service';
 import { v4 as uuidv4 } from 'uuid';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class BookingRequestService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly bookingMapper: BookingMapper,
-    private readonly bookingReservationService: BookingReservationService,
-    private readonly utilityService: UtilityService
+    private readonly bookingReservationService: BookingReservationService
   ) {}
 
   async getBookingRequestById(
@@ -74,7 +73,7 @@ export class BookingRequestService {
     const itemsPerPage = 10;
     const skip = (pagination.page - 1) * itemsPerPage;
 
-    const where = {
+    const where: Prisma.TempBookingWhereInput = {
       isBookingRequest: true,
       // filter out rejected booking requests
       failureCancellationRemarks: null,
@@ -83,7 +82,7 @@ export class BookingRequestService {
     };
 
     if (loggedInAccount.role !== 'SuperAdmin') {
-      where['shippingLineId'] = loggedInAccount.shippingLineId;
+      where.shippingLineId = loggedInAccount.shippingLineId;
     }
 
     const bookingRequestEntities = await this.prisma.tempBooking.findMany({

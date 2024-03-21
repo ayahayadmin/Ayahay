@@ -13,6 +13,7 @@ import { PortMapper } from '@/port/port.mapper';
 import { map } from 'lodash';
 import { Prisma } from '@prisma/client';
 import { ShipMapper } from '@/ship/ship.mapper';
+import { CancelledTrips } from '@ayahay/http';
 
 @Injectable()
 export class TripMapper {
@@ -113,6 +114,16 @@ export class TripMapper {
     };
   }
 
+  convertCancelledTripsToDto(trip: any): CancelledTrips {
+    return {
+      srcPortName: trip.srcPort.name,
+      destPortName: trip.destPort.name,
+      shipName: trip.ship.name,
+      departureDateIso: trip.departureDate.toISOString(),
+      cancellationReason: trip.cancellationReason,
+    };
+  }
+
   private convertPipeSeparatedTripCabinsToDto(
     tripId,
     cabinIds,
@@ -202,6 +213,7 @@ export class TripMapper {
           vehicleNames[idx]
         ),
         fare: vehicleFares[idx],
+        canBookOnline: false,
       };
     });
   }
@@ -276,6 +288,7 @@ export class TripMapper {
       tripId: -1,
       vehicleTypeId: tripVehicleType.vehicleTypeId,
       fare: tripVehicleType.fare,
+      canBookOnline: tripVehicleType.canBookOnline,
     };
   }
 }

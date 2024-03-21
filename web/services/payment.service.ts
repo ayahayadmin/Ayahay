@@ -4,14 +4,25 @@ import { PaymentInitiationResponse } from '@ayahay/http';
 
 export async function startPaymentForBooking(
   tentativeBookingId: number,
-  contactEmail?: string,
-  gateway?: string
+  gateway?: string,
+  email?: string,
+  consignee?: string
 ): Promise<PaymentInitiationResponse | undefined> {
-  const gatewayQuery = gateway ? `?gateway=${gateway}` : '';
   try {
+    const body: any = {};
+    if (gateway) {
+      body['gateway'] = gateway;
+    }
+    if (email) {
+      body['email'] = email;
+    }
+    if (consignee) {
+      body['consignee'] = consignee;
+    }
+
     const { data: response } = await axios.post<PaymentInitiationResponse>(
-      `${PAYMENT_API}/bookings/${tentativeBookingId}${gatewayQuery}`,
-      contactEmail ? { email: contactEmail } : undefined
+      `${PAYMENT_API}/bookings/${tentativeBookingId}`,
+      body
     );
     return response;
   } catch (e) {

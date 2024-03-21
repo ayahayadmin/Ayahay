@@ -1,9 +1,5 @@
-import { IBooking, IPassenger, IVehicle } from '@ayahay/models';
-import {
-  PaginatedRequest,
-  PaginatedResponse,
-  PassengerPreferences,
-} from '@ayahay/http';
+import { IBooking, IBookingTripPassenger } from '@ayahay/models';
+import { PaginatedRequest, PaginatedResponse } from '@ayahay/http';
 import axios from '@ayahay/services/axios';
 import { BOOKING_API } from '@ayahay/constants/api';
 import { getVehicleType } from '@ayahay/services/vehicle-type.service';
@@ -11,31 +7,59 @@ import { cacheItem, fetchItem } from '@ayahay/services/cache.service';
 import { firebase } from '@/app/utils/initFirebase';
 
 export async function createTentativeBooking(
-  tripIds: number[],
-  passengers: IPassenger[],
-  passengerPreferences: PassengerPreferences[],
-  vehicles: IVehicle[],
-  voucherCode?: string
+  tempBooking: IBooking
 ): Promise<IBooking> {
-  for (const vehicle of vehicles) {
-    // TODO: remove these after file upload has been properly implemented
-    vehicle.certificateOfRegistrationUrl ??= '';
-    vehicle.officialReceiptUrl ??= '';
-    vehicle.modelYear = 0;
-
-    vehicle.vehicleType = await getVehicleType(vehicle.vehicleTypeId);
+  if (
+    tempBooking.bookingTrips === undefined ||
+    tempBooking.bookingTrips.length === 0
+  ) {
+    throw 'Booking must have at least one trip';
   }
 
-  const { data: booking } = await axios.post<IBooking>(`${BOOKING_API}`, {
-    tripIds,
-    passengers,
-    passengerPreferences,
-    vehicles,
-    voucherCode:
-      voucherCode && voucherCode.length > 0 ? voucherCode : undefined,
-  });
+  const { bookingTripPassengers: passengers, bookingTripVehicles: vehicles } =
+    tempBooking.bookingTrips?.[0];
+  const vehicleIds = new Set<number>();
+  if (vehicles !== undefined) {
+    for (let bookingTripVehicle of vehicles) {
+      if (bookingTripVehicle.vehicle === undefined) {
+        continue;
+      }
+      vehicleIds.add(bookingTripVehicle.vehicleId);
+      // TODO: remove these after file upload has been properly implemented
+      bookingTripVehicle.vehicle.certificateOfRegistrationUrl ??= '';
+      bookingTripVehicle.vehicle.officialReceiptUrl ??= '';
+      bookingTripVehicle.vehicle.modelYear = 0;
+
+      bookingTripVehicle.vehicle.vehicleType = await getVehicleType(
+        bookingTripVehicle.vehicle.vehicleTypeId
+      );
+    }
+  }
+
+  if (passengers !== undefined) {
+    clearNonExistingVehiclesInPassengers(passengers, vehicleIds);
+  }
+
+  const { data: booking } = await axios.post<IBooking>(
+    `${BOOKING_API}`,
+    tempBooking
+  );
 
   return booking;
+}
+
+function clearNonExistingVehiclesInPassengers(
+  bookingTripPassengers: IBookingTripPassenger[],
+  vehicleIds: Set<number>
+) {
+  for (let bookingTripPassenger of bookingTripPassengers) {
+    if (bookingTripPassenger.drivesVehicleId === undefined) {
+      continue;
+    }
+    if (!vehicleIds.has(bookingTripPassenger.drivesVehicleId)) {
+      bookingTripPassenger.drivesVehicleId = undefined;
+    }
+  }
 }
 
 export async function getBookingById(

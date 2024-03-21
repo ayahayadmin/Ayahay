@@ -12,7 +12,7 @@ import { PassengerMapper } from '@/passenger/passenger.mapper';
 import { CabinMapper } from '@/cabin/cabin.mapper';
 import { VehicleMapper } from '@/vehicle/vehicle.mapper';
 import { PaymentMapper } from '@/payment/payment.mapper';
-import { VehicleBookings } from '@ayahay/http';
+import { VehicleBookings, PassengerBookingSearchResponse } from '@ayahay/http';
 
 @Injectable()
 export class BookingMapper {
@@ -194,13 +194,11 @@ export class BookingMapper {
       data: {
         shippingLineId: booking.shippingLineId,
         createdByAccountId: booking.createdByAccountId ?? null,
-        approvedByAccountId: booking.approvedByAccountId ?? null,
         voucherCode: booking.voucherCode ?? null,
 
         totalPrice: booking.totalPrice,
         bookingType: booking.bookingType,
-        paymentReference: null,
-        createdAt: new Date(),
+        createdAt: new Date(booking.createdAtIso),
         isBookingRequest: booking.isBookingRequest,
 
         bookingTripsJson,
@@ -230,6 +228,7 @@ export class BookingMapper {
       contactEmail: tempBooking.contactEmail,
       createdAtIso: tempBooking.createdAt.toISOString(),
       isBookingRequest: tempBooking.isBookingRequest,
+      consigneeName: tempBooking.consigneeName ?? undefined,
 
       bookingTrips,
       bookingPaymentItems,
@@ -307,6 +306,7 @@ export class BookingMapper {
         contactEmail: booking.contactEmail,
         createdAt: booking.createdAtIso,
         isBookingRequest: booking.isBookingRequest,
+        consigneeName: booking.consigneeName,
 
         bookingTrips: {
           createMany: {
@@ -329,6 +329,25 @@ export class BookingMapper {
           },
         },
       },
+    };
+  }
+
+  convertBookingToPassengerSearchResponse(
+    bookingTripPassenger: any
+  ): PassengerBookingSearchResponse {
+    return {
+      bookingId: bookingTripPassenger.booking.id,
+      tripId: bookingTripPassenger.trip.id,
+      passengerId: bookingTripPassenger.passenger.id,
+      tripDepartureDateIso:
+        bookingTripPassenger.trip.departureDate.toISOString(),
+      tripSrcPortName: bookingTripPassenger.trip.srcPort.name,
+      tripDestPortName: bookingTripPassenger.trip.destPort.name,
+      firstName: bookingTripPassenger.passenger.firstName,
+      lastName: bookingTripPassenger.passenger.lastName,
+      checkInDateIso:
+        bookingTripPassenger.checkInDate?.toISOString() ?? undefined,
+      referenceNo: bookingTripPassenger.booking.referenceNo,
     };
   }
 }
