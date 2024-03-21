@@ -22,7 +22,6 @@ import {
 } from '@ayahay/services/form.service';
 import { useAuth } from '@/contexts/AuthContext';
 import { DATE_FORMAT_LIST, DATE_PLACEHOLDER } from '@ayahay/constants';
-import { computeAge, computeBirthday } from '@ayahay/services/date.service';
 import dayjs from 'dayjs';
 import { RangePickerProps } from 'antd/es/date-picker';
 
@@ -291,69 +290,7 @@ export default function PassengerInformationForm({
                   name={[name, 'passenger', 'birthdayIso']}
                   label='Date of Birth'
                   colon={false}
-                  rules={[
-                    { required: true, message: 'Missing Date of Birth' },
-                    ({ setFields, setFieldValue }) => ({
-                      async validator(_, value) {
-                        if (value) {
-                          const age = computeAge(value);
-                          setFieldValue(
-                            [
-                              ...tripNamePath,
-                              'bookingTripPassengers',
-                              name,
-                              'passenger',
-                              'age',
-                            ],
-                            age
-                          );
-                          setFields([
-                            {
-                              name: [
-                                ...tripNamePath,
-                                'bookingTripPassengers',
-                                name,
-                                'passenger',
-                                'age',
-                              ],
-                              errors: [],
-                            },
-                          ]);
-
-                          if (!hasPrivilegedAccess) {
-                            return;
-                          }
-
-                          const discountType = getDiscountTypeFromAge(age);
-                          setFieldValue(
-                            [
-                              ...tripNamePath,
-                              'bookingTripPassengers',
-                              name,
-                              'passenger',
-                              'discountType',
-                            ],
-                            discountType
-                          );
-                          setFields([
-                            {
-                              name: [
-                                ...tripNamePath,
-                                'bookingTripPassengers',
-                                name,
-                                'passenger',
-                                'discountType',
-                              ],
-                              errors: [],
-                            },
-                          ]);
-                          return Promise.resolve();
-                        }
-
-                        return Promise.reject();
-                      },
-                    }),
-                  ]}
+                  rules={[{ required: true, message: 'Missing Date of Birth' }]}
                 >
                   <DatePicker
                     disabled={passengers?.[index]?.passenger?.id > 0}
@@ -369,70 +306,6 @@ export default function PassengerInformationForm({
                     name={[name, 'passenger', 'age']}
                     label='Age'
                     colon={false}
-                    rules={[
-                      ({ getFieldValue, setFields, setFieldValue }) => ({
-                        validator(_, value) {
-                          if (value !== undefined) {
-                            const discountType = getDiscountTypeFromAge(value);
-                            const inputtedBirthday = getFieldValue([
-                              'passengers',
-                              name,
-                              'birthdayIso',
-                            ]);
-                            const birthday = computeBirthday(
-                              value,
-                              inputtedBirthday
-                            );
-                            setFieldValue(
-                              [
-                                ...tripNamePath,
-                                'bookingTripPassengers',
-                                name,
-                                'passenger',
-                                'birthdayIso',
-                              ],
-                              dayjs(birthday)
-                            );
-                            setFieldValue(
-                              [
-                                ...tripNamePath,
-                                'bookingTripPassengers',
-                                name,
-                                'passenger',
-                                'discountType',
-                              ],
-                              discountType
-                            );
-
-                            setFields([
-                              {
-                                name: [
-                                  ...tripNamePath,
-                                  'bookingTripPassengers',
-                                  name,
-                                  'passenger',
-                                  'birthdayIso',
-                                ],
-                                errors: [],
-                              },
-                              {
-                                name: [
-                                  ...tripNamePath,
-                                  'bookingTripPassengers',
-                                  name,
-                                  'passenger',
-                                  'discountType',
-                                ],
-                                errors: [],
-                              },
-                            ]);
-                            return Promise.resolve();
-                          }
-
-                          return Promise.reject(new Error('Missing age'));
-                        },
-                      }),
-                    ]}
                   >
                     <InputNumber
                       disabled={passengers?.[index]?.passenger?.id > 0}
@@ -710,23 +583,3 @@ export default function PassengerInformationForm({
     </>
   );
 }
-
-const getDiscountTypeFromAge = (age: number): DISCOUNT_TYPE | undefined => {
-  if (age >= 60) {
-    return DISCOUNT_TYPE.Senior;
-  }
-
-  if (age >= 18) {
-    return undefined;
-  }
-
-  if (age >= 12) {
-    return DISCOUNT_TYPE.Student;
-  }
-
-  if (age >= 3) {
-    return DISCOUNT_TYPE.Child;
-  }
-
-  return DISCOUNT_TYPE.Infant;
-};

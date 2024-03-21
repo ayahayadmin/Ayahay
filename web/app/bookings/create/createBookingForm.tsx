@@ -3,7 +3,7 @@ import styles from './createBookingForm.module.scss';
 import { IBooking } from '@ayahay/models';
 import PassengerInformationForm from '@/components/booking/PassengerInformationForm';
 import React, { useState } from 'react';
-import PassengerPreferencesForm from '@/components/booking/PassengerPreferencesForm';
+import { DISCOUNT_TYPE } from '@ayahay/constants/enum';
 import {
   createTentativeBooking,
   saveBookingInBrowser,
@@ -17,6 +17,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { getAxiosError } from '@ayahay/services/error.service';
 import { FieldError } from '@ayahay/http';
 import { getInitialPassengerFormValue } from '@ayahay/services/form.service';
+import { computeAge, computeBirthday } from '@ayahay/services/date.service';
+import dayjs from 'dayjs';
 
 const { useBreakpoint } = Grid;
 
@@ -233,6 +235,61 @@ export default function CreateBookingForm({
     if (changedFields.some((field) => field.name.includes('voucherCode'))) {
       form.setFields([{ name: 'voucherCode', errors: [] }]);
     }
+
+    // TODO: use onValuesChange, because onFieldsChange is called on validation for some reason
+    const isFormValidating = changedFields.length > 1;
+    if (!hasPrivilegedAccess || isFormValidating) {
+      return;
+    }
+
+    const changedBirthdayField = changedFields.find((field) =>
+      field.name.includes('birthdayIso')
+    );
+    if (changedBirthdayField !== undefined) {
+      onBirthdayChange(changedBirthdayField);
+    }
+
+    const changedAgeField = changedFields.find((field) =>
+      field.name.includes('age')
+    );
+    if (changedAgeField !== undefined) {
+      onAgeChange(changedAgeField);
+    }
+  };
+
+  const onBirthdayChange = (changedField: any) => {
+    const passengerFieldName = changedField.name.slice(0, -1);
+    const ageFieldName = [...passengerFieldName, 'age'];
+    const age = computeAge(changedField.value);
+
+    form.setFieldValue(ageFieldName, age);
+    form.setFields([{ name: ageFieldName, errors: [] }]);
+
+    updateDiscountTypeOnAgeChange(changedField, age);
+  };
+
+  const onAgeChange = (changedField: any) => {
+    const passengerFieldName = changedField.name.slice(0, -1);
+    const age = changedField.value;
+    const birthdayFieldName = [...passengerFieldName, 'birthdayIso'];
+    const birthday = computeBirthday(
+      age,
+      form.getFieldValue(birthdayFieldName)
+    );
+
+    form.setFieldValue(birthdayFieldName, dayjs(birthday));
+    form.setFields([{ name: birthdayFieldName, errors: [] }]);
+
+    updateDiscountTypeOnAgeChange(changedField, age);
+  };
+
+  const updateDiscountTypeOnAgeChange = (changedField: any, age: number) => {
+    const passengerFieldName = changedField.name.slice(0, -1);
+    const discountTypeFieldName = [...passengerFieldName, 'discountType'];
+
+    const discountType = getDiscountTypeFromAge(age);
+    form.setFieldValue(discountTypeFieldName, discountType);
+    form.setFields([{ name: discountTypeFieldName, errors: [] }]);
   };
 
   return (
@@ -295,3 +352,23 @@ export default function CreateBookingForm({
     </Form>
   );
 }
+
+const getDiscountTypeFromAge = (age: number): DISCOUNT_TYPE | undefined => {
+  if (age >= 60) {
+    return DISCOUNT_TYPE.Senior;
+  }
+
+  if (age >= 18) {
+    return undefined;
+  }
+
+  if (age >= 12) {
+    return DISCOUNT_TYPE.Student;
+  }
+
+  if (age >= 3) {
+    return DISCOUNT_TYPE.Child;
+  }
+
+  return DISCOUNT_TYPE.Infant;
+};

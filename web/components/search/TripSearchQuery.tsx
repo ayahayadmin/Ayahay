@@ -59,7 +59,7 @@ export default function TripSearchQuery({
                 disabledDate={(current) => current < dayjs().startOf('day')}
                 format='MMM D, YYYY'
                 allowClear={false}
-                bordered={false}
+                variant='borderless'
                 size='large'
               />
             </Form.Item>
@@ -75,7 +75,7 @@ export default function TripSearchQuery({
                   className={styles['ant-picker-input']}
                   format='MMM D, YYYY'
                   allowClear={false}
-                  bordered={false}
+                  variant='borderless'
                   size='large'
                 />
               </Form.Item>
