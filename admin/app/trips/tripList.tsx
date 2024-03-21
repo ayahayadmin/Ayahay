@@ -7,10 +7,7 @@ import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import { getTripsByDateRange } from '@/services/trip.service';
 import Table, { ColumnsType } from 'antd/es/table';
-import {
-  getFullDate,
-  getLocaleTimeString,
-} from '@ayahay/services/date.service';
+import { getLocaleTimeString } from '@ayahay/services/date.service';
 import { TripSearchByDateRange } from '@ayahay/http';
 import { isEmpty } from 'lodash';
 import EditCapacity from '@/components/form/EditCapacity';

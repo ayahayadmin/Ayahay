@@ -11,6 +11,7 @@ export class ReportingMapper {
       id: trip.id,
       srcPort: this.portMapper.convertPortToDto(trip.srcPort),
       destPort: this.portMapper.convertPortToDto(trip.destPort),
+      shipName: trip.ship.name,
       departureDate: trip.departureDate.toISOString(),
       voyageNumber: trip.voyage?.number,
       totalPassengers: trip.bookingTripPassengers.length,

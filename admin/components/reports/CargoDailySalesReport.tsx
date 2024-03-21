@@ -15,11 +15,10 @@ import { roundToTwoDecimalPlacesAndAddCommas } from '@/services/reporting.servic
 
 interface CargoDailySalesReportProps {
   data: ITripReport;
-  vesselName: string;
 }
 
 const CargoDailySalesReport = forwardRef(function (
-  { data, vesselName }: CargoDailySalesReportProps,
+  { data }: CargoDailySalesReportProps,
   ref
 ) {
   const { loggedInAccount } = useAuth();
@@ -75,7 +74,7 @@ const CargoDailySalesReport = forwardRef(function (
           }}
         >
           <div>
-            <p>VESSEL NAME: {vesselName}</p>
+            <p>VESSEL NAME: {data.shipName}</p>
             <p>VOYAGE: {data.voyageNumber}</p>
             <p>
               ROUTE: {data.srcPort.name} to {data.destPort.name}

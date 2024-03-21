@@ -4,6 +4,7 @@ export interface TripReport {
   id: number;
   srcPort: IPort;
   destPort: IPort;
+  shipName: string;
   departureDate: string;
   voyageNumber?: number;
 

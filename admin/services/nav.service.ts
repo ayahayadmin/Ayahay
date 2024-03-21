@@ -17,6 +17,10 @@ export const webLinks = {
       key: 'reporting',
       children: [
         {
+          label: 'Cancelled Trips',
+          key: 'reporting/cancelled-trips',
+        },
+        {
           label: 'Summary Sales',
           key: 'reporting/summary',
         },
@@ -54,6 +58,10 @@ export const webLinks = {
       label: 'Reporting',
       key: 'reporting',
       children: [
+        {
+          label: 'Cancelled Trips',
+          key: 'reporting/cancelled-trips',
+        },
         {
           label: 'Summary Sales',
           key: 'reporting/summary',

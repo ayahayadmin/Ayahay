@@ -19,11 +19,10 @@ interface SummarySalesPerVoyageProps {
   data: ITripReport;
   status: string;
   disbursements: IDisbursement[];
-  vesselName: string;
 }
 
 const SummarySalesPerVoyage = forwardRef(function (
-  { data, status, disbursements, vesselName }: SummarySalesPerVoyageProps,
+  { data, status, disbursements }: SummarySalesPerVoyageProps,
   ref
 ) {
   const { loggedInAccount } = useAuth();
@@ -126,7 +125,7 @@ const SummarySalesPerVoyage = forwardRef(function (
           }}
         >
           <div>
-            <p>VESSEL NAME: {vesselName}</p>
+            <p>VESSEL NAME: {data.shipName}</p>
             <p>VOYAGE: {data.voyageNumber}</p>
             <p>
               ROUTE: {data.srcPort.name} to {data.destPort.name}
@@ -172,7 +171,7 @@ const SummarySalesPerVoyage = forwardRef(function (
             </thead>
             <tbody>
               <tr>
-                <td>{vesselName}</td>
+                <td>{data.shipName}</td>
                 <td>{totalPassengers}</td>
                 <td></td>
                 <td style={{ textAlign: 'left' }}>
@@ -186,7 +185,7 @@ const SummarySalesPerVoyage = forwardRef(function (
                 </td>
               </tr>
               <tr>
-                <td>{vesselName}</td>
+                <td>{data.shipName}</td>
                 <td></td>
                 <td>{totalVehicles}</td>
                 <td style={{ textAlign: 'left' }}>

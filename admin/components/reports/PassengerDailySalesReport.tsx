@@ -11,7 +11,6 @@ import { roundToTwoDecimalPlacesAndAddCommas } from '@/services/reporting.servic
 
 interface PassengerDailySalesReportProps {
   data: ITripReport;
-  vesselName: string;
 }
 
 export const two_columns_grid = {
@@ -32,7 +31,7 @@ function padZeroes(num: any, size: number) {
 }
 
 const PassengerDailySalesReport = forwardRef(function (
-  { data, vesselName }: PassengerDailySalesReportProps,
+  { data }: PassengerDailySalesReportProps,
   ref
 ) {
   const { loggedInAccount } = useAuth();
@@ -88,7 +87,7 @@ const PassengerDailySalesReport = forwardRef(function (
           }}
         >
           <div>
-            <p>VESSEL NAME: {vesselName}</p>
+            <p>VESSEL NAME: {data.shipName}</p>
             <p>VOYAGE: {data.voyageNumber}</p>
             <p>
               ROUTE: {data.srcPort.name} to {data.destPort.name}

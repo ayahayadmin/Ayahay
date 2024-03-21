@@ -25,6 +25,7 @@ export class ReportingService {
       include: {
         srcPort: true,
         destPort: true,
+        ship: true,
         bookingTripPassengers: {
           include: {
             booking: {

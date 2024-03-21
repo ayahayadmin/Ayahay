@@ -16,13 +16,12 @@ import { roundToTwoDecimalPlacesAndAddCommas } from '@/services/reporting.servic
 
 interface ProfitAndLossStatementProps {
   data: ITripReport;
-  vesselName: string;
   disbursements: IDisbursement[];
   expenses: any;
 }
 
 const ProfitAndLossStatement = forwardRef(function (
-  { expenses, data, disbursements, vesselName }: ProfitAndLossStatementProps,
+  { expenses, data, disbursements }: ProfitAndLossStatementProps,
   ref
 ) {
   const { loggedInAccount } = useAuth();
@@ -90,7 +89,7 @@ const ProfitAndLossStatement = forwardRef(function (
           }}
         >
           <div>
-            <p>VESSEL NAME: {vesselName}</p>
+            <p>VESSEL NAME: {data.shipName}</p>
             <p>VOYAGE: {data.voyageNumber}</p>
             <p>
               ROUTE: {data.srcPort.name} to {data.destPort.name}
@@ -134,7 +133,7 @@ const ProfitAndLossStatement = forwardRef(function (
             </thead>
             <tbody>
               <tr>
-                <td>{vesselName}</td>
+                <td>{data.shipName}</td>
                 {/* will still discuss what if there are more than 1 teller in a trip */}
                 <td>{data.passengers[0]?.teller}</td>
                 <td>PAX INCOME</td>
@@ -151,7 +150,7 @@ const ProfitAndLossStatement = forwardRef(function (
                 </td>
               </tr>
               <tr>
-                <td>{vesselName}</td>
+                <td>{data.shipName}</td>
                 {/* will still discuss what if there are more than 1 teller in a trip */}
                 <td>{data.passengers[0]?.teller}</td>
                 <td>CARGO INCOME</td>
