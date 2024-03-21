@@ -47,9 +47,9 @@ export default function PortAutoComplete({
         showSearch
         onSearch={onSearchPort}
         onDropdownVisibleChange={() => onSearchPort('')}
-        bordered={false}
+        variant='borderless'
         size='large'
-        showArrow={false}
+        suffixIcon={null}
         allowClear={true}
       >
         {portOptions
