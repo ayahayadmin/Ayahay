@@ -2,7 +2,6 @@
 import { useAuthGuard } from '@/hooks/auth';
 import { Button, Typography } from 'antd';
 import { useRef } from 'react';
-import { isEmpty } from 'lodash';
 import styles from '../page.module.scss';
 import { DownloadOutlined } from '@ant-design/icons';
 import jsPDF from 'jspdf';
@@ -37,7 +36,7 @@ export default function ReportingPage() {
       <Button
         type='primary'
         htmlType='submit'
-        loading={isEmpty(data)}
+        loading={data === undefined}
         onClick={handleDownloadSummarySalesPerVessel}
       >
         <DownloadOutlined rev={undefined} /> Download

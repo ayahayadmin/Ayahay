@@ -6,19 +6,16 @@ import {
 } from '@nestjs/common';
 import { Prisma, PrismaClient, Trip } from '@prisma/client';
 import { PrismaService } from '@/prisma.service';
-import {
-  AvailableTrips,
-  IAccount,
-  ITrip,
-  SearchAvailableTrips,
-} from '@ayahay/models';
+import { IAccount, ITrip } from '@ayahay/models';
 import { TripMapper } from './trip.mapper';
 import { isEmpty } from 'lodash';
 import {
+  AvailableTrips,
   CancelledTrips,
   CreateTripsFromSchedulesRequest,
   PaginatedRequest,
   PaginatedResponse,
+  SearchAvailableTrips,
   TripSearchByDateRange,
   UpdateTripCapacityRequest,
   VehicleBookings,

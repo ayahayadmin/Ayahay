@@ -10,7 +10,7 @@ import {
   three_columns_grid,
   two_columns_grid,
 } from './PassengerDailySalesReport';
-import { first, sum, sumBy } from 'lodash';
+import { first, sum } from 'lodash';
 import { roundToTwoDecimalPlacesAndAddCommas } from '@/services/reporting.service';
 
 interface SummarySalesPerVoyageProps {
@@ -50,10 +50,15 @@ const SummarySalesPerVessel = forwardRef(function (
     },
   };
 
-  let totalSalesArr: number[] = [];
-  let totalBoardedArr: number[] = [];
-  let totalAdminFeeArr: number[] = [];
-  let totalFare = 0;
+  let totalPaxSales = 0;
+  let totalPaxBooked = 0;
+  let totalPaxFare = 0;
+
+  let totalVehicleSales = 0;
+  let totalVehicleBooked = 0;
+  let totalVehicleFare = 0;
+
+  let totalDisbursements = 0;
 
   return (
     <div ref={ref}>
@@ -127,25 +132,113 @@ const SummarySalesPerVessel = forwardRef(function (
               fontSize: 8,
             }}
           >
+            <caption style={{ textAlign: 'left' }}>PASSENGERS</caption>
             <thead style={{ backgroundColor: '#ddebf7' }}>
               <tr>
                 <th>Voyage</th>
-                <th>Accommodation</th>
-                <th>Model</th>
-                <th>Class</th>
-                <th style={{ textAlign: 'left' }}>Ticket Amount</th>
-                <th style={{ textAlign: 'left' }}>Board</th>
+                <th>Discount Type</th>
                 <th style={{ textAlign: 'left' }}>Total</th>
+                <th style={{ textAlign: 'left' }}>Amount</th>
               </tr>
             </thead>
             <tbody>
               {data.map((shipData) => {
                 shipData.passengers?.map((passenger: any) => {
-                  totalFare += passenger.ticketCost;
+                  totalPaxFare += passenger.ticketCost;
                   if (passenger.paymentStatus === 'PayMongo') {
                     mopBreakdown.Ayahay.aggFare += passenger.ticketCost;
                   } else {
                     mopBreakdown.OTC.aggFare += passenger.ticketCost;
+                  }
+                });
+
+                totalDisbursements += shipData.totalDisbursements;
+                const voyage = `${getFullDate(
+                  shipData.departureDate,
+                  true
+                )} @ ${getLocaleTimeString(shipData.departureDate)} (Voyage: ${
+                  shipData.voyageNumber ?? '__'
+                })`;
+                let paxSales = 0;
+
+                const vesselBreakdown: any =
+                  shipData.passengerDiscountsBreakdown?.map(
+                    (passengerDiscount, idx) => {
+                      paxSales += passengerDiscount.totalSales;
+                      return (
+                        <tr>
+                          {idx === 0 ? (
+                            <td>
+                              {reportType === undefined
+                                ? voyage
+                                : `${shipData.srcPort.code} to ${shipData.destPort.code} ${voyage}`}
+                            </td>
+                          ) : (
+                            <td></td>
+                          )}
+                          <td>{passengerDiscount.typeOfDiscount}</td>
+                          <td style={{ textAlign: 'left' }}>
+                            {passengerDiscount.totalBooked}
+                          </td>
+                          <td style={{ textAlign: 'left' }}>
+                            PHP&nbsp;
+                            {roundToTwoDecimalPlacesAndAddCommas(
+                              passengerDiscount.totalSales
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    }
+                  );
+
+                totalPaxBooked += shipData.totalPassengers;
+                totalPaxSales += paxSales;
+
+                return vesselBreakdown;
+              })}
+            </tbody>
+            <tfoot style={{ backgroundColor: '#ddebf7' }}>
+              <tr>
+                <td colSpan={2}>TOTAL</td>
+                <td style={{ textAlign: 'left' }}>{totalPaxBooked}</td>
+                <td style={{ textAlign: 'left' }}>
+                  PHP&nbsp;
+                  {roundToTwoDecimalPlacesAndAddCommas(totalPaxSales)}
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+        <div
+          className={`${styles['center-div']} ${styles['font-style']}`}
+          style={{ marginTop: 15 }}
+        >
+          <table
+            style={{
+              width: '95%',
+              borderCollapse: 'collapse',
+              textAlign: 'center',
+              fontSize: 8,
+            }}
+          >
+            <caption style={{ textAlign: 'left' }}>CARGOES</caption>
+            <thead style={{ backgroundColor: '#ddebf7' }}>
+              <tr>
+                <th>Voyage</th>
+                <th>Vehicle Type</th>
+                <th style={{ textAlign: 'left' }}>Total</th>
+                <th style={{ textAlign: 'left' }}>Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.map((shipData) => {
+                shipData.vehicles.map((vehicle: any) => {
+                  totalVehicleFare += vehicle.ticketCost;
+                  if (vehicle.paymentStatus === 'PayMongo') {
+                    mopBreakdown.Ayahay.aggFare += vehicle.ticketCost;
+                  } else {
+                    mopBreakdown.OTC.aggFare += vehicle.ticketCost;
                   }
                 });
 
@@ -155,138 +248,49 @@ const SummarySalesPerVessel = forwardRef(function (
                 )} @ ${getLocaleTimeString(shipData.departureDate)} (Voyage: ${
                   shipData.voyageNumber ?? '__'
                 })`;
-                const boarded = shipData.totalBoardedPassengers;
-                const total = sumBy(
-                  shipData.breakdown.cabinPassengerBreakdown,
-                  'total'
-                );
-                let totalSales = 0;
-                const vesselBreakdown =
-                  shipData.breakdown.cabinPassengerBreakdown.map(
-                    (cabinPassenger) => {
-                      totalSales += cabinPassenger.total;
-                      return (
-                        <tr>
-                          <td></td>
-                          <td>{cabinPassenger.accommodation}</td>
-                          <td>REGULAR</td>
-                          <td>{cabinPassenger.discountType}</td>
-                          <td style={{ textAlign: 'left' }}>
-                            PHP&nbsp;
-                            {roundToTwoDecimalPlacesAndAddCommas(
-                              cabinPassenger.ticketCost
-                            )}
-                          </td>
-                          <td style={{ textAlign: 'left' }}>
-                            {cabinPassenger.boarded}
-                          </td>
-                          <td style={{ textAlign: 'left' }}>
-                            PHP&nbsp;
-                            {roundToTwoDecimalPlacesAndAddCommas(
-                              cabinPassenger.total
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    }
-                  );
+                let vehicleSales = 0;
 
-                const noShowRow = shipData.breakdown.noShowBreakdown.map(
-                  (noShow) => {
-                    totalSales += noShow.total;
+                const vehicleTypeBreakdown =
+                  shipData.vehicleTypesBreakdown?.map((vehicle, idx) => {
+                    vehicleSales += vehicle.totalSales;
                     return (
                       <tr>
-                        <td></td>
-                        <td>NO SHOW</td>
-                        <td>REGULAR</td>
-                        <td>{noShow.discountType}</td>
+                        {idx === 0 ? (
+                          <td>
+                            {reportType === undefined
+                              ? voyage
+                              : `${shipData.srcPort.code} to ${shipData.destPort.code} ${voyage}`}
+                          </td>
+                        ) : (
+                          <td></td>
+                        )}
+                        <td>{vehicle.typeOfVehicle}</td>
+                        <td style={{ textAlign: 'left' }}>
+                          {vehicle.totalBooked}
+                        </td>
                         <td style={{ textAlign: 'left' }}>
                           PHP&nbsp;
                           {roundToTwoDecimalPlacesAndAddCommas(
-                            noShow.ticketCost
+                            vehicle.totalSales
                           )}
-                        </td>
-                        <td style={{ textAlign: 'left' }}>{noShow.count}</td>
-                        <td style={{ textAlign: 'left' }}>
-                          PHP&nbsp;
-                          {roundToTwoDecimalPlacesAndAddCommas(noShow.total)}
                         </td>
                       </tr>
                     );
-                  }
-                );
+                  });
 
-                const firstRow = (
-                  <tr style={{ fontWeight: 'bold' }}>
-                    <td>{voyage}</td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td style={{ textAlign: 'left' }}>{boarded}</td>
-                    <td style={{ textAlign: 'left' }}>
-                      PHP&nbsp;{roundToTwoDecimalPlacesAndAddCommas(total)}
-                    </td>
-                  </tr>
-                );
-                totalBoardedArr.push(boarded);
+                totalVehicleBooked += shipData.totalVehicles;
+                totalVehicleSales += vehicleSales;
 
-                const totalSalesRow = (
-                  <tr>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td style={{ textAlign: 'left' }}>
-                      PHP&nbsp;{roundToTwoDecimalPlacesAndAddCommas(totalSales)}
-                    </td>
-                  </tr>
-                );
-                totalSalesArr.push(totalSales);
-
-                const totalPassengersWithAdminFee = sumBy(
-                  shipData.breakdown.cabinPassengerBreakdown,
-                  'passengersWithAdminFee'
-                );
-                const totalAdminFee = totalPassengersWithAdminFee * 50;
-                const ayahayConvenienceFeeRow = (
-                  <tr>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td>Ayahay Convenience Fee</td>
-                    <td style={{ textAlign: 'left' }}>PHP&nbsp;50.00</td>
-                    <td style={{ textAlign: 'left' }}>
-                      {totalPassengersWithAdminFee}
-                    </td>
-                    <td style={{ textAlign: 'left' }}>
-                      PHP&nbsp;
-                      {roundToTwoDecimalPlacesAndAddCommas(totalAdminFee)}
-                    </td>
-                  </tr>
-                );
-                totalAdminFeeArr.push(totalAdminFee);
-
-                return [
-                  firstRow,
-                  ...vesselBreakdown,
-                  ...noShowRow,
-                  totalSalesRow,
-                  ayahayConvenienceFeeRow,
-                ];
+                return vehicleTypeBreakdown;
               })}
             </tbody>
             <tfoot style={{ backgroundColor: '#ddebf7' }}>
               <tr>
-                <td colSpan={5}>OVERALL TOTAL</td>
-                <td style={{ textAlign: 'left' }}>{sum(totalBoardedArr)}</td>
+                <td colSpan={2}>TOTAL</td>
+                <td style={{ textAlign: 'left' }}>{totalVehicleBooked}</td>
                 <td style={{ textAlign: 'left' }}>
                   PHP&nbsp;
-                  {roundToTwoDecimalPlacesAndAddCommas(
-                    sum([...totalSalesArr, ...totalAdminFeeArr])
-                  )}
+                  {roundToTwoDecimalPlacesAndAddCommas(totalVehicleSales)}
                 </td>
               </tr>
             </tfoot>
@@ -355,7 +359,10 @@ const SummarySalesPerVessel = forwardRef(function (
                 <td className={styles['cell-border']}>
                   <div className={styles['wrap']}>
                     <div style={{ textAlign: 'left' }}>
-                      PHP&nbsp;{roundToTwoDecimalPlacesAndAddCommas(totalFare)}
+                      PHP&nbsp;
+                      {roundToTwoDecimalPlacesAndAddCommas(
+                        sum([totalPaxFare, totalVehicleFare])
+                      )}
                     </div>
                   </div>
                 </td>
@@ -374,30 +381,38 @@ const SummarySalesPerVessel = forwardRef(function (
           >
             <tbody>
               <tr>
-                <td style={{ textAlign: 'left', width: '50%' }}>Ticket Cost</td>
+                <td style={{ textAlign: 'left', width: '50%' }}>
+                  Total Passenger Sales
+                </td>
                 <td style={{ textAlign: 'right' }}>
                   PHP&nbsp;
-                  {roundToTwoDecimalPlacesAndAddCommas(sum(totalSalesArr))}
+                  {roundToTwoDecimalPlacesAndAddCommas(totalPaxSales)}
                 </td>
-                <td></td>
               </tr>
               <tr>
                 <td style={{ textAlign: 'left', width: '50%' }}>
-                  Ayahay Convenience Fee
+                  Total Cargo Sales
                 </td>
                 <td style={{ textAlign: 'right' }}>
                   PHP&nbsp;
-                  {roundToTwoDecimalPlacesAndAddCommas(sum(totalAdminFeeArr))}
+                  {roundToTwoDecimalPlacesAndAddCommas(totalVehicleSales)}
                 </td>
-                <td></td>
+              </tr>
+              <tr>
+                <td style={{ textAlign: 'left', width: '50%' }}>
+                  Total Disbursements
+                </td>
+                <td style={{ textAlign: 'right' }}>
+                  PHP&nbsp;-
+                  {roundToTwoDecimalPlacesAndAddCommas(totalDisbursements)}
+                </td>
               </tr>
               <tr style={{ fontWeight: 'bold' }}>
                 <td style={{ textAlign: 'left', width: '50%' }}>TOTAL SALES</td>
-                <td></td>
                 <td style={{ textAlign: 'right' }}>
                   PHP&nbsp;
                   {roundToTwoDecimalPlacesAndAddCommas(
-                    sum([...totalSalesArr, ...totalAdminFeeArr])
+                    sum([totalPaxSales, totalVehicleSales, -totalDisbursements])
                   )}
                 </td>
               </tr>

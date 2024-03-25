@@ -11,7 +11,7 @@ import {
   ParseArrayPipe,
 } from '@nestjs/common';
 import { TripService } from './trip.service';
-import { ITrip, SearchAvailableTrips } from '@ayahay/models';
+import { ITrip } from '@ayahay/models';
 import { Prisma } from '@prisma/client';
 import { TripMapper } from './trip.mapper';
 import { Roles } from '@/decorator/roles.decorator';
@@ -21,6 +21,7 @@ import {
   CreateTripsFromSchedulesRequest,
   PaginatedRequest,
   PaginatedResponse,
+  SearchAvailableTrips,
   TripSearchByDateRange,
   UpdateTripCapacityRequest,
   VehicleBookings,
@@ -75,7 +76,7 @@ export class TripController {
     @Query() pagination: PaginatedRequest,
     @Query() query: TripSearchByDateRange
   ): Promise<PaginatedResponse<CancelledTrips>> {
-    return await this.tripService.getCancelledTrips(pagination, query);
+    return this.tripService.getCancelledTrips(pagination, query);
   }
 
   @Get(':tripId/bookings')
