@@ -8,6 +8,8 @@ import { PrismaService } from '@/prisma.service';
 import { SearchMapper } from './search.mapper';
 import {
   DashboardTrips,
+  PaginatedRequest,
+  PaginatedResponse,
   TripInformation,
   TripSearchByDateRange,
 } from '@ayahay/http';
@@ -72,11 +74,12 @@ export class SearchService {
   }
 
   async getDashboardTrips(
-    query: TripSearchByDateRange
-  ): Promise<DashboardTrips[]> {
-    const { startDate, endDate } = query;
-
-    const trips = await this.prisma.$queryRaw<TripInformation[]>`
+    pagination: PaginatedRequest,
+    { startDate, endDate }: TripSearchByDateRange
+  ): Promise<PaginatedResponse<DashboardTrips>> {
+    const itemsPerPage = 10;
+    const skip = (pagination.page - 1) * itemsPerPage;
+    const query = Prisma.sql`
       WITH trips_matching_query AS (
         SELECT 
           id,
@@ -113,22 +116,41 @@ export class SearchService {
         GROUP BY trip_id
       ), not_checked_in_passenger_names AS (
         SELECT
-        trip_id,
-        STRING_AGG(p.first_name::TEXT, '|') AS "pipeSeparatedPassengerFirstNames",
-        STRING_AGG(p.last_name::TEXT, '|') AS "pipeSeparatedPassengerLastNames"
+          trip_id,
+          STRING_AGG(p.first_name::TEXT, '|') AS "pipeSeparatedPassengerFirstNames",
+          STRING_AGG(p.last_name::TEXT, '|') AS "pipeSeparatedPassengerLastNames"
         FROM confirmed_passengers cp
           INNER JOIN ayahay.passenger p ON cp.passenger_id = p.id
         WHERE 
           cp.check_in_date IS NULL
         GROUP BY trip_id
+      ), confirmed_vehicles AS (
+        SELECT
+          bv.trip_id,
+          vehicle_id,
+          check_in_date
+        FROM ayahay.booking_trip_vehicle bv
+          INNER JOIN ayahay.booking b ON bv.booking_id = b.id
+        WHERE
+          b.booking_status = 'Confirmed'
+          AND trip_id IN (SELECT id FROM trips_matching_query)
+        GROUP BY bv.trip_id, vehicle_id, check_in_date
       ), checked_in_vehicle_count_per_trip AS (
         SELECT 
           trip_id,
           COUNT(*) AS "checkedInVehicleCount"
-        FROM ayahay.booking_trip_vehicle
+        FROM confirmed_vehicles cv
         WHERE 
-          check_in_date IS NOT NULL
-          AND trip_id IN (SELECT id FROM trips_matching_query)
+          cv.check_in_date IS NOT NULL
+        GROUP BY trip_id
+      ), not_checked_in_vehicle_plate_no AS (
+        SELECT
+          trip_id,
+          STRING_AGG(v.plate_number::TEXT, '|') AS "pipeSeparatedVehiclePlateNumbers"
+        FROM confirmed_vehicles cv
+          INNER JOIN ayahay.vehicle v ON cv.vehicle_id = v.id
+        WHERE
+          cv.check_in_date IS NULL
         GROUP BY trip_id
       ), cabin_information_per_trip AS (
         SELECT
@@ -153,19 +175,40 @@ export class SearchService {
         WHERE trip_id IN (SELECT id FROM trips_matching_query)
         GROUP BY trip_id
       )
-      SELECT 
-        *
-      FROM trips_matching_query t
-        LEFT JOIN checked_in_passenger_count_per_trip pc ON t.id = pc.trip_id
-        LEFT JOIN not_checked_in_passenger_names nc ON t.id = nc.trip_id
-        LEFT JOIN checked_in_vehicle_count_per_trip vc ON t.id = vc.trip_id
-        LEFT JOIN cabin_information_per_trip cb ON t.id = cb.trip_id
-        LEFT JOIN vehicle_rates_per_trip vr ON t.id = vr.trip_id
-      ORDER BY t."departureDate" ASC;
     `;
 
-    return trips.map((trip) =>
-      this.searchMapper.convertTripForDashboardTrips(trip)
-    );
+    const from = Prisma.sql`
+      FROM trips_matching_query t
+        LEFT JOIN checked_in_passenger_count_per_trip pc ON t.id = pc.trip_id
+        LEFT JOIN not_checked_in_passenger_names ncp ON t.id = ncp.trip_id
+        LEFT JOIN checked_in_vehicle_count_per_trip vc ON t.id = vc.trip_id
+        LEFT JOIN not_checked_in_vehicle_plate_no ncv ON t.id = ncv.trip_id
+        LEFT JOIN cabin_information_per_trip cb ON t.id = cb.trip_id
+        LEFT JOIN vehicle_rates_per_trip vr ON t.id = vr.trip_id  
+    `;
+
+    const trips = await this.prisma.$queryRaw<TripInformation[]>`
+      ${query}
+      SELECT 
+        *
+      ${from}
+      ORDER BY t."departureDate" ASC
+      OFFSET ${skip}
+      LIMIT ${itemsPerPage};
+    `;
+
+    const tripsCount = await this.prisma.$queryRaw<number>`
+      ${query}
+      SELECT
+        COUNT(*)::integer
+      ${from}
+    `;
+
+    return {
+      total: tripsCount[0].count,
+      data: trips.map((trip) =>
+        this.searchMapper.convertTripForDashboardTrips(trip)
+      ),
+    };
   }
 }

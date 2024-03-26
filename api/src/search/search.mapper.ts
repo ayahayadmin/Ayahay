@@ -40,6 +40,9 @@ export class SearchMapper {
         trip.pipeSeparatedPassengerFirstNames?.split('|'),
         trip.pipeSeparatedPassengerLastNames?.split('|')
       ),
+      notCheckedInPlateNumbers: this.convertPlateNumber(
+        trip.pipeSeparatedVehiclePlateNumbers?.split('|')
+      ),
     };
   }
 
@@ -69,5 +72,9 @@ export class SearchMapper {
       firstNames,
       (firstName, idx) => `${firstName} ${lastNames[idx]}`
     );
+  }
+
+  private convertPlateNumber(plateNumbers): string[] {
+    return map(plateNumbers, (plateNo) => plateNo);
   }
 }

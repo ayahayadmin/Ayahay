@@ -3,7 +3,11 @@ import { SearchService } from './search.service';
 import { Booking, Trip } from '@prisma/client';
 import { AuthGuard } from '@/guard/auth.guard';
 import { Roles } from '@/decorator/roles.decorator';
-import { DashboardTrips } from '@ayahay/http';
+import {
+  DashboardTrips,
+  PaginatedRequest,
+  PaginatedResponse,
+} from '@ayahay/http';
 
 @Controller('search')
 @UseGuards(AuthGuard)
@@ -34,7 +38,10 @@ export class SearchController {
 
   @Get('dashboard')
   @Roles('Staff', 'Admin', 'SuperAdmin')
-  async getDashboardTrips(@Query() query: any): Promise<DashboardTrips[]> {
-    return this.searchService.getDashboardTrips(query);
+  async getDashboardTrips(
+    @Query() pagination: PaginatedRequest,
+    @Query() query: any
+  ): Promise<PaginatedResponse<DashboardTrips>> {
+    return this.searchService.getDashboardTrips(pagination, query);
   }
 }

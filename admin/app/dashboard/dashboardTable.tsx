@@ -6,7 +6,11 @@ import {
   BarChartOutlined,
   InfoCircleOutlined,
 } from '@ant-design/icons';
-import { DashboardTrips, TripSearchByDateRange } from '@ayahay/http';
+import {
+  DashboardTrips,
+  PaginatedRequest,
+  TripSearchByDateRange,
+} from '@ayahay/http';
 import {
   getFullDate,
   getLocaleTimeString,
@@ -15,9 +19,9 @@ import { Button, Popover, Skeleton, Table } from 'antd';
 import { ColumnsType } from 'antd/es/table';
 import { useEffect, useState } from 'react';
 import styles from './page.module.scss';
-import { isEmpty } from 'lodash';
 import { useAuth } from '@/contexts/AuthContext';
-import { PassengerNamesModal } from '@/components/modal/PassengerNamesModal';
+import { NotCheckedInModal } from '@/components/modal/NotCheckedInModal';
+import { useServerPagination } from '@ayahay/hooks';
 
 const columns: ColumnsType<DashboardTrips> = [
   {
@@ -50,7 +54,7 @@ const columns: ColumnsType<DashboardTrips> = [
     key: 'paxOnboardedOverBooked',
     render: (_: string, record: DashboardTrips) => {
       const passengerNames = record.notCheckedInPassengerNames.map((name) => ({
-        name,
+        data: name,
       }));
 
       return (
@@ -59,7 +63,35 @@ const columns: ColumnsType<DashboardTrips> = [
           <span>{record.passengerCapacities - record.availableCapacities}</span>
           &nbsp;
           <Popover
-            content={<PassengerNamesModal passengerNames={passengerNames} />}
+            content={<NotCheckedInModal data={passengerNames} />}
+            trigger='click'
+          >
+            <Button type='text' style={{ padding: 0 }}>
+              <InfoCircleOutlined rev={undefined} />
+            </Button>
+          </Popover>
+        </div>
+      );
+    },
+    align: 'center',
+  },
+  {
+    title: 'Vehicle Onboarded',
+    key: 'vehicleOnboardedOverBooked',
+    render: (_: string, record: DashboardTrips) => {
+      const plateNumbers = record.notCheckedInPlateNumbers.map((plateNo) => ({
+        data: plateNo,
+      }));
+
+      return (
+        <div>
+          <span>{record.checkedInVehicleCount ?? 0}</span>/
+          <span>
+            {record.vehicleCapacity - record.availableVehicleCapacity}
+          </span>
+          &nbsp;
+          <Popover
+            content={<NotCheckedInModal data={plateNumbers} />}
             trigger='click'
           >
             <Button type='text' style={{ padding: 0 }}>
@@ -79,48 +111,37 @@ interface DashboardTableProps {
 
 export default function DashboardTable({ searchQuery }: DashboardTableProps) {
   const { loggedInAccount } = useAuth();
-  const [loading, setLoading] = useState(false);
-  const [tripInfo, setTripInfo] = useState([] as DashboardTrips[] | undefined);
+  useEffect(() => resetData(), [searchQuery]);
 
-  useEffect(() => {
-    getTripInfo();
-  }, [loggedInAccount, searchQuery]);
-
-  const getTripInfo = async () => {
-    setLoading(true);
-    // if no startDate and endDate was provided
-    if (isEmpty(searchQuery)) {
-      return;
-    }
-    const tripInfo = await getTripInformation(
-      searchQuery.startDate,
-      searchQuery.endDate
-    );
-    setTripInfo(tripInfo);
-    setLoading(false);
+  const fetchTripInformation = async (pagination: PaginatedRequest) => {
+    return getTripInformation(searchQuery, pagination);
   };
+
+  const {
+    dataInPage: tripInfo,
+    antdPagination,
+    antdOnChange,
+    resetData,
+  } = useServerPagination<DashboardTrips>(
+    fetchTripInformation,
+    loggedInAccount !== null && loggedInAccount !== undefined
+  );
 
   const paxAndVehicleBookedData = buildPaxAndVehicleBookedData(tripInfo!);
 
   return (
     <>
-      <Skeleton
-        loading={loading}
-        active
-        title={false}
-        paragraph={{
-          rows: 5,
-          width: ['98%', '98%', '98%', '98%', '98%'],
-        }}
-      >
-        <Table
-          columns={columns}
-          dataSource={tripInfo}
-          pagination={false}
-        ></Table>
-      </Skeleton>
+      <Table
+        dataSource={tripInfo}
+        columns={columns}
+        pagination={antdPagination}
+        onChange={antdOnChange}
+        loading={tripInfo === undefined}
+        tableLayout='fixed'
+        rowKey={(trip) => trip.id}
+      />
       <div className={styles['bar-graph']}>
-        {loading && (
+        {tripInfo && (
           <Skeleton.Node active>
             <BarChartOutlined
               style={{ fontSize: 40, color: '#bfbfbf' }}
@@ -128,9 +149,7 @@ export default function DashboardTable({ searchQuery }: DashboardTableProps) {
             />
           </Skeleton.Node>
         )}
-        {paxAndVehicleBookedData && !loading && (
-          <BarChart data={paxAndVehicleBookedData} />
-        )}
+        {paxAndVehicleBookedData && <BarChart data={paxAndVehicleBookedData} />}
       </div>
     </>
   );
