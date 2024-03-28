@@ -392,13 +392,15 @@ export default function PassengerInformationForm({
                     </Radio.Group>
                   </Form.Item>
                 )}
-                <Button
-                  danger
-                  style={{ float: 'right' }}
-                  onClick={() => remove(name)}
-                >
-                  Remove Passenger
-                </Button>
+                {(hasPrivilegedAccess || index !== 0) && (
+                  <Button
+                    danger
+                    style={{ float: 'right' }}
+                    onClick={() => remove(name)}
+                  >
+                    Remove Passenger
+                  </Button>
+                )}
               </div>
             ))}
 
