@@ -2,6 +2,8 @@ import { FormInstance } from 'antd';
 import {
   AdminSearchQuery,
   DashboardTrips,
+  PaginatedRequest,
+  PaginatedResponse,
   TripSearchByDateRange,
 } from '@ayahay/http';
 import axios from '@ayahay/services/axios';
@@ -95,19 +97,25 @@ export function getTime(date: string) {
 
 // Get Trip Information is for the Admin Dashboard
 export async function getTripInformation(
-  startDate: string,
-  endDate: string
-): Promise<DashboardTrips[] | undefined> {
-  const { data: dashboardTrips } = await axios.get<DashboardTrips[]>(
-    `${SEARCH_API}/dashboard`,
-    {
-      params: {
-        startDate,
-        endDate,
-      },
-    }
-  );
+  searchQuery: TripSearchByDateRange | undefined,
+  pagination: PaginatedRequest
+): Promise<PaginatedResponse<DashboardTrips> | undefined> {
+  if (isEmpty(searchQuery)) {
+    return;
+  }
+  const { startDate, endDate } = searchQuery;
+  const query = new URLSearchParams(pagination as any).toString();
 
-  await fetchAssociatedEntitiesForReports(dashboardTrips);
-  return dashboardTrips;
+  try {
+    const { data: dashboardTrips } = await axios.get<
+      PaginatedResponse<DashboardTrips>
+    >(
+      `${SEARCH_API}/dashboard?startDate=${startDate}&endDate=${endDate}&${query}`
+    );
+
+    await fetchAssociatedEntitiesForReports(dashboardTrips.data);
+    return dashboardTrips;
+  } catch (e) {
+    console.error(e);
+  }
 }

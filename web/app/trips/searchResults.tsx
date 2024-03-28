@@ -1,7 +1,7 @@
 import styles from './searchResults.module.scss';
 import React, { useEffect, useState } from 'react';
 import { Button, Pagination, Popover, Skeleton, Table } from 'antd';
-import { ITrip, IShippingLine } from '@ayahay/models';
+import { ITrip, IShippingLine, ITripCabin } from '@ayahay/models';
 import { TripsSearchQuery } from '@ayahay/http';
 import { find, sumBy } from 'lodash';
 import {
@@ -35,7 +35,7 @@ const columns: ColumnsType<ITrip> = [
   },
   {
     key: 'srcDestPort',
-    render: (text: string, record: ITrip) => (
+    render: (_, record: ITrip) => (
       <span className={styles['port']}>
         {record.srcPort!.name} <ArrowRightOutlined rev={undefined} />
         &nbsp;
@@ -58,7 +58,7 @@ const columns: ColumnsType<ITrip> = [
   },
   {
     key: 'srcDestPortAndDepartureDateTime',
-    render: (text: string, record: ITrip) => (
+    render: (_, record: ITrip) => (
       <span className={styles['port-date']}>
         <div>
           {record.srcPort!.name} <ArrowRightOutlined rev={undefined} />
@@ -76,7 +76,7 @@ const columns: ColumnsType<ITrip> = [
   },
   {
     key: 'passengerSlots',
-    render: (text: string, record: ITrip) => {
+    render: (_, record: ITrip) => {
       const cabinCapacities: any[] = getCabinCapacities(record.availableCabins);
       const popoverContent = getCabinPopoverContent(cabinCapacities);
       const totalAvailable = sumBy(cabinCapacities, 'available');
@@ -97,15 +97,12 @@ const columns: ColumnsType<ITrip> = [
   {
     key: 'vehicleSlots',
     dataIndex: 'availableVehicleCapacity',
-    render: (text: string, record: ITrip) => (
-      <span>{`${text} vehicle slot/s left`}</span>
-    ),
+    render: (text: string) => <span>{`${text} vehicle slot/s left`}</span>,
     responsive: ['lg'],
   },
   {
     key: 'passengerAndVehicleSlots',
-    dataIndex: 'availableVehicleCapacity',
-    render: (text: string, record: ITrip) => {
+    render: (_, record: ITrip) => {
       const cabinCapacities: any[] = getCabinCapacities(record.availableCabins);
       const popoverContent = getCabinPopoverContent(cabinCapacities);
       const totalAvailable = sumBy(cabinCapacities, 'available');
@@ -118,7 +115,7 @@ const columns: ColumnsType<ITrip> = [
           <Popover title={'Available Slots'} content={popoverContent}>
             <InfoCircleOutlined rev={undefined} />
           </Popover>
-          <div>{`${text} vehicle slot/s left`}</div>
+          <div>{`${record.availableVehicleCapacity} vehicle slot/s left`}</div>
         </div>
       );
     },
@@ -127,8 +124,9 @@ const columns: ColumnsType<ITrip> = [
   },
   {
     key: 'adultFare',
-    render: (text: string, record: ITrip) => {
-      const adultFares: any[] = getCabinFares(record.availableCabins);
+    dataIndex: 'availableCabins',
+    render: (availableCabins: ITripCabin[]) => {
+      const adultFares: any[] = getCabinFares(availableCabins);
       const popoverContent = getFarePopoverContent(adultFares);
       const minFare = getMaximumFare(adultFares);
 
@@ -212,7 +210,7 @@ const columns: ColumnsType<ITrip> = [
           <Popover title={'Available Slots'} content={slotsPopoverContent}>
             <InfoCircleOutlined rev={undefined} />
           </Popover>
-          <div>{`${text} vehicle slot/s left`}</div>
+          <div>{`${record.availableVehicleCapacity} vehicle slot/s left`}</div>
           <div className={styles['price']} style={{ marginTop: 10 }}>
             {`PHP ${minFare}`}&nbsp;
             <Popover title={'Cabin Fares'} content={farePopoverContent}>
@@ -266,7 +264,7 @@ const columns: ColumnsType<ITrip> = [
               <InfoCircleOutlined rev={undefined} />
             </Popover>
           </div>
-          <div>{`${text} vehicle slot/s left`}</div>
+          <div>{`${record.availableVehicleCapacity} vehicle slot/s left`}</div>
           <div className={styles['price']} style={{ marginTop: 10 }}>
             {`PHP ${minFare}`}&nbsp;
             <Popover title={'Cabin Fares'} content={farePopoverContent}>
@@ -320,7 +318,9 @@ export default function SearchResult({ searchQuery }: SearchResultsProps) {
 
     setTripData(tripData?.availableTrips || []);
     setTotalPages(totalPages);
-    setTotalItems(tripData?.availableTrips ? tripData?.availableTrips.length : 0);
+    setTotalItems(
+      tripData?.availableTrips ? tripData?.availableTrips.length : 0
+    );
     setLoading(false);
   };
 

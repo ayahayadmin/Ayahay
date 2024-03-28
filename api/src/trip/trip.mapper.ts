@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import {
-  AvailableTrips,
   ICabin,
   ICabinType,
   ITrip,
@@ -13,7 +12,7 @@ import { PortMapper } from '@/port/port.mapper';
 import { map } from 'lodash';
 import { Prisma } from '@prisma/client';
 import { ShipMapper } from '@/ship/ship.mapper';
-import { CancelledTrips } from '@ayahay/http';
+import { AvailableTrips, CancelledTrips } from '@ayahay/http';
 
 @Injectable()
 export class TripMapper {

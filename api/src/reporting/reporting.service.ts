@@ -30,13 +30,22 @@ export class ReportingService {
           include: {
             booking: {
               include: {
-                createdByAccount: true,
+                createdByAccount: {
+                  select: {
+                    email: true,
+                    role: true,
+                  },
+                },
               },
             },
             bookingPaymentItems: true,
             cabin: {
-              include: {
-                cabinType: true,
+              select: {
+                cabinType: {
+                  select: {
+                    name: true,
+                  },
+                },
               },
             },
             passenger: true,
@@ -46,7 +55,12 @@ export class ReportingService {
           include: {
             booking: {
               include: {
-                createdByAccount: true,
+                createdByAccount: {
+                  select: {
+                    email: true,
+                    role: true,
+                  },
+                },
               },
             },
             bookingPaymentItems: true,
@@ -70,17 +84,41 @@ export class ReportingService {
       },
     });
 
+    const { passengers, passengerDiscountsBreakdown } =
+      this.buildPassengerDataForTripReporting(trip);
+    const { vehicles, vehicleTypesBreakdown } =
+      this.buildVehicleDataForTripReporting(trip);
+
+    return {
+      ...this.reportingMapper.convertTripsForReporting(trip),
+      passengers,
+      vehicles,
+      passengerDiscountsBreakdown,
+      vehicleTypesBreakdown,
+    };
+  }
+
+  private buildPassengerDataForTripReporting(trip) {
+    let passengers = [];
     let passengerDiscountsBreakdown = [];
-    let vehicleTypesBreakdown = [];
 
     const confirmedBookingPassengers = trip.bookingTripPassengers.filter(
       (passenger) => passenger.booking.bookingStatus === 'Confirmed'
     );
-    const confirmedBookingVehicles = trip.bookingTripVehicles.filter(
-      (vehicle) => vehicle.booking.bookingStatus === 'Confirmed'
-    );
 
     confirmedBookingPassengers.forEach((passenger) => {
+      const adminFee = passenger.bookingPaymentItems.find(
+        ({ type }) => type === 'ServiceCharge'
+      )?.price;
+
+      passengers.push(
+        this.reportingMapper.convertTripPassengersForReporting(
+          passenger,
+          passenger.totalPrice,
+          adminFee ?? 0
+        )
+      );
+
       const passengerDiscountsBreakdownArr =
         this.reportingMapper.convertTripPassengersToPassengerBreakdown(
           passenger,
@@ -90,7 +128,30 @@ export class ReportingService {
       passengerDiscountsBreakdown = passengerDiscountsBreakdownArr;
     });
 
+    return { passengers, passengerDiscountsBreakdown };
+  }
+
+  private buildVehicleDataForTripReporting(trip) {
+    let vehicles = [];
+    let vehicleTypesBreakdown = [];
+
+    const confirmedBookingVehicles = trip.bookingTripVehicles.filter(
+      (vehicle) => vehicle.booking.bookingStatus === 'Confirmed'
+    );
+
     confirmedBookingVehicles.forEach((vehicle) => {
+      const vehicleAdminFee = vehicle.bookingPaymentItems.find(
+        ({ type }) => type === 'ServiceCharge'
+      )?.price;
+
+      vehicles.push(
+        this.reportingMapper.convertTripVehiclesForReporting(
+          vehicle,
+          vehicle.totalPrice,
+          vehicleAdminFee ?? 0
+        )
+      );
+
       const vehicleTypesBreakdownArr =
         this.reportingMapper.convertTripVehiclesToVehicleBreakdown(
           vehicle,
@@ -100,33 +161,7 @@ export class ReportingService {
       vehicleTypesBreakdown = vehicleTypesBreakdownArr;
     });
 
-    return {
-      ...this.reportingMapper.convertTripsForReporting(trip),
-      passengers: confirmedBookingPassengers.map((passenger) => {
-        const adminFee = passenger.bookingPaymentItems.find(
-          ({ type }) => type === 'ServiceCharge'
-        )?.price;
-
-        return this.reportingMapper.convertTripPassengersForReporting(
-          passenger,
-          passenger.totalPrice,
-          adminFee ?? 0
-        );
-      }),
-      vehicles: confirmedBookingVehicles.map((vehicle) => {
-        const vehicleAdminFee = vehicle.bookingPaymentItems.find(
-          ({ type }) => type === 'ServiceCharge'
-        )?.price;
-
-        return this.reportingMapper.convertTripVehiclesForReporting(
-          vehicle,
-          vehicle.totalPrice,
-          vehicleAdminFee ?? 0
-        );
-      }),
-      passengerDiscountsBreakdown,
-      vehicleTypesBreakdown,
-    };
+    return { vehicles, vehicleTypesBreakdown };
   }
 
   async getPortsByShip(dates: TripSearchByDateRange): Promise<PortsByShip[]> {
@@ -150,21 +185,14 @@ export class ReportingService {
 
     const trips = await this.prisma.trip.findMany({
       where: {
-        AND: [
-          { shipId: +shipId },
-          { srcPortId: isNaN(srcPortId) ? undefined : +srcPortId },
-          { destPortId: isNaN(destPortId) ? undefined : +destPortId },
-          {
-            departureDate: {
-              gte: new Date(startDate).toISOString(),
-            },
-          },
-          {
-            departureDate: {
-              lte: new Date(endDate).toISOString(),
-            },
-          },
-        ],
+        shipId: +shipId,
+        srcPortId: isNaN(srcPortId) ? undefined : +srcPortId,
+        destPortId: isNaN(destPortId) ? undefined : +destPortId,
+        departureDate: {
+          gte: new Date(startDate).toISOString(),
+          lte: new Date(endDate).toISOString(),
+        },
+        status: 'Arrived',
       },
       include: {
         srcPort: true,
@@ -175,59 +203,80 @@ export class ReportingService {
           include: {
             booking: {
               include: {
-                createdByAccount: true,
+                createdByAccount: {
+                  select: {
+                    email: true,
+                    role: true,
+                  },
+                },
               },
             },
             bookingPaymentItems: true,
             cabin: {
-              include: {
-                cabinType: true,
+              select: {
+                cabinType: {
+                  select: {
+                    name: true,
+                  },
+                },
               },
             },
             passenger: true,
           },
         },
+        bookingTripVehicles: {
+          include: {
+            booking: {
+              include: {
+                createdByAccount: {
+                  select: {
+                    email: true,
+                    role: true,
+                  },
+                },
+              },
+            },
+            bookingPaymentItems: true,
+            vehicle: {
+              select: {
+                vehicleType: {
+                  select: {
+                    description: true,
+                  },
+                },
+              },
+            },
+          },
+        },
         voyage: true,
+        disbursements: {
+          select: {
+            amount: true,
+          },
+        },
+      },
+      orderBy: {
+        departureDate: 'asc',
       },
     });
 
     return trips.map((trip) => {
-      let cabinPassengerBreakdown = [];
-      let noShowBreakdown = [];
-      let passengers = [];
-
-      trip.bookingTripPassengers
-        .filter((passenger) => passenger.booking.bookingStatus === 'Confirmed')
-        .forEach((passenger) => {
-          const adminFee = passenger.bookingPaymentItems.find(
-            ({ type }) => type === 'ServiceCharge'
-          )?.price;
-
-          const { cabinPassengerArr, noShowArr } =
-            this.reportingMapper.convertTripPassengersToCabinPassenger(
-              passenger,
-              passenger.totalPrice,
-              adminFee ?? 0,
-              cabinPassengerBreakdown,
-              noShowBreakdown
-            );
-          cabinPassengerBreakdown = cabinPassengerArr;
-          noShowBreakdown = noShowArr;
-
-          passengers.push(
-            this.reportingMapper.convertTripPassengersForReporting(
-              passenger,
-              passenger.totalPrice,
-              adminFee ?? 0
-            )
-          );
-        });
+      const { passengers, passengerDiscountsBreakdown } =
+        this.buildPassengerDataForTripReporting(trip);
+      const { vehicles, vehicleTypesBreakdown } =
+        this.buildVehicleDataForTripReporting(trip);
 
       return {
         ...this.reportingMapper.convertTripsForReporting(trip),
-        breakdown: { cabinPassengerBreakdown, noShowBreakdown },
         passengers,
-        vehicles: [],
+        vehicles,
+        passengerDiscountsBreakdown,
+        vehicleTypesBreakdown,
+        totalVehicles: trip.bookingTripVehicles.length,
+        totalDisbursements: trip.disbursements.reduce(
+          (prev, curr) => prev + curr.amount,
+          0
+        ),
       };
     });
   }

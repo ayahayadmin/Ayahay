@@ -1,14 +1,13 @@
-import {
-  AvailabeTripsResult,
-  ITrip,
-  ITripCabin,
-  SearchAvailableTrips,
-  TripData,
-} from '@ayahay/models';
+import { ITrip, ITripCabin } from '@ayahay/models';
 import { ceil, forEach, isEmpty } from 'lodash';
 import axios from '@ayahay/services/axios';
 import { TRIP_API } from '@ayahay/constants/api';
 import { fetchAssociatedEntitiesToTrips } from '@ayahay/services/trip.service';
+import {
+  AvailabeTripsResult,
+  SearchAvailableTrips,
+  TripData,
+} from '@ayahay/http';
 
 export async function getAvailableTrips(
   query: SearchAvailableTrips

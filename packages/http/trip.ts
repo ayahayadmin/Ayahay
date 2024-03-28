@@ -46,6 +46,7 @@ export interface TripInformation {
   pipeSeparatedVehicleTypeIds: string;
   pipeSeparatedVehicleFares: string;
   pipeSeparatedVehicleNames: string;
+  pipeSeparatedVehiclePlateNumbers: string;
 }
 
 export interface DashboardTrips {
@@ -64,6 +65,7 @@ export interface DashboardTrips {
   passengerRates: PassengerRates[];
   vehicleRates: VehicleRates[];
   notCheckedInPassengerNames: string[];
+  notCheckedInPlateNumbers: string[];
   checkedInPassengerCount?: number;
   checkedInVehicleCount?: number;
 }
@@ -84,4 +86,55 @@ export interface CancelledTrips {
   shipName: string;
   departureDateIso: string;
   cancellationReason: string;
+}
+
+export interface TripData {
+  availableTrips: ITrip[];
+  page: number;
+}
+
+export interface AvailabeTripsResult {
+  data: TripData[];
+  totalPages: number;
+  totalItems: number;
+}
+
+export interface SearchAvailableTrips {
+  tripIds?: string;
+  srcPortId: number;
+  destPortId: number;
+  departureDate: string;
+  passengerCount: number;
+  vehicleCount: number;
+  cabinIds?: string;
+}
+
+export interface AvailableTrips {
+  id: number;
+  departureDate: Date;
+  referenceNo: string;
+  shipId: string;
+  shippingLineId: string;
+  srcPortId: string;
+  destPortId: string;
+  status: string;
+  seatSelection: string;
+  availableVehicleCapacity: string;
+  vehicleCapacity: string;
+  bookingStartDate: Date;
+  bookingCutOffDate: Date;
+
+  pipeSeparatedCabinIds: string;
+  pipeSeparatedCabinNames: string;
+  pipeSeparatedCabinFares: string;
+  pipeSeparatedCabinAvailableCapacities: string;
+  pipeSeparatedCabinCapacities: string;
+  pipeSeparatedCabinTypeIds: string;
+  pipeSeparatedRecommendedCabinCapacities: string;
+  pipeSeparatedCabinTypeNames: string;
+  pipeSeparatedCabinTypeDescriptions: string;
+
+  pipeSeparatedVehicleTypeIds: string;
+  pipeSeparatedVehicleNames: string;
+  pipeSeparatedVehicleFares: string;
 }

@@ -50,25 +50,8 @@ export interface TripReport {
 
 export interface PerVesselReport extends TripReport {
   totalPassengers: number;
-  totalBoardedPassengers: number;
-
-  breakdown: {
-    cabinPassengerBreakdown: {
-      accommodation: string;
-      discountType: string;
-      boarded: number;
-      totalPassengers: number;
-      passengersWithAdminFee: number;
-      ticketCost: number;
-      total: number;
-    }[];
-    noShowBreakdown: {
-      discountType: string;
-      count: number;
-      ticketCost: number;
-      total: number;
-    }[];
-  };
+  totalVehicles: number;
+  totalDisbursements: number;
 }
 
 export interface TripManifest {
