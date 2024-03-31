@@ -141,7 +141,7 @@ export default function DashboardTable({ searchQuery }: DashboardTableProps) {
         rowKey={(trip) => trip.id}
       />
       <div className={styles['bar-graph']}>
-        {tripInfo && (
+        {!tripInfo && (
           <Skeleton.Node active>
             <BarChartOutlined
               style={{ fontSize: 40, color: '#bfbfbf' }}
