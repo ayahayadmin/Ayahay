@@ -107,15 +107,15 @@ export class ReportingService {
     );
 
     confirmedBookingPassengers.forEach((passenger) => {
-      const adminFee = passenger.bookingPaymentItems.find(
-        ({ type }) => type === 'ServiceCharge'
+      const passengerFare = passenger.bookingPaymentItems.find(
+        ({ type }) => type === 'Fare'
       )?.price;
 
       passengers.push(
         this.reportingMapper.convertTripPassengersForReporting(
           passenger,
-          passenger.totalPrice,
-          adminFee ?? 0
+          passengerFare,
+          passenger.totalPrice
         )
       );
 
@@ -140,15 +140,15 @@ export class ReportingService {
     );
 
     confirmedBookingVehicles.forEach((vehicle) => {
-      const vehicleAdminFee = vehicle.bookingPaymentItems.find(
-        ({ type }) => type === 'ServiceCharge'
+      const vehicleFare = vehicle.bookingPaymentItems.find(
+        ({ type }) => type === 'Fare'
       )?.price;
 
       vehicles.push(
         this.reportingMapper.convertTripVehiclesForReporting(
           vehicle,
-          vehicle.totalPrice,
-          vehicleAdminFee ?? 0
+          vehicleFare,
+          vehicle.totalPrice
         )
       );
 

@@ -16,7 +16,6 @@ export interface TripReport {
     collect: boolean;
     discountAmount: number;
     ticketCost: number;
-    adminFee: number;
     fare: number;
     paymentStatus: string;
   }[];
@@ -36,7 +35,6 @@ export interface TripReport {
     collect: boolean;
     discountAmount: number;
     ticketCost: number;
-    adminFee: number;
     fare: number;
     paymentStatus: string;
   }[];
