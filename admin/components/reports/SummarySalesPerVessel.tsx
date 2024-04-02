@@ -86,7 +86,9 @@ const SummarySalesPerVessel = forwardRef(function (
             <span style={{ fontWeight: 'bold' }}>EB AZNAR SHIPPING</span>
           </div>
           <span className={styles['center-div']} style={{ fontWeight: 'bold' }}>
-            SUMMARY SALES PER VESSEL REPORT
+            {reportType === undefined
+              ? 'SUMMARY SALES PER TRIP REPORT'
+              : 'SUMMARY SALES PER VESSEL REPORT'}
           </span>
         </div>
         <div
