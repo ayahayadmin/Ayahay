@@ -31,7 +31,7 @@ export default function ReportingPage() {
   return (
     <div className={styles['main-container']}>
       <Title level={1} style={{ fontSize: 25 }}>
-        Summary Sales Per Vessel
+        Summary Sales
       </Title>
       <Button
         type='primary'

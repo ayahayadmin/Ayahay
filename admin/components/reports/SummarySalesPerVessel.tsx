@@ -86,7 +86,9 @@ const SummarySalesPerVessel = forwardRef(function (
             <span style={{ fontWeight: 'bold' }}>EB AZNAR SHIPPING</span>
           </div>
           <span className={styles['center-div']} style={{ fontWeight: 'bold' }}>
-            SUMMARY SALES PER VESSEL REPORT
+            {reportType === undefined
+              ? 'SUMMARY SALES PER TRIP REPORT'
+              : 'SUMMARY SALES PER VESSEL REPORT'}
           </span>
         </div>
         <div
@@ -143,7 +145,14 @@ const SummarySalesPerVessel = forwardRef(function (
             </thead>
             <tbody>
               {data.map((shipData) => {
-                shipData.passengers?.map((passenger: any) => {
+                if (
+                  shipData.passengers.length === 0 &&
+                  shipData.passengerDiscountsBreakdown?.length === 0
+                ) {
+                  return;
+                }
+
+                shipData.passengers.map((passenger: any) => {
                   totalPaxFare += passenger.ticketCost;
                   if (passenger.paymentStatus === 'PayMongo') {
                     mopBreakdown.Ayahay.aggFare += passenger.ticketCost;
@@ -161,7 +170,7 @@ const SummarySalesPerVessel = forwardRef(function (
                 })`;
                 let paxSales = 0;
 
-                const vesselBreakdown: any =
+                const discountTypeBreakdown: any =
                   shipData.passengerDiscountsBreakdown?.map(
                     (passengerDiscount, idx) => {
                       paxSales += passengerDiscount.totalSales;
@@ -191,10 +200,22 @@ const SummarySalesPerVessel = forwardRef(function (
                     }
                   );
 
+                const subTotalRow = (
+                  <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td style={{ textAlign: 'left' }}>
+                      PHP&nbsp;
+                      {roundToTwoDecimalPlacesAndAddCommas(paxSales)}
+                    </td>
+                  </tr>
+                );
+
                 totalPaxBooked += shipData.totalPassengers;
                 totalPaxSales += paxSales;
 
-                return vesselBreakdown;
+                return [...discountTypeBreakdown, subTotalRow];
               })}
             </tbody>
             <tfoot style={{ backgroundColor: '#ddebf7' }}>
@@ -233,6 +254,13 @@ const SummarySalesPerVessel = forwardRef(function (
             </thead>
             <tbody>
               {data.map((shipData) => {
+                if (
+                  shipData.vehicles.length === 0 &&
+                  shipData.vehicleTypesBreakdown?.length === 0
+                ) {
+                  return;
+                }
+
                 shipData.vehicles.map((vehicle: any) => {
                   totalVehicleFare += vehicle.ticketCost;
                   if (vehicle.paymentStatus === 'PayMongo') {
@@ -250,7 +278,7 @@ const SummarySalesPerVessel = forwardRef(function (
                 })`;
                 let vehicleSales = 0;
 
-                const vehicleTypeBreakdown =
+                const vehicleTypeBreakdown: any =
                   shipData.vehicleTypesBreakdown?.map((vehicle, idx) => {
                     vehicleSales += vehicle.totalSales;
                     return (
@@ -278,10 +306,22 @@ const SummarySalesPerVessel = forwardRef(function (
                     );
                   });
 
+                const subTotalRow = (
+                  <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td style={{ textAlign: 'left' }}>
+                      PHP&nbsp;
+                      {roundToTwoDecimalPlacesAndAddCommas(vehicleSales)}
+                    </td>
+                  </tr>
+                );
+
                 totalVehicleBooked += shipData.totalVehicles;
                 totalVehicleSales += vehicleSales;
 
-                return vehicleTypeBreakdown;
+                return [...vehicleTypeBreakdown, subTotalRow];
               })}
             </tbody>
             <tfoot style={{ backgroundColor: '#ddebf7' }}>
