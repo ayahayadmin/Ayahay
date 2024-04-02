@@ -138,6 +138,7 @@ const SummarySalesPerVessel = forwardRef(function (
             <thead style={{ backgroundColor: '#ddebf7' }}>
               <tr>
                 <th>Voyage</th>
+                <th></th>
                 <th>Discount Type</th>
                 <th style={{ textAlign: 'left' }}>Total</th>
                 <th style={{ textAlign: 'left' }}>Amount</th>
@@ -185,6 +186,7 @@ const SummarySalesPerVessel = forwardRef(function (
                           ) : (
                             <td></td>
                           )}
+                          <td></td>
                           <td>{passengerDiscount.typeOfDiscount}</td>
                           <td style={{ textAlign: 'left' }}>
                             {passengerDiscount.totalBooked}
@@ -201,8 +203,9 @@ const SummarySalesPerVessel = forwardRef(function (
                   );
 
                 const subTotalRow = (
-                  <tr>
+                  <tr style={{ fontWeight: 'bold' }}>
                     <td></td>
+                    <td>Sub-total</td>
                     <td></td>
                     <td></td>
                     <td style={{ textAlign: 'left' }}>
@@ -220,7 +223,7 @@ const SummarySalesPerVessel = forwardRef(function (
             </tbody>
             <tfoot style={{ backgroundColor: '#ddebf7' }}>
               <tr>
-                <td colSpan={2}>TOTAL</td>
+                <td colSpan={3}>TOTAL</td>
                 <td style={{ textAlign: 'left' }}>{totalPaxBooked}</td>
                 <td style={{ textAlign: 'left' }}>
                   PHP&nbsp;
@@ -247,6 +250,7 @@ const SummarySalesPerVessel = forwardRef(function (
             <thead style={{ backgroundColor: '#ddebf7' }}>
               <tr>
                 <th>Voyage</th>
+                <th></th>
                 <th>Vehicle Type</th>
                 <th style={{ textAlign: 'left' }}>Total</th>
                 <th style={{ textAlign: 'left' }}>Amount</th>
@@ -292,6 +296,7 @@ const SummarySalesPerVessel = forwardRef(function (
                         ) : (
                           <td></td>
                         )}
+                        <td></td>
                         <td>{vehicle.typeOfVehicle}</td>
                         <td style={{ textAlign: 'left' }}>
                           {vehicle.totalBooked}
@@ -307,8 +312,9 @@ const SummarySalesPerVessel = forwardRef(function (
                   });
 
                 const subTotalRow = (
-                  <tr>
+                  <tr style={{ fontWeight: 'bold' }}>
                     <td></td>
+                    <td>Sub-total</td>
                     <td></td>
                     <td></td>
                     <td style={{ textAlign: 'left' }}>
@@ -326,7 +332,7 @@ const SummarySalesPerVessel = forwardRef(function (
             </tbody>
             <tfoot style={{ backgroundColor: '#ddebf7' }}>
               <tr>
-                <td colSpan={2}>TOTAL</td>
+                <td colSpan={3}>TOTAL</td>
                 <td style={{ textAlign: 'left' }}>{totalVehicleBooked}</td>
                 <td style={{ textAlign: 'left' }}>
                   PHP&nbsp;
