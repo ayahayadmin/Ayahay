@@ -30,11 +30,9 @@ const ProfitAndLossStatement = forwardRef(function (
 
   let totalTicketCost = 0;
   let totalRefund = 0;
-  let totalAdminFee = 0;
   let totalFare = 0;
 
   let totalVehicleTicketCost = 0;
-  let totalVehicleAdminFee = 0;
   let totalVehicleRefund = 0;
   let totalVehicleFare = 0;
 
@@ -42,13 +40,11 @@ const ProfitAndLossStatement = forwardRef(function (
 
   data.passengers.map((passenger) => {
     totalTicketCost += passenger.ticketCost;
-    totalAdminFee += passenger.adminFee;
     totalFare += passenger.fare;
   });
 
   data.vehicles?.map((vehicle) => {
     totalVehicleTicketCost += vehicle.ticketCost;
-    totalVehicleAdminFee += vehicle.adminFee;
     totalVehicleFare += vehicle.fare;
   });
 

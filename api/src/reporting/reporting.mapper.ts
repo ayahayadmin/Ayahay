@@ -23,7 +23,7 @@ export class ReportingMapper {
     };
   }
 
-  convertTripPassengersForReporting(passenger, passengerFare, adminFee) {
+  convertTripPassengersForReporting(passenger, passengerFare, totalPrice) {
     const discountAmount = passenger.bookingPaymentItems.find(
       ({ type }) => type === 'VoucherDiscount'
     )?.price;
@@ -37,8 +37,7 @@ export class ReportingMapper {
       collect: passenger.booking.voucherCode === 'AZNAR_COLLECT',
       discountAmount: discountAmount ?? 0,
       ticketCost: passengerFare,
-      adminFee,
-      fare: passengerFare + adminFee,
+      fare: totalPrice,
       paymentStatus:
         passenger.booking.createdByAccount?.role === 'Admin' ||
         passenger.booking.createdByAccount?.role === 'Staff'
@@ -47,7 +46,7 @@ export class ReportingMapper {
     };
   }
 
-  convertTripVehiclesForReporting(vehicle, vehicleFare, vehicleAdminFee) {
+  convertTripVehiclesForReporting(vehicle, vehicleFare, totalPrice) {
     const discountAmount = vehicle.bookingPaymentItems.find(
       ({ type }) => type === 'VoucherDiscount'
     )?.price;
@@ -59,8 +58,7 @@ export class ReportingMapper {
       collect: vehicle.booking.voucherCode === 'AZNAR_COLLECT',
       discountAmount: discountAmount ?? 0,
       ticketCost: vehicleFare,
-      adminFee: vehicleAdminFee,
-      fare: vehicleFare + vehicleAdminFee,
+      fare: totalPrice,
       paymentStatus:
         vehicle.booking.createdByAccount?.role === 'Admin' ||
         vehicle.booking.createdByAccount?.role === 'Staff'
