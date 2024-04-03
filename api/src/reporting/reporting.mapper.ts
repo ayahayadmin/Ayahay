@@ -23,10 +23,12 @@ export class ReportingMapper {
     };
   }
 
-  convertTripPassengersForReporting(passenger, passengerFare, totalPrice) {
-    const discountAmount = passenger.bookingPaymentItems.find(
-      ({ type }) => type === 'VoucherDiscount'
-    )?.price;
+  convertTripPassengersForReporting(
+    passenger,
+    passengerFare,
+    totalPrice,
+    discountAmount
+  ) {
     return {
       passengerName: `${passenger.passenger.firstName.trim() ?? ''} ${
         passenger.passenger.lastName.trim() ?? ''
@@ -35,8 +37,8 @@ export class ReportingMapper {
       accommodation: passenger.cabin.cabinType.name,
       discount: passenger.passenger.discountType ?? 'Adult',
       collect: passenger.booking.voucherCode === 'AZNAR_COLLECT',
-      discountAmount: discountAmount ?? 0,
-      ticketCost: passengerFare,
+      discountAmount: discountAmount,
+      ticketCost: passengerFare + discountAmount,
       fare: totalPrice,
       paymentStatus:
         passenger.booking.createdByAccount?.role === 'Admin' ||
@@ -46,18 +48,20 @@ export class ReportingMapper {
     };
   }
 
-  convertTripVehiclesForReporting(vehicle, vehicleFare, totalPrice) {
-    const discountAmount = vehicle.bookingPaymentItems.find(
-      ({ type }) => type === 'VoucherDiscount'
-    )?.price;
+  convertTripVehiclesForReporting(
+    vehicle,
+    vehicleFare,
+    totalPrice,
+    discountAmount
+  ) {
     return {
       teller: vehicle.booking.createdByAccount?.email,
       referenceNo: vehicle.booking.referenceNo,
       typeOfVehicle: vehicle.vehicle.vehicleType.description,
       plateNo: vehicle.vehicle.plateNo,
       collect: vehicle.booking.voucherCode === 'AZNAR_COLLECT',
-      discountAmount: discountAmount ?? 0,
-      ticketCost: vehicleFare,
+      discountAmount: discountAmount,
+      ticketCost: vehicleFare + discountAmount,
       fare: totalPrice,
       paymentStatus:
         vehicle.booking.createdByAccount?.role === 'Admin' ||
@@ -70,10 +74,11 @@ export class ReportingMapper {
   convertTripPassengersToPassengerBreakdown(
     passenger,
     passengerFare,
+    discountAmount,
     passengerDiscountsBreakdown
   ) {
     const discountType = passenger.passenger.discountType ?? 'Adult';
-
+    const discountedPassengerFare = passengerFare + discountAmount;
     const index = passengerDiscountsBreakdown.findIndex(
       (passengerBreakdown) => passengerBreakdown.typeOfDiscount === discountType
     );
@@ -83,13 +88,14 @@ export class ReportingMapper {
         ...passengerDiscountsBreakdown[index],
         totalBooked: passengerDiscountsBreakdown[index].totalBooked + 1,
         totalSales:
-          passengerDiscountsBreakdown[index].totalSales + passengerFare,
+          passengerDiscountsBreakdown[index].totalSales +
+          discountedPassengerFare,
       };
     } else {
       passengerDiscountsBreakdown.push({
         typeOfDiscount: discountType,
         totalBooked: 1,
-        totalSales: passengerFare,
+        totalSales: discountedPassengerFare,
       });
     }
 
@@ -99,8 +105,10 @@ export class ReportingMapper {
   convertTripVehiclesToVehicleBreakdown(
     vehicle,
     vehicleFare,
+    discountAmount,
     vehicleTypesBreakdown
   ) {
+    const discountedVehicleFare = vehicleFare + discountAmount;
     const index = vehicleTypesBreakdown.findIndex(
       (vehicleBreakdown) =>
         vehicleBreakdown.typeOfVehicle ===
@@ -111,13 +119,14 @@ export class ReportingMapper {
       vehicleTypesBreakdown[index] = {
         ...vehicleTypesBreakdown[index],
         totalBooked: vehicleTypesBreakdown[index].totalBooked + 1,
-        totalSales: vehicleTypesBreakdown[index].totalSales + vehicleFare,
+        totalSales:
+          vehicleTypesBreakdown[index].totalSales + discountedVehicleFare,
       };
     } else {
       vehicleTypesBreakdown.push({
         typeOfVehicle: vehicle.vehicle.vehicleType.description,
         totalBooked: 1,
-        totalSales: vehicleFare,
+        totalSales: discountedVehicleFare,
       });
     }
 

@@ -110,19 +110,25 @@ export class ReportingService {
       const passengerFare = passenger.bookingPaymentItems.find(
         ({ type }) => type === 'Fare'
       )?.price;
+      const discountAmount =
+        passenger.bookingPaymentItems.find(
+          ({ type }) => type === 'VoucherDiscount'
+        )?.price ?? 0;
 
       passengers.push(
         this.reportingMapper.convertTripPassengersForReporting(
           passenger,
           passengerFare,
-          passenger.totalPrice
+          passenger.totalPrice,
+          discountAmount
         )
       );
 
       const passengerDiscountsBreakdownArr =
         this.reportingMapper.convertTripPassengersToPassengerBreakdown(
           passenger,
-          passenger.totalPrice,
+          passengerFare,
+          discountAmount,
           passengerDiscountsBreakdown
         );
       passengerDiscountsBreakdown = passengerDiscountsBreakdownArr;
@@ -143,19 +149,25 @@ export class ReportingService {
       const vehicleFare = vehicle.bookingPaymentItems.find(
         ({ type }) => type === 'Fare'
       )?.price;
+      const discountAmount =
+        vehicle.bookingPaymentItems.find(
+          ({ type }) => type === 'VoucherDiscount'
+        )?.price ?? 0;
 
       vehicles.push(
         this.reportingMapper.convertTripVehiclesForReporting(
           vehicle,
           vehicleFare,
-          vehicle.totalPrice
+          vehicle.totalPrice,
+          discountAmount
         )
       );
 
       const vehicleTypesBreakdownArr =
         this.reportingMapper.convertTripVehiclesToVehicleBreakdown(
           vehicle,
-          vehicle.totalPrice,
+          vehicleFare,
+          discountAmount,
           vehicleTypesBreakdown
         );
       vehicleTypesBreakdown = vehicleTypesBreakdownArr;
