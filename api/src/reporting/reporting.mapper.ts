@@ -24,9 +24,10 @@ export class ReportingMapper {
   }
 
   convertTripPassengersForReporting(passenger, passengerFare, totalPrice) {
-    const discountAmount = passenger.bookingPaymentItems.find(
-      ({ type }) => type === 'VoucherDiscount'
-    )?.price;
+    const discountAmount =
+      passenger.bookingPaymentItems.find(
+        ({ type }) => type === 'VoucherDiscount'
+      )?.price ?? 0;
     return {
       passengerName: `${passenger.passenger.firstName.trim() ?? ''} ${
         passenger.passenger.lastName.trim() ?? ''
@@ -35,8 +36,8 @@ export class ReportingMapper {
       accommodation: passenger.cabin.cabinType.name,
       discount: passenger.passenger.discountType ?? 'Adult',
       collect: passenger.booking.voucherCode === 'AZNAR_COLLECT',
-      discountAmount: discountAmount ?? 0,
-      ticketCost: passengerFare,
+      discountAmount: discountAmount,
+      ticketCost: passengerFare + discountAmount,
       fare: totalPrice,
       paymentStatus:
         passenger.booking.createdByAccount?.role === 'Admin' ||
@@ -47,17 +48,17 @@ export class ReportingMapper {
   }
 
   convertTripVehiclesForReporting(vehicle, vehicleFare, totalPrice) {
-    const discountAmount = vehicle.bookingPaymentItems.find(
-      ({ type }) => type === 'VoucherDiscount'
-    )?.price;
+    const discountAmount =
+      vehicle.bookingPaymentItems.find(({ type }) => type === 'VoucherDiscount')
+        ?.price ?? 0;
     return {
       teller: vehicle.booking.createdByAccount?.email,
       referenceNo: vehicle.booking.referenceNo,
       typeOfVehicle: vehicle.vehicle.vehicleType.description,
       plateNo: vehicle.vehicle.plateNo,
       collect: vehicle.booking.voucherCode === 'AZNAR_COLLECT',
-      discountAmount: discountAmount ?? 0,
-      ticketCost: vehicleFare,
+      discountAmount: discountAmount,
+      ticketCost: vehicleFare + discountAmount,
       fare: totalPrice,
       paymentStatus:
         vehicle.booking.createdByAccount?.role === 'Admin' ||
