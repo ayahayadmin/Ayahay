@@ -127,7 +127,7 @@ export class ReportingService {
       const passengerDiscountsBreakdownArr =
         this.reportingMapper.convertTripPassengersToPassengerBreakdown(
           passenger,
-          passenger.totalPrice,
+          passengerFare,
           discountAmount,
           passengerDiscountsBreakdown
         );
@@ -166,7 +166,7 @@ export class ReportingService {
       const vehicleTypesBreakdownArr =
         this.reportingMapper.convertTripVehiclesToVehicleBreakdown(
           vehicle,
-          vehicle.totalPrice,
+          vehicleFare,
           discountAmount,
           vehicleTypesBreakdown
         );
