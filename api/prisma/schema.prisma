@@ -273,6 +273,7 @@ model Booking {
   isBookingRequest Boolean @map("is_booking_request")
   failureCancellationRemarks String? @map("failure_cancellation_remarks")
   consigneeName String? @map("consignee_name")
+  freightRateReceipt String? @map("freight_rate_receipt")
 
   bookingTrips BookingTrip[]
   bookingTripPassengers BookingTripPassenger[]

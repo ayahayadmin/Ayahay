@@ -13,3 +13,14 @@ export async function getBillOfLading(
     return undefined;
   }
 }
+
+export async function updateBookingFRR(
+  bookingId: string,
+  frr: string
+): Promise<void> {
+  try {
+    await axios.patch(`${REPORTING_API}/${bookingId}/bol/frr`, frr);
+  } catch (e) {
+    console.error(e);
+  }
+}

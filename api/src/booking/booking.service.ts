@@ -615,4 +615,24 @@ export class BookingService {
       }
     });
   }
+
+  async updateBookingFRR(bookingId: string, frr: string): Promise<void> {
+    const where: Prisma.BookingWhereUniqueInput = {
+      id: bookingId,
+    };
+    const booking = await this.prisma.booking.findUnique({
+      where,
+    });
+
+    if (booking === null) {
+      throw new NotFoundException();
+    }
+
+    await this.prisma.booking.update({
+      where,
+      data: {
+        freightRateReceipt: frr,
+      },
+    });
+  }
 }

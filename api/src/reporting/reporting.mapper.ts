@@ -155,6 +155,7 @@ export class ReportingMapper {
   convertBookingToBillOfLading(booking): BillOfLading {
     const referenceNo = booking.referenceNo;
     const consigneeName = booking.consigneeName;
+    const freightRateReceipt = booking.freightRateReceipt;
     const shipName = booking.bookingTripVehicles[0].trip.ship.name;
     const shippingLineName =
       booking.bookingTripVehicles[0].trip.shippingLine.name;
@@ -175,6 +176,7 @@ export class ReportingMapper {
     return {
       referenceNo,
       consigneeName,
+      freightRateReceipt,
       shipName,
       shippingLineName,
       destPortName,
