@@ -354,11 +354,12 @@ export class BookingService {
     await this.bookingReservationService.assignCabinsAndSeatsToPassengers(
       booking.bookingTrips
     );
+    await this.assignDiscountTypeToPassengers(booking.bookingTrips);
     await this.bookingPricingService.assignBookingPricing(
       booking,
       loggedInAccount
     );
-    await this.rememberPassengersAndVehicles(
+    await this.attachPassengersAndVehiclesToAccount(
       booking.bookingTrips,
       loggedInAccount
     );
@@ -371,8 +372,23 @@ export class BookingService {
     return await this.saveTempBooking(booking);
   }
 
+  private assignDiscountTypeToPassengers(bookingTrips: IBookingTrip[]) {
+    bookingTrips.forEach((bookingTrip) => {
+        bookingTrip.bookingTripPassengers
+            .filter(bookingTripPassenger => bookingTripPassenger.discountType === undefined)
+            .forEach((bookingTripPassenger) => {
+                if (bookingTripPassenger.drivesVehicleId !== undefined) {
+                    bookingTripPassenger.discountType = 'Driver';
+                } else if (bookingTripPassenger.passenger?.discountType !== undefined) {
+                    // e.g. booking will inherit passenger's discount type (if applicable)
+                    bookingTripPassenger.discountType = bookingTripPassenger.passenger.discountType;
+                }
+            });
+    });
+  }
+
   // NOTE: mutates the booking
-  private rememberPassengersAndVehicles(
+  private attachPassengersAndVehiclesToAccount(
     bookingTrips: IBookingTrip[],
     loggedInAccount?: IAccount
   ): void {

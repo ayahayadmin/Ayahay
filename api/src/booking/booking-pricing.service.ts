@@ -58,7 +58,6 @@ export class BookingPricingService {
     voucher?: IVoucher,
     loggedInAccount?: IAccount
   ): void {
-    const passenger = bookingTripPassenger.passenger;
     const tripCabin = bookingTripPassenger.tripCabin;
     const bookingPaymentItems: IBookingPaymentItem[] = [];
 
@@ -70,7 +69,7 @@ export class BookingPricingService {
       shippingLine
     );
 
-    const passengerType = this.getPassengerType(bookingTripPassenger);
+    const passengerType = bookingTripPassenger.discountType ?? 'Adult';
     bookingPaymentItems.push({
       id: -1,
       bookingId: '',
@@ -98,7 +97,7 @@ export class BookingPricingService {
     }
 
     const serviceCharge = this.calculateServiceChargeForPassenger(
-      passenger,
+      bookingTripPassenger,
       roundedTicketPrice,
       loggedInAccount
     );
@@ -128,7 +127,7 @@ export class BookingPricingService {
 
     const cabinFeeWithVat = bookingTripPassenger.tripCabin.adultFare;
 
-    switch (bookingTripPassenger.passenger.discountType) {
+    switch (bookingTripPassenger.discountType) {
       case 'Infant':
       case 'Driver':
       case 'Passes':
@@ -158,21 +157,6 @@ export class BookingPricingService {
     }
 
     return originalPrice;
-  }
-
-  private getPassengerType({
-    drivesVehicleId,
-    passenger,
-  }: IBookingTripPassenger): string {
-    if (passenger.discountType !== undefined) {
-      return passenger.discountType;
-    }
-
-    if (drivesVehicleId !== undefined) {
-      return 'Driver';
-    }
-
-    return 'Adult';
   }
 
   private assignBookingTripVehiclePricing(
@@ -253,23 +237,23 @@ export class BookingPricingService {
     return Math.floor(value * 100) / 100;
   }
 
-  private isPayingPassenger(passenger: IPassenger) {
+  private isPayingPassenger(bookingTripPassenger: IBookingTripPassenger) {
     return !(
-      passenger?.discountType === 'Infant' ||
-      passenger?.discountType === 'Driver' ||
-      passenger?.discountType === 'Passes' ||
-      passenger?.discountType === 'Helper'
+      bookingTripPassenger.discountType === 'Infant' ||
+      bookingTripPassenger.discountType === 'Driver' ||
+      bookingTripPassenger.discountType === 'Passes' ||
+      bookingTripPassenger.discountType === 'Helper'
     );
   }
 
   private calculateServiceChargeForPassenger(
-    passenger: IPassenger,
+    bookingTripPassenger: IBookingTripPassenger,
     chargeablePrice: number,
     bookingCreator?: IAccount
   ): number {
     if (
       this.utilityService.hasPrivilegedAccess(bookingCreator) ||
-      !this.isPayingPassenger(passenger)
+      !this.isPayingPassenger(bookingTripPassenger)
     ) {
       return 0;
     }

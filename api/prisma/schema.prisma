@@ -316,6 +316,7 @@ model BookingTripPassenger {
   meal String?
   totalPrice Float @map("total_price")
   checkInDate DateTime? @map("check_in_date")
+  discountType String? @map("discount_type")
 
   bookingPaymentItems BookingPaymentItem[]
 

@@ -114,24 +114,25 @@ export class BookingMapper {
   }
 
   private convertBookingTripPassengerToSummary(
-    bookingPassenger: any
+    bookingTripPassenger: any
   ): IBookingTripPassenger {
     return {
-      bookingId: bookingPassenger.bookingId,
-      tripId: bookingPassenger.tripId,
-      passengerId: bookingPassenger.passengerId,
+      bookingId: bookingTripPassenger.bookingId,
+      tripId: bookingTripPassenger.tripId,
+      passengerId: bookingTripPassenger.passengerId,
       passenger: this.passengerMapper.convertPassengerToDto(
-        bookingPassenger.passenger
+        bookingTripPassenger.passenger
       ),
-      cabinId: bookingPassenger.cabinId,
-      cabin: this.cabinMapper.convertCabinToDto(bookingPassenger.cabin),
-      seatId: bookingPassenger.seatId,
+      cabinId: bookingTripPassenger.cabinId,
+      cabin: this.cabinMapper.convertCabinToDto(bookingTripPassenger.cabin),
+      seatId: bookingTripPassenger.seatId,
 
-      meal: bookingPassenger.meal,
-      totalPrice: bookingPassenger.totalPrice ?? undefined,
-      checkInDate: bookingPassenger.checkInDate ?? undefined,
+      meal: bookingTripPassenger.meal,
+      totalPrice: bookingTripPassenger.totalPrice ?? undefined,
+      checkInDate: bookingTripPassenger.checkInDate ?? undefined,
+      discountType: bookingTripPassenger.discountType ?? undefined,
 
-      bookingPaymentItems: bookingPassenger.bookingPaymentItems?.map(
+      bookingPaymentItems: bookingTripPassenger.bookingPaymentItems?.map(
         (paymentItem) => this.paymentMapper.convertPaymentItemToDto(paymentItem)
       ),
     };
@@ -260,6 +261,7 @@ export class BookingMapper {
           seatId: bookingTripPassenger.seatId ?? null,
           cabinId: bookingTripPassenger.cabinId,
           totalPrice: bookingTripPassenger.totalPrice ?? 0,
+          discountType: bookingTripPassenger.discountType ?? null,
         });
         bookingTripPassenger.bookingPaymentItems.forEach((paymentItem) =>
           bookingPaymentItems.push({

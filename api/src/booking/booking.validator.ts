@@ -173,7 +173,7 @@ export class BookingValidator {
 
       if (
         !this.utilityService.hasPrivilegedAccess(loggedInAccount) &&
-        passenger.discountType !== undefined
+        (bookingTripPassengers[i].discountType !== undefined || passenger.discountType !== undefined)
       ) {
         errorMessages.push({
           fieldName: ['bookingTrips', tripIndex, 'bookingTripPassengers', i],
