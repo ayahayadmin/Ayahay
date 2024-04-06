@@ -10,7 +10,7 @@ import { BillOfLading as IBillOfLading } from '@ayahay/http';
 import { PrinterOutlined } from '@ant-design/icons';
 
 export default function BillOfLadingPage({ params }: any) {
-  const [data, setData] = useState<IBillOfLading[] | undefined>();
+  const [data, setData] = useState<IBillOfLading | undefined>();
   const [form] = Form.useForm();
   const bookingId = params.id;
 
@@ -19,11 +19,7 @@ export default function BillOfLadingPage({ params }: any) {
   }, []);
 
   const fetchBillOfLading = async (bookingId: string): Promise<void> => {
-    const billOfLading = await getBillOfLading(bookingId);
-    const billOfLadingPerVehicle = billOfLading?.vehicles?.map(
-      (vehicle) => ({ ...billOfLading, vehicles: [vehicle] } as IBillOfLading)
-    );
-    setData(billOfLadingPerVehicle);
+    setData(await getBillOfLading(bookingId));
   };
 
   const handleFRRSubmit = async (value: any) => {
@@ -35,10 +31,7 @@ export default function BillOfLadingPage({ params }: any) {
     <div>
       <Skeleton loading={data === undefined}>
         <Form form={form} onFinish={handleFRRSubmit}>
-          {data &&
-            data.map((billOfLadingPerVehicle) => (
-              <BillOfLading data={billOfLadingPerVehicle} />
-          ))}
+          {data && <BillOfLading data={data} />}
         </Form>
       </Skeleton>
 
@@ -47,7 +40,7 @@ export default function BillOfLadingPage({ params }: any) {
         type='primary'
         onClick={() => window.print()}
         tooltip='Print'
-        icon={<PrinterOutlined height={72} width={72} />}
+        icon={<PrinterOutlined rev={undefined} height={72} width={72} />}
       ></FloatButton>
     </div>
   );
