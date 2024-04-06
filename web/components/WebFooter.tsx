@@ -40,19 +40,19 @@ export default function WebFooter() {
                 href='https://www.facebook.com/profile.php?id=61551614079847&is_tour_dismissed=true'
                 target='_blank'
               >
-                <FacebookFilled style={{ fontSize: 28 }} rev={undefined} />
+                <FacebookFilled style={{ fontSize: 28 }} />
               </a>
               <a href='https://www.instagram.com/ayahayig' target='_blank'>
-                <InstagramFilled style={{ fontSize: 28 }} rev={undefined} />
+                <InstagramFilled style={{ fontSize: 28 }} />
               </a>
               <a href='https://twitter.com/ayahayX' target='_blank'>
-                <TwitterSquareFilled style={{ fontSize: 28 }} rev={undefined} />
+                <TwitterSquareFilled style={{ fontSize: 28 }} />
               </a>
               <a
                 href='https://www.linkedin.com/company/ayahay-technologies-corporation/about/?viewAsMember=true'
                 target='_blank'
               >
-                <LinkedinFilled style={{ fontSize: 28 }} rev={undefined} />
+                <LinkedinFilled style={{ fontSize: 28 }} />
               </a>
             </Space>
           </div>

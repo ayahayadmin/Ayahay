@@ -23,7 +23,7 @@ const columns: ColumnsType<CancelledTrips> = [
     key: 'srcDestPort',
     render: (_: string, record: CancelledTrips) => (
       <span>
-        {record.srcPortName} <ArrowRightOutlined rev={undefined} />
+        {record.srcPortName} <ArrowRightOutlined />
         &nbsp;
         {record.destPortName}
       </span>
@@ -59,7 +59,7 @@ const columns: ColumnsType<CancelledTrips> = [
       <>
         <strong>Route:</strong>&nbsp;
         <span>
-          {record.srcPortName} <ArrowRightOutlined rev={undefined} />
+          {record.srcPortName} <ArrowRightOutlined />
           &nbsp;
           {record.destPortName}
         </span>

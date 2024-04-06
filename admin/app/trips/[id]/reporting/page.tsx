@@ -115,7 +115,7 @@ export default function TripReportingPage({ params }: any) {
         loading={tripsReporting === undefined}
         onClick={handleDownloadDailySales}
       >
-        <DownloadOutlined rev={undefined} /> Download
+        <DownloadOutlined /> Download
       </Button>
       <div style={{ display: 'none' }}>
         {tripsReporting && (
@@ -134,7 +134,7 @@ export default function TripReportingPage({ params }: any) {
         loading={tripsReporting === undefined}
         onClick={handleDownloadCargoDailySales}
       >
-        <DownloadOutlined rev={undefined} /> Download
+        <DownloadOutlined /> Download
       </Button>
       <div style={{ display: 'none' }}>
         {tripsReporting && (
@@ -165,7 +165,7 @@ export default function TripReportingPage({ params }: any) {
         loading={tripsReporting === undefined || disbursements === undefined}
         onClick={handleDownloadSummarySalesPerVoyage}
       >
-        <DownloadOutlined rev={undefined} /> Download
+        <DownloadOutlined /> Download
       </Button>
       <div style={{ display: 'none' }}>
         {tripsReporting && disbursements && (
@@ -189,7 +189,7 @@ export default function TripReportingPage({ params }: any) {
         }
         onClick={handleDownloadProfitAndLossStatement}
       >
-        <DownloadOutlined rev={undefined} /> Download
+        <DownloadOutlined /> Download
       </Button>
       <div style={{ display: 'none' }}>
         {tripsReporting && disbursements && expenses && (

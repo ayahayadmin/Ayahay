@@ -41,6 +41,11 @@ export interface IBookingTripPassenger {
   meal?: string;
   totalPrice?: number;
   checkInDate?: string;
+  /**
+   * has a value if passenger is removed from the booking
+   * otherwise this is undefined (or NULL in the DB)
+   */
+  removedReason?: string;
   discountType?: keyof typeof DISCOUNT_TYPE;
 
   bookingPaymentItems?: IBookingPaymentItem[];

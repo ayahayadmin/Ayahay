@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import {
   IPassenger,
   ITrip,
@@ -326,5 +326,19 @@ export class BookingValidator {
     }
 
     return errorMessages;
+  }
+
+  validateBookingAccessForModification(
+    booking: { bookingStatus: string; shippingLineId: number },
+    loggedInAccount: IAccount
+  ): void {
+    if (booking.bookingStatus !== 'Confirmed') {
+      throw new BadRequestException('Only confirmed bookings can be modified.');
+    }
+
+    this.utilityService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
+      booking,
+      loggedInAccount
+    );
   }
 }

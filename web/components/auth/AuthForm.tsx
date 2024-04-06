@@ -227,7 +227,7 @@ export default function AuthForm() {
           onClick={onClick}
         >
           <span style={{ marginRight: '12px', fontSize: '14px' }}>{label}</span>
-          <Avatar icon={<UserOutlined rev={undefined} />} />
+          <Avatar icon={<UserOutlined />} />
         </Button>
       </Dropdown>
       <Modal
@@ -244,12 +244,10 @@ export default function AuthForm() {
         <div className={styles['text']}>Log in with</div>
         <div className={styles['sso-buttons']}>
           <GoogleOutlined
-            rev={undefined}
             className={styles['sso-button']}
             onClick={onGoogleSSOLogin}
           />
           <FacebookFilled
-            rev={undefined}
             className={styles['sso-button']}
             onClick={onFacebookSSOLogin}
           />

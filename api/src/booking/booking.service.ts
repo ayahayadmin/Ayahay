@@ -6,7 +6,13 @@ import {
 } from '@nestjs/common';
 import { Prisma, PrismaClient } from '@prisma/client';
 import { PrismaService } from '@/prisma.service';
-import { IBooking, IAccount, IBookingTrip } from '@ayahay/models';
+import {
+  IBooking,
+  IAccount,
+  IBookingTrip,
+  IBookingTripVehicle,
+  IBookingTripPassenger,
+} from '@ayahay/models';
 import {
   PaginatedRequest,
   PaginatedResponse,
@@ -18,14 +24,12 @@ import { BookingMapper } from './booking.mapper';
 import { BookingValidator } from './booking.validator';
 import { BookingReservationService } from './booking-reservation.service';
 import { BookingPricingService } from './booking-pricing.service';
-import { VoucherService } from '@/voucher/voucher.service';
 
 @Injectable()
 export class BookingService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly tripService: TripService,
-    private readonly voucherService: VoucherService,
     private readonly bookingReservationService: BookingReservationService,
     private readonly bookingPricingService: BookingPricingService,
     private readonly bookingMapper: BookingMapper,
@@ -173,6 +177,9 @@ export class BookingService {
                 },
                 bookingPaymentItems: true,
               },
+              where: {
+                removedReason: null,
+              },
             },
             bookingTripVehicles: {
               include: {
@@ -198,17 +205,7 @@ export class BookingService {
       throw new NotFoundException();
     }
 
-    if (loggedInAccount === undefined && booking.createdByAccountId !== null) {
-      throw new ForbiddenException();
-    }
-    if (
-      booking.createdByAccountId !== null &&
-      loggedInAccount !== undefined &&
-      loggedInAccount.role === 'Passenger' &&
-      booking.createdByAccountId !== loggedInAccount.id
-    ) {
-      throw new ForbiddenException();
-    }
+    this.verifyLoggedInUserHasAccessToBooking(loggedInAccount, booking);
 
     booking.bookingTrips.sort(
       (bookingTripA, bookingTripB) =>
@@ -217,6 +214,21 @@ export class BookingService {
     );
 
     return this.bookingMapper.convertBookingToSummary(booking);
+  }
+
+  private verifyLoggedInUserHasAccessToBooking(loggedInAccount, booking): void {
+    if (loggedInAccount === undefined && booking.createdByAccountId !== null) {
+      throw new ForbiddenException();
+    }
+
+    if (
+      booking.createdByAccountId !== null &&
+      loggedInAccount !== undefined &&
+      loggedInAccount.role === 'Passenger' &&
+      booking.createdByAccountId !== loggedInAccount.id
+    ) {
+      throw new ForbiddenException();
+    }
   }
 
   async searchPassengerBookings(
@@ -310,6 +322,100 @@ export class BookingService {
         this.bookingMapper.convertBookingToPassengerSearchResponse(passenger)
       ),
     };
+  }
+
+  async getBookingTripPassenger(
+    bookingId: string,
+    tripId: number,
+    passengerId: number,
+    loggedInAccount?: IAccount
+  ): Promise<IBookingTripPassenger> {
+    const bookingTripPassenger =
+      await this.prisma.bookingTripPassenger.findUnique({
+        where: {
+          bookingId_tripId_passengerId: {
+            bookingId: bookingId,
+            tripId: tripId,
+            passengerId: passengerId,
+          },
+        },
+        include: {
+          booking: true,
+          trip: {
+            include: {
+              srcPort: true,
+              destPort: true,
+              shippingLine: true,
+            },
+          },
+          passenger: true,
+          cabin: {
+            include: {
+              cabinType: true,
+            },
+          },
+          bookingPaymentItems: true,
+        },
+      });
+
+    if (bookingTripPassenger === null) {
+      throw new NotFoundException();
+    }
+
+    this.verifyLoggedInUserHasAccessToBooking(
+      loggedInAccount,
+      bookingTripPassenger.booking
+    );
+
+    return this.bookingMapper.convertBookingTripPassengerToSummary(
+      bookingTripPassenger
+    );
+  }
+
+  async getBookingTripVehicle(
+    bookingId: string,
+    tripId: number,
+    vehicleId: number,
+    loggedInAccount?: IAccount
+  ): Promise<IBookingTripVehicle> {
+    const bookingTripVehicle = await this.prisma.bookingTripVehicle.findUnique({
+      where: {
+        bookingId_tripId_vehicleId: {
+          bookingId: bookingId,
+          tripId: tripId,
+          vehicleId: vehicleId,
+        },
+      },
+      include: {
+        booking: true,
+        trip: {
+          include: {
+            srcPort: true,
+            destPort: true,
+            shippingLine: true,
+          },
+        },
+        vehicle: {
+          include: {
+            vehicleType: true,
+          },
+        },
+        bookingPaymentItems: true,
+      },
+    });
+
+    if (bookingTripVehicle === null) {
+      throw new NotFoundException();
+    }
+
+    this.verifyLoggedInUserHasAccessToBooking(
+      loggedInAccount,
+      bookingTripVehicle.booking
+    );
+
+    return this.bookingMapper.convertBookingTripVehicleToSummary(
+      bookingTripVehicle
+    );
   }
 
   async createTentativeBooking(
@@ -522,7 +628,8 @@ export class BookingService {
   async checkInPassenger(
     bookingId: string,
     tripId: number,
-    passengerId: number
+    passengerId: number,
+    loggedInAccount: IAccount
   ): Promise<void> {
     const where: Prisma.BookingTripPassengerWhereUniqueInput = {
       bookingId_tripId_passengerId: {
@@ -535,11 +642,22 @@ export class BookingService {
     const bookingTripPassenger =
       await this.prisma.bookingTripPassenger.findUnique({
         where,
+        include: {
+          booking: true,
+        },
       });
 
-    if (bookingTripPassenger === null) {
+    if (
+      bookingTripPassenger === null ||
+      bookingTripPassenger.removedReason !== null
+    ) {
       throw new NotFoundException();
     }
+
+    this.bookingValidator.validateBookingAccessForModification(
+      bookingTripPassenger.booking,
+      loggedInAccount
+    );
 
     if (bookingTripPassenger.checkInDate !== null) {
       throw new BadRequestException('The passenger has checked in already.');
@@ -556,7 +674,8 @@ export class BookingService {
   async checkInVehicle(
     bookingId: string,
     tripId: number,
-    vehicleId: number
+    vehicleId: number,
+    loggedInAccount: IAccount
   ): Promise<void> {
     const where: Prisma.BookingTripVehicleWhereUniqueInput = {
       bookingId_tripId_vehicleId: {
@@ -567,11 +686,19 @@ export class BookingService {
     };
     const bookingTripVehicle = await this.prisma.bookingTripVehicle.findUnique({
       where,
+      include: {
+        booking: true,
+      },
     });
 
     if (bookingTripVehicle === null) {
       throw new NotFoundException();
     }
+
+    this.bookingValidator.validateBookingAccessForModification(
+      bookingTripVehicle.booking,
+      loggedInAccount
+    );
 
     if (bookingTripVehicle.checkInDate !== null) {
       throw new BadRequestException('The vehicle has checked in already.');
@@ -585,7 +712,11 @@ export class BookingService {
     });
   }
 
-  async cancelBooking(bookingId: string, remarks: string): Promise<void> {
+  async cancelBooking(
+    bookingId: string,
+    remarks: string,
+    loggedInAccount: IAccount
+  ): Promise<void> {
     const booking = await this.prisma.booking.findUnique({
       where: {
         id: bookingId,
@@ -599,6 +730,11 @@ export class BookingService {
         },
       },
     });
+
+    this.bookingValidator.validateBookingAccessForModification(
+      booking,
+      loggedInAccount
+    );
 
     if (booking === null) {
       throw new NotFoundException();
@@ -632,6 +768,58 @@ export class BookingService {
     });
   }
 
+  async removeTripPassenger(
+    bookingId: string,
+    tripId: number,
+    passengerId: number,
+    removedReason: string,
+    loggedInAccount: IAccount
+  ): Promise<void> {
+    const where: Prisma.BookingTripPassengerWhereUniqueInput = {
+      bookingId_tripId_passengerId: {
+        bookingId,
+        tripId,
+        passengerId,
+      },
+    };
+    // TODO: verify that logged in admin has access to this trip
+
+    const bookingTripPassenger =
+      await this.prisma.bookingTripPassenger.findUnique({
+        where,
+        include: {
+          booking: true,
+        },
+      });
+
+    if (bookingTripPassenger === null) {
+      throw new NotFoundException();
+    }
+
+    this.bookingValidator.validateBookingAccessForModification(
+      bookingTripPassenger.booking,
+      loggedInAccount
+    );
+
+    if (bookingTripPassenger.removedReason !== null) {
+      throw new BadRequestException('The passenger has been removed already.');
+    }
+
+    await this.prisma.$transaction(async (transactionContext) => {
+      await transactionContext.bookingTripPassenger.update({
+        where,
+        data: {
+          removedReason,
+        },
+      });
+      await this.bookingReservationService.updatePassengerCapacities(
+        [bookingTripPassenger] as any[],
+        'increment',
+        transactionContext as any
+      );
+    });
+  }
+  
   async updateBookingFRR(bookingId: string, frr: string): Promise<void> {
     const where: Prisma.BookingWhereUniqueInput = {
       id: bookingId,

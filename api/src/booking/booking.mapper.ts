@@ -113,12 +113,18 @@ export class BookingMapper {
     };
   }
 
-  private convertBookingTripPassengerToSummary(
+  convertBookingTripPassengerToSummary(
     bookingTripPassenger: any
   ): IBookingTripPassenger {
     return {
       bookingId: bookingTripPassenger.bookingId,
+      booking: bookingTripPassenger.booking
+        ? this.convertBookingToBasicDto(bookingTripPassenger.booking)
+        : undefined,
       tripId: bookingTripPassenger.tripId,
+      trip: bookingTripPassenger.trip
+        ? this.tripMapper.convertTripToDto(bookingTripPassenger.trip)
+        : undefined,
       passengerId: bookingTripPassenger.passengerId,
       passenger: this.passengerMapper.convertPassengerToDto(
         bookingTripPassenger.passenger
@@ -130,6 +136,7 @@ export class BookingMapper {
       meal: bookingTripPassenger.meal,
       totalPrice: bookingTripPassenger.totalPrice ?? undefined,
       checkInDate: bookingTripPassenger.checkInDate ?? undefined,
+      removedReason: bookingTripPassenger.removedReason ?? undefined,
       discountType: bookingTripPassenger.discountType ?? undefined,
 
       bookingPaymentItems: bookingTripPassenger.bookingPaymentItems?.map(
@@ -138,19 +145,27 @@ export class BookingMapper {
     };
   }
 
-  private convertBookingTripVehicleToSummary(
-    bookingVehicle: any
+  convertBookingTripVehicleToSummary(
+    bookingTripVehicle: any
   ): IBookingTripVehicle {
     return {
-      bookingId: bookingVehicle.bookingId,
-      tripId: bookingVehicle.tripId,
-      vehicleId: bookingVehicle.vehicleId,
-      vehicle: this.vehicleMapper.convertVehicleToDto(bookingVehicle.vehicle),
+      bookingId: bookingTripVehicle.bookingId,
+      booking: bookingTripVehicle.booking
+        ? this.convertBookingToBasicDto(bookingTripVehicle.booking)
+        : undefined,
+      tripId: bookingTripVehicle.tripId,
+      trip: bookingTripVehicle.trip
+        ? this.tripMapper.convertTripToDto(bookingTripVehicle.trip)
+        : undefined,
+      vehicleId: bookingTripVehicle.vehicleId,
+      vehicle: this.vehicleMapper.convertVehicleToDto(
+        bookingTripVehicle.vehicle
+      ),
 
-      totalPrice: bookingVehicle.totalPrice ?? undefined,
-      checkInDate: bookingVehicle.checkInDate ?? undefined,
+      totalPrice: bookingTripVehicle.totalPrice ?? undefined,
+      checkInDate: bookingTripVehicle.checkInDate ?? undefined,
 
-      bookingPaymentItems: bookingVehicle.bookingPaymentItems?.map(
+      bookingPaymentItems: bookingTripVehicle.bookingPaymentItems?.map(
         (paymentItem) => this.paymentMapper.convertPaymentItemToDto(paymentItem)
       ),
     };

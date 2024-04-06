@@ -32,7 +32,7 @@ export default function BillOfLading({ data }: BillOfLadingProps) {
   let totalCharge = 0;
 
   return (
-    <div style={{ overflow: 'hidden' }}>
+    <div style={{ overflow: 'hidden', pageBreakAfter: 'always' }}>
       <table className={styles['bol']}>
         <thead>
           <tr>

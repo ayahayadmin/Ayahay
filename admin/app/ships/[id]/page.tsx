@@ -15,7 +15,7 @@ import {
   getVoyagesBeforeLastMaintenance,
 } from '@/services/ship.service';
 import { ColumnsType } from 'antd/es/table';
-import CreateVoyageModal from '@/components/modal/CreateVoyageModal';
+import RemarksConfirmModal from '@ayahay/components/modals/RemarksConfirmModal';
 import dayjs from 'dayjs';
 
 const { Title } = Typography;
@@ -245,7 +245,10 @@ export default function ShipPage({ params }: any) {
             },
           ]}
         />
-        <CreateVoyageModal
+        <RemarksConfirmModal
+          okText='Confirm'
+          confirmationText='Create Voyage'
+          inputPlaceholder='Reason for voyage...'
           open={createVoyageModalOpen}
           onCreateVoyage={onCreateVoyage}
           onCancel={() => setCreateVoyageModalOpen(false)}

@@ -132,10 +132,7 @@ export default function Schedules() {
           <div className={styles['create-button']}>
             {hasAdminPrivileges && (
               <Dropdown menu={{ items }} trigger={['click']}>
-                <Button
-                  type='primary'
-                  icon={<PlusCircleOutlined rev={undefined} />}
-                >
+                <Button type='primary' icon={<PlusCircleOutlined />}>
                   Create Trip
                 </Button>
               </Dropdown>

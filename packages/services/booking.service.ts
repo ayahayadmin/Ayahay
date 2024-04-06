@@ -21,6 +21,18 @@ export async function checkInPassenger(
   );
 }
 
+export async function removeTripPassenger(
+  bookingId: string,
+  tripId: number,
+  passengerId: number,
+  removedReason: string
+): Promise<void> {
+  return axios.patch(
+    `${BOOKING_API}/${bookingId}/trips/${tripId}/passengers/${passengerId}/remove`,
+    { removedReason }
+  );
+}
+
 export async function checkInVehicle(
   bookingId: string,
   tripId: number,
@@ -42,20 +54,26 @@ export function combineBookingPaymentItems(
             (bookingTripPassenger) =>
               bookingTripPassenger.bookingPaymentItems ?? []
           )
-          .reduce((passengerAItems, passengerBItems) => [
-            ...passengerAItems,
-            ...passengerBItems,
-          ], [])
+          .reduce(
+            (passengerAItems, passengerBItems) => [
+              ...passengerAItems,
+              ...passengerBItems,
+            ],
+            []
+          )
       : [];
     const vehiclePaymentItems = bookingTrip.bookingTripVehicles
       ? bookingTrip.bookingTripVehicles
           .map(
             (bookingTripVehicle) => bookingTripVehicle.bookingPaymentItems ?? []
           )
-          .reduce((vehicleAItems, vehicleBItems) => [
-            ...vehicleAItems,
-            ...vehicleBItems,
-          ], [])
+          .reduce(
+            (vehicleAItems, vehicleBItems) => [
+              ...vehicleAItems,
+              ...vehicleBItems,
+            ],
+            []
+          )
       : [];
     bookingPaymentItems.push(...passengerPaymentItems, ...vehiclePaymentItems);
   });

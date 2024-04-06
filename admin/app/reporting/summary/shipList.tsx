@@ -23,7 +23,7 @@ const columns: ColumnsType<PortsByShip> = [
     key: 'srcDestPort',
     render: (_, record: PortsByShip) => (
       <span className={styles['port']}>
-        {record.srcPort!.name} <ArrowRightOutlined rev={undefined} />
+        {record.srcPort!.name} <ArrowRightOutlined />
         &nbsp;
         {record.destPort!.name}
       </span>

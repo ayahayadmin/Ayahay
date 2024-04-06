@@ -45,7 +45,7 @@ export default function Logout() {
           onClick={() => setDropdownOpen(!dropdownOpen)}
         >
           <span style={{ marginRight: '12px', fontSize: '14px' }}>{label}</span>
-          <Avatar icon={<UserOutlined rev={undefined} />} />
+          <Avatar icon={<UserOutlined />} />
         </Button>
       </Dropdown>
     </div>

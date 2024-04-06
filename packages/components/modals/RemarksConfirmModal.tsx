@@ -4,28 +4,32 @@ import { useForm } from 'antd/es/form/Form';
 
 const { Title } = Typography;
 
-interface CreateVoyageModalProps {
-  onCreateVoyage: (voyageRemarks: string) => Promise<void>;
+interface RemarksConfirmModalProps {
+  confirmationText: string;
+  inputPlaceholder: string;
+  onConfirm: (remarks: string) => void;
 }
 
-export default function CreateVoyageModal({
-  onCreateVoyage,
+export default function RemarksConfirmModal({
+  confirmationText,
+  inputPlaceholder,
+  onConfirm,
   onOk,
   ...modalProps
-}: CreateVoyageModalProps & ModalProps) {
+}: RemarksConfirmModalProps & ModalProps) {
   const [form] = useForm();
 
   const onOkModal = async () => {
     try {
-      await form.validateFields();
-      await onCreateVoyage(form.getFieldValue('remarks'));
+      await form.validateFields(['remarks']);
+      onConfirm(form.getFieldValue('remarks'));
     } catch {}
   };
 
   return (
-    <Modal onOk={onOkModal} okText='Confirm' closeIcon={true} {...modalProps}>
+    <Modal onOk={onOkModal} closeIcon={true} {...modalProps}>
       <Title level={2} style={{ fontSize: '20px' }}>
-        Create Voyage
+        {confirmationText}
       </Title>
       <Form form={form}>
         <Form.Item
@@ -34,11 +38,11 @@ export default function CreateVoyageModal({
           rules={[
             {
               required: true,
-              message: 'Please input the voyage remarks',
+              message: 'This field is required',
             },
           ]}
         >
-          <Input placeholder='Reason for voyage...' />
+          <Input placeholder={inputPlaceholder} />
         </Form.Item>
       </Form>
     </Modal>

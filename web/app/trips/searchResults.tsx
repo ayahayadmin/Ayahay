@@ -37,7 +37,7 @@ const columns: ColumnsType<ITrip> = [
     key: 'srcDestPort',
     render: (_, record: ITrip) => (
       <span className={styles['port']}>
-        {record.srcPort!.name} <ArrowRightOutlined rev={undefined} />
+        {record.srcPort!.name} <ArrowRightOutlined />
         &nbsp;
         {record.destPort!.name}
       </span>
@@ -61,7 +61,7 @@ const columns: ColumnsType<ITrip> = [
     render: (_, record: ITrip) => (
       <span className={styles['port-date']}>
         <div>
-          {record.srcPort!.name} <ArrowRightOutlined rev={undefined} />
+          {record.srcPort!.name} <ArrowRightOutlined />
           &nbsp;
           {record.destPort!.name}
         </div>
@@ -87,7 +87,7 @@ const columns: ColumnsType<ITrip> = [
           {`${totalAvailable} slot/s left`}
           &nbsp;
           <Popover title={'Available Slots'} content={popoverContent}>
-            <InfoCircleOutlined rev={undefined} />
+            <InfoCircleOutlined />
           </Popover>
         </div>
       );
@@ -113,7 +113,7 @@ const columns: ColumnsType<ITrip> = [
           {`${totalAvailable} slot/s left`}
           &nbsp;
           <Popover title={'Available Slots'} content={popoverContent}>
-            <InfoCircleOutlined rev={undefined} />
+            <InfoCircleOutlined />
           </Popover>
           <div>{`${record.availableVehicleCapacity} vehicle slot/s left`}</div>
         </div>
@@ -134,7 +134,7 @@ const columns: ColumnsType<ITrip> = [
         <div>
           <span className={styles['price']}>{`PHP ${minFare}`}</span>&nbsp;
           <Popover title={'Cabin Fares'} content={popoverContent}>
-            <InfoCircleOutlined rev={undefined} />
+            <InfoCircleOutlined />
           </Popover>
         </div>
       );
@@ -171,7 +171,7 @@ const columns: ColumnsType<ITrip> = [
           <div className={styles['price']}>
             {`PHP ${minFare}`}&nbsp;
             <Popover title={'Cabin Fares'} content={popoverContent}>
-              <InfoCircleOutlined rev={undefined} />
+              <InfoCircleOutlined />
             </Popover>
           </div>
           <div>
@@ -208,13 +208,13 @@ const columns: ColumnsType<ITrip> = [
           {`${totalAvailable} slot/s left`}
           &nbsp;
           <Popover title={'Available Slots'} content={slotsPopoverContent}>
-            <InfoCircleOutlined rev={undefined} />
+            <InfoCircleOutlined />
           </Popover>
           <div>{`${record.availableVehicleCapacity} vehicle slot/s left`}</div>
           <div className={styles['price']} style={{ marginTop: 10 }}>
             {`PHP ${minFare}`}&nbsp;
             <Popover title={'Cabin Fares'} content={farePopoverContent}>
-              <InfoCircleOutlined rev={undefined} />
+              <InfoCircleOutlined />
             </Popover>
           </div>
           <div>
@@ -249,7 +249,7 @@ const columns: ColumnsType<ITrip> = [
       return (
         <span className={styles['all-columns']}>
           <div>
-            {record.srcPort!.name} <ArrowRightOutlined rev={undefined} />
+            {record.srcPort!.name} <ArrowRightOutlined />
             &nbsp;
             {record.destPort!.name}
           </div>
@@ -261,14 +261,14 @@ const columns: ColumnsType<ITrip> = [
             {`${totalAvailable} slot/s left`}
             &nbsp;
             <Popover title={'Available Slots'} content={slotsPopoverContent}>
-              <InfoCircleOutlined rev={undefined} />
+              <InfoCircleOutlined />
             </Popover>
           </div>
           <div>{`${record.availableVehicleCapacity} vehicle slot/s left`}</div>
           <div className={styles['price']} style={{ marginTop: 10 }}>
             {`PHP ${minFare}`}&nbsp;
             <Popover title={'Cabin Fares'} content={farePopoverContent}>
-              <InfoCircleOutlined rev={undefined} />
+              <InfoCircleOutlined />
             </Popover>
           </div>
           <div>

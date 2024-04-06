@@ -81,7 +81,7 @@ const columns: ColumnsType<IShippingLineSchedule> = [
             content={<ScheduleCapacitiesPopover ship={schedule.ship} />}
             trigger='click'
           >
-            <InfoCircleOutlined rev={undefined} />
+            <InfoCircleOutlined />
           </Popover>
         </div>
       ),
@@ -118,7 +118,7 @@ const columns: ColumnsType<IShippingLineSchedule> = [
               }
               trigger='click'
             >
-              <StockOutlined rev={undefined} />
+              <StockOutlined />
             </Popover>
           </div>
         )

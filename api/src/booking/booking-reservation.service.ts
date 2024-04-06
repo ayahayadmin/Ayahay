@@ -458,7 +458,7 @@ WHERE row <= ${bookingTripPassengers.length}
     );
   }
 
-  private async updatePassengerCapacities(
+  async updatePassengerCapacities(
     bookingTripPassengers: IBookingTripPassenger[],
     operation: 'increment' | 'decrement',
     transactionContext: PrismaClient
