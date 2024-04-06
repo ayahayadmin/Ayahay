@@ -35,7 +35,7 @@ export class ReportingMapper {
       }`,
       teller: passenger.booking.createdByAccount?.email,
       accommodation: passenger.cabin.cabinType.name,
-      discount: passenger.passenger.discountType ?? 'Adult',
+      discount: passenger.discountType ?? 'Adult',
       collect: passenger.booking.voucherCode === 'AZNAR_COLLECT',
       discountAmount: discountAmount,
       ticketCost: passengerFare + discountAmount,
@@ -77,7 +77,7 @@ export class ReportingMapper {
     discountAmount,
     passengerDiscountsBreakdown
   ) {
-    const discountType = passenger.passenger.discountType ?? 'Adult';
+    const discountType = passenger.discountType ?? 'Adult';
     const discountedPassengerFare = passengerFare + discountAmount;
     const index = passengerDiscountsBreakdown.findIndex(
       (passengerBreakdown) => passengerBreakdown.typeOfDiscount === discountType
@@ -155,6 +155,7 @@ export class ReportingMapper {
   convertBookingToBillOfLading(booking): BillOfLading {
     const referenceNo = booking.referenceNo;
     const consigneeName = booking.consigneeName;
+    const freightRateReceipt = booking.freightRateReceipt;
     const shipName = booking.bookingTripVehicles[0].trip.ship.name;
     const shippingLineName =
       booking.bookingTripVehicles[0].trip.shippingLine.name;
@@ -175,6 +176,7 @@ export class ReportingMapper {
     return {
       referenceNo,
       consigneeName,
+      freightRateReceipt,
       shipName,
       shippingLineName,
       destPortName,

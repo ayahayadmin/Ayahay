@@ -46,7 +46,7 @@ const bookingColumns: ColumnsType<VehicleBookings> = [
             trigger='click'
           >
             <Button type='text'>
-              <CarOutlined rev={undefined} />
+              <CarOutlined />
             </Button>
           </Popover>
         </div>

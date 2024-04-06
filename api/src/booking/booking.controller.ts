@@ -10,7 +10,11 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { BookingService } from './booking.service';
-import { IBooking } from '@ayahay/models';
+import {
+  IBooking,
+  IBookingTripPassenger,
+  IBookingTripVehicle,
+} from '@ayahay/models';
 import {
   PaginatedRequest,
   PaginatedResponse,
@@ -93,7 +97,7 @@ export class BookingController {
     );
   }
 
-  @Get('/search/passengers')
+  @Get('search/passengers')
   @UseGuards(AuthGuard)
   @Roles('Staff', 'Admin', 'SuperAdmin')
   async searchPassengerBookings(
@@ -101,6 +105,40 @@ export class BookingController {
     @Query() pagination: PaginatedRequest
   ): Promise<PaginatedResponse<PassengerBookingSearchResponse>> {
     return this.bookingService.searchPassengerBookings(searchQuery, pagination);
+  }
+
+  @Get(':bookingId/trips/:tripId/passengers/:passengerId')
+  @UseGuards(AuthGuard)
+  @AllowUnauthenticated()
+  async getBookingTripPassenger(
+    @Param('bookingId') bookingId: string,
+    @Param('tripId') tripId: number,
+    @Param('passengerId') passengerId: number,
+    @Request() req
+  ): Promise<IBookingTripPassenger> {
+    return this.bookingService.getBookingTripPassenger(
+      bookingId,
+      tripId,
+      passengerId,
+      req.user
+    );
+  }
+
+  @Get(':bookingId/trips/:tripId/vehicles/:vehicleId')
+  @UseGuards(AuthGuard)
+  @AllowUnauthenticated()
+  async getBookingTripVehicle(
+    @Param('bookingId') bookingId: string,
+    @Param('tripId') tripId: number,
+    @Param('vehicleId') vehicleId: number,
+    @Request() req
+  ): Promise<IBookingTripVehicle> {
+    return this.bookingService.getBookingTripVehicle(
+      bookingId,
+      tripId,
+      vehicleId,
+      req.user
+    );
   }
 
   @Post()
@@ -121,32 +159,45 @@ export class BookingController {
   @UseGuards(AuthGuard)
   @Roles('Staff', 'Admin', 'SuperAdmin')
   async checkInPassenger(
+    @Request() req,
     @Param('bookingId') bookingId: string,
     @Param('tripId') tripId: number,
     @Param('passengerId') passengerId: number
   ): Promise<void> {
-    return this.bookingService.checkInPassenger(bookingId, tripId, passengerId);
+    return this.bookingService.checkInPassenger(
+      bookingId,
+      tripId,
+      passengerId,
+      req.user
+    );
   }
 
   @Patch(':bookingId/trips/:tripId/vehicles/:vehicleId/check-in')
   @UseGuards(AuthGuard)
   @Roles('Staff', 'Admin', 'SuperAdmin')
   async checkInVehicle(
+    @Request() req,
     @Param('bookingId') bookingId: string,
     @Param('tripId') tripId: number,
     @Param('vehicleId') vehicleId: number
   ): Promise<void> {
-    return this.bookingService.checkInVehicle(bookingId, tripId, vehicleId);
+    return this.bookingService.checkInVehicle(
+      bookingId,
+      tripId,
+      vehicleId,
+      req.user
+    );
   }
 
   @Patch(':bookingId/cancel')
   @UseGuards(AuthGuard)
   @Roles('Staff', 'Admin', 'SuperAdmin')
   async cancelBooking(
+    @Request() req,
     @Param('bookingId') bookingId: string,
     @Body('remarks') remarks: string
   ): Promise<void> {
-    return this.bookingService.cancelBooking(bookingId, remarks);
+    return this.bookingService.cancelBooking(bookingId, remarks, req.user);
   }
 
   @Patch('requests/:tempBookingId/create')
@@ -188,4 +239,23 @@ export class BookingController {
   }
 
   // TODO: get passenger's booking requests
+
+  @Patch(':bookingId/trips/:tripId/passengers/:passengerId/remove')
+  @UseGuards(AuthGuard)
+  @Roles('Admin', 'SuperAdmin')
+  async removeTripPassenger(
+    @Request() req,
+    @Param('bookingId') bookingId: string,
+    @Param('tripId') tripId: number,
+    @Param('passengerId') passengerId: number,
+    @Body('removedReason') removedReason: string
+  ): Promise<void> {
+    return this.bookingService.removeTripPassenger(
+      bookingId,
+      tripId,
+      passengerId,
+      removedReason,
+      req.user
+    );
+  }
 }

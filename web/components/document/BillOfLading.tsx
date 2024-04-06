@@ -1,6 +1,7 @@
 import dayjs from 'dayjs';
 import styles from './BillOfLading.module.scss';
 import { BillOfLading as IBillOfLading } from '@ayahay/http';
+import { Button, Form, Input } from 'antd';
 
 const underlined = {
   textDecoration: 'underline',
@@ -31,7 +32,7 @@ export default function BillOfLading({ data }: BillOfLadingProps) {
   let totalCharge = 0;
 
   return (
-    <div style={{ overflow: 'hidden' }}>
+    <div style={{ overflow: 'hidden', pageBreakAfter: 'always' }}>
       <table className={styles['bol']}>
         <thead>
           <tr>
@@ -132,7 +133,25 @@ export default function BillOfLading({ data }: BillOfLadingProps) {
                     >
                       <span>B/L</span>
                       <br></br>
-                      <span>FRR:</span>
+                      {data.freightRateReceipt ? (
+                        <span>FRR:&nbsp;{data.freightRateReceipt}&nbsp;</span>
+                      ) : (
+                        <span>FRR:&nbsp;</span>
+                      )}
+                      <Form.Item name='frr' style={{ display: 'inline-block' }}>
+                        <Input
+                          placeholder='Input FRR'
+                          style={{ maxWidth: '200px' }}
+                          className='hide-on-print'
+                        />
+                      </Form.Item>
+                      <Button
+                        type='primary'
+                        htmlType='submit'
+                        className='hide-on-print'
+                      >
+                        Save
+                      </Button>
                     </p>
                   </div>
                 </div>

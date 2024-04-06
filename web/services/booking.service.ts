@@ -1,4 +1,8 @@
-import { IBooking, IBookingTripPassenger } from '@ayahay/models';
+import {
+  IBooking,
+  IBookingTripPassenger,
+  IBookingTripVehicle,
+} from '@ayahay/models';
 import { PaginatedRequest, PaginatedResponse } from '@ayahay/http';
 import axios from '@ayahay/services/axios';
 import { BOOKING_API } from '@ayahay/constants/api';
@@ -150,4 +154,28 @@ export async function getBookingRequestById(
   );
 
   return booking;
+}
+
+export async function getBookingTripPassengerById(
+  bookingId: string,
+  tripId: number,
+  passengerId: number
+): Promise<IBookingTripPassenger | undefined> {
+  const { data: bookingTripPassenger } = await axios.get<IBookingTripPassenger>(
+    `${BOOKING_API}/${bookingId}/trips/${tripId}/passengers/${passengerId}`
+  );
+
+  return bookingTripPassenger;
+}
+
+export async function getBookingTripVehicleById(
+  bookingId: string,
+  tripId: number,
+  vehicleId: number
+): Promise<IBookingTripVehicle | undefined> {
+  const { data: bookingTripVehicle } = await axios.get<IBookingTripVehicle>(
+    `${BOOKING_API}/${bookingId}/trips/${tripId}/vehicles/${vehicleId}`
+  );
+
+  return bookingTripVehicle;
 }

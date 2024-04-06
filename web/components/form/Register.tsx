@@ -13,8 +13,8 @@ interface RegisterProps {
 }
 
 const steps = [
-  { title: 'Account Info', icon: <UserOutlined rev={undefined} /> },
-  { title: 'Passenger Info', icon: <InfoCircleOutlined rev={undefined} /> },
+  { title: 'Account Info', icon: <UserOutlined /> },
+  { title: 'Passenger Info', icon: <InfoCircleOutlined /> },
 ];
 
 export default function Register({

@@ -39,7 +39,7 @@ export default function ReportingPage() {
         loading={data === undefined}
         onClick={handleDownloadSummarySalesPerVessel}
       >
-        <DownloadOutlined rev={undefined} /> Download
+        <DownloadOutlined /> Download
       </Button>
       <div style={{ display: 'none' }}>
         {data && (

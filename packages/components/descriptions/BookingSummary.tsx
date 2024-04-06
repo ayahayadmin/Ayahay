@@ -1,16 +1,14 @@
 import { Descriptions, Skeleton, Typography, Grid, QRCode, Button } from 'antd';
 import { IBooking } from '@ayahay/models/booking.model';
 import { BOOKING_STATUS, PAYMENT_STATUS } from '@ayahay/constants';
-import React, { useEffect, useState } from 'react';
-import PassengersSummary from './PassengersSummary';
+import React, { useState } from 'react';
 import dayjs from 'dayjs';
-import TripSummary from './TripSummary';
-import VehiclesSummary from './VehiclesSummary';
 import PaymentSummary from './PaymentSummary';
 import { PrinterOutlined } from '@ant-design/icons';
-import BookingCancellationModal from '@ayahay/web/components/booking/BookingCancellationModal';
+import BookingCancellationModal from '../modals/BookingCancellationModal';
 import BookingTripSummary from './BookingTripSummary';
 import { combineBookingPaymentItems } from '@ayahay/services/booking.service';
+import { useBookingControls } from '@ayahay/hooks/booking';
 
 const { useBreakpoint } = Grid;
 const { Title } = Typography;
@@ -37,7 +35,7 @@ export default function BookingSummary({
   onCheckInVehicle,
 }: BookingSummaryProps) {
   const screens = useBreakpoint();
-  const [isPrinting, setIsPrinting] = useState(false);
+
   const [isCancellationModalOpen, setIsCancellationModalOpen] = useState(false);
 
   const bookingTrip = booking?.bookingTrips?.[0];
@@ -46,54 +44,23 @@ export default function BookingSummary({
     ? combineBookingPaymentItems(booking)
     : [];
 
-  const showQrCode =
-    booking?.bookingStatus === 'Confirmed' &&
-    booking?.paymentStatus === 'Success' &&
-    trip?.status === 'Awaiting';
-  const payable =
-    booking?.bookingStatus === 'Confirmed' &&
-    booking?.paymentStatus === 'None' &&
-    onPayBooking;
-
-  useEffect(() => {
-    if (isPrinting) {
-      window.print();
-      setIsPrinting(false);
-    }
-  }, [isPrinting]);
-
-  const onClickPrint = () => {
-    if (hasPrivilegedAccess) {
-      // swap component to minimal view, then print (for thermal printer)
-      setIsPrinting(true);
-    } else {
-      window.print();
-    }
-  };
+  const {
+    isPrinting,
+    onClickPrint,
+    showQrCode,
+    showCancelBookingButton,
+    getUserAction,
+  } = useBookingControls(booking, trip, hasPrivilegedAccess);
 
   const onClickCancel = (remarks: string) => {
     setIsCancellationModalOpen(false);
     onCancelBooking && onCancelBooking(remarks);
   };
 
-  const getUserAction = () => {
-    if (booking === undefined) {
-      return '';
-    }
-
-    switch (booking.paymentStatus) {
-      case 'Pending':
-        return 'The QR code will be available after your payment has been processed.';
-      case 'Success':
-        return 'Show this QR code to the person in charge to verify your booking';
-    }
-    return '';
-  };
-
-  const showCancelBookingButton =
+  const payable =
     booking?.bookingStatus === 'Confirmed' &&
-    hasPrivilegedAccess &&
-    onCancelBooking;
+    booking?.paymentStatus === 'None' &&
+    onPayBooking;
 
   const bookingActions = (
     <div style={{ display: 'flex', gap: '8px' }} className='hide-on-print'>
@@ -103,7 +70,7 @@ export default function BookingSummary({
         </Button>
       )}
       <Button type='primary' onClick={() => onClickPrint()}>
-        <PrinterOutlined rev={undefined} />
+        <PrinterOutlined />
         Print Ticket
       </Button>
       {bookingTrip &&
@@ -114,21 +81,24 @@ export default function BookingSummary({
             href={`/bookings/${booking.id}/bol`}
             target='_blank'
           >
-            <PrinterOutlined rev={undefined} />
+            <PrinterOutlined />
             Print BOL
           </Button>
         )}
-      {showCancelBookingButton && (
-        <Button type='default' onClick={() => setIsCancellationModalOpen(true)}>
-          Void
-        </Button>
-      )}
-      {showCancelBookingButton && (
-        <BookingCancellationModal
-          open={isCancellationModalOpen}
-          onConfirmCancellation={(remarks) => onClickCancel(remarks)}
-          onCancel={() => setIsCancellationModalOpen(false)}
-        ></BookingCancellationModal>
+      {showCancelBookingButton && onCancelBooking && (
+        <>
+          <Button
+            type='default'
+            onClick={() => setIsCancellationModalOpen(true)}
+          >
+            Void
+          </Button>
+          <BookingCancellationModal
+            open={isCancellationModalOpen}
+            onConfirmCancellation={(remarks) => onClickCancel(remarks)}
+            onCancel={() => setIsCancellationModalOpen(false)}
+          ></BookingCancellationModal>
+        </>
       )}
     </div>
   );

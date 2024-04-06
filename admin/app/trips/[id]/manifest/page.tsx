@@ -39,7 +39,7 @@ export default function TripManifestPage({ params }: any) {
         type='primary'
         onClick={() => window.print()}
         tooltip='Print'
-        icon={<PrinterOutlined rev={undefined} height={72} width={72} />}
+        icon={<PrinterOutlined height={72} width={72} />}
       ></FloatButton>
     </div>
   );

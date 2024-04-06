@@ -1,4 +1,12 @@
-import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { ReportingService } from './reporting.service';
 import { AuthGuard } from '@/guard/auth.guard';
 import { Roles } from '@/decorator/roles.decorator';
@@ -10,10 +18,14 @@ import {
   PerVesselReport,
   BillOfLading,
 } from '@ayahay/http';
+import { BookingService } from '@/booking/booking.service';
 
 @Controller('reporting')
 export class ReportingController {
-  constructor(private reportingService: ReportingService) {}
+  constructor(
+    private reportingService: ReportingService,
+    private bookingService: BookingService
+  ) {}
 
   @Get('trips/:id/reporting')
   @UseGuards(AuthGuard)
@@ -48,5 +60,13 @@ export class ReportingController {
   @Get(':id/bol')
   async getBillOfLading(@Param('id') bookingId: string): Promise<BillOfLading> {
     return this.reportingService.getBillOfLading(bookingId);
+  }
+
+  @Patch(':bookingId/bol/frr')
+  async updateBookingFRR(
+    @Param('bookingId') bookingId: string,
+    @Body('frr') frr: string
+  ): Promise<void> {
+    return this.bookingService.updateBookingFRR(bookingId, frr);
   }
 }

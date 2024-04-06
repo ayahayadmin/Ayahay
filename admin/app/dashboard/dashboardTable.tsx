@@ -29,7 +29,7 @@ const columns: ColumnsType<DashboardTrips> = [
     key: 'srcDestPort',
     render: (_: string, record: DashboardTrips) => (
       <span>
-        {record.srcPort!.name} <ArrowRightOutlined rev={undefined} />
+        {record.srcPort!.name} <ArrowRightOutlined />
         &nbsp;
         {record.destPort!.name}
       </span>
@@ -95,7 +95,7 @@ const columns: ColumnsType<DashboardTrips> = [
             trigger='click'
           >
             <Button type='text' style={{ padding: 0 }}>
-              <InfoCircleOutlined rev={undefined} />
+              <InfoCircleOutlined />
             </Button>
           </Popover>
         </div>
@@ -143,10 +143,7 @@ export default function DashboardTable({ searchQuery }: DashboardTableProps) {
       <div className={styles['bar-graph']}>
         {!tripInfo && (
           <Skeleton.Node active>
-            <BarChartOutlined
-              style={{ fontSize: 40, color: '#bfbfbf' }}
-              rev={undefined}
-            />
+            <BarChartOutlined style={{ fontSize: 40, color: '#bfbfbf' }} />
           </Skeleton.Node>
         )}
         {paxAndVehicleBookedData && <BarChart data={paxAndVehicleBookedData} />}

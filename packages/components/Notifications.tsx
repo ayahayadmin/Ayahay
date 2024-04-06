@@ -197,7 +197,7 @@ export default function Notifications({
         onOpenChange={(isOpen) => setIsPopoverOpen(isOpen)}
       >
         <Button type='text'>
-          <BellOutlined rev={undefined} />
+          <BellOutlined />
         </Button>
       </Popover>
       {hasAdminPrivileges && createAnnouncementModal}

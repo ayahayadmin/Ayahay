@@ -133,7 +133,7 @@ export default function EditCapacity({
         onOpenChange={() => setOpen(!open)}
       >
         <Button type='text'>
-          <EditOutlined rev={undefined} />
+          <EditOutlined />
         </Button>
       </Popover>
     </>

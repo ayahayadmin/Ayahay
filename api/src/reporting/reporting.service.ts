@@ -103,7 +103,9 @@ export class ReportingService {
     let passengerDiscountsBreakdown = [];
 
     const confirmedBookingPassengers = trip.bookingTripPassengers.filter(
-      (passenger) => passenger.booking.bookingStatus === 'Confirmed'
+      (passenger) =>
+        passenger.removedReason === null &&
+        passenger.booking.bookingStatus === 'Confirmed'
     );
 
     confirmedBookingPassengers.forEach((passenger) => {

@@ -116,7 +116,7 @@ export default function TripList({
       key: 'srcDestPort',
       render: (_: string, record: ITrip) => (
         <span>
-          {record.srcPort!.name} <ArrowRightOutlined rev={undefined} />
+          {record.srcPort!.name} <ArrowRightOutlined />
           &nbsp;
           {record.destPort!.name}
         </span>
@@ -152,7 +152,7 @@ export default function TripList({
         <>
           <strong>Route:</strong>&nbsp;
           <span>
-            {record.srcPort!.name} <ArrowRightOutlined rev={undefined} />
+            {record.srcPort!.name} <ArrowRightOutlined />
             &nbsp;
             {record.destPort!.name}
           </span>

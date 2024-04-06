@@ -1,15 +1,11 @@
-import { IPassenger } from '@ayahay/models/passenger.model';
 import {
-  Button,
-  Checkbox,
   Form,
   Input,
   Modal,
   ModalProps,
   Typography,
 } from 'antd';
-import React, { useState } from 'react';
-import { CheckboxValueType } from 'antd/es/checkbox/Group';
+import React from 'react';
 import { useForm } from 'antd/es/form/Form';
 
 const { Title } = Typography;

@@ -1,16 +1,20 @@
 'use client';
 import BillOfLading from '@/components/document/BillOfLading';
 import { useEffect, useState } from 'react';
-import { getBillOfLading } from '@/services/reporting.service';
-import { FloatButton, Skeleton } from 'antd';
+import {
+  getBillOfLading,
+  updateBookingFRR,
+} from '@/services/reporting.service';
+import { FloatButton, Form, Skeleton } from 'antd';
 import { BillOfLading as IBillOfLading } from '@ayahay/http';
 import { PrinterOutlined } from '@ant-design/icons';
 
 export default function BillOfLadingPage({ params }: any) {
   const [data, setData] = useState<IBillOfLading | undefined>();
+  const [form] = Form.useForm();
+  const bookingId = params.id;
 
   useEffect(() => {
-    const bookingId = params.id;
     fetchBillOfLading(bookingId);
   }, []);
 
@@ -18,10 +22,17 @@ export default function BillOfLadingPage({ params }: any) {
     setData(await getBillOfLading(bookingId));
   };
 
+  const handleFRRSubmit = async (value: any) => {
+    await updateBookingFRR(bookingId, value);
+    window.location.reload();
+  };
+
   return (
     <div>
       <Skeleton loading={data === undefined}>
-        {data && <BillOfLading data={data} />}
+        <Form form={form} onFinish={handleFRRSubmit}>
+          {data && <BillOfLading data={data} />}
+        </Form>
       </Skeleton>
 
       <FloatButton

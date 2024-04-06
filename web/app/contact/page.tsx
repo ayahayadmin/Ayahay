@@ -85,10 +85,10 @@ export default function Contact() {
         You may also directly reach out to us via:
       </Title>
       <div className={styles['contact']}>
-        <PhoneOutlined rev={undefined} /> Phone: (032) 517 4255
+        <PhoneOutlined /> Phone: (032) 517 4255
       </div>
       <div className={styles['contact']}>
-        <MailOutlined rev={undefined} /> Email: admin@ayahay.com
+        <MailOutlined /> Email: admin@ayahay.com
       </div>
       <Title
         level={2}
@@ -101,19 +101,19 @@ export default function Contact() {
           href='https://www.facebook.com/profile.php?id=61551614079847&is_tour_dismissed=true'
           target='_blank'
         >
-          <FacebookFilled style={{ fontSize: 28 }} rev={undefined} />
+          <FacebookFilled style={{ fontSize: 28 }} />
         </a>
         <a href='https://www.instagram.com/ayahayig' target='_blank'>
-          <InstagramFilled style={{ fontSize: 28 }} rev={undefined} />
+          <InstagramFilled style={{ fontSize: 28 }} />
         </a>
         <a href='https://twitter.com/ayahayX' target='_blank'>
-          <TwitterSquareFilled style={{ fontSize: 28 }} rev={undefined} />
+          <TwitterSquareFilled style={{ fontSize: 28 }} />
         </a>
         <a
           href='https://www.linkedin.com/company/ayahay-technologies-corporation/about/?viewAsMember=true'
           target='_blank'
         >
-          <LinkedinFilled style={{ fontSize: 28 }} rev={undefined} />
+          <LinkedinFilled style={{ fontSize: 28 }} />
         </a>
         <a
           href='https://www.tiktok.com/@ayahaytiktok'

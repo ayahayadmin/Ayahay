@@ -22,7 +22,7 @@ export interface ITripCabin {
   tripId: number;
   trip?: ITrip;
   cabinId: number;
-  cabin: ICabin;
+  cabin?: ICabin;
   seatPlanId?: number;
   seatPlan?: ISeatPlan;
 

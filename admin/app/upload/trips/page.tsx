@@ -59,7 +59,7 @@ export default function UploadTrips() {
         customRequest={onUpload}
       >
         <p className='ant-upload-drag-icon'>
-          <InboxOutlined rev={undefined} />
+          <InboxOutlined />
         </p>
         <p className='ant-upload-text'>
           Click or drag schedule .csv file to this area to upload
@@ -70,7 +70,7 @@ export default function UploadTrips() {
           onClick={(e) => e.stopPropagation()}
           type='primary'
           shape='round'
-          icon={<DownloadOutlined rev={undefined} />}
+          icon={<DownloadOutlined />}
         >
           Download Template
         </Button>

@@ -7,6 +7,7 @@ import { IBookingPaymentItem } from './booking-payment-item.model';
 import { IBookingTripVehicle } from './booking-trip-vehicle.model';
 import { ISeatType } from './seat-type.model';
 import { ITripCabin } from './trip-cabin.model';
+import { DISCOUNT_TYPE } from '@ayahay/constants';
 
 export interface IBookingTripPassenger {
   bookingId: string;
@@ -40,6 +41,12 @@ export interface IBookingTripPassenger {
   meal?: string;
   totalPrice?: number;
   checkInDate?: string;
+  /**
+   * has a value if passenger is removed from the booking
+   * otherwise this is undefined (or NULL in the DB)
+   */
+  removedReason?: string;
+  discountType?: keyof typeof DISCOUNT_TYPE;
 
   bookingPaymentItems?: IBookingPaymentItem[];
 }

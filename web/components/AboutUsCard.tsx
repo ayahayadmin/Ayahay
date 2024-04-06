@@ -20,15 +20,15 @@ export default function AboutUsCard() {
       </p>
       <Row className={styles.rowCard} gutter={[32, 64]}>
         <Col xs={24} lg={8} className={styles.card}>
-          <CheckCircleOutlined className={styles.icon} rev={undefined} />
+          <CheckCircleOutlined className={styles.icon} />
           <h3 className={styles.title}>Best Price Guarantee</h3>
         </Col>
         <Col xs={24} lg={8} className={styles.card}>
-          <FieldTimeOutlined className={styles.icon} rev={undefined} />
+          <FieldTimeOutlined className={styles.icon} />
           <h3 className={styles.title}>Easy & Quick Booking</h3>
         </Col>
         <Col xs={24} lg={8} className={styles.card}>
-          <PhoneOutlined className={styles.icon} rev={undefined} />
+          <PhoneOutlined className={styles.icon} />
           <h3 className={styles.title}>Customer Care 24/7</h3>
         </Col>
       </Row>

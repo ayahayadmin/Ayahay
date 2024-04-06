@@ -1,6 +1,6 @@
 import { IBookingTrip } from '@ayahay/models';
-import { Descriptions, Skeleton, Typography, Grid, QRCode, Button } from 'antd';
-import React, { useEffect, useState } from 'react';
+import { Typography } from 'antd';
+import React from 'react';
 import TripSummary from './TripSummary';
 import PassengersSummary from './PassengersSummary';
 import VehiclesSummary from './VehiclesSummary';
