@@ -36,8 +36,10 @@ export default function BillOfLadingPage({ params }: any) {
       <Skeleton loading={data === undefined}>
         <Form form={form} onFinish={handleFRRSubmit}>
           {data &&
-            data.map((billOfLadingPerVehicle) => (
-              <BillOfLading data={billOfLadingPerVehicle} />
+            data.map((billOfLadingPerVehicle, index) => (
+              <div style={{ breakBefore: index === 0 ? 'auto' : 'page' }}>
+                <BillOfLading data={billOfLadingPerVehicle} />
+              </div>
             ))}
         </Form>
       </Skeleton>

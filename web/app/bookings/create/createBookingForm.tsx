@@ -44,7 +44,7 @@ export default function CreateBookingForm({
     ['bookingTrips', 0, 'bookingTripVehicles'],
     form
   );
-  const gateway = Form.useWatch('gateway', form);
+  const paymentGateway = Form.useWatch('paymentGateway', form);
   const [loadingMessage, setLoadingMessage] = useState<string>('');
   const [bookingPreview, setBookingPreview] = useState<IBooking>();
   const [currentStep, setCurrentStep] = useState(0);
@@ -154,13 +154,14 @@ export default function CreateBookingForm({
     setLoadingMessage('Initiating payment...');
 
     const contactEmail = form.getFieldValue('contactEmail');
-    const consignee = form.getFieldValue('consigneeName');
-    const response = await startPaymentForBooking(
-      tentativeBookingId,
-      gateway,
+    const contactMobile = form.getFieldValue('contactMobile');
+    const consigneeName = form.getFieldValue('consigneeName');
+    const response = await startPaymentForBooking(tentativeBookingId, {
+      paymentGateway,
       contactEmail,
-      consignee
-    );
+      contactMobile,
+      consigneeName,
+    });
 
     setLoadingMessage('');
     if (response === undefined) {
@@ -187,7 +188,7 @@ export default function CreateBookingForm({
     modal.info({
       width: 'min(90vw, 512px)',
       centered: true,
-      title: `You will be redirected to the secure ${gateway} Payment Gateway to pay for your booking.`,
+      title: `You will be redirected to the secure ${paymentGateway} Payment Gateway to pay for your booking.`,
       icon: <InfoCircleOutlined />,
       content: (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -307,7 +308,7 @@ export default function CreateBookingForm({
             bookingTripVehicles: [],
           },
         ],
-        gateway: 'PayMongo',
+        paymentGateway: 'PayMongo',
         bookingType: 'Single',
       }}
       onFieldsChange={onFieldsChange}

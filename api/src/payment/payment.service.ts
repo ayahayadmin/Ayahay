@@ -8,7 +8,10 @@ import {
 import { PrismaService } from '@/prisma.service';
 import { v4 as uuidv4 } from 'uuid';
 import { BookingService } from '@/booking/booking.service';
-import { PaymentInitiationResponse } from '@ayahay/http';
+import {
+  PaymentInitiationRequest,
+  PaymentInitiationResponse,
+} from '@ayahay/http';
 import { createHash, createHmac } from 'crypto';
 import axios, { AxiosError } from 'axios';
 import { IAccount } from '@ayahay/models';
@@ -35,9 +38,12 @@ export class PaymentService {
 
   async startPaymentFlow(
     tempBookingId: number,
-    paymentGateway: string,
-    email?: string,
-    consignee?: string,
+    {
+      paymentGateway,
+      contactEmail,
+      contactMobile,
+      consigneeName,
+    }: PaymentInitiationRequest,
     loggedInAccount?: IAccount
   ): Promise<PaymentInitiationResponse> {
     const tempBooking = await this.prisma.tempBooking.findUnique({
@@ -61,15 +67,23 @@ export class PaymentService {
     }
 
     const paymentReference = uuidv4();
-    const contactEmail: string | undefined = loggedInAccount?.email ?? email;
+
+    if (this.utilityService.hasPrivilegedAccess(loggedInAccount)) {
+      // don't save email/mobile if staff/admin
+      contactEmail = contactMobile = undefined;
+    } else if (loggedInAccount !== undefined) {
+      // override email with booking creator's email
+      contactEmail = loggedInAccount.email;
+    }
 
     if (this.shouldSkipPaymentFlow(loggedInAccount)) {
       return this.skipPaymentFlow(
         tempBookingId,
         paymentReference,
         `${process.env.WEB_URL}/bookings/${paymentReference}`,
-        undefined,
-        consignee
+        contactEmail,
+        contactMobile,
+        consigneeName
       );
     }
 
@@ -97,7 +111,8 @@ export class PaymentService {
       paymentReference,
       response.redirectUrl,
       contactEmail,
-      consignee
+      contactMobile,
+      consigneeName
     );
   }
 
@@ -115,6 +130,7 @@ export class PaymentService {
     paymentReference: string,
     redirectUrl: string,
     contactEmail?: string,
+    contactMobile?: string,
     consigneeName?: string
   ): Promise<PaymentInitiationResponse> {
     const response = await this.onSuccessfulPaymentInitiation(
@@ -122,6 +138,7 @@ export class PaymentService {
       paymentReference,
       redirectUrl,
       contactEmail,
+      contactMobile,
       consigneeName
     );
 
@@ -234,6 +251,7 @@ export class PaymentService {
     paymentReference: string,
     redirectUrl: string,
     contactEmail?: string,
+    contactMobile?: string,
     consigneeName?: string
   ): Promise<PaymentInitiationResponse> {
     await this.prisma.tempBooking.update({
@@ -243,6 +261,7 @@ export class PaymentService {
       data: {
         paymentReference,
         contactEmail,
+        contactMobile,
         consigneeName,
       },
     });
