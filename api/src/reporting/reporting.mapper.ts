@@ -57,6 +57,7 @@ export class ReportingMapper {
     return {
       teller: vehicle.booking.createdByAccount?.email,
       referenceNo: vehicle.booking.referenceNo,
+      freightRateReceipt: vehicle.booking.freightRateReceipt,
       typeOfVehicle: vehicle.vehicle.vehicleType.description,
       plateNo: vehicle.vehicle.plateNo,
       collect: vehicle.booking.voucherCode === 'AZNAR_COLLECT',

@@ -28,7 +28,7 @@ export interface TripReport {
 
   vehicles: {
     teller: string;
-    FRR?: string; // TODO: add FRR after implementing FRR in BOL printing
+    freightRateReceipt: string;
     referenceNo: string;
     typeOfVehicle: string;
     plateNo: string;

@@ -111,6 +111,7 @@ const CargoDailySalesReport = forwardRef(function (
               <tr>
                 <th>Teller</th>
                 <th>BOL #</th>
+                <th>FRR</th>
                 <th>Vehicle Type</th>
                 <th>Plate #</th>
                 <th style={{ textAlign: 'left' }}>Discount</th>
@@ -140,6 +141,7 @@ const CargoDailySalesReport = forwardRef(function (
                   <tr>
                     <td>{vehicle.teller}</td>
                     <td>{vehicle.referenceNo}</td>
+                    <td>{vehicle.freightRateReceipt}</td>
                     <td>{vehicle.typeOfVehicle}</td>
                     <td>{vehicle.plateNo}</td>
                     <td style={{ textAlign: 'left' }}>{discountAmount}</td>
@@ -155,7 +157,7 @@ const CargoDailySalesReport = forwardRef(function (
             </tbody>
             <tfoot style={{ backgroundColor: '#ddebf7' }}>
               <tr style={{ fontWeight: 'bold' }}>
-                <td colSpan={3}>TOTAL</td>
+                <td colSpan={4}>TOTAL</td>
                 <td>{totalVehicles}</td>
                 <td style={{ textAlign: 'left' }}>-</td>
                 <td style={{ textAlign: 'left' }}>

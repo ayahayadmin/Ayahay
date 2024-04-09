@@ -170,7 +170,7 @@ export default function BookingSummary({
     bookingTrip &&
     bookingTrip.bookingTripPassengers &&
     bookingTrip.bookingTripPassengers.map((bookingTripPassenger, index) => (
-      <div key={index} style={{ breakBefore: index === 0 ? 'auto' : 'always' }}>
+      <div key={index} style={{ breakBefore: index === 0 ? 'auto' : 'page' }}>
         <section>
           <p>Ref # {booking.referenceNo}</p>
           <QRCode
