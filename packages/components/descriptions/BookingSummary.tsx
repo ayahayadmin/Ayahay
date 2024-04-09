@@ -166,58 +166,45 @@ export default function BookingSummary({
     </div>
   );
 
-  const minimalBookingSummary = (
-    <div style={{ display: 'flex', flexDirection: 'column' }}>
-      {showQrCode && (
+  const minimalBookingSummary =
+    bookingTrip &&
+    bookingTrip.bookingTripPassengers &&
+    bookingTrip.bookingTripPassengers.map((bookingTripPassenger, index) => (
+      <div key={index} style={{ breakBefore: index === 0 ? 'auto' : 'always' }}>
         <section>
           <p>Ref # {booking.referenceNo}</p>
           <QRCode
-            value={window.location.href}
+            value={`${window.location.href}/trips/${bookingTripPassenger.tripId}/passengers/${bookingTripPassenger.passengerId}`}
             size={160}
             viewBox={`0 0 256 256`}
             type='svg'
           />
         </section>
-      )}
-      {trip && (
+
         <section>
           <p>
-            {trip.srcPort?.name} - {trip.destPort?.name}
+            {trip?.srcPort?.name} - {trip?.destPort?.name}
           </p>
           <p>
-            {dayjs(trip.departureDateIso).format('MMM D, YYYY [at] h:mm A')}
+            {dayjs(trip?.departureDateIso).format('MMM D, YYYY [at] h:mm A')}
           </p>
         </section>
-      )}
-      {bookingTrip &&
-        bookingTrip.bookingTripPassengers &&
-        bookingTrip.bookingTripPassengers.length > 0 && (
-          <section>
-            <p>Pax {bookingTrip.bookingTripPassengers.length} NAC</p>
-            <table style={{ tableLayout: 'fixed', width: '100%' }}>
-              <tbody>
-                {bookingTrip.bookingTripPassengers.map(
-                  (bookingTripPassenger, index) => (
-                    <tr key={index}>
-                      <td>
-                        {bookingTripPassenger.passenger?.firstName}&nbsp;
-                        {bookingTripPassenger.passenger?.lastName}
-                      </td>
-                      <td>₱{bookingTripPassenger.totalPrice}</td>
-                    </tr>
-                  )
-                )}
-                <tr>
-                  <td>Total</td>
-                  <td>₱{booking.totalPrice}</td>
-                </tr>
-              </tbody>
-            </table>
-          </section>
-        )}
-      <p style={{ textAlign: 'center' }}>Powered by AYAHAY</p>
-    </div>
-  );
+        <section>
+          <table style={{ tableLayout: 'fixed', width: '100%' }}>
+            <tbody>
+              <tr>
+                <td>
+                  {bookingTripPassenger.passenger?.firstName}&nbsp;
+                  {bookingTripPassenger.passenger?.lastName}
+                </td>
+                <td>₱{bookingTripPassenger.totalPrice}</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+        <p style={{ textAlign: 'center' }}>Powered by AYAHAY</p>
+      </div>
+    ));
 
   return (
     <Skeleton loading={booking === undefined} active>
