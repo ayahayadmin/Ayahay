@@ -131,8 +131,6 @@ export default function BillOfLading({ data }: BillOfLadingProps) {
                         paddingTop: '10px',
                       }}
                     >
-                      <span>B/L</span>
-                      <br></br>
                       {data.freightRateReceipt ? (
                         <span>FRR:&nbsp;{data.freightRateReceipt}&nbsp;</span>
                       ) : (
