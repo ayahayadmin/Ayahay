@@ -38,6 +38,8 @@ export interface IBooking {
    * (e.g. OTC bookings don't send any emails)
    */
   contactEmail?: string;
+  // mobile number (e.g. +63 XXX-YYY-ZZZZ)
+  contactMobile?: string;
   createdAtIso: string;
   // indicates if this is or was a booking request
   isBookingRequest: boolean;

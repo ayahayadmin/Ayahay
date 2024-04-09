@@ -59,7 +59,11 @@ export default function BookingConfirmation({
     }
 
     try {
-      await form.validateFields([['contactEmail'], ['consigneeName']]);
+      await form.validateFields([
+        ['contactEmail'],
+        ['contactMobile'],
+        ['consigneeName'],
+      ]);
     } catch {
       return false;
     }
@@ -89,6 +93,9 @@ export default function BookingConfirmation({
       </div>
       {!loggedInAccount && (
         <div>
+          <Title level={3} style={{ marginBottom: '24px' }}>
+            Contact Information
+          </Title>
           <Form.Item
             name='contactEmail'
             label='Email Address'
@@ -105,6 +112,23 @@ export default function BookingConfirmation({
             <Input
               placeholder='john@example.com'
               type='email'
+              style={{ width: 256 }}
+            />
+          </Form.Item>
+          <Form.Item
+            name='contactMobile'
+            label='Mobile Number'
+            tooltip={{
+              title:
+                'We will send booking updates to this number (e.g. payment confirmation, cancellation, etc.)',
+              icon: <InfoCircleOutlined />,
+            }}
+            colon={false}
+            rules={[{ required: true, message: 'Missing mobile number' }]}
+          >
+            <Input
+              placeholder='09171234567'
+              type='tel'
               style={{ width: 256 }}
             />
           </Form.Item>
@@ -135,7 +159,7 @@ export default function BookingConfirmation({
       )}
       {!hasPrivilegedAccess && !isBookingRequestFlow && (
         <div>
-          <Form.Item name='gateway' label='Payment Method' colon={false}>
+          <Form.Item name='paymentGateway' label='Payment Method' colon={false}>
             <Radio.Group>
               <Radio value='PayMongo'>
                 PayMongo (Visa, Mastercard, GCash, Maya, BPI, UBP)

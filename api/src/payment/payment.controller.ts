@@ -12,7 +12,10 @@ import {
 } from '@nestjs/common';
 import { FastifyRequest } from 'fastify';
 import { PaymentService } from './payment.service';
-import { PaymentInitiationResponse } from '@ayahay/http';
+import {
+  PaymentInitiationRequest,
+  PaymentInitiationResponse,
+} from '@ayahay/http';
 import { AllowUnauthenticated } from '@/decorator/authenticated.decorator';
 import { AuthGuard } from '@/guard/auth.guard';
 import { PayMongoCheckoutPaidPostbackRequest } from './payment.types';
@@ -27,17 +30,9 @@ export class PaymentController {
   async payBooking(
     @Request() req,
     @Param('tempBookingId') tempBookingId: number,
-    @Body('gateway') gateway?: string,
-    @Body('email') email?: string,
-    @Body('consignee') consignee?: string
+    @Body() body: PaymentInitiationRequest
   ): Promise<PaymentInitiationResponse> {
-    return this.paymentService.startPaymentFlow(
-      tempBookingId,
-      gateway,
-      email,
-      consignee,
-      req.user
-    );
+    return this.paymentService.startPaymentFlow(tempBookingId, body, req.user);
   }
 
   @Post('bookings/requests/:bookingId')

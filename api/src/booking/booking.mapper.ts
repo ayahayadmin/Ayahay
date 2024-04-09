@@ -40,6 +40,7 @@ export class BookingMapper {
       totalPrice: booking.totalPrice,
       bookingType: booking.bookingType as any,
       contactEmail: booking.contactEmail,
+      contactMobile: booking.contactMobile,
       createdAtIso: booking.createdAt.toISOString(),
       isBookingRequest: booking.isBookingRequest,
 
@@ -70,6 +71,7 @@ export class BookingMapper {
       totalPrice: booking.totalPrice,
       bookingType: booking.bookingType,
       contactEmail: booking.contactEmail,
+      contactMobile: booking.contactMobile,
       createdAtIso: booking.createdAt.toISOString(),
       isBookingRequest: booking.isBookingRequest,
 
@@ -192,6 +194,7 @@ export class BookingMapper {
       totalPrice: tempBooking.totalPrice,
       bookingType: tempBooking.bookingType,
       contactEmail: tempBooking.contactEmail,
+      contactMobile: tempBooking.contactMobile,
       createdAtIso: tempBooking.createdAt.toISOString(),
       isBookingRequest: tempBooking.isBookingRequest,
 
@@ -242,6 +245,7 @@ export class BookingMapper {
       totalPrice: tempBooking.totalPrice,
       bookingType: tempBooking.bookingType as any,
       contactEmail: tempBooking.contactEmail,
+      contactMobile: tempBooking.contactMobile,
       createdAtIso: tempBooking.createdAt.toISOString(),
       isBookingRequest: tempBooking.isBookingRequest,
       consigneeName: tempBooking.consigneeName ?? undefined,
@@ -321,6 +325,7 @@ export class BookingMapper {
         totalPrice: booking.totalPrice,
         bookingType: booking.bookingType,
         contactEmail: booking.contactEmail,
+        contactMobile: booking.contactMobile,
         createdAt: booking.createdAtIso,
         isBookingRequest: booking.isBookingRequest,
         consigneeName: booking.consigneeName,

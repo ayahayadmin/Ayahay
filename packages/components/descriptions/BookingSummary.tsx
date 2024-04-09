@@ -141,6 +141,11 @@ export default function BookingSummary({
               <Descriptions.Item label='Booking Reference No'>
                 {booking.referenceNo}
               </Descriptions.Item>
+              {hasPrivilegedAccess && (
+                <Descriptions.Item label='Contact Number'>
+                  {booking.contactMobile}
+                </Descriptions.Item>
+              )}
             </Descriptions>
             {bookingActions}
           </article>

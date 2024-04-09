@@ -1,4 +1,4 @@
-export * from './payment-initiation';
+export * from './payment';
 export * from './booking';
 export * from './cabin-type';
 export * from './trip';

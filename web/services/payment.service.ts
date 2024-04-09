@@ -1,25 +1,15 @@
 import { PAYMENT_API } from '@ayahay/constants/api';
 import axios from '@ayahay/services/axios';
-import { PaymentInitiationResponse } from '@ayahay/http';
+import {
+  PaymentInitiationRequest,
+  PaymentInitiationResponse,
+} from '@ayahay/http';
 
 export async function startPaymentForBooking(
   tentativeBookingId: number,
-  gateway?: string,
-  email?: string,
-  consignee?: string
+  body: PaymentInitiationRequest
 ): Promise<PaymentInitiationResponse | undefined> {
   try {
-    const body: any = {};
-    if (gateway) {
-      body['gateway'] = gateway;
-    }
-    if (email) {
-      body['email'] = email;
-    }
-    if (consignee) {
-      body['consignee'] = consignee;
-    }
-
     const { data: response } = await axios.post<PaymentInitiationResponse>(
       `${PAYMENT_API}/bookings/${tentativeBookingId}`,
       body
