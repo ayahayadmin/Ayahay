@@ -7,7 +7,7 @@ import { IBookingPaymentItem } from './booking-payment-item.model';
 import { IBookingTripVehicle } from './booking-trip-vehicle.model';
 import { ISeatType } from './seat-type.model';
 import { ITripCabin } from './trip-cabin.model';
-import { DISCOUNT_TYPE } from '@ayahay/constants';
+import { BOOKING_CANCELLATION_TYPE, DISCOUNT_TYPE } from '@ayahay/constants';
 
 export interface IBookingTripPassenger {
   bookingId: string;
@@ -46,6 +46,8 @@ export interface IBookingTripPassenger {
    * otherwise this is undefined (or NULL in the DB)
    */
   removedReason?: string;
+  // see IBooking.cancellationReasonType
+  removedReasonType?: keyof typeof BOOKING_CANCELLATION_TYPE;
   discountType?: keyof typeof DISCOUNT_TYPE;
 
   bookingPaymentItems?: IBookingPaymentItem[];

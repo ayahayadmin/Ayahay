@@ -1,13 +1,15 @@
 import { IBooking, IBookingPaymentItem, IBookingTrip } from '@ayahay/models';
 import axios from './axios';
-import { BOOKING_API } from '@ayahay/constants';
+import { BOOKING_API, BOOKING_CANCELLATION_TYPE } from '@ayahay/constants';
 
 export async function cancelBooking(
   bookingId: string,
-  remarks: string
+  remarks: string,
+  reasonType: keyof typeof BOOKING_CANCELLATION_TYPE
 ): Promise<void> {
   return axios.patch(`${BOOKING_API}/${bookingId}/cancel`, {
     remarks,
+    reasonType,
   });
 }
 
@@ -25,11 +27,12 @@ export async function removeTripPassenger(
   bookingId: string,
   tripId: number,
   passengerId: number,
-  removedReason: string
+  removedReason: string,
+  reasonType: keyof typeof BOOKING_CANCELLATION_TYPE
 ): Promise<void> {
   return axios.patch(
     `${BOOKING_API}/${bookingId}/trips/${tripId}/passengers/${passengerId}/remove`,
-    { removedReason }
+    { removedReason, reasonType }
   );
 }
 

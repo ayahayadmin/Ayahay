@@ -1,6 +1,10 @@
 import { Descriptions, Skeleton, Typography, Grid, QRCode, Button } from 'antd';
 import { IBooking } from '@ayahay/models/booking.model';
-import { BOOKING_STATUS, PAYMENT_STATUS } from '@ayahay/constants';
+import {
+  BOOKING_CANCELLATION_TYPE,
+  BOOKING_STATUS,
+  PAYMENT_STATUS,
+} from '@ayahay/constants';
 import React, { useState } from 'react';
 import dayjs from 'dayjs';
 import PaymentSummary from './PaymentSummary';
@@ -19,7 +23,10 @@ interface BookingSummaryProps {
   hasPrivilegedAccess?: boolean;
   showTripSummary: boolean;
   onPayBooking?: () => Promise<void>;
-  onCancelBooking?: (remarks: string) => Promise<void>;
+  onCancelBooking?: (
+    remarks: string,
+    reasonType: keyof typeof BOOKING_CANCELLATION_TYPE
+  ) => Promise<void>;
   onCheckInPassenger?: (tripId: number, passengerId: number) => Promise<void>;
   onCheckInVehicle?: (tripId: number, vehicleId: number) => Promise<void>;
 }
@@ -52,9 +59,12 @@ export default function BookingSummary({
     getUserAction,
   } = useBookingControls(booking, trip, hasPrivilegedAccess);
 
-  const onClickCancel = (remarks: string) => {
+  const onClickCancel = (
+    remarks: string,
+    reasonType: keyof typeof BOOKING_CANCELLATION_TYPE
+  ) => {
     setIsCancellationModalOpen(false);
-    onCancelBooking && onCancelBooking(remarks);
+    onCancelBooking && onCancelBooking(remarks, reasonType);
   };
 
   const payable =
@@ -95,7 +105,9 @@ export default function BookingSummary({
           </Button>
           <BookingCancellationModal
             open={isCancellationModalOpen}
-            onConfirmCancellation={(remarks) => onClickCancel(remarks)}
+            onConfirmCancellation={(remarks, reasonType) =>
+              onClickCancel(remarks, reasonType)
+            }
             onCancel={() => setIsCancellationModalOpen(false)}
           ></BookingCancellationModal>
         </>
@@ -171,45 +183,55 @@ export default function BookingSummary({
     </div>
   );
 
-  const minimalBookingSummary =
-    bookingTrip &&
-    bookingTrip.bookingTripPassengers &&
-    bookingTrip.bookingTripPassengers.map((bookingTripPassenger, index) => (
-      <div key={index} style={{ breakBefore: index === 0 ? 'auto' : 'page' }}>
-        <section>
-          <p>Ref # {booking.referenceNo}</p>
-          <QRCode
-            value={`${window.location.href}/trips/${bookingTripPassenger.tripId}/passengers/${bookingTripPassenger.passengerId}`}
-            size={160}
-            viewBox={`0 0 256 256`}
-            type='svg'
-          />
-        </section>
-
-        <section>
-          <p>
-            {trip?.srcPort?.name} - {trip?.destPort?.name}
-          </p>
-          <p>
-            {dayjs(trip?.departureDateIso).format('MMM D, YYYY [at] h:mm A')}
-          </p>
-        </section>
-        <section>
-          <table style={{ tableLayout: 'fixed', width: '100%' }}>
-            <tbody>
-              <tr>
-                <td>
-                  {bookingTripPassenger.passenger?.firstName}&nbsp;
-                  {bookingTripPassenger.passenger?.lastName}
-                </td>
-                <td>₱{bookingTripPassenger.totalPrice}</td>
-              </tr>
-            </tbody>
-          </table>
-        </section>
-        <p style={{ textAlign: 'center' }}>Powered by AYAHAY</p>
-      </div>
-    ));
+  const minimalBookingSummary = booking && (
+    <div>
+      <QRCode
+        value={`${process.env.NEXT_PUBLIC_WEB_URL}/bookings/${booking.id}`}
+        size={160}
+        viewBox={`0 0 256 256`}
+        type='svg'
+      />
+      {bookingTrip &&
+        bookingTrip.bookingTripPassengers &&
+        bookingTrip.bookingTripPassengers.map((bookingTripPassenger, index) => (
+          <div key={index} style={{ breakBefore: 'page' }}>
+            <section>
+              <p>Ref # {booking.referenceNo}</p>
+              <QRCode
+                value={`${process.env.NEXT_PUBLIC_WEB_URL}/bookings/${booking.id}/trips/${bookingTripPassenger.tripId}/passengers/${bookingTripPassenger.passengerId}`}
+                size={160}
+                viewBox={`0 0 256 256`}
+                type='svg'
+              />
+            </section>
+            <section>
+              <p>
+                {trip?.srcPort?.name} - {trip?.destPort?.name}
+              </p>
+              <p>
+                {dayjs(trip?.departureDateIso).format(
+                  'MMM D, YYYY [at] h:mm A'
+                )}
+              </p>
+            </section>
+            <section>
+              <table style={{ tableLayout: 'fixed', width: '100%' }}>
+                <tbody>
+                  <tr>
+                    <td>
+                      {bookingTripPassenger.passenger?.firstName}&nbsp;
+                      {bookingTripPassenger.passenger?.lastName}
+                    </td>
+                    <td>₱{bookingTripPassenger.totalPrice}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </section>
+            <p style={{ textAlign: 'center' }}>Powered by AYAHAY</p>
+          </div>
+        ))}
+    </div>
+  );
 
   return (
     <Skeleton loading={booking === undefined} active>

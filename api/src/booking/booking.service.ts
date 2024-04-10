@@ -24,6 +24,7 @@ import { BookingMapper } from './booking.mapper';
 import { BookingValidator } from './booking.validator';
 import { BookingReservationService } from './booking-reservation.service';
 import { BookingPricingService } from './booking-pricing.service';
+import { BOOKING_CANCELLATION_TYPE } from '@ayahay/constants';
 
 @Injectable()
 export class BookingService {
@@ -480,16 +481,22 @@ export class BookingService {
 
   private assignDiscountTypeToPassengers(bookingTrips: IBookingTrip[]) {
     bookingTrips.forEach((bookingTrip) => {
-        bookingTrip.bookingTripPassengers
-            .filter(bookingTripPassenger => bookingTripPassenger.discountType === undefined)
-            .forEach((bookingTripPassenger) => {
-                if (bookingTripPassenger.drivesVehicleId !== undefined) {
-                    bookingTripPassenger.discountType = 'Driver';
-                } else if (bookingTripPassenger.passenger?.discountType !== undefined) {
-                    // e.g. booking will inherit passenger's discount type (if applicable)
-                    bookingTripPassenger.discountType = bookingTripPassenger.passenger.discountType;
-                }
-            });
+      bookingTrip.bookingTripPassengers
+        .filter(
+          (bookingTripPassenger) =>
+            bookingTripPassenger.discountType === undefined
+        )
+        .forEach((bookingTripPassenger) => {
+          if (bookingTripPassenger.drivesVehicleId !== undefined) {
+            bookingTripPassenger.discountType = 'Driver';
+          } else if (
+            bookingTripPassenger.passenger?.discountType !== undefined
+          ) {
+            // e.g. booking will inherit passenger's discount type (if applicable)
+            bookingTripPassenger.discountType =
+              bookingTripPassenger.passenger.discountType;
+          }
+        });
     });
   }
 
@@ -715,6 +722,7 @@ export class BookingService {
   async cancelBooking(
     bookingId: string,
     remarks: string,
+    reasonType: keyof typeof BOOKING_CANCELLATION_TYPE,
     loggedInAccount: IAccount
   ): Promise<void> {
     const booking = await this.prisma.booking.findUnique({
@@ -748,6 +756,20 @@ export class BookingService {
     }
 
     await this.prisma.$transaction(async (transactionContext) => {
+      const passengersRefundAmount =
+        await this.updateAllTripPassengersOnBookingCancellation(
+          booking,
+          reasonType,
+          transactionContext as any
+        );
+      const vehiclesRefundAmount =
+        await this.updateAllTripVehiclesOnBookingCancellation(
+          booking,
+          reasonType,
+          transactionContext as any
+        );
+      const totalRefundAmount = passengersRefundAmount + vehiclesRefundAmount;
+
       await transactionContext.booking.update({
         where: {
           id: bookingId,
@@ -755,6 +777,8 @@ export class BookingService {
         data: {
           bookingStatus: 'Cancelled',
           failureCancellationRemarks: remarks,
+          cancellationType: reasonType as any,
+          totalPrice: booking.totalPrice - totalRefundAmount,
         },
       });
 
@@ -768,11 +792,96 @@ export class BookingService {
     });
   }
 
+  private async updateAllTripPassengersOnBookingCancellation(
+    booking: any,
+    reasonType: keyof typeof BOOKING_CANCELLATION_TYPE,
+    transactionContext: PrismaClient
+  ): Promise<number> {
+    let totalRefund = 0;
+
+    for (const bookingTrip of booking.bookingTrips) {
+      for (const bookingTripPassenger of bookingTrip.bookingTripPassengers) {
+        if (bookingTripPassenger.removedReason !== null) {
+          continue;
+        }
+
+        const refundedAmount =
+          await this.bookingPricingService.refundTripPassenger(
+            bookingTripPassenger as any,
+            reasonType,
+            transactionContext
+          );
+
+        await transactionContext.bookingTripPassenger.update({
+          where: {
+            bookingId_tripId_passengerId: {
+              bookingId: bookingTripPassenger.bookingId,
+              tripId: bookingTripPassenger.tripId,
+              passengerId: bookingTripPassenger.passengerId,
+            },
+          },
+          data: {
+            removedReason: 'Booking Cancelled',
+            removedReasonType: reasonType as any,
+            totalPrice: bookingTripPassenger.totalPrice - refundedAmount,
+          },
+        });
+
+        totalRefund += refundedAmount;
+      }
+    }
+
+    return totalRefund;
+  }
+
+  private async updateAllTripVehiclesOnBookingCancellation(
+    booking: any,
+    reasonType: keyof typeof BOOKING_CANCELLATION_TYPE,
+    transactionContext: PrismaClient
+  ): Promise<number> {
+    let totalRefund = 0;
+
+    for (const bookingTrip of booking.bookingTrips) {
+      for (const bookingTripVehicle of bookingTrip.bookingTripVehicles) {
+        if (bookingTripVehicle.removedReason !== null) {
+          continue;
+        }
+
+        const refundedAmount =
+          await this.bookingPricingService.refundTripVehicle(
+            bookingTripVehicle as any,
+            reasonType,
+            transactionContext
+          );
+
+        await transactionContext.bookingTripVehicle.update({
+          where: {
+            bookingId_tripId_vehicleId: {
+              bookingId: bookingTripVehicle.bookingId,
+              tripId: bookingTripVehicle.tripId,
+              vehicleId: bookingTripVehicle.vehicleId,
+            },
+          },
+          data: {
+            removedReason: 'Booking Cancelled',
+            removedReasonType: reasonType as any,
+            totalPrice: bookingTripVehicle.totalPrice - refundedAmount,
+          },
+        });
+
+        totalRefund += refundedAmount;
+      }
+    }
+
+    return totalRefund;
+  }
+
   async removeTripPassenger(
     bookingId: string,
     tripId: number,
     passengerId: number,
     removedReason: string,
+    reasonType: keyof typeof BOOKING_CANCELLATION_TYPE,
     loggedInAccount: IAccount
   ): Promise<void> {
     const where: Prisma.BookingTripPassengerWhereUniqueInput = {
@@ -782,7 +891,6 @@ export class BookingService {
         passengerId,
       },
     };
-    // TODO: verify that logged in admin has access to this trip
 
     const bookingTripPassenger =
       await this.prisma.bookingTripPassenger.findUnique({
@@ -806,12 +914,29 @@ export class BookingService {
     }
 
     await this.prisma.$transaction(async (transactionContext) => {
+      const refundedAmount =
+        await this.bookingPricingService.refundTripPassenger(
+          bookingTripPassenger as any,
+          reasonType,
+          transactionContext as any
+        );
+
+      await transactionContext.booking.update({
+        where: { id: bookingTripPassenger.bookingId },
+        data: {
+          totalPrice: bookingTripPassenger.booking.totalPrice - refundedAmount,
+        },
+      });
+
       await transactionContext.bookingTripPassenger.update({
         where,
         data: {
           removedReason,
+          removedReasonType: reasonType as any,
+          totalPrice: bookingTripPassenger.totalPrice - refundedAmount,
         },
       });
+
       await this.bookingReservationService.updatePassengerCapacities(
         [bookingTripPassenger] as any[],
         'increment',
@@ -819,7 +944,7 @@ export class BookingService {
       );
     });
   }
-  
+
   async updateBookingFRR(bookingId: string, frr: string): Promise<void> {
     const where: Prisma.BookingWhereUniqueInput = {
       id: bookingId,

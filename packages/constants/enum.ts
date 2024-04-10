@@ -72,6 +72,7 @@ export enum BOOKING_PAYMENT_ITEM_TYPE {
   Fare = 'Fare',
   ServiceCharge = 'Service Charge',
   VoucherDiscount = 'Voucher Discount',
+  CancellationRefund = 'Cancellation Refund',
   Miscellaneous = 'Miscellaneous',
 }
 
@@ -103,4 +104,11 @@ export enum OPERATION_COSTS {
   CustomerSupportServices = 'Customer Support Services',
   ComplianceAndRegulatoryCosts = 'Compliance and Regulatory Costs', //#26 medj doble sa #12
   TechnologyUpgrades = 'Technology Upgrades',
+}
+
+export enum BOOKING_CANCELLATION_TYPE {
+  // e.g. bad weather; 100% refund
+  NoFault = "No One's Fault",
+  // e.g. change of mind; 80% refund
+  PassengersFault = "Passenger's Fault",
 }

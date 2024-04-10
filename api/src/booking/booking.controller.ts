@@ -26,6 +26,7 @@ import { Roles } from '@/decorator/roles.decorator';
 import { AllowUnauthenticated } from '@/decorator/authenticated.decorator';
 import { AccountService } from '@/account/account.service';
 import { BookingRequestService } from '@/booking/booking-request.service';
+import { BOOKING_CANCELLATION_TYPE } from '@ayahay/constants';
 
 @Controller('bookings')
 export class BookingController {
@@ -195,9 +196,15 @@ export class BookingController {
   async cancelBooking(
     @Request() req,
     @Param('bookingId') bookingId: string,
-    @Body('remarks') remarks: string
+    @Body('remarks') remarks: string,
+    @Body('reasonType') reasonType: keyof typeof BOOKING_CANCELLATION_TYPE
   ): Promise<void> {
-    return this.bookingService.cancelBooking(bookingId, remarks, req.user);
+    return this.bookingService.cancelBooking(
+      bookingId,
+      remarks,
+      reasonType,
+      req.user
+    );
   }
 
   @Patch('requests/:tempBookingId/create')
@@ -248,13 +255,15 @@ export class BookingController {
     @Param('bookingId') bookingId: string,
     @Param('tripId') tripId: number,
     @Param('passengerId') passengerId: number,
-    @Body('removedReason') removedReason: string
+    @Body('removedReason') removedReason: string,
+    @Body('reasonType') reasonType: keyof typeof BOOKING_CANCELLATION_TYPE
   ): Promise<void> {
     return this.bookingService.removeTripPassenger(
       bookingId,
       tripId,
       passengerId,
       removedReason,
+      reasonType,
       req.user
     );
   }

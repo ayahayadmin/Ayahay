@@ -6,7 +6,11 @@ import { PrinterOutlined } from '@ant-design/icons';
 import { useBookingControls } from '@ayahay/hooks/booking';
 import BookingCancellationModal from '../modals/BookingCancellationModal';
 import dayjs from 'dayjs';
-import { BOOKING_STATUS, PAYMENT_STATUS } from '@ayahay/constants';
+import {
+  BOOKING_CANCELLATION_TYPE,
+  BOOKING_STATUS,
+  PAYMENT_STATUS,
+} from '@ayahay/constants';
 import PaymentSummary from './PaymentSummary';
 import useBreakpoint from 'antd/es/grid/hooks/useBreakpoint';
 
@@ -16,7 +20,10 @@ interface BookingTripVehicleSummaryProps {
   bookingTripVehicle?: IBookingTripVehicle;
   hasPrivilegedAccess?: boolean;
   onCheckInVehicle: () => Promise<void>;
-  onRemoveVehicle: (remarks: string) => Promise<void>;
+  onRemoveVehicle: (
+    remarks: string,
+    reasonType: keyof typeof BOOKING_CANCELLATION_TYPE
+  ) => Promise<void>;
 }
 
 export default function BookingTripVehicleSummary({
@@ -35,9 +42,12 @@ export default function BookingTripVehicleSummary({
   const { showQrCode, showCancelBookingButton, getUserAction } =
     useBookingControls(booking, trip, hasPrivilegedAccess);
 
-  const onClickRemove = (remarks: string) => {
+  const onClickRemove = (
+    remarks: string,
+    reasonType: keyof typeof BOOKING_CANCELLATION_TYPE
+  ) => {
     setIsRemoveModalOpen(false);
-    onRemoveVehicle(remarks);
+    onRemoveVehicle(remarks, reasonType);
   };
 
   const bookingActions = (
@@ -58,7 +68,9 @@ export default function BookingTripVehicleSummary({
           </Button>
           <BookingCancellationModal
             open={isRemoveModalOpen}
-            onConfirmCancellation={(remarks) => onClickRemove(remarks)}
+            onConfirmCancellation={(remarks, reasonType) =>
+              onClickRemove(remarks, reasonType)
+            }
             onCancel={() => setIsRemoveModalOpen(false)}
           ></BookingCancellationModal>
         </>

@@ -6,13 +6,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import { getAxiosError } from '@ayahay/services/error.service';
 import styles from '@/app/bookings/[id]/page.module.scss';
 import BookingTripPassengerSummary from '@ayahay/components/descriptions/BookingTripPassengerSummary';
-import { Button, Modal, notification, Typography } from 'antd';
+import { Button, notification, Typography } from 'antd';
 import {
   checkInPassenger,
   removeTripPassenger,
 } from '@ayahay/services/booking.service';
-
-const { Title } = Typography;
+import { BOOKING_CANCELLATION_TYPE } from '@ayahay/constants';
 
 const textCenter = { textAlign: 'center' };
 const noPadding = { padding: '0' };
@@ -52,7 +51,10 @@ export default function BookingTripPassengerPage({ params }) {
     loadBookingTripPassenger();
   }, [loggedInAccount]);
 
-  const removePassenger = async (remarks: string) => {
+  const removePassenger = async (
+    remarks: string,
+    reasonType: keyof typeof BOOKING_CANCELLATION_TYPE
+  ) => {
     if (bookingTripPassenger === undefined) {
       return;
     }
@@ -62,7 +64,8 @@ export default function BookingTripPassengerPage({ params }) {
         bookingTripPassenger.bookingId,
         bookingTripPassenger.tripId,
         bookingTripPassenger.passengerId,
-        remarks
+        remarks,
+        reasonType
       );
       api.success({
         message: 'Passenger Removal Success',
