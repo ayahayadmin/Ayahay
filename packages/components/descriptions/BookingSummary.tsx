@@ -1,6 +1,10 @@
 import { Descriptions, Skeleton, Typography, Grid, QRCode, Button } from 'antd';
 import { IBooking } from '@ayahay/models/booking.model';
-import { BOOKING_STATUS, PAYMENT_STATUS } from '@ayahay/constants';
+import {
+  BOOKING_CANCELLATION_TYPE,
+  BOOKING_STATUS,
+  PAYMENT_STATUS,
+} from '@ayahay/constants';
 import React, { useState } from 'react';
 import dayjs from 'dayjs';
 import PaymentSummary from './PaymentSummary';
@@ -19,7 +23,10 @@ interface BookingSummaryProps {
   hasPrivilegedAccess?: boolean;
   showTripSummary: boolean;
   onPayBooking?: () => Promise<void>;
-  onCancelBooking?: (remarks: string) => Promise<void>;
+  onCancelBooking?: (
+    remarks: string,
+    reasonType: keyof typeof BOOKING_CANCELLATION_TYPE
+  ) => Promise<void>;
   onCheckInPassenger?: (tripId: number, passengerId: number) => Promise<void>;
   onCheckInVehicle?: (tripId: number, vehicleId: number) => Promise<void>;
 }
@@ -52,9 +59,12 @@ export default function BookingSummary({
     getUserAction,
   } = useBookingControls(booking, trip, hasPrivilegedAccess);
 
-  const onClickCancel = (remarks: string) => {
+  const onClickCancel = (
+    remarks: string,
+    reasonType: keyof typeof BOOKING_CANCELLATION_TYPE
+  ) => {
     setIsCancellationModalOpen(false);
-    onCancelBooking && onCancelBooking(remarks);
+    onCancelBooking && onCancelBooking(remarks, reasonType);
   };
 
   const payable =
@@ -95,7 +105,9 @@ export default function BookingSummary({
           </Button>
           <BookingCancellationModal
             open={isCancellationModalOpen}
-            onConfirmCancellation={(remarks) => onClickCancel(remarks)}
+            onConfirmCancellation={(remarks, reasonType) =>
+              onClickCancel(remarks, reasonType)
+            }
             onCancel={() => setIsCancellationModalOpen(false)}
           ></BookingCancellationModal>
         </>

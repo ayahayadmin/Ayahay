@@ -2,6 +2,7 @@ import {
   PAYMENT_STATUS,
   BOOKING_TYPE,
   BOOKING_STATUS,
+  BOOKING_CANCELLATION_TYPE,
 } from '@ayahay/constants/enum';
 import { IBookingPaymentItem } from './booking-payment-item.model';
 import { IAccount } from './account.model';
@@ -48,6 +49,13 @@ export interface IBooking {
    * remarks (e.g. reason, actions) are saved here
    */
   failureCancellationRemarks?: string;
+  /**
+   * if booking is cancelled, this field will help shipping line
+   * staff determine how much refund the passenger should get
+   * from cancelling the booking. refer to BOOKING_CANCELLATION_TYPE
+   * enum declaration for more info
+   */
+  cancellationType?: keyof typeof BOOKING_CANCELLATION_TYPE;
   /**
    * mostly for BoL (vehicle bookings) purposes only
    * undefined if booking has no vehicles

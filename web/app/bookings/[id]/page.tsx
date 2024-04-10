@@ -14,6 +14,7 @@ import { getAxiosError } from '@ayahay/services/error.service';
 import { useAuth } from '@/contexts/AuthContext';
 import { startPaymentForBookingRequest } from '@/services/payment.service';
 import { InfoCircleOutlined } from '@ant-design/icons';
+import { BOOKING_CANCELLATION_TYPE } from '@ayahay/constants';
 
 const { Title } = Typography;
 
@@ -92,13 +93,16 @@ export default function GetBooking({ params }) {
     });
   };
 
-  const onCancelBooking = async (remarks: string): Promise<void> => {
+  const onCancelBooking = async (
+    remarks: string,
+    reasonType: keyof typeof BOOKING_CANCELLATION_TYPE
+  ): Promise<void> => {
     if (booking === undefined) {
       return;
     }
 
     try {
-      await cancelBooking(booking.id, remarks);
+      await cancelBooking(booking.id, remarks, reasonType);
       api.success({
         message: 'Booking Cancellation Success',
         description: 'The booking has been cancelled successfully.',

@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import {
-  IPassenger,
   IAccount,
   IShippingLine,
   IBooking,
@@ -10,7 +9,13 @@ import {
   IBookingTripVehicle,
   ITripVehicleType,
 } from '@ayahay/models';
+import { BOOKING_CANCELLATION_TYPE } from '@ayahay/constants';
 import { UtilityService } from '@/utility.service';
+import {
+  PrismaClient,
+  BookingTripPassenger,
+  BookingTripVehicle,
+} from '@prisma/client';
 
 @Injectable()
 export class BookingPricingService {
@@ -333,5 +338,67 @@ export class BookingPricingService {
     voucher?: IVoucher
   ): number {
     return this.calculateVoucherDiscount(discountablePrice, voucher);
+  }
+
+  async refundTripPassenger(
+    { bookingId, tripId, passengerId, totalPrice }: BookingTripPassenger,
+    removedReasonType: keyof typeof BOOKING_CANCELLATION_TYPE,
+    transactionContext: PrismaClient
+  ): Promise<number> {
+    const totalRefund = this.calculateRefundOnBookingCancellation(
+      totalPrice,
+      removedReasonType
+    );
+
+    await transactionContext.bookingPaymentItem.create({
+      data: {
+        bookingId: bookingId,
+        tripId: tripId,
+        passengerId: passengerId,
+        price: -totalRefund,
+        description: 'Cancellation Refund',
+        type: 'CancellationRefund',
+      },
+    });
+
+    return totalRefund;
+  }
+
+  private calculateRefundOnBookingCancellation(
+    originalPrice: number,
+    cancellationType: keyof typeof BOOKING_CANCELLATION_TYPE
+  ): number {
+    switch (cancellationType) {
+      case 'NoFault':
+        return originalPrice;
+      case 'PassengersFault':
+        return originalPrice * 0.8;
+      default:
+        return 0;
+    }
+  }
+
+  async refundTripVehicle(
+    { bookingId, tripId, vehicleId, totalPrice }: BookingTripVehicle,
+    removedReasonType: keyof typeof BOOKING_CANCELLATION_TYPE,
+    transactionContext: PrismaClient
+  ): Promise<number> {
+    const totalRefund = this.calculateRefundOnBookingCancellation(
+      totalPrice,
+      removedReasonType
+    );
+
+    await transactionContext.bookingPaymentItem.create({
+      data: {
+        bookingId: bookingId,
+        tripId: tripId,
+        vehicleId: vehicleId,
+        price: -totalRefund,
+        description: 'Cancellation Refund',
+        type: 'CancellationRefund',
+      },
+    });
+
+    return totalRefund;
   }
 }

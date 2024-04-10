@@ -15,7 +15,11 @@ import BookingCancellationModal from '../modals/BookingCancellationModal';
 import dayjs from 'dayjs';
 import 'dayjs/plugin/relativeTime';
 
-import { BOOKING_STATUS, PAYMENT_STATUS } from '@ayahay/constants';
+import {
+  BOOKING_CANCELLATION_TYPE,
+  BOOKING_STATUS,
+  PAYMENT_STATUS,
+} from '@ayahay/constants';
 import PaymentSummary from './PaymentSummary';
 import useBreakpoint from 'antd/es/grid/hooks/useBreakpoint';
 
@@ -28,7 +32,10 @@ interface BookingTripPassengerSummaryProps {
   bookingTripPassenger?: IBookingTripPassenger;
   hasPrivilegedAccess?: boolean;
   onCheckInPassenger: () => Promise<void>;
-  onRemovePassenger: (remarks: string) => Promise<void>;
+  onRemovePassenger: (
+    remarks: string,
+    reasonType: keyof typeof BOOKING_CANCELLATION_TYPE
+  ) => Promise<void>;
 }
 
 export default function BookingTripPassengerSummary({
@@ -52,9 +59,12 @@ export default function BookingTripPassengerSummary({
     getUserAction,
   } = useBookingControls(booking, trip, hasPrivilegedAccess);
 
-  const onClickRemove = (remarks: string) => {
+  const onClickRemove = (
+    remarks: string,
+    reasonType: keyof typeof BOOKING_CANCELLATION_TYPE
+  ) => {
     setIsRemoveModalOpen(false);
-    onRemovePassenger(remarks);
+    onRemovePassenger(remarks, reasonType);
   };
 
   const bookingActions = (
@@ -75,7 +85,9 @@ export default function BookingTripPassengerSummary({
           </Button>
           <BookingCancellationModal
             open={isRemoveModalOpen}
-            onConfirmCancellation={(remarks) => onClickRemove(remarks)}
+            onConfirmCancellation={(remarks, reasonType) =>
+              onClickRemove(remarks, reasonType)
+            }
             onCancel={() => setIsRemoveModalOpen(false)}
           ></BookingCancellationModal>
         </>
