@@ -27,7 +27,8 @@ export class ReportingMapper {
     passenger,
     passengerFare,
     totalPrice,
-    discountAmount
+    discountAmount,
+    refundAmount
   ) {
     return {
       passengerName: `${passenger.passenger.firstName.trim() ?? ''} ${
@@ -37,8 +38,10 @@ export class ReportingMapper {
       accommodation: passenger.cabin.cabinType.name,
       discount: passenger.discountType ?? 'Adult',
       collect: passenger.booking.voucherCode === 'AZNAR_COLLECT',
-      discountAmount: discountAmount,
-      ticketCost: passengerFare + discountAmount,
+      discountAmount,
+      refundAmount,
+      ticketSale: passengerFare + discountAmount,
+      ticketCost: passengerFare + discountAmount + refundAmount,
       fare: totalPrice,
       paymentStatus:
         passenger.booking.createdByAccount?.role === 'Admin' ||
@@ -52,7 +55,8 @@ export class ReportingMapper {
     vehicle,
     vehicleFare,
     totalPrice,
-    discountAmount
+    discountAmount,
+    refundAmount
   ) {
     return {
       teller: vehicle.booking.createdByAccount?.email,
@@ -61,8 +65,10 @@ export class ReportingMapper {
       typeOfVehicle: vehicle.vehicle.vehicleType.description,
       plateNo: vehicle.vehicle.plateNo,
       collect: vehicle.booking.voucherCode === 'AZNAR_COLLECT',
-      discountAmount: discountAmount,
-      ticketCost: vehicleFare + discountAmount,
+      discountAmount,
+      refundAmount,
+      ticketSale: vehicleFare + discountAmount,
+      ticketCost: vehicleFare + discountAmount + refundAmount,
       fare: totalPrice,
       paymentStatus:
         vehicle.booking.createdByAccount?.role === 'Admin' ||
@@ -76,10 +82,12 @@ export class ReportingMapper {
     passenger,
     passengerFare,
     discountAmount,
+    refundAmount,
     passengerDiscountsBreakdown
   ) {
     const discountType = passenger.discountType ?? 'Adult';
-    const discountedPassengerFare = passengerFare + discountAmount;
+    const discountedPassengerFare =
+      passengerFare + discountAmount + refundAmount;
     const index = passengerDiscountsBreakdown.findIndex(
       (passengerBreakdown) => passengerBreakdown.typeOfDiscount === discountType
     );
@@ -107,9 +115,10 @@ export class ReportingMapper {
     vehicle,
     vehicleFare,
     discountAmount,
+    refundAmount,
     vehicleTypesBreakdown
   ) {
-    const discountedVehicleFare = vehicleFare + discountAmount;
+    const discountedVehicleFare = vehicleFare + discountAmount + refundAmount;
     const index = vehicleTypesBreakdown.findIndex(
       (vehicleBreakdown) =>
         vehicleBreakdown.typeOfVehicle ===

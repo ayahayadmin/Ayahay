@@ -27,6 +27,12 @@ export class ReportingService {
         destPort: true,
         ship: true,
         bookingTripPassengers: {
+          where: {
+            OR: [
+              { removedReasonType: null },
+              { removedReasonType: 'PassengersFault' },
+            ],
+          },
           include: {
             booking: {
               include: {
@@ -52,6 +58,12 @@ export class ReportingService {
           },
         },
         bookingTripVehicles: {
+          where: {
+            OR: [
+              { removedReasonType: null },
+              { removedReasonType: 'PassengersFault' },
+            ],
+          },
           include: {
             booking: {
               include: {
@@ -85,9 +97,9 @@ export class ReportingService {
     });
 
     const { passengers, passengerDiscountsBreakdown } =
-      this.buildPassengerDataForTripReporting(trip);
+      this.buildPassengerDataForTripReporting(trip.bookingTripPassengers);
     const { vehicles, vehicleTypesBreakdown } =
-      this.buildVehicleDataForTripReporting(trip);
+      this.buildVehicleDataForTripReporting(trip.bookingTripVehicles);
 
     return {
       ...this.reportingMapper.convertTripsForReporting(trip),
@@ -98,17 +110,11 @@ export class ReportingService {
     };
   }
 
-  private buildPassengerDataForTripReporting(trip) {
+  private buildPassengerDataForTripReporting(bookingTripPassengers) {
     let passengers = [];
     let passengerDiscountsBreakdown = [];
 
-    const confirmedBookingPassengers = trip.bookingTripPassengers.filter(
-      (passenger) =>
-        passenger.removedReason === null &&
-        passenger.booking.bookingStatus === 'Confirmed'
-    );
-
-    confirmedBookingPassengers.forEach((passenger) => {
+    bookingTripPassengers.forEach((passenger) => {
       const passengerFare = passenger.bookingPaymentItems.find(
         ({ type }) => type === 'Fare'
       )?.price;
@@ -116,13 +122,18 @@ export class ReportingService {
         passenger.bookingPaymentItems.find(
           ({ type }) => type === 'VoucherDiscount'
         )?.price ?? 0;
+      const partialRefundAmount =
+        passenger.bookingPaymentItems.find(
+          ({ type }) => type === 'CancellationRefund'
+        )?.price ?? 0;
 
       passengers.push(
         this.reportingMapper.convertTripPassengersForReporting(
           passenger,
           passengerFare,
           passenger.totalPrice,
-          discountAmount
+          discountAmount,
+          partialRefundAmount
         )
       );
 
@@ -131,6 +142,7 @@ export class ReportingService {
           passenger,
           passengerFare,
           discountAmount,
+          partialRefundAmount,
           passengerDiscountsBreakdown
         );
       passengerDiscountsBreakdown = passengerDiscountsBreakdownArr;
@@ -139,15 +151,11 @@ export class ReportingService {
     return { passengers, passengerDiscountsBreakdown };
   }
 
-  private buildVehicleDataForTripReporting(trip) {
+  private buildVehicleDataForTripReporting(bookingTripVehicles) {
     let vehicles = [];
     let vehicleTypesBreakdown = [];
 
-    const confirmedBookingVehicles = trip.bookingTripVehicles.filter(
-      (vehicle) => vehicle.booking.bookingStatus === 'Confirmed'
-    );
-
-    confirmedBookingVehicles.forEach((vehicle) => {
+    bookingTripVehicles.forEach((vehicle) => {
       const vehicleFare = vehicle.bookingPaymentItems.find(
         ({ type }) => type === 'Fare'
       )?.price;
@@ -155,13 +163,18 @@ export class ReportingService {
         vehicle.bookingPaymentItems.find(
           ({ type }) => type === 'VoucherDiscount'
         )?.price ?? 0;
+      const partialRefundAmount =
+        vehicle.bookingPaymentItems.find(
+          ({ type }) => type === 'CancellationRefund'
+        )?.price ?? 0;
 
       vehicles.push(
         this.reportingMapper.convertTripVehiclesForReporting(
           vehicle,
           vehicleFare,
           vehicle.totalPrice,
-          discountAmount
+          discountAmount,
+          partialRefundAmount
         )
       );
 
@@ -170,6 +183,7 @@ export class ReportingService {
           vehicle,
           vehicleFare,
           discountAmount,
+          partialRefundAmount,
           vehicleTypesBreakdown
         );
       vehicleTypesBreakdown = vehicleTypesBreakdownArr;
@@ -214,6 +228,12 @@ export class ReportingService {
         ship: true,
         shippingLine: true,
         bookingTripPassengers: {
+          where: {
+            OR: [
+              { removedReasonType: null },
+              { removedReasonType: 'PassengersFault' },
+            ],
+          },
           include: {
             booking: {
               include: {
@@ -239,6 +259,12 @@ export class ReportingService {
           },
         },
         bookingTripVehicles: {
+          where: {
+            OR: [
+              { removedReasonType: null },
+              { removedReasonType: 'PassengersFault' },
+            ],
+          },
           include: {
             booking: {
               include: {
@@ -276,9 +302,9 @@ export class ReportingService {
 
     return trips.map((trip) => {
       const { passengers, passengerDiscountsBreakdown } =
-        this.buildPassengerDataForTripReporting(trip);
+        this.buildPassengerDataForTripReporting(trip.bookingTripPassengers);
       const { vehicles, vehicleTypesBreakdown } =
-        this.buildVehicleDataForTripReporting(trip);
+        this.buildVehicleDataForTripReporting(trip.bookingTripVehicles);
 
       return {
         ...this.reportingMapper.convertTripsForReporting(trip),
