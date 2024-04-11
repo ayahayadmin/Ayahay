@@ -20,8 +20,7 @@ export default function WebFooter() {
             <div className={styles['contact-card']}>
               <div className={styles['contact-call']}>
                 <h1>Customer Care</h1>
-                <h2>Smart: (+63) 947 070 4254</h2>
-                <h2>Globe: (+63) 956 047 7025</h2>
+                <h2>Smart/TNT: (+63) 909 968 2705</h2>
               </div>
               <div className={styles['contact-email']}>
                 <h1>Need support?</h1>
