@@ -572,21 +572,14 @@ export class TripService {
       );
     }
 
-    await this.prisma.$transaction(async (transactionContext) => {
-      await transactionContext.trip.update({
-        where: {
-          id: tripId,
-        },
-        data: {
-          status: 'Cancelled',
-          cancellationReason: reason,
-        },
-      });
-
-      await this.shipService.createVoyageForTrip(
-        tripToCancel,
-        transactionContext as any
-      );
+    await this.prisma.trip.update({
+      where: {
+        id: tripId,
+      },
+      data: {
+        status: 'Cancelled',
+        cancellationReason: reason,
+      },
     });
   }
 
