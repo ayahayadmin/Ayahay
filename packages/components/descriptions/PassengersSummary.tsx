@@ -3,6 +3,7 @@ import { Button, Badge } from 'antd';
 import { IBookingTripPassenger } from '@ayahay/models';
 import { DISCOUNT_TYPE } from '@ayahay/constants/enum';
 import Table, { ColumnsType } from 'antd/es/table';
+import { ExportOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import 'dayjs/plugin/relativeTime';
 
@@ -97,6 +98,17 @@ export default function PassengersSummary({
             <Badge status='success' text={`Checked in ${checkInDateFromNow}`} />
           );
         },
+      },
+      {
+        title: 'Actions',
+        render: (_, passenger) => (
+          <Button
+            type='default'
+            href={`/bookings/${passenger.bookingId}/trips/${passenger.tripId}/passengers/${passenger.passengerId}`}
+            target='_blank'
+            icon={<ExportOutlined />}
+          />
+        ),
       },
     ]);
   }, [passengers]);

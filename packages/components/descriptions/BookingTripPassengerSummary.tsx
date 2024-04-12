@@ -9,7 +9,7 @@ import {
   Typography,
 } from 'antd';
 import { IBookingTripPassenger } from '@ayahay/models';
-import { PrinterOutlined } from '@ant-design/icons';
+import { PrinterOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import { useBookingControls } from '@ayahay/hooks/booking';
 import BookingCancellationModal from '../modals/BookingCancellationModal';
 import dayjs from 'dayjs';
@@ -80,7 +80,11 @@ export default function BookingTripPassengerSummary({
       )}
       {showCancelBookingButton && (
         <>
-          <Button type='default' onClick={() => setIsRemoveModalOpen(true)}>
+          <Button
+            type='primary'
+            danger
+            onClick={() => setIsRemoveModalOpen(true)}
+          >
             Remove Passenger
           </Button>
           <BookingCancellationModal
@@ -97,6 +101,14 @@ export default function BookingTripPassengerSummary({
 
   const completeSummary = booking && (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+      <Button
+        type='link'
+        href={`/bookings/${booking?.id}`}
+        icon={<ArrowLeftOutlined />}
+        style={{ alignSelf: 'start' }}
+      >
+        Booking Summary
+      </Button>
       <Title level={1}>Booking Details</Title>
       <section
         style={{
