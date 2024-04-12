@@ -430,7 +430,7 @@ const SummarySalesPerVessel = forwardRef(function (
                 <td style={{ textAlign: 'left', width: '50%' }}>
                   Total Passenger Sales
                 </td>
-                <td style={{ textAlign: 'right' }}>
+                <td style={{ textAlign: 'left' }}>
                   PHP&nbsp;
                   {roundToTwoDecimalPlacesAndAddCommas(totalPaxSales)}
                 </td>
@@ -439,7 +439,7 @@ const SummarySalesPerVessel = forwardRef(function (
                 <td style={{ textAlign: 'left', width: '50%' }}>
                   Total Cargo Sales
                 </td>
-                <td style={{ textAlign: 'right' }}>
+                <td style={{ textAlign: 'left' }}>
                   PHP&nbsp;
                   {roundToTwoDecimalPlacesAndAddCommas(totalVehicleSales)}
                 </td>
@@ -448,14 +448,14 @@ const SummarySalesPerVessel = forwardRef(function (
                 <td style={{ textAlign: 'left', width: '50%' }}>
                   Total Disbursements
                 </td>
-                <td style={{ textAlign: 'right' }}>
+                <td style={{ textAlign: 'left' }}>
                   PHP&nbsp;-
                   {roundToTwoDecimalPlacesAndAddCommas(totalDisbursements)}
                 </td>
               </tr>
               <tr style={{ fontWeight: 'bold' }}>
                 <td style={{ textAlign: 'left', width: '50%' }}>TOTAL SALES</td>
-                <td style={{ textAlign: 'right' }}>
+                <td style={{ textAlign: 'left' }}>
                   PHP&nbsp;
                   {roundToTwoDecimalPlacesAndAddCommas(
                     sum([totalPaxSales, totalVehicleSales, -totalDisbursements])

@@ -14,10 +14,17 @@ export interface TripReport {
     accommodation: string;
     discount: string;
     collect: boolean;
-    discountAmount: number;
-    ticketCost: number;
-    fare: number;
     paymentStatus: string;
+
+    discountAmount: number;
+    refundAmount: number;
+
+    // base fare - voucher discount
+    ticketSale: number;
+    // base fare - voucher discount - refund
+    ticketCost: number;
+    // base fare + Ayahay convenience fee
+    fare: number;
   }[];
 
   passengerDiscountsBreakdown?: {
@@ -33,10 +40,17 @@ export interface TripReport {
     typeOfVehicle: string;
     plateNo: string;
     collect: boolean;
-    discountAmount: number;
-    ticketCost: number;
-    fare: number;
     paymentStatus: string;
+
+    discountAmount: number;
+    refundAmount: number;
+
+    // base fare - voucher discount
+    ticketSale: number;
+    // base fare - voucher discount - refund
+    ticketCost: number;
+    // base fare + Ayahay convenience fee
+    fare: number;
   }[];
 
   vehicleTypesBreakdown?: {

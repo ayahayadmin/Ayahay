@@ -45,11 +45,12 @@ const SummarySalesPerVoyage = forwardRef(function (
   let totalPassengers = data.passengers.length;
   let totalPassengerSales = 0;
   let totalPassengerRefund = 0;
-  let totalPassengerFare = 0;
+  let totalPassengerNetSales = 0;
 
   data.passengers.map((passenger) => {
-    totalPassengerSales += passenger.ticketCost;
-    totalPassengerFare += passenger.fare;
+    totalPassengerSales += passenger.ticketSale;
+    totalPassengerRefund += passenger.refundAmount;
+    totalPassengerNetSales += passenger.ticketCost;
 
     if (passenger.paymentStatus === 'PayMongo') {
       mopBreakdown.Ayahay.aggTicketCost! += passenger.ticketCost;
@@ -63,11 +64,12 @@ const SummarySalesPerVoyage = forwardRef(function (
   let totalVehicles = data.vehicles?.length;
   let totalVehicleSales = 0;
   let totalVehicleRefund = 0;
-  let totalVehicleFare = 0;
+  let totalVehicleNetSales = 0;
 
   data.vehicles?.map((vehicle) => {
-    totalVehicleSales += vehicle.ticketCost;
-    totalVehicleFare += vehicle.fare;
+    totalVehicleSales += vehicle.ticketSale;
+    totalVehicleRefund += vehicle.refundAmount;
+    totalVehicleNetSales += vehicle.ticketCost;
 
     if (vehicle.paymentStatus === 'PayMongo') {
       mopBreakdown.Ayahay.aggTicketCost! += vehicle.ticketCost;
@@ -170,10 +172,13 @@ const SummarySalesPerVoyage = forwardRef(function (
                   PHP&nbsp;
                   {roundToTwoDecimalPlacesAndAddCommas(totalPassengerSales)}
                 </td>
-                <td style={{ textAlign: 'left' }}>-</td>
                 <td style={{ textAlign: 'left' }}>
                   PHP&nbsp;
-                  {roundToTwoDecimalPlacesAndAddCommas(totalPassengerSales)}
+                  {roundToTwoDecimalPlacesAndAddCommas(totalPassengerRefund)}
+                </td>
+                <td style={{ textAlign: 'left' }}>
+                  PHP&nbsp;
+                  {roundToTwoDecimalPlacesAndAddCommas(totalPassengerNetSales)}
                 </td>
               </tr>
               <tr>
@@ -184,10 +189,13 @@ const SummarySalesPerVoyage = forwardRef(function (
                   PHP&nbsp;
                   {roundToTwoDecimalPlacesAndAddCommas(totalVehicleSales)}
                 </td>
-                <td style={{ textAlign: 'left' }}>-</td>
                 <td style={{ textAlign: 'left' }}>
                   PHP&nbsp;
-                  {roundToTwoDecimalPlacesAndAddCommas(totalVehicleSales)}
+                  {roundToTwoDecimalPlacesAndAddCommas(totalVehicleRefund)}
+                </td>
+                <td style={{ textAlign: 'left' }}>
+                  PHP&nbsp;
+                  {roundToTwoDecimalPlacesAndAddCommas(totalVehicleNetSales)}
                 </td>
               </tr>
             </tbody>
@@ -254,7 +262,7 @@ const SummarySalesPerVoyage = forwardRef(function (
                     <div style={{ textAlign: 'left' }}>
                       PHP&nbsp;
                       {roundToTwoDecimalPlacesAndAddCommas(
-                        totalPassengerSales + totalVehicleSales
+                        totalPassengerNetSales + totalVehicleNetSales
                       )}
                     </div>
                   </div>
@@ -278,7 +286,7 @@ const SummarySalesPerVoyage = forwardRef(function (
                 </td>
                 <td style={{ textAlign: 'left' }}>
                   PHP&nbsp;
-                  {roundToTwoDecimalPlacesAndAddCommas(totalPassengerSales)}
+                  {roundToTwoDecimalPlacesAndAddCommas(totalPassengerNetSales)}
                 </td>
               </tr>
               <tr>
@@ -287,7 +295,7 @@ const SummarySalesPerVoyage = forwardRef(function (
                 </td>
                 <td style={{ textAlign: 'left' }}>
                   PHP&nbsp;
-                  {roundToTwoDecimalPlacesAndAddCommas(totalVehicleSales)}
+                  {roundToTwoDecimalPlacesAndAddCommas(totalVehicleNetSales)}
                 </td>
               </tr>
               <tr>
@@ -304,7 +312,9 @@ const SummarySalesPerVoyage = forwardRef(function (
                 <td style={{ textAlign: 'left' }}>
                   PHP&nbsp;
                   {roundToTwoDecimalPlacesAndAddCommas(
-                    totalPassengerSales + totalVehicleSales - totalDisbursements
+                    totalPassengerNetSales +
+                      totalVehicleNetSales -
+                      totalDisbursements
                   )}
                 </td>
               </tr>

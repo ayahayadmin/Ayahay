@@ -35,7 +35,8 @@ const CargoDailySalesReport = forwardRef(function (
   };
 
   let totalVehicles = data.vehicles?.length;
-  let totalTicketCost = 0;
+  let totalTicketSale = 0;
+  let totalRefundAmount = 0;
 
   return (
     <div ref={ref}>
@@ -116,24 +117,32 @@ const CargoDailySalesReport = forwardRef(function (
                 <th>Plate #</th>
                 <th style={{ textAlign: 'left' }}>Discount</th>
                 <th style={{ textAlign: 'left' }}>Ticket Cost</th>
+                <th style={{ textAlign: 'left' }}>Refund</th>
                 <th>Payment Method</th>
                 <th>Collect</th>
               </tr>
             </thead>
             <tbody>
               {data.vehicles.map((vehicle) => {
-                totalTicketCost += vehicle.ticketCost;
+                totalTicketSale += vehicle.ticketSale;
+                totalRefundAmount += vehicle.refundAmount;
                 const paymentStatus = vehicle.paymentStatus;
 
                 if (paymentStatus === 'PayMongo') {
-                  mopBreakdown.Ayahay.aggFare += vehicle.ticketCost;
+                  mopBreakdown.Ayahay.aggFare += vehicle.ticketSale;
                 } else {
-                  mopBreakdown.OTC.aggFare += vehicle.ticketCost;
+                  mopBreakdown.OTC.aggFare += vehicle.ticketSale;
                 }
 
                 const discountAmount = vehicle.discountAmount
                   ? `PHP ${roundToTwoDecimalPlacesAndAddCommas(
                       vehicle.discountAmount
+                    )}`
+                  : '';
+
+                const refundAmount = vehicle.refundAmount
+                  ? `PHP ${roundToTwoDecimalPlacesAndAddCommas(
+                      vehicle.refundAmount
                     )}`
                   : '';
 
@@ -147,8 +156,9 @@ const CargoDailySalesReport = forwardRef(function (
                     <td style={{ textAlign: 'left' }}>{discountAmount}</td>
                     <td style={{ textAlign: 'left' }}>
                       PHP&nbsp;
-                      {roundToTwoDecimalPlacesAndAddCommas(vehicle.ticketCost)}
+                      {roundToTwoDecimalPlacesAndAddCommas(vehicle.ticketSale)}
                     </td>
+                    <td style={{ textAlign: 'left' }}>{refundAmount}</td>
                     <td>{paymentStatus}</td>
                     <td>{vehicle.collect ? 'Yes' : ''}</td>
                   </tr>
@@ -162,7 +172,11 @@ const CargoDailySalesReport = forwardRef(function (
                 <td style={{ textAlign: 'left' }}>-</td>
                 <td style={{ textAlign: 'left' }}>
                   PHP&nbsp;
-                  {roundToTwoDecimalPlacesAndAddCommas(totalTicketCost)}
+                  {roundToTwoDecimalPlacesAndAddCommas(totalTicketSale)}
+                </td>
+                <td style={{ textAlign: 'left' }}>
+                  PHP&nbsp;
+                  {roundToTwoDecimalPlacesAndAddCommas(totalRefundAmount)}
                 </td>
                 <td>-</td>
                 <td>-</td>
@@ -221,6 +235,22 @@ const CargoDailySalesReport = forwardRef(function (
                   </tr>
                 );
               })}
+              <tr>
+                <td
+                  className={styles['cell-border']}
+                  style={{ borderLeft: '0.001px solid black' }}
+                >
+                  Refund
+                </td>
+                <td className={styles['cell-border']}>
+                  <div className={styles['wrap']}>
+                    <div style={{ textAlign: 'left' }}>
+                      PHP&nbsp;
+                      {roundToTwoDecimalPlacesAndAddCommas(totalRefundAmount)}
+                    </div>
+                  </div>
+                </td>
+              </tr>
             </tbody>
             <tfoot style={{ backgroundColor: '#ddebf7' }}>
               <tr style={{ fontWeight: 'bold' }}>
@@ -234,7 +264,9 @@ const CargoDailySalesReport = forwardRef(function (
                   <div className={styles['wrap']}>
                     <div style={{ textAlign: 'left' }}>
                       PHP&nbsp;
-                      {roundToTwoDecimalPlacesAndAddCommas(totalTicketCost)}
+                      {roundToTwoDecimalPlacesAndAddCommas(
+                        totalTicketSale + totalRefundAmount
+                      )}
                     </div>
                   </div>
                 </td>

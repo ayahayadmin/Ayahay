@@ -28,24 +28,26 @@ const ProfitAndLossStatement = forwardRef(function (
   const user = loggedInAccount?.email;
   const date = getFullDate(new Date().toString(), true);
 
-  let totalTicketCost = 0;
-  let totalRefund = 0;
-  let totalFare = 0;
+  let totalPassengerSales = 0;
+  let totalPassengerRefund = 0;
+  let totalPassengerNetSales = 0;
 
-  let totalVehicleTicketCost = 0;
+  let totalVehicleSales = 0;
   let totalVehicleRefund = 0;
-  let totalVehicleFare = 0;
+  let totalVehicleNetSales = 0;
 
   let totalExpenses = 0;
 
   data.passengers.map((passenger) => {
-    totalTicketCost += passenger.ticketCost;
-    totalFare += passenger.fare;
+    totalPassengerSales += passenger.ticketSale;
+    totalPassengerRefund += passenger.refundAmount;
+    totalPassengerNetSales += passenger.ticketCost;
   });
 
   data.vehicles?.map((vehicle) => {
-    totalVehicleTicketCost += vehicle.ticketCost;
-    totalVehicleFare += vehicle.fare;
+    totalVehicleSales += vehicle.ticketSale;
+    totalVehicleRefund += vehicle.refundAmount;
+    totalVehicleNetSales += vehicle.ticketCost;
   });
 
   return (
@@ -135,14 +137,15 @@ const ProfitAndLossStatement = forwardRef(function (
                 <td>PAX INCOME</td>
                 <td style={{ textAlign: 'left' }}>
                   PHP&nbsp;
-                  {roundToTwoDecimalPlacesAndAddCommas(totalTicketCost)}
+                  {roundToTwoDecimalPlacesAndAddCommas(totalPassengerSales)}
                 </td>
-                <td>-</td>
                 <td style={{ textAlign: 'left' }}>
                   PHP&nbsp;
-                  {roundToTwoDecimalPlacesAndAddCommas(
-                    totalTicketCost - totalRefund
-                  )}
+                  {roundToTwoDecimalPlacesAndAddCommas(totalPassengerRefund)}
+                </td>
+                <td style={{ textAlign: 'left' }}>
+                  PHP&nbsp;
+                  {roundToTwoDecimalPlacesAndAddCommas(totalPassengerNetSales)}
                 </td>
               </tr>
               <tr>
@@ -152,12 +155,15 @@ const ProfitAndLossStatement = forwardRef(function (
                 <td>CARGO INCOME</td>
                 <td style={{ textAlign: 'left' }}>
                   PHP&nbsp;
-                  {roundToTwoDecimalPlacesAndAddCommas(totalVehicleTicketCost)}
+                  {roundToTwoDecimalPlacesAndAddCommas(totalVehicleSales)}
                 </td>
-                <td>-</td>
                 <td style={{ textAlign: 'left' }}>
                   PHP&nbsp;
-                  {roundToTwoDecimalPlacesAndAddCommas(totalVehicleTicketCost)}
+                  {roundToTwoDecimalPlacesAndAddCommas(totalVehicleRefund)}
+                </td>
+                <td style={{ textAlign: 'left' }}>
+                  PHP&nbsp;
+                  {roundToTwoDecimalPlacesAndAddCommas(totalVehicleNetSales)}
                 </td>
               </tr>
             </tbody>
@@ -167,15 +173,19 @@ const ProfitAndLossStatement = forwardRef(function (
                 <td style={{ textAlign: 'left' }}>
                   PHP&nbsp;
                   {roundToTwoDecimalPlacesAndAddCommas(
-                    totalTicketCost + totalVehicleTicketCost
+                    totalPassengerSales + totalVehicleSales
                   )}
                 </td>
-                <td>-</td>
-                {/* subtract here TOTAL refund (pax and cargo), but none for now */}
                 <td style={{ textAlign: 'left' }}>
                   PHP&nbsp;
                   {roundToTwoDecimalPlacesAndAddCommas(
-                    totalTicketCost + totalVehicleTicketCost
+                    totalPassengerRefund + totalVehicleRefund
+                  )}
+                </td>
+                <td style={{ textAlign: 'left' }}>
+                  PHP&nbsp;
+                  {roundToTwoDecimalPlacesAndAddCommas(
+                    totalPassengerNetSales + totalVehicleNetSales
                   )}
                 </td>
               </tr>
@@ -274,18 +284,22 @@ const ProfitAndLossStatement = forwardRef(function (
                   &nbsp;@&nbsp;
                   {getLocaleTimeString(data.departureDate)}
                 </td>
-                {/* subtract here TOTAL refund (pax and cargo), but none for now */}
                 <td style={{ textAlign: 'right' }}>
                   PHP&nbsp;
                   {roundToTwoDecimalPlacesAndAddCommas(
-                    totalTicketCost + totalVehicleTicketCost
+                    totalPassengerSales + totalVehicleSales
                   )}
                 </td>
               </tr>
               <tr>
                 <td>LESS: Refund</td>
                 <td></td>
-                <td></td>
+                <td style={{ textAlign: 'right' }}>
+                  PHP&nbsp;
+                  {roundToTwoDecimalPlacesAndAddCommas(
+                    totalPassengerRefund + totalVehicleRefund
+                  )}
+                </td>
               </tr>
               <tr>
                 <td style={{ verticalAlign: 'top' }}>EXPENSES</td>
@@ -319,10 +333,11 @@ const ProfitAndLossStatement = forwardRef(function (
                   {getLocaleTimeString(data.departureDate)}
                 </td>
                 <td style={{ textAlign: 'right' }}>
-                  {/* subtract here TOTAL refund (pax and cargo), but none for now */}
                   PHP&nbsp;
                   {roundToTwoDecimalPlacesAndAddCommas(
-                    totalTicketCost + totalVehicleTicketCost - totalExpenses
+                    totalPassengerNetSales +
+                      totalVehicleNetSales -
+                      totalExpenses
                   )}
                 </td>
               </tr>
