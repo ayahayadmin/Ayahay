@@ -196,9 +196,7 @@ export default function BillOfLading({ data }: BillOfLadingProps) {
                     <td></td>
                     {/* {vehicle.weight} will use vehicle type description */}
                     <td>
-                      {vehicle.vehicleTypeDesc === 'Bus with 60 pax capacity'
-                        ? 'E'
-                        : ''}
+                      {vehicle.vehicleTypeDesc.includes('Loaded') ? 'L' : 'E'}
                     </td>
                     <td></td>
                     <td>{vehicle.fare}</td>
