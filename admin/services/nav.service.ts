@@ -1,4 +1,10 @@
 export const webLinks = {
+  Scanner: [
+    {
+      label: 'Dashboard',
+      key: 'dashboard',
+    },
+  ],
   Staff: [
     {
       label: 'Trips',

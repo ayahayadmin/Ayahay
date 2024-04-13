@@ -11,7 +11,7 @@ interface BookingTripSummaryProps {
   bookingTrip: IBookingTrip;
   titleLevel: 1 | 2 | 3 | 4 | 5;
   showTripSummary: boolean;
-  hasPrivilegedAccess?: boolean;
+  canCheckIn?: boolean;
   onCheckInPassenger?: (tripId: number, passengerId: number) => Promise<void>;
   onCheckInVehicle?: (tripId: number, vehicleId: number) => Promise<void>;
 }
@@ -19,7 +19,7 @@ interface BookingTripSummaryProps {
 export default function BookingTripSummary({
   bookingTrip,
   titleLevel,
-  hasPrivilegedAccess,
+  canCheckIn,
   showTripSummary,
   onCheckInPassenger,
   onCheckInVehicle,
@@ -38,7 +38,7 @@ export default function BookingTripSummary({
             <Title level={titleLevel}>Passengers</Title>
             <PassengersSummary
               passengers={bookingTrip.bookingTripPassengers}
-              hasPrivilegedAccess={hasPrivilegedAccess}
+              canCheckIn={canCheckIn}
               onCheckInPassenger={onCheckInPassenger}
             />
           </section>
@@ -49,7 +49,7 @@ export default function BookingTripSummary({
             <Title level={titleLevel}>Vehicles</Title>
             <VehiclesSummary
               vehicles={bookingTrip.bookingTripVehicles}
-              hasPrivilegedAccess={hasPrivilegedAccess}
+              canCheckIn={canCheckIn}
               onCheckInVehicle={onCheckInVehicle}
             />
           </section>

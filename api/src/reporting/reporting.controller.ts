@@ -29,14 +29,14 @@ export class ReportingController {
 
   @Get('trips/:id/reporting')
   @UseGuards(AuthGuard)
-  @Roles('Staff', 'Admin', 'SuperAdmin')
+  @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
   async getTripsReporting(@Param('id') tripId: string): Promise<TripReport> {
     return this.reportingService.getTripsReporting(Number(tripId));
   }
 
   @Get('ports')
   @UseGuards(AuthGuard)
-  @Roles('Staff', 'Admin', 'SuperAdmin')
+  @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
   async getPortsByShip(
     @Query() dates: TripSearchByDateRange
   ): Promise<PortsByShip[]> {
@@ -45,14 +45,14 @@ export class ReportingController {
 
   @Get('trips/ships')
   @UseGuards(AuthGuard)
-  @Roles('Staff', 'Admin', 'SuperAdmin')
+  @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
   async getTripsByShip(@Query() data: PortsByShip): Promise<PerVesselReport[]> {
     return this.reportingService.getTripsByShip(data);
   }
 
   @Get('trips/:id/manifest')
   @UseGuards(AuthGuard)
-  @Roles('Staff', 'Admin', 'SuperAdmin')
+  @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
   async getManifest(@Param('id') tripId: string): Promise<TripManifest> {
     return this.reportingService.getTripManifest(Number(tripId));
   }

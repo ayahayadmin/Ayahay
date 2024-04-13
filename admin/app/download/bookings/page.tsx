@@ -21,7 +21,7 @@ for (let monthDiff = 0; monthDiff < 3; monthDiff++) {
 }
 
 export default function DownloadBookings() {
-  useAuthGuard(['Staff', 'Admin', 'SuperAdmin']);
+  useAuthGuard(['ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin']);
   const onFinish = async (formValues: any) => {
     const monthIso = formValues.month;
     const requestedMonthDate = new Date(monthIso);

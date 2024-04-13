@@ -19,7 +19,7 @@ export class VoucherController {
 
   @Get()
   @UseGuards(AuthGuard)
-  @Roles('Admin', 'SuperAdmin')
+  @Roles('ShippingLineAdmin', 'SuperAdmin')
   async getVouchers(
     @Query() pagination: PaginatedRequest,
     @Request() req
@@ -32,7 +32,7 @@ export class VoucherController {
 
   @Post()
   @UseGuards(AuthGuard)
-  @Roles('Admin', 'SuperAdmin')
+  @Roles('ShippingLineAdmin', 'SuperAdmin')
   async createVoucher(
     @Body() voucher: IVoucher,
     @Request() req

@@ -36,7 +36,7 @@ export default function WebHeader() {
       <div className={styles['nav-buttons']}>
         <Notifications
           hasAdminPrivileges={
-            loggedInAccount?.role === 'Admin' ||
+            loggedInAccount?.role === 'ShippingLineAdmin' ||
             loggedInAccount?.role === 'SuperAdmin'
           }
         />

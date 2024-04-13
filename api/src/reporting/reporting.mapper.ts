@@ -44,8 +44,8 @@ export class ReportingMapper {
       ticketCost: passengerFare + discountAmount + refundAmount,
       fare: totalPrice,
       paymentStatus:
-        passenger.booking.createdByAccount?.role === 'Admin' ||
-        passenger.booking.createdByAccount?.role === 'Staff'
+        passenger.booking.createdByAccount?.role === 'ShippingLineStaff' ||
+        passenger.booking.createdByAccount?.role === 'ShippingLineAdmin'
           ? 'OTC'
           : 'PayMongo',
     };
@@ -71,8 +71,8 @@ export class ReportingMapper {
       ticketCost: vehicleFare + discountAmount + refundAmount,
       fare: totalPrice,
       paymentStatus:
-        vehicle.booking.createdByAccount?.role === 'Admin' ||
-        vehicle.booking.createdByAccount?.role === 'Staff'
+        vehicle.booking.createdByAccount?.role === 'ShippingLineStaff' ||
+        vehicle.booking.createdByAccount?.role === 'ShippingLineAdmin'
           ? 'OTC'
           : 'PayMongo',
     };

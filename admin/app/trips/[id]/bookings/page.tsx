@@ -57,7 +57,7 @@ const bookingColumns: ColumnsType<VehicleBookings> = [
 ];
 
 export default function TripBookingsPage({ params }: any) {
-  useAuthGuard(['Staff', 'Admin', 'SuperAdmin']);
+  useAuthGuard(['ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin']);
   const tripId = params.id;
 
   const fetchBookings = async (pagination: PaginatedRequest) => {

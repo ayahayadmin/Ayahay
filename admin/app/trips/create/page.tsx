@@ -33,7 +33,7 @@ export default function CreateTripsFromSchedulesPage() {
     return <Spin size='large' className={styles['spinner']} />;
   }
 
-  const allowedRoles = ['SuperAdmin', 'Admin'];
+  const allowedRoles = ['SuperAdmin', 'ShippingLineAdmin'];
   if (!isSignedIn) {
     redirect('/');
   } else if (loggedInAccount && !allowedRoles.includes(loggedInAccount.role)) {

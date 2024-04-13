@@ -31,6 +31,7 @@ const { Title } = Typography;
 interface BookingTripPassengerSummaryProps {
   bookingTripPassenger?: IBookingTripPassenger;
   hasPrivilegedAccess?: boolean;
+  canCheckIn?: boolean;
   onCheckInPassenger: () => Promise<void>;
   onRemovePassenger: (
     remarks: string,
@@ -41,6 +42,7 @@ interface BookingTripPassengerSummaryProps {
 export default function BookingTripPassengerSummary({
   bookingTripPassenger,
   hasPrivilegedAccess,
+  canCheckIn,
   onCheckInPassenger,
   onRemovePassenger,
 }: BookingTripPassengerSummaryProps) {
@@ -73,7 +75,7 @@ export default function BookingTripPassengerSummary({
         <PrinterOutlined />
         Print Ticket
       </Button>
-      {bookingTripPassenger?.checkInDate === undefined && (
+      {canCheckIn && bookingTripPassenger?.checkInDate === undefined && (
         <Button type='primary' onClick={() => onCheckInPassenger()}>
           Check-In Passenger
         </Button>

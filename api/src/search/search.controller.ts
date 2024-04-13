@@ -15,7 +15,7 @@ export class SearchController {
   constructor(private searchService: SearchService) {}
 
   @Get('bookings')
-  @Roles('Staff', 'Admin')
+  @Roles('ShippingLineStaff', 'ShippingLineAdmin')
   async getBookingsByReferenceNo(
     @Query('referenceNo') referenceNo: string
   ): Promise<Booking[]> {
@@ -25,7 +25,7 @@ export class SearchController {
   }
 
   @Get('trips')
-  @Roles('Passenger', 'Staff', 'Admin')
+  @Roles('Passenger', 'ShippingLineStaff', 'ShippingLineAdmin')
   async getTripsByReferenceNo(
     @Query('referenceNo') referenceNo: string
   ): Promise<Trip[]> {
@@ -37,7 +37,12 @@ export class SearchController {
   }
 
   @Get('dashboard')
-  @Roles('Staff', 'Admin', 'SuperAdmin')
+  @Roles(
+    'ShippingLineScanner',
+    'ShippingLineStaff',
+    'ShippingLineAdmin',
+    'SuperAdmin'
+  )
   async getDashboardTrips(
     @Query() pagination: PaginatedRequest,
     @Query() query: any

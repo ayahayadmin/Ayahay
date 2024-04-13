@@ -12,7 +12,7 @@ import { useSearchParams } from 'next/navigation';
 const { Title } = Typography;
 
 export default function ReportingPage() {
-  useAuthGuard(['Staff', 'Admin', 'SuperAdmin']);
+  useAuthGuard(['ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin']);
   const searchParams = useSearchParams();
   const params = Object.fromEntries(searchParams.entries());
   const { data } = useShipReportingFromSearchParams(params);

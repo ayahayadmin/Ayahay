@@ -117,6 +117,10 @@ export default function BookingTripPassengerPage({ params }) {
         <BookingTripPassengerSummary
           bookingTripPassenger={bookingTripPassenger}
           hasPrivilegedAccess={hasPrivilegedAccess}
+          canCheckIn={
+            hasPrivilegedAccess ||
+            loggedInAccount?.role === 'ShippingLineScanner'
+          }
           onRemovePassenger={removePassenger}
           onCheckInPassenger={checkInBookingPassenger}
         />

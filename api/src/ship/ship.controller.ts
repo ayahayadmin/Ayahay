@@ -32,7 +32,7 @@ export class ShipController {
 
   @Post(':shipId/voyages')
   @UseGuards(AuthGuard)
-  @Roles('Staff', 'Admin', 'SuperAdmin')
+  @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
   async createManualVoyage(
     @Param('shipId') shipId: number,
     @Body('remarks') remarks: string,
@@ -43,7 +43,7 @@ export class ShipController {
 
   @Get(':shipId/voyages')
   @UseGuards(AuthGuard)
-  @Roles('Staff', 'Admin', 'SuperAdmin')
+  @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
   async getVoyagesOfShip(
     @Param('shipId') shipId: number,
     @Query('afterLastMaintenance') afterLastMaintenance: boolean,
@@ -60,7 +60,7 @@ export class ShipController {
 
   @Get(':shipId/dry-docks')
   @UseGuards(AuthGuard)
-  @Roles('Staff', 'Admin', 'SuperAdmin')
+  @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
   async getDryDocks(
     @Param('shipId') shipId: number,
     @Query() pagination: PaginatedRequest,
@@ -71,7 +71,7 @@ export class ShipController {
 
   @Post(':shipId/dry-docks')
   @UseGuards(AuthGuard)
-  @Roles('Staff', 'Admin', 'SuperAdmin')
+  @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
   async createDryDock(
     @Param('shipId') shipId: number,
     @Request() req

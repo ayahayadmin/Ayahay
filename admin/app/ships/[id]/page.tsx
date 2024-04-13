@@ -51,7 +51,7 @@ const dryDockColumns: ColumnsType<IDryDock> = [
 ];
 
 export default function ShipPage({ params }: any) {
-  useAuthGuard(['Staff', 'Admin', 'SuperAdmin']);
+  useAuthGuard(['ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin']);
   const [ship, setShip] = useState<IShip | undefined>();
   const [createVoyageModalOpen, setCreateVoyageModalOpen] = useState(false);
   const [

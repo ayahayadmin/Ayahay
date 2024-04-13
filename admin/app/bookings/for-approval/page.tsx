@@ -16,7 +16,7 @@ import { getTrips } from '@ayahay/services/trip.service';
 const { Title } = Typography;
 
 export default function BookingRequestsPage() {
-  useAuthGuard(['Admin', 'SuperAdmin']);
+  useAuthGuard(['ShippingLineAdmin', 'SuperAdmin']);
   const [api, contextHolder] = notification.useNotification();
 
   const fetchBookingRequests = async (

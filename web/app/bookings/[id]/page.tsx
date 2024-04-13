@@ -190,6 +190,10 @@ export default function BookingSummaryPage({ params }) {
             booking={booking}
             titleLevel={2}
             hasPrivilegedAccess={hasPrivilegedAccess}
+            canCheckIn={
+              hasPrivilegedAccess ||
+              loggedInAccount?.role === 'ShippingLineScanner'
+            }
             showTripSummary={true}
             onPayBooking={payBooking}
             onCancelBooking={onCancelBooking}

@@ -23,7 +23,12 @@ dayjs.extend(isSameOrBefore);
 dayjs.extend(isSameOrAfter);
 
 export default function Dashboard() {
-  useAuthGuard(['Staff', 'Admin', 'SuperAdmin']);
+  useAuthGuard([
+    'ShippingLineScanner',
+    'ShippingLineStaff',
+    'ShippingLineAdmin',
+    'SuperAdmin',
+  ]);
   const [form] = Form.useForm();
   const searchParams = useSearchParams();
 

@@ -16,9 +16,11 @@ export default function AdminHeader() {
 
   const userRole = loggedInAccount && loggedInAccount.role;
   const headerTabs =
-    userRole === 'SuperAdmin' || userRole === 'Admin'
+    userRole === 'SuperAdmin' || userRole === 'ShippingLineAdmin'
       ? webLinks.Admin
-      : webLinks.Staff;
+      : userRole === 'ShippingLineStaff'
+      ? webLinks.Staff
+      : webLinks.Scanner;
 
   return (
     <nav className={`hide-on-print ${styles['nav-container']}`}>
@@ -44,7 +46,7 @@ export default function AdminHeader() {
         <div className={styles['nav-buttons']}>
           <Notifications
             hasAdminPrivileges={
-              loggedInAccount.role === 'Admin' ||
+              loggedInAccount.role === 'ShippingLineAdmin' ||
               loggedInAccount.role === 'SuperAdmin'
             }
           />

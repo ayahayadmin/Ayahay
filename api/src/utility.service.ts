@@ -52,7 +52,11 @@ export class UtilityService {
       return false;
     }
 
-    const privilegedAccessRoles = ['Staff', 'Admin', 'SuperAdmin'];
+    const privilegedAccessRoles = [
+      'ShippingLineStaff',
+      'ShippingLineAdmin',
+      'SuperAdmin',
+    ];
     return privilegedAccessRoles.includes(loggedInAccount.role);
   }
 

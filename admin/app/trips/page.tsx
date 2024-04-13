@@ -40,7 +40,7 @@ const items: MenuProps['items'] = [
 ];
 
 export default function Schedules() {
-  useAuthGuard(['Staff', 'Admin', 'SuperAdmin']);
+  useAuthGuard(['ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin']);
   const [api, contextHolder] = notification.useNotification();
   const { loggedInAccount } = useAuth();
   const [form] = Form.useForm();
@@ -85,7 +85,7 @@ export default function Schedules() {
       return;
     }
 
-    const _hasAdminPrivileges = loggedInAccount?.role !== 'Staff';
+    const _hasAdminPrivileges = loggedInAccount?.role !== 'ShippingLineStaff';
     setHasAdminPrivileges(_hasAdminPrivileges);
 
     if (!_hasAdminPrivileges) {

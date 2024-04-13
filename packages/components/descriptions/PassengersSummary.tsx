@@ -12,7 +12,7 @@ dayjs.extend(relativeTime);
 
 interface PassengersSummaryProps {
   passengers?: IBookingTripPassenger[];
-  hasPrivilegedAccess?: boolean;
+  canCheckIn?: boolean;
   onCheckInPassenger?: (tripId: number, passengerId: number) => Promise<void>;
 }
 
@@ -37,7 +37,7 @@ const passengerColumnsWithoutActions: ColumnsType<PassengerInformation> = [
 
 export default function PassengersSummary({
   passengers,
-  hasPrivilegedAccess,
+  canCheckIn,
   onCheckInPassenger,
 }: PassengersSummaryProps) {
   const [passengerColumns, setPassengerColumns] = useState<
@@ -71,7 +71,7 @@ export default function PassengersSummary({
       }))
     );
 
-    if (onCheckInPassenger === undefined || !hasPrivilegedAccess) {
+    if (onCheckInPassenger === undefined || !canCheckIn) {
       return;
     }
 

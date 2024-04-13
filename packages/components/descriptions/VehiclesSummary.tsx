@@ -6,7 +6,7 @@ import dayjs from 'dayjs';
 
 interface VehiclesSummaryProps {
   vehicles?: IBookingTripVehicle[];
-  hasPrivilegedAccess?: boolean;
+  canCheckIn?: boolean;
   onCheckInVehicle?: (tripId: number, vehicleId: number) => Promise<void>;
 }
 
@@ -31,7 +31,7 @@ const vehicleColumnsWithoutActions: ColumnsType<VehicleInformation> = [
 
 export default function VehiclesSummary({
   vehicles,
-  hasPrivilegedAccess,
+  canCheckIn,
   onCheckInVehicle,
 }: VehiclesSummaryProps) {
   const [vehicleColumns, setVehicleColumns] = useState<
@@ -58,7 +58,7 @@ export default function VehiclesSummary({
       }))
     );
 
-    if (onCheckInVehicle === undefined || !hasPrivilegedAccess) {
+    if (onCheckInVehicle === undefined || !canCheckIn) {
       return;
     }
 

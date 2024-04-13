@@ -98,6 +98,10 @@ export default function BookingTripVehiclePage({ params }) {
         <BookingTripVehicleSummary
           bookingTripVehicle={bookingTripVehicle}
           hasPrivilegedAccess={hasPrivilegedAccess}
+          canCheckIn={
+            hasPrivilegedAccess ||
+            loggedInAccount?.role === 'ShippingLineScanner'
+          }
           onRemoveVehicle={removeVehicle}
           onCheckInVehicle={checkInBookingVehicle}
         />
