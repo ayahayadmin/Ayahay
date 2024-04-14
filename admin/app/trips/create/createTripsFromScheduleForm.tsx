@@ -1,12 +1,6 @@
 'use client';
-import React, { useEffect, useState } from 'react';
-import {
-  IPort,
-  IShip,
-  IShippingLine,
-  IShippingLineSchedule,
-  IShippingLineScheduleRate,
-} from '@ayahay/models';
+import React, { useState } from 'react';
+import { IPort, IShip, IShippingLineSchedule } from '@ayahay/models';
 import {
   Button,
   Checkbox,
@@ -17,17 +11,12 @@ import {
   Table,
   Typography,
 } from 'antd';
-import {
-  ArrowRightOutlined,
-  InfoCircleOutlined,
-  StockOutlined,
-} from '@ant-design/icons';
+import { InfoCircleOutlined, StockOutlined } from '@ant-design/icons';
 import { CreateTripsFromSchedulesRequest } from '@ayahay/http';
 import { ColumnsType } from 'antd/es/table';
 import { createTripsFromSchedules } from '@/services/trip.service';
-import { split } from 'lodash';
-import { getTime } from '@/services/search.service';
 import { TripRatesModal } from '@/components/modal/TripRatesModal';
+import { getAxiosError } from '@ayahay/services/error.service';
 
 interface CreateTripsFromScheduleFormProps {
   schedules: IShippingLineSchedule[];
@@ -135,6 +124,11 @@ export default function CreateTripsFromScheduleForm({
   const [isCreatingTrips, setIsCreatingTrips] = useState(false);
 
   const onSubmitForm = async (formValues: any) => {
+    try {
+      await form.validateFields();
+    } catch {
+      return;
+    }
     setIsCreatingTrips(true);
     const request: CreateTripsFromSchedulesRequest = {
       schedules: formValues.scheduleIds.map((scheduleId: any) => ({
@@ -157,9 +151,14 @@ export default function CreateTripsFromScheduleForm({
           'Trips were successfully created for the selected date range.',
       });
     } else {
+      const axiosError = getAxiosError<string>(error);
+      const errorMessage =
+        axiosError && axiosError.statusCode === 400
+          ? axiosError.message
+          : 'Something went wrong.';
       api.error({
         message: 'Create Trips Failed',
-        description: 'Something went wrong.',
+        description: errorMessage,
       });
     }
 
@@ -176,7 +175,15 @@ export default function CreateTripsFromScheduleForm({
       onFinish={onSubmitForm}
     >
       <Title level={2}>Select Schedules</Title>
-      <Form.Item name='scheduleIds'>
+      <Form.Item
+        name='scheduleIds'
+        rules={[
+          {
+            required: true,
+            message: 'Please select at least one trip from the table',
+          },
+        ]}
+      >
         <Checkbox.Group>
           <Table columns={columns} dataSource={schedules} tableLayout='fixed' />
         </Checkbox.Group>
@@ -201,11 +208,12 @@ export default function CreateTripsFromScheduleForm({
       <Form.List name='dateRanges'>
         {(fields, { add, remove }) => (
           <>
-            {fields.map(({ key, name, ...restField }, index) => (
+            {fields.map(({ key, name, ...restField }) => (
               <div key={key}>
                 <Form.Item
                   {...restField}
                   name={[name, 'dateRange']}
+                  rules={[{ required: true, message: 'Missing date range' }]}
                   colon={false}
                 >
                   <RangePicker />

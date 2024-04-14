@@ -42,6 +42,7 @@ model Trip {
   disbursements Disbursement[]
 
   @@map("trip")
+  @@unique([shipId, srcPortId, destPortId, departureDate])
 }
 
 model TripVehicleType {
