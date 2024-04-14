@@ -1,22 +1,24 @@
 'use client';
 import { useAuthGuard } from '@/hooks/auth';
-import { getBookingsOfTrip, getTripDetails } from '@/services/trip.service';
+import { getTripDetails } from '@/services/trip.service';
 import styles from './page.module.scss';
 import { ColumnsType } from 'antd/es/table';
-import { CarOutlined } from '@ant-design/icons';
-import { Button, Divider, Popover, Spin, Table, Typography } from 'antd';
-import { PaginatedRequest, VehicleBookings } from '@ayahay/http';
-import { BookedVehiclesModal } from '@/components/modal/BookedVehiclesModal';
+import { Divider, Radio, Spin, Table, Typography } from 'antd';
+import { PaginatedRequest, VoidBookings } from '@ayahay/http';
 import { useServerPagination } from '@ayahay/hooks';
-import { useAuth } from '@/contexts/AuthContext';
-import { ITrip } from '@ayahay/models';
 import { useEffect, useState } from 'react';
+import {
+  getVoidBookingTripPassengers,
+  getVoidBookingTripVehicles,
+} from '@/services/reporting.service';
+import { ITrip } from '@ayahay/models';
+import { useAuth } from '@/contexts/AuthContext';
 import dayjs from 'dayjs';
 import { getLocaleTimeString } from '@ayahay/services/date.service';
 
 const { Title } = Typography;
 
-const bookingColumns: ColumnsType<VehicleBookings> = [
+const voidBookingColumns: ColumnsType<VoidBookings> = [
   {
     title: 'Reference No',
     key: 'referenceNo',
@@ -24,47 +26,26 @@ const bookingColumns: ColumnsType<VehicleBookings> = [
     align: 'center',
   },
   {
-    title: 'Booking Price',
-    key: 'bookingPrice',
-    dataIndex: 'totalPrice',
+    title: 'Original Price',
+    key: 'originalPrice',
+    dataIndex: 'price',
     align: 'center',
   },
   {
-    title: 'Vehicles',
-    key: 'vehicles',
-    render: (_: string, record: VehicleBookings) => {
-      const vehicles = record.bookingTripVehicles!.map(
-        (bookingTripVehicle) => ({
-          vehicleDescription:
-            bookingTripVehicle.vehicle!.vehicleType!.description,
-          vehiclePrice: bookingTripVehicle.totalPrice!,
-          checkedIn: bookingTripVehicle.hasOwnProperty('checkInDate')
-            ? 'Yes'
-            : 'No',
-        })
-      );
-
-      return (
-        <div>
-          <Popover
-            content={<BookedVehiclesModal vehicles={vehicles} />}
-            trigger='click'
-          >
-            <Button type='text'>
-              <CarOutlined />
-            </Button>
-          </Popover>
-        </div>
-      );
-    },
+    title: 'Refund Type',
+    key: 'refundType',
+    dataIndex: 'refundType',
     align: 'center',
   },
 ];
 
-export default function TripBookingsPage({ params }: any) {
+export default function VoidBookingsPage({ params }: any) {
   useAuthGuard(['ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin']);
   const { loggedInAccount } = useAuth();
   const [trip, setTrip] = useState<ITrip | undefined>();
+  const [selectionType, setSelectionType] = useState<'passenger' | 'vehicle'>(
+    'passenger'
+  );
   const tripId = params.id;
 
   useEffect(() => {
@@ -78,16 +59,21 @@ export default function TripBookingsPage({ params }: any) {
     setTrip(await getTripDetails(Number(tripId)));
   };
 
-  const fetchBookings = async (pagination: PaginatedRequest) => {
-    return getBookingsOfTrip(Number(tripId), pagination);
+  useEffect(() => resetData(), [selectionType]);
+
+  const fetchVoidBookings = async (pagination: PaginatedRequest) => {
+    if (selectionType === 'passenger') {
+      return getVoidBookingTripPassengers(Number(tripId), pagination);
+    }
+    return getVoidBookingTripVehicles(Number(tripId), pagination);
   };
 
-  const { dataInPage, antdPagination, antdOnChange } =
-    useServerPagination<VehicleBookings>(fetchBookings, true);
+  const { dataInPage, antdPagination, antdOnChange, resetData } =
+    useServerPagination<VoidBookings>(fetchVoidBookings, true);
 
   return (
     <div className={styles['main-container']}>
-      <Title level={1}>Vehicle Bookings</Title>
+      <Title level={1}>Void Bookings</Title>
       <Spin
         size='large'
         spinning={trip === undefined}
@@ -110,13 +96,23 @@ export default function TripBookingsPage({ params }: any) {
           </div>
 
           <Divider />
+
+          <Radio.Group
+            onChange={({ target: { value } }) => {
+              setSelectionType(value);
+            }}
+            value={selectionType}
+          >
+            <Radio value='passenger'>Passenger</Radio>
+            <Radio value='vehicle'>Vehicle</Radio>
+          </Radio.Group>
+
           <Table
-            columns={bookingColumns}
+            columns={voidBookingColumns}
             dataSource={dataInPage}
             loading={dataInPage === undefined}
             pagination={antdPagination}
             onChange={antdOnChange}
-            rowKey={(booking) => booking.id}
           ></Table>
         </>
       )}

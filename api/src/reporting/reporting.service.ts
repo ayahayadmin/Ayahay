@@ -7,8 +7,12 @@ import {
   PortsByShip,
   PerVesselReport,
   BillOfLading,
+  PaginatedRequest,
+  VoidBookings,
+  PaginatedResponse,
 } from '@ayahay/http';
 import { ReportingMapper } from './reporting.mapper';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class ReportingService {
@@ -393,5 +397,111 @@ export class ReportingService {
     }
 
     return this.reportingMapper.convertBookingToBillOfLading(booking);
+  }
+
+  async getVoidBookingTripPassengers(
+    pagination: PaginatedRequest,
+    tripId: number
+  ): Promise<PaginatedResponse<VoidBookings>> {
+    const itemsPerPage = 10;
+    const skip = (pagination.page - 1) * itemsPerPage;
+
+    const where: Prisma.BookingTripPassengerWhereInput = {
+      tripId,
+      NOT: {
+        removedReasonType: null,
+      },
+    };
+
+    const voidBookingTripPassengers =
+      await this.prisma.bookingTripPassenger.findMany({
+        where,
+        select: {
+          removedReasonType: true,
+          booking: {
+            select: {
+              referenceNo: true,
+            },
+          },
+          bookingPaymentItems: {
+            select: {
+              price: true,
+            },
+            take: 1,
+          },
+        },
+        take: itemsPerPage,
+        skip,
+        orderBy: {
+          booking: {
+            createdAt: 'desc',
+          },
+        },
+      });
+
+    const voidBookingTripPassengersCount =
+      await this.prisma.bookingTripPassenger.count({
+        where,
+      });
+
+    return {
+      total: voidBookingTripPassengersCount,
+      data: voidBookingTripPassengers.map((passenger) =>
+        this.reportingMapper.convertBookingToVoidBookings(passenger)
+      ),
+    };
+  }
+
+  async getVoidBookingTripVehicles(
+    pagination: PaginatedRequest,
+    tripId: number
+  ): Promise<PaginatedResponse<VoidBookings>> {
+    const itemsPerPage = 10;
+    const skip = (pagination.page - 1) * itemsPerPage;
+
+    const where: Prisma.BookingTripVehicleWhereInput = {
+      tripId,
+      NOT: {
+        removedReasonType: null,
+      },
+    };
+
+    const voidBookingTripVehicles =
+      await this.prisma.bookingTripVehicle.findMany({
+        where,
+        select: {
+          removedReasonType: true,
+          booking: {
+            select: {
+              referenceNo: true,
+            },
+          },
+          bookingPaymentItems: {
+            select: {
+              price: true,
+            },
+            take: 1,
+          },
+        },
+        take: itemsPerPage,
+        skip,
+        orderBy: {
+          booking: {
+            createdAt: 'desc',
+          },
+        },
+      });
+
+    const voidBookingTripVehiclesCount =
+      await this.prisma.bookingTripVehicle.count({
+        where,
+      });
+
+    return {
+      total: voidBookingTripVehiclesCount,
+      data: voidBookingTripVehicles.map((vehicle) =>
+        this.reportingMapper.convertBookingToVoidBookings(vehicle)
+      ),
+    };
   }
 }

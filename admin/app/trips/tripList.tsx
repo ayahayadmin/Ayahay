@@ -43,6 +43,14 @@ const tripActions = (trip: ITrip): any[] => {
     },
     {
       label: (
+        <a href={`/trips/${trip.id}/void-bookings`} target='_blank'>
+          View void bookings
+        </a>
+      ),
+      key: 'view-void-bookings',
+    },
+    {
+      label: (
         <a href={`/trips/${trip.id}/disbursement`} target='_blank'>
           Input disbursements
         </a>

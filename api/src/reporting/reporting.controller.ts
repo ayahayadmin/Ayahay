@@ -17,6 +17,9 @@ import {
   PortsByShip,
   PerVesselReport,
   BillOfLading,
+  PaginatedRequest,
+  VoidBookings,
+  PaginatedResponse,
 } from '@ayahay/http';
 import { BookingService } from '@/booking/booking.service';
 
@@ -60,6 +63,32 @@ export class ReportingController {
   @Get(':id/bol')
   async getBillOfLading(@Param('id') bookingId: string): Promise<BillOfLading> {
     return this.reportingService.getBillOfLading(bookingId);
+  }
+
+  @Get('trips/:tripId/void/booking/passenger')
+  @UseGuards(AuthGuard)
+  @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
+  async getVoidBookingTripPassengers(
+    @Query() pagination: PaginatedRequest,
+    @Param('tripId') tripId: string
+  ): Promise<PaginatedResponse<VoidBookings>> {
+    return this.reportingService.getVoidBookingTripPassengers(
+      pagination,
+      Number(tripId)
+    );
+  }
+
+  @Get('trips/:tripId/void/booking/vehicle')
+  @UseGuards(AuthGuard)
+  @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
+  async getVoidBookingTripVehicles(
+    @Query() pagination: PaginatedRequest,
+    @Param('tripId') tripId: string
+  ): Promise<PaginatedResponse<VoidBookings>> {
+    return this.reportingService.getVoidBookingTripVehicles(
+      pagination,
+      Number(tripId)
+    );
   }
 
   @Patch(':bookingId/bol/frr')
