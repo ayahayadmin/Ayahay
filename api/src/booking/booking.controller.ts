@@ -259,7 +259,7 @@ export class BookingController {
 
   @Patch(':bookingId/trips/:tripId/passengers/:passengerId/remove')
   @UseGuards(AuthGuard)
-  @Roles('ShippingLineAdmin', 'SuperAdmin')
+  @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
   async removeTripPassenger(
     @Request() req,
     @Param('bookingId') bookingId: string,
