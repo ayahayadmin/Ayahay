@@ -71,7 +71,7 @@ export class TripController {
 
   @Get('cancelled-trips')
   @UseGuards(AuthGuard)
-  @Roles('Staff', 'Admin', 'SuperAdmin')
+  @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
   async getCancelledTrips(
     @Query() pagination: PaginatedRequest,
     @Query() query: TripSearchByDateRange
@@ -81,7 +81,7 @@ export class TripController {
 
   @Get(':tripId/bookings')
   @UseGuards(AuthGuard)
-  @Roles('Staff', 'Admin', 'SuperAdmin')
+  @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
   async getBookingsOfTrip(
     @Query() pagination: PaginatedRequest,
     @Param('tripId') tripId: number
@@ -91,14 +91,14 @@ export class TripController {
 
   @Post()
   @UseGuards(AuthGuard)
-  @Roles('Admin', 'SuperAdmin')
+  @Roles('ShippingLineAdmin', 'SuperAdmin')
   async createTrip(@Body() data: Prisma.TripCreateInput) {
     return await this.tripService.createTrip(data);
   }
 
   @Post('from-schedules')
   @UseGuards(AuthGuard)
-  @Roles('Admin', 'SuperAdmin')
+  @Roles('ShippingLineAdmin', 'SuperAdmin')
   async createTripsFromSchedules(
     @Body() createTripsFromSchedulesRequest: CreateTripsFromSchedulesRequest,
     @Request() req
@@ -111,7 +111,7 @@ export class TripController {
 
   @Patch(':tripId/capacity')
   @UseGuards(AuthGuard)
-  @Roles('Admin', 'SuperAdmin')
+  @Roles('ShippingLineAdmin', 'SuperAdmin')
   async updateTripCabinCapacity(
     @Param('tripId') tripId: number,
     @Body() updateTripCapacityRequest: UpdateTripCapacityRequest,
@@ -126,7 +126,7 @@ export class TripController {
 
   @Patch(':tripId/cancel')
   @UseGuards(AuthGuard)
-  @Roles('Admin', 'SuperAdmin')
+  @Roles('ShippingLineAdmin', 'SuperAdmin')
   async cancelTrip(
     @Param('tripId') tripId: number,
     @Query('reason') reason: string,
@@ -137,7 +137,7 @@ export class TripController {
 
   @Patch(':tripId/arrived')
   @UseGuards(AuthGuard)
-  @Roles('Staff', 'Admin', 'SuperAdmin')
+  @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
   async setTripAsArrived(
     @Param('tripId') tripId: number,
     @Request() req
@@ -147,7 +147,7 @@ export class TripController {
 
   @Patch(':tripId/cancelled')
   @UseGuards(AuthGuard)
-  @Roles('Staff', 'Admin', 'SuperAdmin')
+  @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
   async setTripAsCancelled(
     @Param('tripId') tripId: number,
     @Body('reason') reason: string,

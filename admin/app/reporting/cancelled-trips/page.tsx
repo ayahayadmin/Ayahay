@@ -20,7 +20,7 @@ import CancelledTripList from './cancelledTripList';
 const { RangePicker } = DatePicker;
 
 export default function CancelledTrips() {
-  useAuthGuard(['Staff', 'Admin', 'SuperAdmin']);
+  useAuthGuard(['ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin']);
   const { loggedInAccount } = useAuth();
   const [form] = Form.useForm();
   const searchParams = useSearchParams();

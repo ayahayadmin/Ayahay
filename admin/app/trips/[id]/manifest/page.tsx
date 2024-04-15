@@ -11,7 +11,7 @@ import { useAuth } from '@/contexts/AuthContext';
 
 export default function TripManifestPage({ params }: any) {
   const { loggedInAccount } = useAuth();
-  useAuthGuard(['Staff', 'SuperAdmin', 'Admin']);
+  useAuthGuard(['ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin']);
 
   const manifestRef = useRef();
   const [manifest, setManifest] = useState<ITripManifest | undefined>();

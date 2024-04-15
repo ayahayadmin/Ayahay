@@ -21,7 +21,7 @@ const { Title } = Typography;
 const textCenter = { textAlign: 'center' };
 const noPadding = { padding: '0' };
 
-export default function GetBooking({ params }) {
+export default function BookingSummaryPage({ params }) {
   const [api, notificationContext] = notification.useNotification();
   const [modal, modalContext] = Modal.useModal();
   const { loggedInAccount, hasPrivilegedAccess } = useAuth();
@@ -34,6 +34,25 @@ export default function GetBooking({ params }) {
       const booking = await getBookingById(bookingId);
       setBooking(booking);
       setErrorCode(undefined);
+      if (
+        !hasPrivilegedAccess &&
+        booking?.bookingTrips?.[0]?.bookingTripVehicles &&
+        booking?.bookingTrips?.[0]?.bookingTripVehicles.length > 0
+      ) {
+        modal.info({
+          width: 'min(90vw, 512px)',
+          centered: true,
+          title: `IMPORTANT REMINDER`,
+          icon: <InfoCircleOutlined />,
+          content: (
+            <p style={{ fontSize: '16px', fontWeight: '600' }}>
+              PLEASE PRINT AND BRING THREE (3) COPIES OF THE BILL OF LADING
+              (BOL) BEFORE COMING TO THE PORT.
+            </p>
+          ),
+          okText: 'OK',
+        });
+      }
     } catch (e) {
       const axiosError = getAxiosError(e);
       if (axiosError === undefined) {
@@ -171,6 +190,10 @@ export default function GetBooking({ params }) {
             booking={booking}
             titleLevel={2}
             hasPrivilegedAccess={hasPrivilegedAccess}
+            canCheckIn={
+              hasPrivilegedAccess ||
+              loggedInAccount?.role === 'ShippingLineScanner'
+            }
             showTripSummary={true}
             onPayBooking={payBooking}
             onCancelBooking={onCancelBooking}

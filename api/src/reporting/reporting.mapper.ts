@@ -1,6 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { PortMapper } from '@/port/port.mapper';
-import { BillOfLading, PortsByShip, TripManifest } from '@ayahay/http';
+import {
+  BillOfLading,
+  PortsByShip,
+  TripManifest,
+  VoidBookings,
+} from '@ayahay/http';
 
 @Injectable()
 export class ReportingMapper {
@@ -44,8 +49,8 @@ export class ReportingMapper {
       ticketCost: passengerFare + discountAmount + refundAmount,
       fare: totalPrice,
       paymentStatus:
-        passenger.booking.createdByAccount?.role === 'Admin' ||
-        passenger.booking.createdByAccount?.role === 'Staff'
+        passenger.booking.createdByAccount?.role === 'ShippingLineStaff' ||
+        passenger.booking.createdByAccount?.role === 'ShippingLineAdmin'
           ? 'OTC'
           : 'PayMongo',
     };
@@ -71,8 +76,8 @@ export class ReportingMapper {
       ticketCost: vehicleFare + discountAmount + refundAmount,
       fare: totalPrice,
       paymentStatus:
-        vehicle.booking.createdByAccount?.role === 'Admin' ||
-        vehicle.booking.createdByAccount?.role === 'Staff'
+        vehicle.booking.createdByAccount?.role === 'ShippingLineStaff' ||
+        vehicle.booking.createdByAccount?.role === 'ShippingLineAdmin'
           ? 'OTC'
           : 'PayMongo',
     };
@@ -201,6 +206,15 @@ export class ReportingMapper {
       srcPortId: data.src_port_id,
       destPortId: data.dest_port_id,
       shipId: data.ship_id,
+    };
+  }
+
+  convertBookingToVoidBookings(booking): VoidBookings {
+    return {
+      referenceNo: booking.booking.referenceNo,
+      price: booking.bookingPaymentItems[0].price,
+      refundType:
+        booking.removedReasonType === 'NoFault' ? 'Full Refund' : '80% Refund',
     };
   }
 }

@@ -32,7 +32,7 @@ const columns: ColumnsType<IShip> = [
 ];
 
 export default function ShipsPage() {
-  useAuthGuard(['Staff', 'Admin', 'SuperAdmin']);
+  useAuthGuard(['ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin']);
   const [ships, setShips] = useState<IShip[]>([]);
 
   const fetchShips = async () => {

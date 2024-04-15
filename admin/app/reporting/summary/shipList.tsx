@@ -73,7 +73,7 @@ interface ShipListProps {
 }
 
 export default function ShipList({ searchQuery }: ShipListProps) {
-  useAuthGuard(['Staff', 'Admin', 'SuperAdmin']);
+  useAuthGuard(['ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin']);
   const { loggedInAccount } = useAuth();
   const [shipsData, setShipsData] = useState([] as PortsByShip[] | undefined);
   const [loading, setLoading] = useState(false);

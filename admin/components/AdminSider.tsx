@@ -14,9 +14,11 @@ export default function AdminSider() {
 
   const userRole = loggedInAccount && loggedInAccount.role;
   const headerTabs =
-    userRole === 'SuperAdmin' || userRole === 'Admin'
+    userRole === 'SuperAdmin' || userRole === 'ShippingLineAdmin'
       ? webLinks.Admin
-      : webLinks.Staff;
+      : userRole === 'ShippingLineStaff'
+      ? webLinks.Staff
+      : webLinks.Scanner;
 
   return (
     <Sider

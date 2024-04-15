@@ -75,6 +75,10 @@ export default function BookingRequestPage({ params }) {
             booking={booking}
             titleLevel={2}
             hasPrivilegedAccess={hasPrivilegedAccess}
+            canCheckIn={
+              hasPrivilegedAccess ||
+              loggedInAccount?.role === 'ShippingLineScanner'
+            }
             showTripSummary={true}
           />
         </>

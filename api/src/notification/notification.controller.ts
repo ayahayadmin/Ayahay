@@ -33,7 +33,7 @@ export class NotificationController {
 
   @Post('public')
   @UseGuards(AuthGuard)
-  @Roles('Admin', 'SuperAdmin')
+  @Roles('ShippingLineAdmin', 'SuperAdmin')
   async createAnnouncement(@Body() notification: INotification): Promise<void> {
     return this.notificationService.createAnnouncement(notification);
   }

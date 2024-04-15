@@ -20,7 +20,7 @@ const { RangePicker } = DatePicker;
 const { Title } = Typography;
 
 export default function Reporting() {
-  useAuthGuard(['Staff', 'Admin', 'SuperAdmin']);
+  useAuthGuard(['ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin']);
   const [form] = Form.useForm();
   const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(

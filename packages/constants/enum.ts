@@ -25,8 +25,9 @@ export enum OCCUPATION {
 
 export enum ACCOUNT_ROLE {
   Passenger = 'Passenger',
-  Staff = 'Staff',
-  Admin = 'Admin',
+  ShippingLineScanner = 'ShippingLineScanner',
+  ShippingLineStaff = 'ShippingLineStaff',
+  ShippingLineAdmin = 'ShippingLineAdmin',
   SuperAdmin = 'SuperAdmin',
 }
 

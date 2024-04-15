@@ -17,6 +17,9 @@ import {
   PortsByShip,
   PerVesselReport,
   BillOfLading,
+  PaginatedRequest,
+  VoidBookings,
+  PaginatedResponse,
 } from '@ayahay/http';
 import { BookingService } from '@/booking/booking.service';
 
@@ -29,14 +32,14 @@ export class ReportingController {
 
   @Get('trips/:id/reporting')
   @UseGuards(AuthGuard)
-  @Roles('Staff', 'Admin', 'SuperAdmin')
+  @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
   async getTripsReporting(@Param('id') tripId: string): Promise<TripReport> {
     return this.reportingService.getTripsReporting(Number(tripId));
   }
 
   @Get('ports')
   @UseGuards(AuthGuard)
-  @Roles('Staff', 'Admin', 'SuperAdmin')
+  @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
   async getPortsByShip(
     @Query() dates: TripSearchByDateRange
   ): Promise<PortsByShip[]> {
@@ -45,14 +48,14 @@ export class ReportingController {
 
   @Get('trips/ships')
   @UseGuards(AuthGuard)
-  @Roles('Staff', 'Admin', 'SuperAdmin')
+  @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
   async getTripsByShip(@Query() data: PortsByShip): Promise<PerVesselReport[]> {
     return this.reportingService.getTripsByShip(data);
   }
 
   @Get('trips/:id/manifest')
   @UseGuards(AuthGuard)
-  @Roles('Staff', 'Admin', 'SuperAdmin')
+  @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
   async getManifest(@Param('id') tripId: string): Promise<TripManifest> {
     return this.reportingService.getTripManifest(Number(tripId));
   }
@@ -60,6 +63,32 @@ export class ReportingController {
   @Get(':id/bol')
   async getBillOfLading(@Param('id') bookingId: string): Promise<BillOfLading> {
     return this.reportingService.getBillOfLading(bookingId);
+  }
+
+  @Get('trips/:tripId/void/booking/passenger')
+  @UseGuards(AuthGuard)
+  @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
+  async getVoidBookingTripPassengers(
+    @Query() pagination: PaginatedRequest,
+    @Param('tripId') tripId: string
+  ): Promise<PaginatedResponse<VoidBookings>> {
+    return this.reportingService.getVoidBookingTripPassengers(
+      pagination,
+      Number(tripId)
+    );
+  }
+
+  @Get('trips/:tripId/void/booking/vehicle')
+  @UseGuards(AuthGuard)
+  @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
+  async getVoidBookingTripVehicles(
+    @Query() pagination: PaginatedRequest,
+    @Param('tripId') tripId: string
+  ): Promise<PaginatedResponse<VoidBookings>> {
+    return this.reportingService.getVoidBookingTripVehicles(
+      pagination,
+      Number(tripId)
+    );
   }
 
   @Patch(':bookingId/bol/frr')

@@ -72,6 +72,8 @@ export class VoucherService {
       if (e.code === 'P2002') {
         throw new BadRequestException('Voucher code already exists');
       }
+
+      throw e;
     }
   }
 

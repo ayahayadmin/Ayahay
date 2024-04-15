@@ -15,7 +15,7 @@ export class ShippingLineController {
 
   @Get(':id/schedules')
   @UseGuards(AuthGuard)
-  @Roles('Admin', 'SuperAdmin')
+  @Roles('ShippingLineAdmin', 'SuperAdmin')
   async getSchedulesOfShippingLine(
     @Param('id') shippingLineId: number,
     @Request() req

@@ -372,51 +372,65 @@ export class TripService {
       );
     }
 
-    await this.prisma.$transaction(async (transactionContext) => {
-      await transactionContext.trip.createMany({
-        data: tripEntities,
-      });
+    try {
+      await this.prisma.$transaction(async (transactionContext) => {
+        await transactionContext.trip.createMany({
+          data: tripEntities,
+        });
 
-      const tripCabinEntities: Prisma.TripCabinCreateManyInput[] = [];
-      const tripVehicleTypeEntities: Prisma.TripVehicleTypeCreateManyInput[] =
-        [];
+        const tripCabinEntities: Prisma.TripCabinCreateManyInput[] = [];
+        const tripVehicleTypeEntities: Prisma.TripVehicleTypeCreateManyInput[] =
+          [];
 
-      const createdTripEntities = await transactionContext.trip.findMany({
-        where: {
-          referenceNo: {
-            in: tripReferenceNos,
+        const createdTripEntities = await transactionContext.trip.findMany({
+          where: {
+            referenceNo: {
+              in: tripReferenceNos,
+            },
+            departureDate: {
+              gt: new Date(),
+            },
           },
-          departureDate: {
-            gt: new Date(),
-          },
-        },
-      });
+        });
 
-      for (const createdTripEntity of createdTripEntities) {
-        const tripCabinsOfTrip =
-          tripCabinsPerTrip[createdTripEntity.referenceNo];
-        const tripVehicleTypesOfTrip =
-          tripVehicleTypesPerTrip[createdTripEntity.referenceNo];
+        for (const createdTripEntity of createdTripEntities) {
+          const tripCabinsOfTrip =
+            tripCabinsPerTrip[createdTripEntity.referenceNo];
+          const tripVehicleTypesOfTrip =
+            tripVehicleTypesPerTrip[createdTripEntity.referenceNo];
 
-        for (const tripCabin of tripCabinsOfTrip) {
-          tripCabin.tripId = createdTripEntity.id;
-          tripCabinEntities.push(tripCabin);
+          for (const tripCabin of tripCabinsOfTrip) {
+            tripCabin.tripId = createdTripEntity.id;
+            tripCabinEntities.push(tripCabin);
+          }
+
+          for (const tripVehicleType of tripVehicleTypesOfTrip) {
+            tripVehicleType.tripId = createdTripEntity.id;
+            tripVehicleTypeEntities.push(tripVehicleType);
+          }
         }
 
-        for (const tripVehicleType of tripVehicleTypesOfTrip) {
-          tripVehicleType.tripId = createdTripEntity.id;
-          tripVehicleTypeEntities.push(tripVehicleType);
-        }
+        await transactionContext.tripCabin.createMany({
+          data: tripCabinEntities,
+        });
+
+        await transactionContext.tripVehicleType.createMany({
+          data: tripVehicleTypeEntities,
+        });
+      });
+    } catch (e) {
+      if (!(e instanceof Prisma.PrismaClientKnownRequestError)) {
+        throw e;
       }
 
-      await transactionContext.tripCabin.createMany({
-        data: tripCabinEntities,
-      });
+      if (e.code === 'P2002') {
+        throw new BadRequestException(
+          'One or more trips in the specified date range already exist.'
+        );
+      }
 
-      await transactionContext.tripVehicleType.createMany({
-        data: tripVehicleTypeEntities,
-      });
-    });
+      throw e;
+    }
   }
 
   async updateTripCapacities(
@@ -572,21 +586,14 @@ export class TripService {
       );
     }
 
-    await this.prisma.$transaction(async (transactionContext) => {
-      await transactionContext.trip.update({
-        where: {
-          id: tripId,
-        },
-        data: {
-          status: 'Cancelled',
-          cancellationReason: reason,
-        },
-      });
-
-      await this.shipService.createVoyageForTrip(
-        tripToCancel,
-        transactionContext as any
-      );
+    await this.prisma.trip.update({
+      where: {
+        id: tripId,
+      },
+      data: {
+        status: 'Cancelled',
+        cancellationReason: reason,
+      },
     });
   }
 

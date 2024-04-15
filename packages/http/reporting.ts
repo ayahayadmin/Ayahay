@@ -110,3 +110,9 @@ export interface PortsByShip {
   startDate?: string;
   endDate?: string;
 }
+
+export interface VoidBookings {
+  referenceNo: string;
+  price: string;
+  refundType: string;
+}

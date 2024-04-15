@@ -9,7 +9,6 @@ import {
 } from '@ant-design/icons';
 import { Button, Space } from 'antd';
 import { Footer } from 'antd/es/layout/layout';
-import Link from 'next/link';
 
 export default function WebFooter() {
   return (
@@ -101,7 +100,9 @@ export default function WebFooter() {
                     <a href='#'>Contact</a>
                   </li>
                   <li>
-                    <a href='#'>Site Map</a>
+                    <a href='/frequently-asked-questions'>
+                      Frequently Asked Questions
+                    </a>
                   </li>
                 </ul>
               </div>
@@ -109,13 +110,15 @@ export default function WebFooter() {
                 <h2>Legal Docs</h2>
                 <ul>
                   <li>
-                    <a href='#'>Legal Notice</a>
+                    <a href='/online-booking-conditions'>
+                      Online Booking Conditions
+                    </a>
                   </li>
                   <li>
-                    <a href='#'>Privacy Policy</a>
+                    <a href='/privacy-policy'>Privacy Policy</a>
                   </li>
                   <li>
-                    <a href='#'>Terms and Conditions</a>
+                    <a href='/terms-of-use'>Terms of Use</a>
                   </li>
                 </ul>
               </div>

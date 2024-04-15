@@ -26,7 +26,13 @@ export class AccountController {
   }
 
   @Get(':accountId')
-  @Roles('Passenger', 'Staff', 'Admin', 'SuperAdmin')
+  @Roles(
+    'Passenger',
+    'ShippingLineScanner',
+    'ShippingLineStaff',
+    'ShippingLineAdmin',
+    'SuperAdmin'
+  )
   async getAccount(@Param('accountId') accountId: string): Promise<IAccount> {
     return await this.accountService.getAccountById(accountId);
   }

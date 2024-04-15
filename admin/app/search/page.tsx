@@ -17,7 +17,7 @@ enum SearchModel {
 const minQueryLength = 2;
 
 export default function SearchPage() {
-  useAuthGuard(['Staff', 'Admin', 'SuperAdmin']);
+  useAuthGuard(['ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin']);
   const searchParams = useSearchParams();
   const [query, setQuery] = useState('');
   const [resultsQuery, setResultsQuery] = useState('');

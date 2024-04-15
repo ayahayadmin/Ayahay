@@ -38,7 +38,7 @@ export class BookingController {
 
   @Get('download')
   @UseGuards(AuthGuard)
-  @Roles('Staff', 'Admin', 'SuperAdmin')
+  @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
   async getBookingsToDownload(
     @Query() dates: TripSearchByDateRange
   ): Promise<IBooking[]> {
@@ -64,7 +64,7 @@ export class BookingController {
 
   @Get('for-approval')
   @UseGuards(AuthGuard)
-  @Roles('Admin', 'SuperAdmin')
+  @Roles('ShippingLineAdmin', 'SuperAdmin')
   async getBookingRequestsForApproval(
     @Request() req: any,
     @Query() pagination: PaginatedRequest
@@ -100,7 +100,7 @@ export class BookingController {
 
   @Get('search/passengers')
   @UseGuards(AuthGuard)
-  @Roles('Staff', 'Admin', 'SuperAdmin')
+  @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
   async searchPassengerBookings(
     @Query('q') searchQuery,
     @Query() pagination: PaginatedRequest
@@ -158,7 +158,12 @@ export class BookingController {
 
   @Patch(':bookingId/trips/:tripId/passengers/:passengerId/check-in')
   @UseGuards(AuthGuard)
-  @Roles('Staff', 'Admin', 'SuperAdmin')
+  @Roles(
+    'ShippingLineScanner',
+    'ShippingLineStaff',
+    'ShippingLineAdmin',
+    'SuperAdmin'
+  )
   async checkInPassenger(
     @Request() req,
     @Param('bookingId') bookingId: string,
@@ -175,7 +180,12 @@ export class BookingController {
 
   @Patch(':bookingId/trips/:tripId/vehicles/:vehicleId/check-in')
   @UseGuards(AuthGuard)
-  @Roles('Staff', 'Admin', 'SuperAdmin')
+  @Roles(
+    'ShippingLineScanner',
+    'ShippingLineStaff',
+    'ShippingLineAdmin',
+    'SuperAdmin'
+  )
   async checkInVehicle(
     @Request() req,
     @Param('bookingId') bookingId: string,
@@ -192,7 +202,7 @@ export class BookingController {
 
   @Patch(':bookingId/cancel')
   @UseGuards(AuthGuard)
-  @Roles('Staff', 'Admin', 'SuperAdmin')
+  @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
   async cancelBooking(
     @Request() req,
     @Param('bookingId') bookingId: string,
@@ -224,7 +234,7 @@ export class BookingController {
 
   @Patch('requests/:tempBookingId/approve')
   @UseGuards(AuthGuard)
-  @Roles('Admin', 'SuperAdmin')
+  @Roles('ShippingLineAdmin', 'SuperAdmin')
   async approveBookingRequest(
     @Request() req,
     @Param('tempBookingId') tempBookingId: number
@@ -237,7 +247,7 @@ export class BookingController {
 
   @Patch('requests/:tempBookingId/reject')
   @UseGuards(AuthGuard)
-  @Roles('Admin', 'SuperAdmin')
+  @Roles('ShippingLineAdmin', 'SuperAdmin')
   async rejectBookingRequest(
     @Request() req,
     @Param('tempBookingId') tempBookingId: number
@@ -249,7 +259,7 @@ export class BookingController {
 
   @Patch(':bookingId/trips/:tripId/passengers/:passengerId/remove')
   @UseGuards(AuthGuard)
-  @Roles('Admin', 'SuperAdmin')
+  @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
   async removeTripPassenger(
     @Request() req,
     @Param('bookingId') bookingId: string,

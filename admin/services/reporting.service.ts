@@ -5,6 +5,9 @@ import {
   PortsByShip,
   PerVesselReport,
   DashboardTrips,
+  PaginatedRequest,
+  PaginatedResponse,
+  VoidBookings,
 } from '@ayahay/http';
 import axios from '@ayahay/services/axios';
 import { getPort, getPorts } from '@ayahay/services/port.service';
@@ -65,6 +68,38 @@ export async function getTripManifest(
   } catch (e) {
     console.error(e);
     return undefined;
+  }
+}
+
+export async function getVoidBookingTripPassengers(
+  tripId: number,
+  pagination: PaginatedRequest
+): Promise<PaginatedResponse<VoidBookings> | undefined> {
+  const query = new URLSearchParams(pagination as any).toString();
+
+  try {
+    const { data } = await axios.get<PaginatedResponse<VoidBookings>>(
+      `${REPORTING_API}/trips/${tripId}/void/booking/passenger?${query}`
+    );
+    return data;
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+export async function getVoidBookingTripVehicles(
+  tripId: number,
+  pagination: PaginatedRequest
+): Promise<PaginatedResponse<VoidBookings> | undefined> {
+  const query = new URLSearchParams(pagination as any).toString();
+
+  try {
+    const { data } = await axios.get<PaginatedResponse<VoidBookings>>(
+      `${REPORTING_API}/trips/${tripId}/void/booking/vehicle?${query}`
+    );
+    return data;
+  } catch (e) {
+    console.error(e);
   }
 }
 

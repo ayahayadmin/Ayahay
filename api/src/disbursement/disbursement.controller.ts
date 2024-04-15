@@ -7,7 +7,7 @@ import { Prisma } from '@prisma/client';
 
 @Controller('disbursement')
 @UseGuards(AuthGuard)
-@Roles('Staff', 'Admin', 'SuperAdmin')
+@Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
 export class DisbursementController {
   constructor(private disbursementService: DisbursementService) {}
 

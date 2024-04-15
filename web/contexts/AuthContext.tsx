@@ -61,8 +61,8 @@ export default function AuthContextProvider({ children }: any) {
       setLoggedInAccount(myAccountInformation);
 
       const _hasPrivilegedAccess =
-        myAccountInformation?.role === 'Staff' ||
-        myAccountInformation?.role === 'Admin' ||
+        myAccountInformation?.role === 'ShippingLineStaff' ||
+        myAccountInformation?.role === 'ShippingLineAdmin' ||
         myAccountInformation?.role === 'SuperAdmin';
       setHasPrivilegedAccess(_hasPrivilegedAccess);
     } else {

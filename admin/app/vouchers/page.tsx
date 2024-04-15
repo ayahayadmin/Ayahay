@@ -65,7 +65,7 @@ const voucherColumns: ColumnsType<IVoucher> = [
 ];
 
 export default function VouchersPage() {
-  useAuthGuard(['Admin', 'SuperAdmin']);
+  useAuthGuard(['ShippingLineAdmin', 'SuperAdmin']);
 
   const [createVoucherModalOpen, setCreateVoucherModalOpen] = useState(false);
 

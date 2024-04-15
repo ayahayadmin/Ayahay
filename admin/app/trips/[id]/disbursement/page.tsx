@@ -14,7 +14,7 @@ import { getLocaleTimeString } from '@ayahay/services/date.service';
 const { Title } = Typography;
 
 export default function DisbursementPage({ params }: any) {
-  useAuthGuard(['Staff', 'Admin', 'SuperAdmin']);
+  useAuthGuard(['ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin']);
   const { loggedInAccount } = useAuth();
   const [form] = Form.useForm();
   const [trip, setTrip] = useState<ITrip | undefined>();

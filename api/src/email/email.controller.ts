@@ -5,7 +5,7 @@ import { Roles } from '@/decorator/roles.decorator';
 
 @Controller('email')
 @UseGuards(AuthGuard)
-@Roles('Staff', 'Admin', 'SuperAdmin')
+@Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
 export class EmailController {
   constructor(private emailService: EmailService) {}
 }
