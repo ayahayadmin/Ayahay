@@ -7,10 +7,12 @@ const { Option } = Select;
 
 interface PortAutoCompleteProps {
   excludePortId?: string;
+  size?: any;
 }
 
 export default function PortAutoComplete({
   excludePortId,
+  size,
   ...formItemProps
 }: PortAutoCompleteProps & FormItemProps) {
   const [allPorts, setAllPorts] = useState([] as IPort[]);
@@ -48,7 +50,7 @@ export default function PortAutoComplete({
         onSearch={onSearchPort}
         onDropdownVisibleChange={() => onSearchPort('')}
         variant='borderless'
-        size='large'
+        size={size ?? 'large'}
         suffixIcon={null}
         allowClear={true}
       >

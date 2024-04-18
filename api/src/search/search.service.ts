@@ -75,7 +75,10 @@ export class SearchService {
 
   async getDashboardTrips(
     pagination: PaginatedRequest,
-    { startDate, endDate }: TripSearchByDateRange
+    startDate: string,
+    endDate: string,
+    srcPortId?: number,
+    destPortId?: number
   ): Promise<PaginatedResponse<DashboardTrips>> {
     const itemsPerPage = 10;
     const skip = (pagination.page - 1) * itemsPerPage;
@@ -93,6 +96,16 @@ export class SearchService {
         WHERE
           departure_date > ${startDate}::TIMESTAMP
           AND departure_date <= ${endDate}::TIMESTAMP
+          ${
+            !!srcPortId
+              ? Prisma.sql`AND src_port_id = ${srcPortId}`
+              : Prisma.empty
+          }
+          ${
+            !!destPortId
+              ? Prisma.sql`AND dest_port_id = ${destPortId}`
+              : Prisma.empty
+          }
           AND status != 'Cancelled'
       ), confirmed_passengers AS (
         SELECT

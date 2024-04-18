@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
 import { Button, DatePicker, Form } from 'antd';
-import PortAutoComplete from '@/components/form/PortAutoComplete';
+import PortAutoComplete from '@ayahay/components/form/PortAutoComplete';
 import styles from './TripSearchQuery.module.scss';
 import dayjs from 'dayjs';
 import EnumRadio from '@/components/form/EnumRadio';

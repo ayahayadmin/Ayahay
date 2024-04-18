@@ -1,15 +1,15 @@
 import BarChart from '@/components/charts/BarChart';
 import { buildPaxAndVehicleBookedData } from '@/services/dashboard.service';
-import { getTripInformation } from '@/services/search.service';
+import { getDashboardTrips } from '@/services/search.service';
 import {
   ArrowRightOutlined,
   BarChartOutlined,
   InfoCircleOutlined,
 } from '@ant-design/icons';
 import {
+  DashboardSearchQuery,
   DashboardTrips,
   PaginatedRequest,
-  TripSearchByDateRange,
 } from '@ayahay/http';
 import {
   getFullDate,
@@ -17,7 +17,7 @@ import {
 } from '@ayahay/services/date.service';
 import { Button, Popover, Skeleton, Table } from 'antd';
 import { ColumnsType } from 'antd/es/table';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import styles from './page.module.scss';
 import { useAuth } from '@/contexts/AuthContext';
 import { NotCheckedInModal } from '@/components/modal/NotCheckedInModal';
@@ -106,7 +106,7 @@ const columns: ColumnsType<DashboardTrips> = [
 ];
 
 interface DashboardTableProps {
-  searchQuery: TripSearchByDateRange | undefined;
+  searchQuery: DashboardSearchQuery | undefined;
 }
 
 export default function DashboardTable({ searchQuery }: DashboardTableProps) {
@@ -114,7 +114,7 @@ export default function DashboardTable({ searchQuery }: DashboardTableProps) {
   useEffect(() => resetData(), [searchQuery]);
 
   const fetchTripInformation = async (pagination: PaginatedRequest) => {
-    return getTripInformation(searchQuery, pagination);
+    return getDashboardTrips(searchQuery, pagination);
   };
 
   const {
