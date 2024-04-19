@@ -80,6 +80,11 @@ export interface TripSearchByDateRange {
   endDate: string;
 }
 
+export interface DashboardSearchQuery extends TripSearchByDateRange {
+  srcPortId?: number;
+  destPortId?: number;
+}
+
 export interface CancelledTrips {
   srcPortName: string;
   destPortName: string;

@@ -90,7 +90,7 @@ export class BookingValidator {
       errorMessages.push(
         ...this.validateDrivers(index, passengers, vehicles),
         ...this.validatePassengers(index, passengers, loggedInAccount),
-        ...this.validateVehicles(trip, index, vehicles),
+        ...this.validateVehicles(trip, index, vehicles, loggedInAccount),
         ...this.validateTripCapacity(trip, index, passengers, vehicles)
       );
     });
@@ -173,7 +173,8 @@ export class BookingValidator {
 
       if (
         !this.utilityService.hasPrivilegedAccess(loggedInAccount) &&
-        (bookingTripPassengers[i].discountType !== undefined || passenger.discountType !== undefined)
+        (bookingTripPassengers[i].discountType !== undefined ||
+          passenger.discountType !== undefined)
       ) {
         errorMessages.push({
           fieldName: ['bookingTrips', tripIndex, 'bookingTripPassengers', i],
