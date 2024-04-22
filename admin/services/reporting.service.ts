@@ -8,6 +8,7 @@ import {
   PaginatedRequest,
   PaginatedResponse,
   VoidBookings,
+  CollectTripBooking,
 } from '@ayahay/http';
 import axios from '@ayahay/services/axios';
 import { getPort, getPorts } from '@ayahay/services/port.service';
@@ -96,6 +97,22 @@ export async function getVoidBookingTripVehicles(
   try {
     const { data } = await axios.get<PaginatedResponse<VoidBookings>>(
       `${REPORTING_API}/trips/${tripId}/void/booking/vehicle?${query}`
+    );
+    return data;
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+export async function getCollectTripBooking(
+  tripIds: number[]
+): Promise<CollectTripBooking[] | undefined> {
+  const tripIdQuery = new URLSearchParams();
+  tripIds.forEach((tripId) => tripIdQuery.append('tripIds', tripId.toString()));
+
+  try {
+    const { data } = await axios.get<CollectTripBooking[]>(
+      `${REPORTING_API}/trip/booking/collect?${tripIdQuery.toString()}`
     );
     return data;
   } catch (e) {

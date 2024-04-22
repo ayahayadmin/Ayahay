@@ -10,15 +10,18 @@ import {
   PaginatedRequest,
   VoidBookings,
   PaginatedResponse,
+  CollectTripBooking,
 } from '@ayahay/http';
 import { ReportingMapper } from './reporting.mapper';
 import { Prisma } from '@prisma/client';
+import { TripMapper } from '@/trip/trip.mapper';
 
 @Injectable()
 export class ReportingService {
   constructor(
     private prisma: PrismaService,
-    private readonly reportingMapper: ReportingMapper
+    private readonly reportingMapper: ReportingMapper,
+    private readonly tripMapper: TripMapper
   ) {}
 
   async getTripsReporting(tripId: number): Promise<TripReport> {
@@ -503,5 +506,140 @@ export class ReportingService {
         this.reportingMapper.convertBookingToVoidBookings(vehicle)
       ),
     };
+  }
+
+  async getCollectTripBooking(
+    tripIds: number[]
+  ): Promise<CollectTripBooking[]> {
+    const bookingTrips = await this.prisma.bookingTrip.findMany({
+      where: {
+        tripId: {
+          in: tripIds,
+        },
+        booking: {
+          OR: [
+            { cancellationType: null },
+            { cancellationType: 'PassengersFault' },
+          ],
+          voucherCode: 'AZNAR_COLLECT',
+        },
+      },
+      select: {
+        trip: {
+          select: {
+            id: true,
+            srcPort: {
+              select: {
+                name: true,
+              },
+            },
+            destPort: {
+              select: {
+                name: true,
+              },
+            },
+            departureDate: true,
+          },
+        },
+        booking: {
+          select: {
+            id: true,
+            referenceNo: true,
+            consigneeName: true,
+            freightRateReceipt: true,
+            createdByAccount: {
+              select: {
+                email: true,
+              },
+            },
+            bookingTripPassengers: {
+              where: {
+                OR: [
+                  { removedReasonType: null },
+                  { removedReasonType: 'PassengersFault' },
+                ],
+              },
+              select: {
+                discountType: true,
+                bookingPaymentItems: true,
+                cabin: {
+                  select: {
+                    cabinType: {
+                      select: {
+                        name: true,
+                      },
+                    },
+                  },
+                },
+                passenger: {
+                  select: {
+                    firstName: true,
+                    lastName: true,
+                  },
+                },
+              },
+            },
+            bookingTripVehicles: {
+              where: {
+                OR: [
+                  { removedReasonType: null },
+                  { removedReasonType: 'PassengersFault' },
+                ],
+              },
+              select: {
+                bookingPaymentItems: true,
+                vehicle: {
+                  select: {
+                    plateNo: true,
+                    vehicleType: {
+                      select: {
+                        description: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        trip: {
+          departureDate: 'asc',
+        },
+      },
+    });
+
+    const collectTripBooking: CollectTripBooking[] = [];
+
+    bookingTrips.map((bookingTrip) => {
+      const tripId = bookingTrip.trip.id;
+      const index = collectTripBooking.findIndex(
+        (tripBooking) => tripBooking.id === tripId
+      );
+
+      if (index !== -1) {
+        collectTripBooking[index] = {
+          ...collectTripBooking[index],
+          bookings: [
+            ...collectTripBooking[index].bookings,
+            this.reportingMapper.convertBookingToCollectBooking(
+              bookingTrip.booking
+            ),
+          ],
+        };
+      } else {
+        collectTripBooking.push({
+          ...this.tripMapper.convertTripToTripVoyage(bookingTrip.trip),
+          bookings: [
+            this.reportingMapper.convertBookingToCollectBooking(
+              bookingTrip.booking
+            ),
+          ],
+        });
+      }
+    });
+
+    return collectTripBooking;
   }
 }

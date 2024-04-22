@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PortMapper } from '@/port/port.mapper';
 import {
   BillOfLading,
+  CollectBooking,
   PortsByShip,
   TripManifest,
   VoidBookings,
@@ -215,6 +216,74 @@ export class ReportingMapper {
       price: booking.bookingPaymentItems[0].price,
       refundType:
         booking.removedReasonType === 'NoFault' ? 'Full Refund' : '80% Refund',
+    };
+  }
+
+  convertBookingToCollectBooking(booking): CollectBooking {
+    const teller = booking.createdByAccount.email;
+
+    return {
+      bookingId: booking.id,
+      referenceNo: booking.referenceNo,
+      consigneeName: booking.consigneeName,
+      freightRateReceipt: booking.freightRateReceipt,
+
+      passengers: booking.bookingTripPassengers.map((passenger) =>
+        this.convertBookingToCollectBookingPassenger(passenger, teller)
+      ),
+      vehicles: booking.bookingTripVehicles.map((vehicle) =>
+        this.convertBookingToCollectBookingVehicle(vehicle, teller)
+      ),
+    };
+  }
+
+  convertBookingToCollectBookingPassenger(passenger, teller) {
+    const passengerFare = passenger.bookingPaymentItems.find(
+      ({ type }) => type === 'Fare'
+    )?.price;
+    const discountAmount =
+      passenger.bookingPaymentItems.find(
+        ({ type }) => type === 'VoucherDiscount'
+      )?.price ?? 0;
+    const refundAmount =
+      passenger.bookingPaymentItems.find(
+        ({ type }) => type === 'CancellationRefund'
+      )?.price ?? 0;
+
+    return {
+      passengerName: `${passenger.passenger.firstName.trim() ?? ''} ${
+        passenger.passenger.lastName.trim() ?? ''
+      }`,
+      teller,
+      accommodation: passenger.cabin.cabinType.name,
+      discount: passenger.discountType ?? 'Adult',
+      discountAmount,
+      refundAmount,
+      ticketSale: passengerFare + discountAmount,
+      ticketCost: passengerFare + discountAmount + refundAmount,
+    };
+  }
+
+  convertBookingToCollectBookingVehicle(vehicle, teller) {
+    const vehicleFare = vehicle.bookingPaymentItems.find(
+      ({ type }) => type === 'Fare'
+    )?.price;
+    const discountAmount =
+      vehicle.bookingPaymentItems.find(({ type }) => type === 'VoucherDiscount')
+        ?.price ?? 0;
+    const refundAmount =
+      vehicle.bookingPaymentItems.find(
+        ({ type }) => type === 'CancellationRefund'
+      )?.price ?? 0;
+
+    return {
+      teller,
+      typeOfVehicle: vehicle.vehicle.vehicleType.description,
+      plateNo: vehicle.vehicle.plateNo,
+      discountAmount,
+      refundAmount,
+      ticketSale: vehicleFare + discountAmount,
+      ticketCost: vehicleFare + discountAmount + refundAmount,
     };
   }
 }

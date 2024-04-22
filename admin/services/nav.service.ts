@@ -27,6 +27,10 @@ export const webLinks = {
           key: 'reporting/cancelled-trips',
         },
         {
+          label: 'Collect Bookings',
+          key: 'reporting/collect-bookings',
+        },
+        {
           label: 'Summary Sales',
           key: 'reporting/summary',
         },
@@ -67,6 +71,10 @@ export const webLinks = {
         {
           label: 'Cancelled Trips',
           key: 'reporting/cancelled-trips',
+        },
+        {
+          label: 'Collect Bookings',
+          key: 'reporting/collect-bookings',
         },
         {
           label: 'Summary Sales',

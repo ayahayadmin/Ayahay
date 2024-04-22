@@ -85,6 +85,13 @@ export interface DashboardSearchQuery extends TripSearchByDateRange {
   destPortId?: number;
 }
 
+export interface TripVoyage {
+  id: number;
+  srcPortName: string;
+  destPortName: string;
+  departureDateIso: string;
+}
+
 export interface CancelledTrips {
   srcPortName: string;
   destPortName: string;

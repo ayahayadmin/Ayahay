@@ -23,6 +23,7 @@ import {
   PaginatedResponse,
   SearchAvailableTrips,
   TripSearchByDateRange,
+  TripVoyage,
   UpdateTripCapacityRequest,
   VehicleBookings,
 } from '@ayahay/http';
@@ -64,8 +65,17 @@ export class TripController {
     return this.tripMapper.convertTripToDto(trip);
   }
 
-  @Get('to-edit')
-  async getTripByDateRange(@Query() query: TripSearchByDateRange) {
+  @Get('available-by-date-range')
+  async getAvailableTripsByDateRange(
+    @Query() query: TripSearchByDateRange
+  ): Promise<ITrip[]> {
+    return await this.tripService.getAvailableTripsByDateRange(query);
+  }
+
+  @Get('by-date-range')
+  async getTripsByDateRange(
+    @Query() query: TripSearchByDateRange
+  ): Promise<TripVoyage[]> {
     return await this.tripService.getTripsByDateRange(query);
   }
 
