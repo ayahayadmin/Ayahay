@@ -1,6 +1,7 @@
 import { IBooking, ITrip } from '@ayahay/models';
 import { mockShip, mockShippingLine } from '@ayahay/mocks';
 import { isEmpty, round } from 'lodash';
+import dayjs from 'dayjs';
 
 export function processTripCsv(
   file: File,
@@ -209,10 +210,9 @@ function processBookingRow(rowValues: string[]): IBooking {
   return booking;
 }
 
-export async function generateBookingCsv(
+export async function generateBookingPassengerCsv(
   bookings: IBooking[] | any[]
 ): Promise<Blob> {
-  //there should be no any type
   const headers = [
     'Names',
     'Birth Date',
@@ -238,7 +238,10 @@ export async function generateBookingCsv(
   content.push(
     bookings
       .filter(
-        (booking) => booking.bookingTrips && booking.bookingTrips.length > 0
+        (booking) =>
+          booking.bookingTrips &&
+          booking.bookingTrips.length > 0 &&
+          booking.bookingTrips[0].bookingTripPassengers.length > 0
       )
       .map((booking) => {
         const payment =
@@ -255,13 +258,12 @@ export async function generateBookingCsv(
                 bookingTripPassenger.passenger.firstName +
                 ' ' +
                 bookingTripPassenger.passenger.lastName;
-              const birthDate = changeDateFormat(
+              const birthDate = dayjs(
                 bookingTripPassenger.passenger.birthday
-              );
+              ).format('YYYY-M-D');
               const age = computeAge(bookingTripPassenger.passenger.birthday);
-              const departureDate = changeDateFormat(
-                trip?.departureDateIso,
-                true
+              const departureDate = dayjs(trip.departureDateIso).format(
+                'YYYY-M-D h:mm A'
               );
 
               return [
@@ -294,6 +296,80 @@ export async function generateBookingCsv(
   return new Blob([...content], { type: 'text/csv;charset=utf-8;' });
 }
 
+export async function generateBookingVehicleCsv(
+  bookings: IBooking[] | any[]
+): Promise<Blob> {
+  const headers = [
+    'BOL #',
+    'FRR',
+    'Vehicle Type',
+    'Plate #',
+    'Model Name',
+    'Origin',
+    'Destination',
+    'Trip Date & Time',
+    'Rates',
+    'Checked-in',
+    'Payment',
+  ]
+    .map((v) => v.replace('"', '""'))
+    .map((v) => `"${v}"`)
+    .join(',')
+    .concat('\r\n');
+
+  const content = [headers];
+  content.push(
+    bookings
+      .filter(
+        (booking) =>
+          booking.bookingTrips &&
+          booking.bookingTrips.length > 0 &&
+          booking.bookingTrips[0].bookingTripVehicles.length > 0
+      )
+      .map((booking) => {
+        const payment =
+          isEmpty(booking.createdByAccount) ||
+          booking.createdByAccount.role === 'Passenger'
+            ? 'Ayahay'
+            : 'OTC';
+        const trip = booking.bookingTrips[0].trip;
+        const bol = booking.referenceNo;
+        const frr = booking.freightRateReceipt;
+        return (
+          booking.bookingTrips[0].bookingTripVehicles &&
+          booking.bookingTrips[0].bookingTripVehicles
+            .map((bookingTripVehicle: any) => {
+              const departureDate = dayjs(trip.departureDateIso).format(
+                'YYYY-M-D h:mm A'
+              );
+
+              return [
+                bol ?? '',
+                frr ?? '',
+                bookingTripVehicle.vehicle.vehicleType.description ?? '',
+                bookingTripVehicle.vehicle.plateNo ?? '',
+                bookingTripVehicle.vehicle.modelName ?? '',
+                trip?.srcPort.name ?? '',
+                trip?.destPort.name ?? '',
+                departureDate ?? '',
+                round(bookingTripVehicle.totalPrice, 2) ?? '',
+                bookingTripVehicle.checkInDate ? 'Yes' : 'No',
+                payment,
+              ]
+                .map(String) // convert every value to String
+                .map((v) => v.replace('"', '""')) // escape double colons
+                .map((v) => `"${v}"`) // quote it
+                .join(','); // comma-separated;
+            })
+            .join('\r\n')
+        );
+      })
+      .join('\r\n') // rows starting on new lines
+  );
+
+  return new Blob([...content], { type: 'text/csv;charset=utf-8;' });
+}
+
 function computeAge(birthday: string) {
   var today = new Date();
   var birthDate = new Date(birthday);
@@ -303,20 +379,4 @@ function computeAge(birthday: string) {
     age--;
   }
   return age;
-}
-
-function changeDateFormat(date: string, withTime = false) {
-  const newDate = new Date(date);
-  const month = newDate.getMonth() + 1;
-  const newDateFormat =
-    newDate.getFullYear() + '-' + month + '-' + newDate.getDate();
-
-  let time;
-  if (withTime) {
-    time = newDate.toLocaleTimeString(undefined, {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  }
-  return withTime ? newDateFormat + ' at ' + time : newDateFormat;
 }

@@ -8,16 +8,35 @@ import { IBooking } from '@ayahay/models';
 import axios from '@ayahay/services/axios';
 import dayjs from 'dayjs';
 
-export async function getBookingsToDownload(
+export async function getBookingPassengersToDownload(
   month: number,
   year: number
 ): Promise<IBooking[]> {
   const date = dayjs(`${month + 1}/1/${year}`);
-  const startDate = date.startOf('month');
-  const endDate = date.endOf('month');
-  const { data } = await axios.get<IBooking[]>(`${BOOKING_API}/download`, {
-    params: { startDate, endDate },
-  });
+  const startDate = date.startOf('month').toISOString();
+  const endDate = date.endOf('month').toISOString();
+  const { data } = await axios.get<IBooking[]>(
+    `${BOOKING_API}/passenger/download`,
+    {
+      params: { startDate, endDate },
+    }
+  );
+  return data;
+}
+
+export async function getBookingVehiclesToDownload(
+  month: number,
+  year: number
+): Promise<IBooking[]> {
+  const date = dayjs(`${month + 1}/1/${year}`);
+  const startDate = date.startOf('month').toISOString();
+  const endDate = date.endOf('month').toISOString();
+  const { data } = await axios.get<IBooking[]>(
+    `${BOOKING_API}/vehicle/download`,
+    {
+      params: { startDate, endDate },
+    }
+  );
   return data;
 }
 

@@ -28,6 +28,7 @@ export interface IBooking {
   voucher?: IVoucher;
 
   referenceNo: string;
+  freightRateReceipt?: string;
   bookingStatus: keyof typeof BOOKING_STATUS;
   paymentStatus: keyof typeof PAYMENT_STATUS;
   totalPrice: number;

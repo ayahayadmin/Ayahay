@@ -111,7 +111,7 @@ export class BookingService {
     );
   }
 
-  async getBookingsToDownload({
+  async getBookingPassengersToDownload({
     startDate,
     endDate,
   }: TripSearchByDateRange): Promise<IBooking[]> {
@@ -137,6 +137,50 @@ export class BookingService {
             bookingTripPassengers: {
               include: {
                 passenger: true,
+              },
+            },
+          },
+        },
+        bookingPaymentItems: true,
+      },
+    });
+
+    return bookingEntities.map((bookingEntity) =>
+      this.bookingMapper.convertBookingToBasicDto(bookingEntity)
+    );
+  }
+
+  async getBookingVehiclesToDownload({
+    startDate,
+    endDate,
+  }: TripSearchByDateRange): Promise<IBooking[]> {
+    const bookingEntities = await this.prisma.booking.findMany({
+      where: {
+        createdAt: {
+          gte: new Date(startDate).toISOString(),
+          lte: new Date(endDate).toISOString(),
+        },
+        bookingStatus: 'Confirmed',
+      },
+      include: {
+        createdByAccount: true,
+        bookingTrips: {
+          include: {
+            trip: {
+              include: {
+                shippingLine: true,
+                srcPort: true,
+                destPort: true,
+              },
+            },
+            bookingTripVehicles: {
+              include: {
+                vehicle: {
+                  include: {
+                    vehicleType: true,
+                  },
+                },
+                bookingPaymentItems: true,
               },
             },
           },

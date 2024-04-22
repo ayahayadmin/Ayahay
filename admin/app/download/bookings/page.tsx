@@ -1,9 +1,15 @@
 'use client';
 import styles from './page.module.scss';
-import React from 'react';
-import { Button, Typography, Select, Form } from 'antd';
-import { getBookingsToDownload } from '@/services/booking.service';
-import { generateBookingCsv } from '@/services/csv.service';
+import React, { useState } from 'react';
+import { Button, Typography, Select, Form, Radio } from 'antd';
+import {
+  getBookingPassengersToDownload,
+  getBookingVehiclesToDownload,
+} from '@/services/booking.service';
+import {
+  generateBookingPassengerCsv,
+  generateBookingVehicleCsv,
+} from '@/services/csv.service';
 import { useAuthGuard } from '@/hooks/auth';
 import { IBooking } from '@ayahay/models';
 
@@ -22,18 +28,32 @@ for (let monthDiff = 0; monthDiff < 3; monthDiff++) {
 
 export default function DownloadBookings() {
   useAuthGuard(['ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin']);
+  const [selectionType, setSelectionType] = useState<'passenger' | 'vehicle'>(
+    'passenger'
+  );
+
   const onFinish = async (formValues: any) => {
     const monthIso = formValues.month;
     const requestedMonthDate = new Date(monthIso);
     const requestedMonth = requestedMonthDate.getMonth();
     const requestedYear = requestedMonthDate.getFullYear();
 
-    const allBookings: IBooking[] = await getBookingsToDownload(
-      requestedMonth,
-      requestedYear
-    );
+    let allBookings: IBooking[] = [];
+    let generateCsv: Blob;
 
-    const generateCsv = await generateBookingCsv(allBookings);
+    if (selectionType === 'passenger') {
+      allBookings = await getBookingPassengersToDownload(
+        requestedMonth,
+        requestedYear
+      );
+      generateCsv = await generateBookingPassengerCsv(allBookings);
+    } else {
+      allBookings = await getBookingVehiclesToDownload(
+        requestedMonth,
+        requestedYear
+      );
+      generateCsv = await generateBookingVehicleCsv(allBookings);
+    }
 
     if (!generateCsv) {
       return new Error('CSV Generation Failed');
@@ -57,7 +77,17 @@ export default function DownloadBookings() {
       <Form.Item name='month' label='Month'>
         <Select options={lastThreeMonths}></Select>
       </Form.Item>
-
+      <Form.Item>
+        <Radio.Group
+          onChange={({ target: { value } }) => {
+            setSelectionType(value);
+          }}
+          value={selectionType}
+        >
+          <Radio value='passenger'>Passenger</Radio>
+          <Radio value='vehicle'>Vehicle</Radio>
+        </Radio.Group>
+      </Form.Item>
       <Button type='primary' htmlType='submit'>
         Download
       </Button>
