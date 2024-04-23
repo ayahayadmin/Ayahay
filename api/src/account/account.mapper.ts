@@ -21,6 +21,7 @@ export class AccountMapper {
         ? this.passengerMapper.convertPassengerToDto(account.passenger, true)
         : undefined,
       role: account.role as ACCOUNT_ROLE,
+      shippingLineId: account.shippingLineId,
 
       vehicles: account.vehicles?.map((vehicle) =>
         this.vehicleMapper.convertVehicleToDto(vehicle)

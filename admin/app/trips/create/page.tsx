@@ -17,7 +17,13 @@ export default function CreateTripsFromSchedulesPage() {
   const [schedules, setSchedules] = useState<IShippingLineSchedule[]>([]);
 
   const fetchSchedules = async (): Promise<void> => {
-    const shippingLineSchedules = await getSchedulesOfShippingLine();
+    if (!loggedInAccount?.shippingLineId) {
+      return;
+    }
+
+    const shippingLineSchedules = await getSchedulesOfShippingLine(
+      loggedInAccount.shippingLineId
+    );
     if (shippingLineSchedules === undefined) {
       return;
     }
@@ -27,7 +33,7 @@ export default function CreateTripsFromSchedulesPage() {
 
   useEffect(() => {
     fetchSchedules();
-  }, []);
+  }, [loggedInAccount]);
 
   if (pending) {
     return <Spin size='large' className={styles['spinner']} />;
