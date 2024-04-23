@@ -159,8 +159,13 @@ export class BookingPricingService {
     if (shippingLine.name === 'Aznar Shipping') {
       const wholePrice = Math.floor(originalPrice);
       return wholePrice - (wholePrice % 5);
+    } else if (shippingLine.name === 'Jomalia Shipping Corporation') {
+      const wholePrice = Math.floor(originalPrice);
+      if (wholePrice % 50 === 0) {
+        return wholePrice;
+      }
+      return wholePrice + (50 - (wholePrice % 50));
     }
-
     return originalPrice;
   }
 
