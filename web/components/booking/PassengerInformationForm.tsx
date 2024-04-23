@@ -51,6 +51,7 @@ export default function PassengerInformationForm({
   const [companionModalOpen, setCompanionModalOpen] = useState(false);
   const [vehicleModalOpen, setVehicleModalOpen] = useState(false);
   const [newEntityId, setNewEntityId] = useState(-1);
+  const canBookVehicles = trip?.availableVehicleTypes?.length > 0;
 
   useEffect(() => {
     if (loggedInAccount === null) {
@@ -540,9 +541,11 @@ export default function PassengerInformationForm({
               </div>
             ))}
 
-            <Button type='dashed' onClick={() => addNewVehicle(add)} block>
-              Add Vehicle
-            </Button>
+            {canBookVehicles && (
+              <Button type='dashed' onClick={() => addNewVehicle(add)} block>
+                Add Vehicle
+              </Button>
+            )}
             {loggedInAccount &&
               loggedInAccount.vehicles &&
               loggedInAccount.vehicles.length > 0 && (
