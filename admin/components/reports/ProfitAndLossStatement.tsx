@@ -28,6 +28,33 @@ const ProfitAndLossStatement = forwardRef(function (
   const user = loggedInAccount?.email;
   const date = getFullDate(new Date().toString(), true);
 
+  const breakdown = {
+    passenger: {
+      OTC: {
+        totalSales: 0,
+        totalRefund: 0,
+        totalNetSales: 0,
+      },
+      Ayahay: {
+        totalSales: 0,
+        totalRefund: 0,
+        totalNetSales: 0,
+      },
+    },
+    vehicle: {
+      OTC: {
+        totalSales: 0,
+        totalRefund: 0,
+        totalNetSales: 0,
+      },
+      Ayahay: {
+        totalSales: 0,
+        totalRefund: 0,
+        totalNetSales: 0,
+      },
+    },
+  };
+
   let totalPassengerSales = 0;
   let totalPassengerRefund = 0;
   let totalPassengerNetSales = 0;
@@ -42,13 +69,35 @@ const ProfitAndLossStatement = forwardRef(function (
     totalPassengerSales += passenger.ticketSale;
     totalPassengerRefund += passenger.refundAmount;
     totalPassengerNetSales += passenger.ticketCost;
+
+    if (passenger.paymentStatus === 'PayMongo') {
+      breakdown.passenger.Ayahay.totalSales += passenger.ticketSale;
+      breakdown.passenger.Ayahay.totalRefund += passenger.refundAmount;
+      breakdown.passenger.Ayahay.totalNetSales += passenger.ticketCost;
+    } else {
+      breakdown.passenger.OTC.totalSales += passenger.ticketSale;
+      breakdown.passenger.OTC.totalRefund += passenger.refundAmount;
+      breakdown.passenger.OTC.totalNetSales += passenger.ticketCost;
+    }
   });
 
-  data.vehicles?.map((vehicle) => {
+  data.vehicles.map((vehicle) => {
     totalVehicleSales += vehicle.ticketSale;
     totalVehicleRefund += vehicle.refundAmount;
     totalVehicleNetSales += vehicle.ticketCost;
+
+    if (vehicle.paymentStatus === 'PayMongo') {
+      breakdown.vehicle.Ayahay.totalSales += vehicle.ticketSale;
+      breakdown.vehicle.Ayahay.totalRefund += vehicle.refundAmount;
+      breakdown.vehicle.Ayahay.totalNetSales += vehicle.ticketCost;
+    } else {
+      breakdown.vehicle.OTC.totalSales += vehicle.ticketSale;
+      breakdown.vehicle.OTC.totalRefund += vehicle.refundAmount;
+      breakdown.vehicle.OTC.totalNetSales += vehicle.ticketCost;
+    }
   });
+
+  const paymentMethods = ['OTC', 'Ayahay'];
 
   return (
     <div ref={ref}>
@@ -107,91 +156,134 @@ const ProfitAndLossStatement = forwardRef(function (
             <p>Date Printed: {date}</p>
           </div>
         </div>
-        <div
-          className={`${styles['center-div']} ${styles['font-style']}`}
-          style={{ marginTop: 15 }}
-        >
-          <table
-            style={{
-              width: '95%',
-              borderCollapse: 'collapse',
-              textAlign: 'center',
-              fontSize: 8,
-            }}
-          >
-            <thead style={{ backgroundColor: '#ddebf7' }}>
-              <tr>
-                <th>Vessel</th>
-                <th>Teller</th>
-                <th>Description</th>
-                <th>Total Sales</th>
-                <th>Refund</th>
-                <th>Net Sales</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>{data.shipName}</td>
-                {/* will still discuss what if there are more than 1 teller in a trip */}
-                <td>{data.passengers[0]?.teller}</td>
-                <td>PAX INCOME</td>
-                <td style={{ textAlign: 'left' }}>
-                  PHP&nbsp;
-                  {roundToTwoDecimalPlacesAndAddCommas(totalPassengerSales)}
-                </td>
-                <td style={{ textAlign: 'left' }}>
-                  PHP&nbsp;
-                  {roundToTwoDecimalPlacesAndAddCommas(totalPassengerRefund)}
-                </td>
-                <td style={{ textAlign: 'left' }}>
-                  PHP&nbsp;
-                  {roundToTwoDecimalPlacesAndAddCommas(totalPassengerNetSales)}
-                </td>
-              </tr>
-              <tr>
-                <td>{data.shipName}</td>
-                {/* will still discuss what if there are more than 1 teller in a trip */}
-                <td>{data.passengers[0]?.teller}</td>
-                <td>CARGO INCOME</td>
-                <td style={{ textAlign: 'left' }}>
-                  PHP&nbsp;
-                  {roundToTwoDecimalPlacesAndAddCommas(totalVehicleSales)}
-                </td>
-                <td style={{ textAlign: 'left' }}>
-                  PHP&nbsp;
-                  {roundToTwoDecimalPlacesAndAddCommas(totalVehicleRefund)}
-                </td>
-                <td style={{ textAlign: 'left' }}>
-                  PHP&nbsp;
-                  {roundToTwoDecimalPlacesAndAddCommas(totalVehicleNetSales)}
-                </td>
-              </tr>
-            </tbody>
-            <tfoot style={{ backgroundColor: '#ddebf7' }}>
-              <tr style={{ fontWeight: 'bold' }}>
-                <td colSpan={3}>TOTAL SALES</td>
-                <td style={{ textAlign: 'left' }}>
-                  PHP&nbsp;
-                  {roundToTwoDecimalPlacesAndAddCommas(
-                    totalPassengerSales + totalVehicleSales
-                  )}
-                </td>
-                <td style={{ textAlign: 'left' }}>
-                  PHP&nbsp;
-                  {roundToTwoDecimalPlacesAndAddCommas(
-                    totalPassengerRefund + totalVehicleRefund
-                  )}
-                </td>
-                <td style={{ textAlign: 'left' }}>
-                  PHP&nbsp;
-                  {roundToTwoDecimalPlacesAndAddCommas(
-                    totalPassengerNetSales + totalVehicleNetSales
-                  )}
-                </td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
+        {paymentMethods.map((paymentMethod) => {
+          return (
+            <div
+              className={`${styles['center-div']} ${styles['font-style']}`}
+              style={{ marginTop: 5 }}
+            >
+              <table
+                style={{
+                  width: '95%',
+                  borderCollapse: 'collapse',
+                  textAlign: 'center',
+                  fontSize: 8,
+                }}
+              >
+                <thead style={{ backgroundColor: '#ddebf7' }}>
+                  <tr>
+                    <th>Vessel</th>
+                    <th>Teller</th>
+                    <th>Description</th>
+                    <th>Total Sales</th>
+                    <th>Refund</th>
+                    <th>Net Sales</th>
+                  </tr>
+                </thead>
+                <caption style={{ textAlign: 'left', fontWeight: 'bold' }}>
+                  {paymentMethod}
+                </caption>
+                <tbody>
+                  <tr>
+                    <td>{data.shipName}</td>
+                    {/* will still discuss what if there are more than 1 teller in a trip */}
+                    <td>{data.passengers[0]?.teller}</td>
+                    <td>PAX INCOME</td>
+                    <td style={{ textAlign: 'left' }}>
+                      PHP&nbsp;
+                      {roundToTwoDecimalPlacesAndAddCommas(
+                        paymentMethod === 'OTC'
+                          ? breakdown.passenger.OTC.totalSales
+                          : breakdown.passenger.Ayahay.totalSales
+                      )}
+                    </td>
+                    <td style={{ textAlign: 'left' }}>
+                      PHP&nbsp;
+                      {roundToTwoDecimalPlacesAndAddCommas(
+                        paymentMethod === 'OTC'
+                          ? breakdown.passenger.OTC.totalRefund
+                          : breakdown.passenger.Ayahay.totalRefund
+                      )}
+                    </td>
+                    <td style={{ textAlign: 'left' }}>
+                      PHP&nbsp;
+                      {roundToTwoDecimalPlacesAndAddCommas(
+                        paymentMethod === 'OTC'
+                          ? breakdown.passenger.OTC.totalNetSales
+                          : breakdown.passenger.Ayahay.totalNetSales
+                      )}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>{data.shipName}</td>
+                    {/* will still discuss what if there are more than 1 teller in a trip */}
+                    <td>{data.passengers[0]?.teller}</td>
+                    <td>CARGO INCOME</td>
+                    <td style={{ textAlign: 'left' }}>
+                      PHP&nbsp;
+                      {roundToTwoDecimalPlacesAndAddCommas(
+                        paymentMethod === 'OTC'
+                          ? breakdown.vehicle.OTC.totalSales
+                          : breakdown.vehicle.Ayahay.totalSales
+                      )}
+                    </td>
+                    <td style={{ textAlign: 'left' }}>
+                      PHP&nbsp;
+                      {roundToTwoDecimalPlacesAndAddCommas(
+                        paymentMethod === 'OTC'
+                          ? breakdown.vehicle.OTC.totalRefund
+                          : breakdown.vehicle.Ayahay.totalRefund
+                      )}
+                    </td>
+                    <td style={{ textAlign: 'left' }}>
+                      PHP&nbsp;
+                      {roundToTwoDecimalPlacesAndAddCommas(
+                        paymentMethod === 'OTC'
+                          ? breakdown.vehicle.OTC.totalNetSales
+                          : breakdown.vehicle.Ayahay.totalNetSales
+                      )}
+                    </td>
+                  </tr>
+                </tbody>
+                <tfoot style={{ backgroundColor: '#ddebf7' }}>
+                  <tr style={{ fontWeight: 'bold' }}>
+                    <td colSpan={3}>TOTAL SALES</td>
+                    <td style={{ textAlign: 'left' }}>
+                      PHP&nbsp;
+                      {roundToTwoDecimalPlacesAndAddCommas(
+                        paymentMethod === 'OTC'
+                          ? breakdown.passenger.OTC.totalSales +
+                              breakdown.vehicle.OTC.totalSales
+                          : breakdown.passenger.Ayahay.totalSales +
+                              breakdown.vehicle.Ayahay.totalSales
+                      )}
+                    </td>
+                    <td style={{ textAlign: 'left' }}>
+                      PHP&nbsp;
+                      {roundToTwoDecimalPlacesAndAddCommas(
+                        paymentMethod === 'OTC'
+                          ? breakdown.passenger.OTC.totalRefund +
+                              breakdown.vehicle.OTC.totalRefund
+                          : breakdown.passenger.Ayahay.totalRefund +
+                              breakdown.vehicle.Ayahay.totalRefund
+                      )}
+                    </td>
+                    <td style={{ textAlign: 'left' }}>
+                      PHP&nbsp;
+                      {roundToTwoDecimalPlacesAndAddCommas(
+                        paymentMethod === 'OTC'
+                          ? breakdown.passenger.OTC.totalNetSales +
+                              breakdown.vehicle.OTC.totalNetSales
+                          : breakdown.passenger.Ayahay.totalNetSales +
+                              breakdown.vehicle.Ayahay.totalNetSales
+                      )}
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          );
+        })}
 
         <div
           className={`${styles['center-div']} ${styles['font-style']}`}
@@ -254,7 +346,8 @@ const ProfitAndLossStatement = forwardRef(function (
               <tr style={{ fontWeight: 'bold' }}>
                 <td colSpan={6}>TOTAL EXPENSES</td>
                 <td style={{ textAlign: 'left' }}>
-                  PHP&nbsp;{roundToTwoDecimalPlacesAndAddCommas(totalExpenses)}
+                  PHP&nbsp;
+                  {roundToTwoDecimalPlacesAndAddCommas(totalExpenses)}
                 </td>
               </tr>
             </tfoot>
@@ -276,6 +369,24 @@ const ProfitAndLossStatement = forwardRef(function (
               SUMMARY
             </caption>
             <tbody>
+              {paymentMethods.map((paymentMethod) => {
+                return (
+                  <tr>
+                    <td>{paymentMethod} Total Sales</td>
+                    <td></td>
+                    <td style={{ textAlign: 'right' }}>
+                      PHP&nbsp;
+                      {roundToTwoDecimalPlacesAndAddCommas(
+                        paymentMethod === 'OTC'
+                          ? breakdown.passenger.OTC.totalSales +
+                              breakdown.vehicle.OTC.totalSales
+                          : breakdown.passenger.Ayahay.totalSales +
+                              breakdown.vehicle.Ayahay.totalSales
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
               <tr>
                 <td>TOTAL SALES</td>
                 <td>
