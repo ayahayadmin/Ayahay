@@ -116,3 +116,47 @@ export interface VoidBookings {
   price: string;
   refundType: string;
 }
+
+export interface CollectBooking {
+  bookingId: string;
+  referenceNo: string;
+  consigneeName: string;
+  freightRateReceipt: string;
+
+  passengers: {
+    passengerName: string;
+    teller: string;
+    accommodation: string;
+    discount: string;
+
+    discountAmount: number;
+    refundAmount: number;
+
+    // base fare - voucher discount
+    ticketSale: number;
+    // base fare - voucher discount - refund
+    ticketCost: number;
+  }[];
+
+  vehicles: {
+    teller: string;
+    typeOfVehicle: string;
+    plateNo: string;
+
+    discountAmount: number;
+    refundAmount: number;
+
+    // base fare - voucher discount
+    ticketSale: number;
+    // base fare - voucher discount - refund
+    ticketCost: number;
+  }[];
+}
+
+export interface CollectTripBooking {
+  id: number;
+  srcPortName: string;
+  destPortName: string;
+  departureDateIso: string;
+  bookings: CollectBooking[];
+}

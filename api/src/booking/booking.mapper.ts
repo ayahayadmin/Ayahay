@@ -35,6 +35,7 @@ export class BookingMapper {
       approvedByAccount: booking.approvedByAccount,
 
       referenceNo: booking.referenceNo,
+      freightRateReceipt: booking.freightRateReceipt,
       bookingStatus: booking.bookingStatus as any,
       paymentStatus: booking.paymentStatus as any,
       totalPrice: booking.totalPrice,

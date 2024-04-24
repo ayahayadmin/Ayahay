@@ -6,6 +6,7 @@ import {
   PaginatedRequest,
   PaginatedResponse,
   TripSearchByDateRange,
+  TripVoyage,
   UpdateTripCapacityRequest,
   VehicleBookings,
 } from '@ayahay/http';
@@ -19,12 +20,34 @@ import { isEmpty } from 'lodash';
 dayjs.extend(isSameOrBefore);
 dayjs.extend(isSameOrAfter);
 
-export async function getTripsByDateRange(startDate: string, endDate: string) {
-  const { data: trips } = await axios.get(`${TRIP_API}/to-edit`, {
-    params: { startDate, endDate },
-  });
+export async function getAvailableTripsByDateRange(
+  searchQuery: TripSearchByDateRange | undefined
+) {
+  if (isEmpty(searchQuery)) {
+    return;
+  }
+
+  const query = new URLSearchParams(searchQuery as any).toString();
+  const { data: trips } = await axios.get(
+    `${TRIP_API}/available-by-date-range?${query}`
+  );
 
   await fetchAssociatedEntitiesToTrips(trips);
+  return trips;
+}
+
+export async function getTripsByDateRange(
+  searchQuery: TripSearchByDateRange | undefined
+): Promise<TripVoyage[] | undefined> {
+  if (isEmpty(searchQuery)) {
+    return;
+  }
+
+  const query = new URLSearchParams(searchQuery as any).toString();
+  const { data: trips } = await axios.get<TripVoyage[]>(
+    `${TRIP_API}/by-date-range?${query}`
+  );
+
   return trips;
 }
 

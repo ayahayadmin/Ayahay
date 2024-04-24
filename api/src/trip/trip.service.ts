@@ -17,6 +17,7 @@ import {
   PaginatedResponse,
   SearchAvailableTrips,
   TripSearchByDateRange,
+  TripVoyage,
   UpdateTripCapacityRequest,
   VehicleBookings,
 } from '@ayahay/http';
@@ -181,9 +182,10 @@ export class TripService {
     return trips.map((trip) => this.tripMapper.convertTripToDto(trip));
   }
 
-  async getTripsByDateRange(dates: TripSearchByDateRange) {
-    const { startDate, endDate } = dates;
-
+  async getAvailableTripsByDateRange({
+    startDate,
+    endDate,
+  }: TripSearchByDateRange): Promise<ITrip[]> {
     const trips = await this.prisma.$queryRaw<AvailableTrips[]>`
       ${TRIP_AVAILABLE_QUERY}
       WHERE t.departure_date > ${startDate}::TIMESTAMP
@@ -195,6 +197,39 @@ export class TripService {
     return trips.map((trip) =>
       this.tripMapper.convertAvailableTripsToDto(trip)
     );
+  }
+
+  async getTripsByDateRange({
+    startDate,
+    endDate,
+  }: TripSearchByDateRange): Promise<TripVoyage[]> {
+    const trips = await this.prisma.trip.findMany({
+      where: {
+        departureDate: {
+          gte: new Date(startDate).toISOString(),
+          lte: new Date(endDate).toISOString(),
+        },
+      },
+      select: {
+        id: true,
+        srcPort: {
+          select: {
+            name: true,
+          },
+        },
+        destPort: {
+          select: {
+            name: true,
+          },
+        },
+        departureDate: true,
+      },
+      orderBy: {
+        departureDate: 'asc',
+      },
+    });
+
+    return trips.map((trip) => this.tripMapper.convertTripToTripVoyage(trip));
   }
 
   async getCancelledTrips(

@@ -12,7 +12,7 @@ import { PortMapper } from '@/port/port.mapper';
 import { map } from 'lodash';
 import { Prisma } from '@prisma/client';
 import { ShipMapper } from '@/ship/ship.mapper';
-import { AvailableTrips, CancelledTrips } from '@ayahay/http';
+import { AvailableTrips, CancelledTrips, TripVoyage } from '@ayahay/http';
 
 @Injectable()
 export class TripMapper {
@@ -248,6 +248,15 @@ export class TripMapper {
       vehicleType: {
         ...tripVehicleType.vehicleType,
       },
+    };
+  }
+
+  convertTripToTripVoyage(trip): TripVoyage {
+    return {
+      id: trip.id,
+      srcPortName: trip.srcPort.name,
+      destPortName: trip.destPort.name,
+      departureDateIso: trip.departureDate.toISOString(),
     };
   }
 

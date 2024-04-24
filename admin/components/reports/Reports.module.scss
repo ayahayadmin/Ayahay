@@ -24,6 +24,11 @@ $border: 0.001px solid black;
   padding-bottom: 1px;
 }
 
+.row-side-borders {
+  border-left: $border;
+  border-right: $border;
+}
+
 .td-text-wrap {
   text-align: left;
   word-wrap: break-word;

@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Param,
+  ParseArrayPipe,
   Patch,
   Query,
   UseGuards,
@@ -20,6 +21,7 @@ import {
   PaginatedRequest,
   VoidBookings,
   PaginatedResponse,
+  CollectTripBooking,
 } from '@ayahay/http';
 import { BookingService } from '@/booking/booking.service';
 
@@ -89,6 +91,15 @@ export class ReportingController {
       pagination,
       Number(tripId)
     );
+  }
+
+  @Get('trip/booking/collect')
+  @UseGuards(AuthGuard)
+  @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
+  async getCollectTripBooking(
+    @Query('tripIds', new ParseArrayPipe({ items: Number })) tripIds: number[]
+  ): Promise<CollectTripBooking[]> {
+    return this.reportingService.getCollectTripBooking(tripIds);
   }
 
   @Patch(':bookingId/bol/frr')

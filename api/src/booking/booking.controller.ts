@@ -36,13 +36,22 @@ export class BookingController {
     private readonly accountService: AccountService
   ) {}
 
-  @Get('download')
+  @Get('passenger/download')
   @UseGuards(AuthGuard)
   @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
-  async getBookingsToDownload(
+  async getBookingPassengersToDownload(
     @Query() dates: TripSearchByDateRange
   ): Promise<IBooking[]> {
-    return this.bookingService.getBookingsToDownload(dates);
+    return this.bookingService.getBookingPassengersToDownload(dates);
+  }
+
+  @Get('vehicle/download')
+  @UseGuards(AuthGuard)
+  @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
+  async getBookingVehiclesToDownload(
+    @Query() dates: TripSearchByDateRange
+  ): Promise<IBooking[]> {
+    return this.bookingService.getBookingVehiclesToDownload(dates);
   }
 
   @Get('public')

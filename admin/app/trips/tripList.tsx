@@ -5,11 +5,10 @@ import { IShippingLine } from '@ayahay/models/shipping-line.model';
 import dayjs from 'dayjs';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
-import { getTripsByDateRange } from '@/services/trip.service';
+import { getAvailableTripsByDateRange } from '@/services/trip.service';
 import Table, { ColumnsType } from 'antd/es/table';
 import { getLocaleTimeString } from '@ayahay/services/date.service';
 import { TripSearchByDateRange } from '@ayahay/http';
-import { isEmpty } from 'lodash';
 import EditCapacity from '@/components/form/EditCapacity';
 import { ArrowRightOutlined, DownOutlined } from '@ant-design/icons';
 
@@ -227,14 +226,7 @@ export default function TripList({
 
   const fetchTrips = async () => {
     setLoading(true);
-    // if no startDate and endDate was provided
-    if (isEmpty(searchQuery)) {
-      return;
-    }
-    const trips = await getTripsByDateRange(
-      searchQuery.startDate,
-      searchQuery.endDate
-    );
+    const trips = await getAvailableTripsByDateRange(searchQuery);
     setTripsData(trips);
     setLoading(false);
   };
