@@ -37,6 +37,8 @@ export interface IBookingTripPassenger {
    */
   drivesVehicleId?: number;
   drivesVehicle?: IBookingTripVehicle;
+  preferredCabinId?: number;
+  preferredCabin?: ICabin;
 
   meal?: string;
   totalPrice?: number;

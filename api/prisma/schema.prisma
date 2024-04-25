@@ -107,7 +107,8 @@ model Cabin {
 
   tripSpecificInfo TripCabin[]
   schedules ShippingLineScheduleRate[]
-  bookingTripPassengers BookingTripPassenger[]
+  bookingTripPassengers BookingTripPassenger[] @relation("cabin")
+  preferredByPassengers BookingTripPassenger[] @relation("preferredCabin")
 
   @@map("cabin")
 }
@@ -309,12 +310,14 @@ model BookingTripPassenger {
   passengerId Int @map("passenger_id")
   passenger Passenger @relation(fields: [passengerId], references: [id])
   cabinId Int @map("cabin_id")
-  cabin Cabin @relation(fields: [cabinId], references: [id])
+  cabin Cabin @relation("cabin", fields: [cabinId], references: [id])
   tripCabin TripCabin @relation(fields: [tripId, cabinId], references: [tripId, cabinId])
   seatId Int? @map("seat_id")
   seat Seat? @relation(fields: [seatId], references: [id])
   drivesVehicleId Int? @map("drives_vehicle_id")
   drivesVehicle BookingTripVehicle? @relation(fields: [bookingId, tripId, drivesVehicleId], references: [bookingId, tripId, vehicleId])
+  preferredCabinId Int? @map("preferred_cabin_id")
+  preferredCabin Cabin? @relation("preferredCabin", fields: [preferredCabinId], references: [id])
 
   meal String?
   totalPrice Float @map("total_price")
@@ -384,9 +387,12 @@ model Account {
   passenger Passenger? @relation(fields: [passengerId], references: [id])
   shippingLineId Int? @map("shipping_line_id")
   shippingLine ShippingLine? @relation(fields: [shippingLineId], references: [id])
+  travelAgencyId Int? @map("travel_agency_id")
+  travelAgency TravelAgency? @relation(fields: [travelAgencyId], references: [id])
 
   email String
   role String
+  apiKey String? @map("api_key")
 
   bookingsCreated Booking[] @relation("createdByAccount")
   bookingsApproved Booking[] @relation("approvedByAccount")
@@ -539,4 +545,14 @@ model Voucher {
   tempBookings TempBooking[]
 
   @@map("voucher")
+}
+
+model TravelAgency {
+  id Int @default(autoincrement()) @id
+
+  name String
+
+  accounts Account[]
+
+  @@map("travel_agency")
 }
