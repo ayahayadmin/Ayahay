@@ -114,7 +114,11 @@ export default function DashboardTable({ searchQuery }: DashboardTableProps) {
   useEffect(() => resetData(), [searchQuery]);
 
   const fetchTripInformation = async (pagination: PaginatedRequest) => {
-    return getDashboardTrips(searchQuery, pagination);
+    return getDashboardTrips(
+      loggedInAccount?.shippingLineId,
+      searchQuery,
+      pagination
+    );
   };
 
   const {

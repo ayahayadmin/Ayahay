@@ -111,10 +111,10 @@ export class BookingService {
     );
   }
 
-  async getBookingPassengersToDownload({
-    startDate,
-    endDate,
-  }: TripSearchByDateRange): Promise<IBooking[]> {
+  async getBookingPassengersToDownload(
+    { startDate, endDate }: TripSearchByDateRange,
+    loggedInAccount: IAccount
+  ): Promise<IBooking[]> {
     const bookingEntities = await this.prisma.booking.findMany({
       where: {
         createdAt: {
@@ -122,6 +122,7 @@ export class BookingService {
           lte: new Date(endDate).toISOString(),
         },
         bookingStatus: 'Confirmed',
+        shippingLineId: loggedInAccount.shippingLineId,
       },
       include: {
         createdByAccount: true,
@@ -150,10 +151,10 @@ export class BookingService {
     );
   }
 
-  async getBookingVehiclesToDownload({
-    startDate,
-    endDate,
-  }: TripSearchByDateRange): Promise<IBooking[]> {
+  async getBookingVehiclesToDownload(
+    { startDate, endDate }: TripSearchByDateRange,
+    loggedInAccount: IAccount
+  ): Promise<IBooking[]> {
     const bookingEntities = await this.prisma.booking.findMany({
       where: {
         createdAt: {
@@ -161,6 +162,7 @@ export class BookingService {
           lte: new Date(endDate).toISOString(),
         },
         bookingStatus: 'Confirmed',
+        shippingLineId: loggedInAccount.shippingLineId,
       },
       include: {
         createdByAccount: true,
@@ -278,7 +280,8 @@ export class BookingService {
 
   async searchPassengerBookings(
     searchQuery: string,
-    pagination: PaginatedRequest
+    pagination: PaginatedRequest,
+    loggedInAccount: IAccount
   ): Promise<PaginatedResponse<PassengerBookingSearchResponse>> {
     const itemsPerPage = 10;
     const skip = (pagination.page - 1) * itemsPerPage;
@@ -310,6 +313,9 @@ export class BookingService {
           },
         },
       ],
+      trip: {
+        shippingLineId: loggedInAccount.shippingLineId,
+      },
     };
 
     const passengersMatchingQuery =

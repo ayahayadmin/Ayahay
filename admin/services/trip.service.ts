@@ -21,18 +21,25 @@ dayjs.extend(isSameOrBefore);
 dayjs.extend(isSameOrAfter);
 
 export async function getAvailableTripsByDateRange(
-  searchQuery: TripSearchByDateRange | undefined
-) {
-  if (isEmpty(searchQuery)) {
+  shippingLineId: number | undefined,
+  searchQuery: TripSearchByDateRange | undefined,
+  pagination: PaginatedRequest
+): Promise<PaginatedResponse<ITrip> | undefined> {
+  if (isEmpty(searchQuery) || shippingLineId === undefined) {
     return;
   }
 
-  const query = new URLSearchParams(searchQuery as any).toString();
+  const query = new URLSearchParams({
+    shippingLineId,
+    ...searchQuery,
+    ...pagination,
+  } as any).toString();
+
   const { data: trips } = await axios.get(
     `${TRIP_API}/available-by-date-range?${query}`
   );
 
-  await fetchAssociatedEntitiesToTrips(trips);
+  await fetchAssociatedEntitiesToTrips(trips.data);
   return trips;
 }
 
@@ -54,12 +61,8 @@ export async function getTripsByDateRange(
 export async function getTripDetails(
   tripId: number
 ): Promise<ITrip | undefined> {
-  try {
-    const { data } = await axios.get<ITrip>(`${TRIP_API}/${tripId}`);
-    return data;
-  } catch (e) {
-    console.error(e);
-  }
+  const { data } = await axios.get<ITrip>(`${TRIP_API}/${tripId}`);
+  return data;
 }
 
 export async function getBookingsOfTrip(
@@ -79,18 +82,23 @@ export async function getBookingsOfTrip(
 }
 
 export async function getCancelledTrips(
+  shippingLineId: number | undefined,
   searchQuery: TripSearchByDateRange | undefined,
   pagination: PaginatedRequest
 ): Promise<PaginatedResponse<CancelledTrips> | undefined> {
-  if (isEmpty(searchQuery)) {
+  if (isEmpty(searchQuery) || shippingLineId === undefined) {
     return;
   }
-  const { startDate, endDate } = searchQuery;
-  const query = new URLSearchParams(pagination as any).toString();
+
+  const query = new URLSearchParams({
+    shippingLineId,
+    ...searchQuery,
+    ...pagination,
+  } as any).toString();
 
   try {
     const { data } = await axios.get<PaginatedResponse<CancelledTrips>>(
-      `${TRIP_API}/cancelled-trips?startDate=${startDate}&endDate=${endDate}&${query}`
+      `${TRIP_API}/cancelled-trips?${query}`
     );
     return data;
   } catch (e) {

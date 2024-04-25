@@ -1,6 +1,6 @@
-import { BOOKING_API, SHIPS_API } from '@ayahay/constants';
+import { SHIPS_API } from '@ayahay/constants';
 import axios from '@ayahay/services/axios';
-import { IBooking, IDryDock, IShip, IVoyage } from '@ayahay/models';
+import { IDryDock, IShip, IVoyage } from '@ayahay/models';
 import { PaginatedRequest, PaginatedResponse } from '@ayahay/http';
 
 export async function getShipsOfMyShippingLine(): Promise<IShip[]> {

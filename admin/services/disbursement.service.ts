@@ -6,14 +6,10 @@ import dayjs from 'dayjs';
 export async function getDisbursements(
   tripId: number
 ): Promise<IDisbursement[] | undefined> {
-  try {
-    const { data } = await axios.get(`${DISBURSEMENT_API}`, {
-      params: { tripId },
-    });
-    return data;
-  } catch {
-    return undefined;
-  }
+  const { data } = await axios.get(`${DISBURSEMENT_API}`, {
+    params: { tripId },
+  });
+  return data;
 }
 
 export async function createDisbursements(

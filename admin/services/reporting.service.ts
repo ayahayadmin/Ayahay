@@ -17,15 +17,10 @@ import { getShip, getShips } from '@ayahay/services/ship.service';
 export async function getTripsReporting(
   tripId: number
 ): Promise<TripReport | undefined> {
-  try {
-    const { data } = await axios.get(
-      `${REPORTING_API}/trips/${tripId}/reporting`
-    );
-    return data;
-  } catch (e) {
-    console.error(e);
-    return undefined;
-  }
+  const { data } = await axios.get(
+    `${REPORTING_API}/trips/${tripId}/reporting`
+  );
+  return data;
 }
 
 export async function getPortsByShip(
@@ -61,15 +56,8 @@ export async function getTripsByShip({
 export async function getTripManifest(
   tripId: number
 ): Promise<TripManifest | undefined> {
-  try {
-    const { data } = await axios.get(
-      `${REPORTING_API}/trips/${tripId}/manifest`
-    );
-    return data;
-  } catch (e) {
-    console.error(e);
-    return undefined;
-  }
+  const { data } = await axios.get(`${REPORTING_API}/trips/${tripId}/manifest`);
+  return data;
 }
 
 export async function getVoidBookingTripPassengers(

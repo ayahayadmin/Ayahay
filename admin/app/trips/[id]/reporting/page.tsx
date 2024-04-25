@@ -16,6 +16,8 @@ import ProfitAndLossStatement from '@/components/reports/ProfitAndLossStatement'
 import CargoDailySalesReport from '@/components/reports/CargoDailySalesReport';
 import { IDisbursement } from '@ayahay/models';
 import { getDisbursements } from '@/services/disbursement.service';
+import { getAxiosError } from '@ayahay/services/error.service';
+import styles from './page.module.scss';
 
 const { Title } = Typography;
 
@@ -39,6 +41,7 @@ export default function TripReportingPage({ params }: any) {
     IDisbursement[] | undefined
   >(undefined);
   const [expenses, setExpenses] = useState();
+  const [errorCode, setErrorCode] = useState<number | undefined>();
 
   useEffect(() => {
     if (loggedInAccount === null) {
@@ -50,7 +53,16 @@ export default function TripReportingPage({ params }: any) {
   }, [loggedInAccount]);
 
   const fetchTripsReporting = async (tripId: number): Promise<void> => {
-    setTripsReporting(await getTripsReporting(tripId));
+    try {
+      setTripsReporting(await getTripsReporting(tripId));
+    } catch (e) {
+      const axiosError = getAxiosError(e);
+      if (axiosError === undefined) {
+        setErrorCode(500);
+      } else {
+        setErrorCode(axiosError.statusCode);
+      }
+    }
   };
 
   const fetchDisbursements = async (tripId: number) => {
@@ -105,102 +117,141 @@ export default function TripReportingPage({ params }: any) {
   };
 
   return (
-    <div style={{ padding: '32px' }}>
-      <Title level={1} style={{ fontSize: 25 }}>
-        Passenger Daily Sales Report
-      </Title>
-      <Button
-        type='primary'
-        htmlType='submit'
-        loading={tripsReporting === undefined}
-        onClick={handleDownloadDailySales}
-      >
-        <DownloadOutlined /> Download
-      </Button>
-      <div style={{ display: 'none' }}>
-        {tripsReporting && (
-          <PassengerDailySalesReport
-            data={tripsReporting}
-            ref={dailySalesReportRef}
-          />
-        )}
-      </div>
-      <Title level={1} style={{ fontSize: 25 }}>
-        Cargo Daily Sales Report
-      </Title>
-      <Button
-        type='primary'
-        htmlType='submit'
-        loading={tripsReporting === undefined}
-        onClick={handleDownloadCargoDailySales}
-      >
-        <DownloadOutlined /> Download
-      </Button>
-      <div style={{ display: 'none' }}>
-        {tripsReporting && (
-          <CargoDailySalesReport
-            data={tripsReporting}
-            ref={cargoDailySalesReportRef}
-          />
-        )}
-      </div>
-      <Title level={1} style={{ fontSize: 25 }}>
-        Summary Sales Per Voyage
-      </Title>
-      <div>
-        Status:&nbsp;
-        <Select
-          options={Object.keys(STATUS).map((enumKey) => ({
-            value: enumKey,
-            label: STATUS[enumKey as keyof typeof STATUS],
-          }))}
-          onChange={handleStatusChange}
-          defaultValue={STATUS.ON_TIME}
-          style={{ minWidth: '20%' }}
-        />
-      </div>
-      <Button
-        type='primary'
-        htmlType='submit'
-        loading={tripsReporting === undefined || disbursements === undefined}
-        onClick={handleDownloadSummarySalesPerVoyage}
-      >
-        <DownloadOutlined /> Download
-      </Button>
-      <div style={{ display: 'none' }}>
-        {tripsReporting && disbursements && (
-          <SummarySalesPerVoyage
-            data={tripsReporting}
-            status={status}
-            disbursements={disbursements}
-            ref={summarySalesPerVoyageRef}
-          />
-        )}
-      </div>
-      <Title level={1} style={{ fontSize: 25 }}>
-        Profit and Loss Statement
-      </Title>
-      <Button
-        type='primary'
-        htmlType='submit'
-        loading={
-          tripsReporting === undefined ||
-          (disbursements === undefined && expenses === undefined)
-        }
-        onClick={handleDownloadProfitAndLossStatement}
-      >
-        <DownloadOutlined /> Download
-      </Button>
-      <div style={{ display: 'none' }}>
-        {tripsReporting && disbursements && expenses && (
-          <ProfitAndLossStatement
-            data={tripsReporting}
-            disbursements={disbursements}
-            expenses={expenses}
-            ref={profitAndLossStatementRef}
-          />
-        )}
-      </div>
+    <div className={styles['main-container']}>
+      {errorCode === undefined && (
+        <>
+          <Title level={1} className={styles['title']}>
+            Passenger Daily Sales Report
+          </Title>
+          <Button
+            type='primary'
+            htmlType='submit'
+            loading={tripsReporting === undefined}
+            onClick={handleDownloadDailySales}
+            className={styles['download-btn']}
+          >
+            <DownloadOutlined /> Download
+          </Button>
+          <div style={{ display: 'none' }}>
+            {tripsReporting && (
+              <PassengerDailySalesReport
+                data={tripsReporting}
+                ref={dailySalesReportRef}
+              />
+            )}
+          </div>
+          <Title level={1} className={styles['title']}>
+            Cargo Daily Sales Report
+          </Title>
+          <Button
+            type='primary'
+            htmlType='submit'
+            loading={tripsReporting === undefined}
+            onClick={handleDownloadCargoDailySales}
+            className={styles['download-btn']}
+          >
+            <DownloadOutlined /> Download
+          </Button>
+          <div style={{ display: 'none' }}>
+            {tripsReporting && (
+              <CargoDailySalesReport
+                data={tripsReporting}
+                ref={cargoDailySalesReportRef}
+              />
+            )}
+          </div>
+          <Title level={1} className={styles['title']}>
+            Summary Sales Per Voyage
+          </Title>
+          <div>
+            Status:&nbsp;
+            <Select
+              options={Object.keys(STATUS).map((enumKey) => ({
+                value: enumKey,
+                label: STATUS[enumKey as keyof typeof STATUS],
+              }))}
+              onChange={handleStatusChange}
+              defaultValue={STATUS.ON_TIME}
+              style={{ minWidth: '20%' }}
+            />
+          </div>
+          <Button
+            type='primary'
+            htmlType='submit'
+            loading={
+              tripsReporting === undefined || disbursements === undefined
+            }
+            onClick={handleDownloadSummarySalesPerVoyage}
+            className={styles['download-btn']}
+          >
+            <DownloadOutlined /> Download
+          </Button>
+          <div style={{ display: 'none' }}>
+            {tripsReporting && disbursements && (
+              <SummarySalesPerVoyage
+                data={tripsReporting}
+                status={status}
+                disbursements={disbursements}
+                ref={summarySalesPerVoyageRef}
+              />
+            )}
+          </div>
+          <Title level={1} className={styles['title']}>
+            Profit and Loss Statement
+          </Title>
+          <Button
+            type='primary'
+            htmlType='submit'
+            loading={
+              tripsReporting === undefined ||
+              (disbursements === undefined && expenses === undefined)
+            }
+            onClick={handleDownloadProfitAndLossStatement}
+            className={styles['download-btn']}
+          >
+            <DownloadOutlined /> Download
+          </Button>
+          <div style={{ display: 'none' }}>
+            {tripsReporting && disbursements && expenses && (
+              <ProfitAndLossStatement
+                data={tripsReporting}
+                disbursements={disbursements}
+                expenses={expenses}
+                ref={profitAndLossStatementRef}
+              />
+            )}
+          </div>
+        </>
+      )}
+      {errorCode === 404 && (
+        <p className={styles['error-text']}>
+          The trip does not exist. Try again after a few minutes or&nbsp;
+          <Button
+            type='link'
+            href={`mailto:it@ayahay.com?subject=Trip Not Found`}
+            className={styles['no-padding']}
+          >
+            contact us for assistance
+          </Button>
+          .
+        </p>
+      )}
+      {errorCode === 403 && (
+        <p className={styles['error-text']}>
+          You are not authorized to view this page.&nbsp;
+          <Button
+            type='link'
+            href={`mailto:it@ayahay.com?subject=I cannot access vehicle bookings`}
+            className={styles['no-padding']}
+          >
+            Contact us for assistance
+          </Button>
+          &nbsp;if you think this is a mistake.
+        </p>
+      )}
+      {errorCode === 500 && (
+        <p className={styles['error-text']}>Something went wrong.</p>
+      )}
     </div>
   );
 }

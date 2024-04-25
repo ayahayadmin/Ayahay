@@ -78,6 +78,7 @@ export default function CollectBookingsPage() {
   };
 
   useEffect(() => {
+    setCheckAll(false);
     setCheckedList([]);
     fetchTrips(searchQuery);
   }, [searchQuery]);

@@ -95,7 +95,7 @@ export class BookingReservationService {
     let cabinIndex = availableCabins.findIndex(
       (tripCabin) => tripCabin.availablePassengerCapacity > 0
     );
-    const preferredCabinId = bookingTripPassenger.cabinId;
+    const preferredCabinId = bookingTripPassenger.preferredCabinId;
     if (preferredCabinId !== undefined) {
       const preferredCabinIndex = availableCabins.findIndex(
         (tripCabin) =>

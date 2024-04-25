@@ -225,7 +225,7 @@ export default function BookingSummaryPage({ params }) {
           >
             Contact us for assistance
           </Button>
-          &nbsp; if you think this is a mistake.
+          &nbsp;if you think this is a mistake.
         </p>
       )}
       {errorCode === 500 && <p style={textCenter}>Something went wrong.</p>}

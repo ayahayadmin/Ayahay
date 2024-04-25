@@ -339,6 +339,21 @@ export default function PassengerInformationForm({
                     placeholder='Filipino, Chinese, American, etc.'
                   />
                 </Form.Item>
+                <Form.Item
+                  {...restField}
+                  name={[name, 'preferredCabinId']}
+                  label='Accommodation'
+                  colon={false}
+                >
+                  <Radio.Group>
+                    <Radio value={undefined}>Any</Radio>
+                    {trip?.availableCabins?.map(({ cabin }) => (
+                      <Radio value={cabin?.id} key={cabin?.id}>
+                        {cabin?.cabinType?.name}
+                      </Radio>
+                    ))}
+                  </Radio.Group>
+                </Form.Item>
                 {hasPrivilegedAccess && (
                   <EnumRadio
                     _enum={DISCOUNT_TYPE}

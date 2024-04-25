@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Query,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
 import { IDisbursement } from '@ayahay/models';
 import { DisbursementService } from './disbursement.service';
 import { AuthGuard } from '@/guard/auth.guard';
@@ -12,8 +20,11 @@ export class DisbursementController {
   constructor(private disbursementService: DisbursementService) {}
 
   @Get()
-  async getDisbursements(@Query() data: any): Promise<IDisbursement[]> {
-    return this.disbursementService.getDisbursements(data);
+  async getDisbursements(
+    @Query() data: any,
+    @Request() req
+  ): Promise<IDisbursement[]> {
+    return this.disbursementService.getDisbursements(data, req.user);
   }
 
   @Post()

@@ -45,6 +45,7 @@ export class SearchController {
   )
   async getDashboardTrips(
     @Query() pagination: PaginatedRequest,
+    @Query('shippingLineId') shippingLineId: number,
     @Query('startDate') startDate: string,
     @Query('endDate') endDate: string,
     @Query('srcPortId') srcPortId?: number,
@@ -52,6 +53,7 @@ export class SearchController {
   ): Promise<PaginatedResponse<DashboardTrips>> {
     return this.searchService.getDashboardTrips(
       pagination,
+      shippingLineId,
       startDate,
       endDate,
       srcPortId,

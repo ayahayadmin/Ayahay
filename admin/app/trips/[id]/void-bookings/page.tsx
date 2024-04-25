@@ -3,7 +3,7 @@ import { useAuthGuard } from '@/hooks/auth';
 import { getTripDetails } from '@/services/trip.service';
 import styles from './page.module.scss';
 import { ColumnsType } from 'antd/es/table';
-import { Divider, Radio, Spin, Table, Typography } from 'antd';
+import { Button, Divider, Radio, Spin, Table, Typography } from 'antd';
 import { PaginatedRequest, VoidBookings } from '@ayahay/http';
 import { useServerPagination } from '@ayahay/hooks';
 import { useEffect, useState } from 'react';
@@ -14,7 +14,7 @@ import {
 import { ITrip } from '@ayahay/models';
 import { useAuth } from '@/contexts/AuthContext';
 import dayjs from 'dayjs';
-import { getLocaleTimeString } from '@ayahay/services/date.service';
+import { getAxiosError } from '@ayahay/services/error.service';
 
 const { Title } = Typography;
 
@@ -46,6 +46,7 @@ export default function VoidBookingsPage({ params }: any) {
   const [selectionType, setSelectionType] = useState<'passenger' | 'vehicle'>(
     'passenger'
   );
+  const [errorCode, setErrorCode] = useState<number | undefined>();
   const tripId = params.id;
 
   useEffect(() => {
@@ -56,7 +57,16 @@ export default function VoidBookingsPage({ params }: any) {
   }, [loggedInAccount]);
 
   const fetchTrip = async (tripId: number): Promise<void> => {
-    setTrip(await getTripDetails(Number(tripId)));
+    try {
+      setTrip(await getTripDetails(Number(tripId)));
+    } catch (e) {
+      const axiosError = getAxiosError(e);
+      if (axiosError === undefined) {
+        setErrorCode(500);
+      } else {
+        setErrorCode(axiosError.statusCode);
+      }
+    }
   };
 
   useEffect(() => resetData(), [selectionType]);
@@ -73,48 +83,80 @@ export default function VoidBookingsPage({ params }: any) {
 
   return (
     <div className={styles['main-container']}>
-      <Title level={1}>Void Bookings</Title>
-      <Spin
-        size='large'
-        spinning={trip === undefined}
-        className={styles['spinner']}
-      />
-      {trip && (
+      {errorCode === undefined && (
         <>
-          <div>
-            <strong>Trip:</strong>&nbsp;{trip.srcPort?.name}&nbsp;to&nbsp;
-            {trip.destPort?.name}
-          </div>
-          <div>
-            <strong>Departure Date:</strong>&nbsp;
-            {dayjs(trip.departureDateIso).format('MM/DD/YYYY')}&nbsp;at&nbsp;
-            {getLocaleTimeString(trip.departureDateIso)}
-          </div>
-          <div>
-            <strong>Voyage #:</strong>&nbsp;
-            {trip.voyage?.number}
-          </div>
+          <Title level={1}>Void Bookings</Title>
+          <Spin
+            size='large'
+            spinning={trip === undefined}
+            className={styles['spinner']}
+          />
+          {trip && (
+            <>
+              <div>
+                <strong>Trip:</strong>&nbsp;{trip.srcPort?.name}&nbsp;to&nbsp;
+                {trip.destPort?.name}
+              </div>
+              <div>
+                <strong>Departure Date:</strong>&nbsp;
+                {dayjs(trip.departureDateIso).format('MM/DD/YYYY h:mm A')}
+              </div>
+              <div>
+                <strong>Voyage #:</strong>&nbsp;
+                {trip.voyage?.number}
+              </div>
 
-          <Divider />
+              <Divider />
 
-          <Radio.Group
-            onChange={({ target: { value } }) => {
-              setSelectionType(value);
-            }}
-            value={selectionType}
-          >
-            <Radio value='passenger'>Passenger</Radio>
-            <Radio value='vehicle'>Vehicle</Radio>
-          </Radio.Group>
+              <Radio.Group
+                onChange={({ target: { value } }) => {
+                  setSelectionType(value);
+                }}
+                value={selectionType}
+              >
+                <Radio value='passenger'>Passenger</Radio>
+                <Radio value='vehicle'>Vehicle</Radio>
+              </Radio.Group>
 
-          <Table
-            columns={voidBookingColumns}
-            dataSource={dataInPage}
-            loading={dataInPage === undefined}
-            pagination={antdPagination}
-            onChange={antdOnChange}
-          ></Table>
+              <Table
+                columns={voidBookingColumns}
+                dataSource={dataInPage}
+                loading={dataInPage === undefined}
+                pagination={antdPagination}
+                onChange={antdOnChange}
+              ></Table>
+            </>
+          )}
         </>
+      )}
+      {errorCode === 404 && (
+        <p className={styles['error-text']}>
+          The trip does not exist. Try again after a few minutes or&nbsp;
+          <Button
+            type='link'
+            href={`mailto:it@ayahay.com?subject=Trip Not Found`}
+            className={styles['no-padding']}
+          >
+            contact us for assistance
+          </Button>
+          .
+        </p>
+      )}
+      {errorCode === 403 && (
+        <p className={styles['error-text']}>
+          You are not authorized to view this page.&nbsp;
+          <Button
+            type='link'
+            href={`mailto:it@ayahay.com?subject=I cannot access void bookings`}
+            className={styles['no-padding']}
+          >
+            Contact us for assistance
+          </Button>
+          &nbsp;if you think this is a mistake.
+        </p>
+      )}
+      {errorCode === 500 && (
+        <p className={styles['error-text']}>Something went wrong.</p>
       )}
     </div>
   );

@@ -204,9 +204,9 @@ export class ReportingMapper {
 
   convertPortsAndShipToDto(data): PortsByShip {
     return {
-      srcPortId: data.src_port_id,
-      destPortId: data.dest_port_id,
-      shipId: data.ship_id,
+      srcPortId: data.srcPortId,
+      destPortId: data.destPortId,
+      shipId: data.shipId,
     };
   }
 
