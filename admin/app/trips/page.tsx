@@ -149,18 +149,6 @@ export default function Schedules() {
           onSetTripAsCancelled={onSetTripAsCancelled}
         />
         {contextHolder}
-        {/* <BookingList /> */}
-        {/* <div className={styles.chart}>
-          <PieChart data={data} />
-        </div>
-        <div className={styles.chart}>
-          <BarChart data={data} />
-        </div>
-        <div className={styles.chart}>
-          <LineChart data={data} />
-        </div>
-        <CabinFilter name='cabinTypes' label='Cabin Types' />
-        <TripResults searchQuery={searchQuery} /> */}
       </div>
       <CancelledTripModal
         open={isModalOpen}

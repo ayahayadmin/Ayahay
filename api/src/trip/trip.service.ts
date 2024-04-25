@@ -28,7 +28,7 @@ import { UtilityService } from '@/utility.service';
 import { EmailService } from '@/email/email.service';
 import { BookingMapper } from '@/booking/booking.mapper';
 
-const TRIP_AVAILABLE_QUERY = Prisma.sql`
+const TRIP_AVAILABLE_QUERY_SELECT = Prisma.sql`
   SELECT 
     t.id, 
     MAX(t.departure_date) AS "departureDate",
@@ -52,6 +52,9 @@ const TRIP_AVAILABLE_QUERY = Prisma.sql`
     STRING_AGG(c.recommended_passenger_capacity::TEXT, '|') AS "pipeSeparatedRecommendedCabinCapacities",
     STRING_AGG(ct.name::TEXT, '|') AS "pipeSeparatedCabinTypeNames",
     STRING_AGG(ct.description::TEXT, '|') AS "pipeSeparatedCabinTypeDescriptions"
+`;
+
+const TRIP_AVAILABLE_QUERY_FROM = Prisma.sql`
   FROM ayahay.trip t
     INNER JOIN ayahay.trip_cabin tc ON t.id = tc.trip_id
     INNER JOIN ayahay.cabin c ON tc.cabin_id = c.id
@@ -96,16 +99,23 @@ export class TripService {
   }
 
   async getTrip(
-    tripWhereUniqueInput: Prisma.TripWhereUniqueInput, //{} is only temp, TripWhereUniqueInput is not part of referenceNo
+    loggedInAccount: IAccount,
+    tripWhereUniqueInput: Prisma.TripWhereUniqueInput,
     tripIncludeInput?: Prisma.TripInclude
   ): Promise<Trip> {
     const trip = await this.prisma.trip.findUnique({
       where: tripWhereUniqueInput,
       include: tripIncludeInput,
     });
+
     if (!trip) {
       throw new NotFoundException('Trip Not Found');
     }
+
+    this.utilityService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
+      trip,
+      loggedInAccount
+    );
 
     return trip;
   }
@@ -124,7 +134,8 @@ export class TripService {
     dateSelectedPlusAWeek.setDate(dateSelectedPlusAWeek.getDate() + 7);
 
     const trips = await this.prisma.$queryRaw<AvailableTrips[]>`
-      ${TRIP_AVAILABLE_QUERY}
+      ${TRIP_AVAILABLE_QUERY_SELECT}
+      ${TRIP_AVAILABLE_QUERY_FROM}
       WHERE t.available_vehicle_capacity >= ${Number(vehicleCount)}
         AND t.departure_date > ${departureDate}::TIMESTAMP
         AND t.departure_date <= ${dateSelectedPlusAWeek.toISOString()}::DATE + 1 - interval '1 sec'
@@ -182,33 +193,55 @@ export class TripService {
     return trips.map((trip) => this.tripMapper.convertTripToDto(trip));
   }
 
-  async getAvailableTripsByDateRange({
-    startDate,
-    endDate,
-  }: TripSearchByDateRange): Promise<ITrip[]> {
-    const trips = await this.prisma.$queryRaw<AvailableTrips[]>`
-      ${TRIP_AVAILABLE_QUERY}
-      WHERE t.departure_date > ${startDate}::TIMESTAMP
+  async getAvailableTripsByDateRange(
+    pagination: PaginatedRequest,
+    shippingLineId: number,
+    { startDate, endDate }: TripSearchByDateRange
+  ): Promise<PaginatedResponse<ITrip>> {
+    const itemsPerPage = 10;
+    const skip = (pagination.page - 1) * itemsPerPage;
+    const where = Prisma.sql`
+      WHERE t.shipping_line_id = ${Number(shippingLineId)}
+      AND t.departure_date > ${startDate}::TIMESTAMP
       AND t.departure_date <= ${endDate}::TIMESTAMP
- 	    GROUP BY t.id
-      ORDER BY t.departure_date ASC
     `;
 
-    return trips.map((trip) =>
-      this.tripMapper.convertAvailableTripsToDto(trip)
-    );
+    const trips = await this.prisma.$queryRaw<AvailableTrips[]>`
+      ${TRIP_AVAILABLE_QUERY_SELECT}
+      ${TRIP_AVAILABLE_QUERY_FROM}
+      ${where}
+ 	    GROUP BY t.id
+      ORDER BY t.departure_date ASC
+      OFFSET ${skip}
+      LIMIT ${itemsPerPage};
+    `;
+
+    const tripsCount = await this.prisma.$queryRaw<number>`
+      SELECT 
+        COUNT(t.id)::integer
+      ${TRIP_AVAILABLE_QUERY_FROM}
+      ${where}
+    `;
+
+    return {
+      total: tripsCount[0].count,
+      data: trips.map((trip) =>
+        this.tripMapper.convertAvailableTripsToDto(trip)
+      ),
+    };
   }
 
-  async getTripsByDateRange({
-    startDate,
-    endDate,
-  }: TripSearchByDateRange): Promise<TripVoyage[]> {
+  async getTripsByDateRange(
+    { startDate, endDate }: TripSearchByDateRange,
+    loggedInAccount: IAccount
+  ): Promise<TripVoyage[]> {
     const trips = await this.prisma.trip.findMany({
       where: {
         departureDate: {
           gte: new Date(startDate).toISOString(),
           lte: new Date(endDate).toISOString(),
         },
+        shippingLineId: loggedInAccount.shippingLineId,
       },
       select: {
         id: true,
@@ -234,12 +267,20 @@ export class TripService {
 
   async getCancelledTrips(
     pagination: PaginatedRequest,
-    { startDate, endDate }: TripSearchByDateRange
+    shippingLineId: number,
+    { startDate, endDate }: TripSearchByDateRange,
+    loggedInAccount: IAccount
   ): Promise<PaginatedResponse<CancelledTrips>> {
+    this.utilityService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
+      { shippingLineId },
+      loggedInAccount
+    );
+
     const itemsPerPage = 10;
     const skip = (pagination.page - 1) * itemsPerPage;
 
     const where: Prisma.TripWhereInput = {
+      shippingLineId,
       departureDate: {
         gte: new Date(startDate).toISOString(),
         lte: new Date(endDate).toISOString(),
@@ -286,7 +327,8 @@ export class TripService {
 
   async getBookingsOfTrip(
     pagination: PaginatedRequest,
-    tripId: number
+    tripId: number,
+    loggedInAccount: IAccount
   ): Promise<PaginatedResponse<VehicleBookings>> {
     const itemsPerPage = 10;
     const skip = (pagination.page - 1) * itemsPerPage;
@@ -294,9 +336,17 @@ export class TripService {
     const bookingIds = await this.prisma.bookingTripVehicle.findMany({
       where: {
         tripId,
+        trip: {
+          shippingLineId: loggedInAccount.shippingLineId,
+        },
       },
       select: {
         bookingId: true,
+        trip: {
+          select: {
+            shippingLineId: true,
+          },
+        },
       },
     });
 

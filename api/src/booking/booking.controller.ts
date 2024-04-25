@@ -40,18 +40,20 @@ export class BookingController {
   @UseGuards(AuthGuard)
   @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
   async getBookingPassengersToDownload(
-    @Query() dates: TripSearchByDateRange
+    @Query() dates: TripSearchByDateRange,
+    @Request() req
   ): Promise<IBooking[]> {
-    return this.bookingService.getBookingPassengersToDownload(dates);
+    return this.bookingService.getBookingPassengersToDownload(dates, req.user);
   }
 
   @Get('vehicle/download')
   @UseGuards(AuthGuard)
   @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
   async getBookingVehiclesToDownload(
-    @Query() dates: TripSearchByDateRange
+    @Query() dates: TripSearchByDateRange,
+    @Request() req
   ): Promise<IBooking[]> {
-    return this.bookingService.getBookingVehiclesToDownload(dates);
+    return this.bookingService.getBookingVehiclesToDownload(dates, req.user);
   }
 
   @Get('public')
@@ -112,9 +114,14 @@ export class BookingController {
   @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
   async searchPassengerBookings(
     @Query('q') searchQuery,
-    @Query() pagination: PaginatedRequest
+    @Query() pagination: PaginatedRequest,
+    @Request() req
   ): Promise<PaginatedResponse<PassengerBookingSearchResponse>> {
-    return this.bookingService.searchPassengerBookings(searchQuery, pagination);
+    return this.bookingService.searchPassengerBookings(
+      searchQuery,
+      pagination,
+      req.user
+    );
   }
 
   @Get(':bookingId/trips/:tripId/passengers/:passengerId')

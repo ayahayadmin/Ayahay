@@ -26,8 +26,10 @@ export class ShipController {
   }
 
   @Get('/my-shipping-line')
+  @UseGuards(AuthGuard)
+  @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
   async getShipsOfMyShippingLine(@Request() req): Promise<IShip[]> {
-    return this.shipService.getShipsOfShippingLine(req.user);
+    return this.shipService.getShipsOfMyShippingLine(req.user);
   }
 
   @Post(':shipId/voyages')

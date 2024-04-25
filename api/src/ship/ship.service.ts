@@ -114,7 +114,7 @@ export class ShipService {
     });
   }
 
-  private async verifyLoggedInUserShippingLineOwnsShip(
+  async verifyLoggedInUserShippingLineOwnsShip(
     shipId: number,
     loggedInAccount: IAccount,
     transactionContext: PrismaClient

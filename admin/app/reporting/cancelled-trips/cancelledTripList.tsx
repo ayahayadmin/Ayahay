@@ -13,6 +13,7 @@ import dayjs from 'dayjs';
 import { useEffect } from 'react';
 
 interface CanccelledTripListProps {
+  shippingLineId: number | undefined;
   searchQuery: TripSearchByDateRange | undefined;
   loggedInAccount: IAccount | null | undefined;
 }
@@ -83,13 +84,14 @@ const columns: ColumnsType<CancelledTrips> = [
 ];
 
 export default function CancelledTripList({
+  shippingLineId,
   searchQuery,
   loggedInAccount,
 }: CanccelledTripListProps) {
   useEffect(() => resetData(), [searchQuery]);
 
   const fetchCancelledTrips = async (pagination: PaginatedRequest) => {
-    return getCancelledTrips(searchQuery, pagination);
+    return getCancelledTrips(shippingLineId, searchQuery, pagination);
   };
 
   const {

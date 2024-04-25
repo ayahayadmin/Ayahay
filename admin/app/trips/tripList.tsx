@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { ITrip } from '@ayahay/models/trip.model';
-import { Button, Dropdown, Skeleton, Space } from 'antd';
+import { Button, Dropdown, Space } from 'antd';
 import { IShippingLine } from '@ayahay/models/shipping-line.model';
 import dayjs from 'dayjs';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
@@ -8,9 +8,11 @@ import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import { getAvailableTripsByDateRange } from '@/services/trip.service';
 import Table, { ColumnsType } from 'antd/es/table';
 import { getLocaleTimeString } from '@ayahay/services/date.service';
-import { TripSearchByDateRange } from '@ayahay/http';
+import { PaginatedRequest, TripSearchByDateRange } from '@ayahay/http';
 import EditCapacity from '@/components/form/EditCapacity';
 import { ArrowRightOutlined, DownOutlined } from '@ant-design/icons';
+import { useServerPagination } from '@ayahay/hooks';
+import { useAuth } from '@/contexts/AuthContext';
 
 dayjs.extend(isSameOrBefore);
 dayjs.extend(isSameOrAfter);
@@ -92,12 +94,11 @@ export default function TripList({
   onSetTripAsArrived,
   onSetTripAsCancelled,
 }: TripListProps) {
-  const [tripsData, setTripsData] = useState([] as ITrip[]);
-  const [loading, setLoading] = useState(false);
+  const { loggedInAccount } = useAuth();
 
   const onClickSetTripAsArrived = async (tripId: number) => {
     await onSetTripAsArrived(tripId);
-    fetchTrips();
+    resetData();
   };
 
   const onClickSetTripAsCancelled = async (tripId: number) => {
@@ -208,7 +209,7 @@ export default function TripList({
     {
       title: 'Capacities',
       key: 'editCapacities',
-      render: (text: string, record: ITrip) => (
+      render: (_: string, record: ITrip) => (
         <div>
           <EditCapacity
             tripId={record.id}
@@ -220,36 +221,37 @@ export default function TripList({
     },
   ];
 
-  useEffect(() => {
-    fetchTrips();
-  }, [searchQuery]);
+  useEffect(() => resetData(), [searchQuery]);
 
-  const fetchTrips = async () => {
-    setLoading(true);
-    const trips = await getAvailableTripsByDateRange(searchQuery);
-    setTripsData(trips);
-    setLoading(false);
+  const fetchAvailableTripsByDateRange = async (
+    pagination: PaginatedRequest
+  ) => {
+    return getAvailableTripsByDateRange(
+      loggedInAccount?.shippingLineId,
+      searchQuery,
+      pagination
+    );
   };
 
+  const {
+    dataInPage: availableTrips,
+    antdPagination,
+    antdOnChange,
+    resetData,
+  } = useServerPagination<ITrip>(
+    fetchAvailableTripsByDateRange,
+    loggedInAccount !== null && loggedInAccount !== undefined
+  );
+
   return (
-    <Skeleton
-      loading={loading}
-      active
-      title={false}
-      paragraph={{
-        rows: 5,
-        width: ['98%', '98%', '98%', '98%', '98%'],
-      }}
-    >
-      {tripsData && (
-        <Table
-          columns={
-            hasAdminPrivileges ? [...columns, ...adminOnlyColumns] : columns
-          }
-          dataSource={tripsData}
-          pagination={false}
-        ></Table>
-      )}
-    </Skeleton>
+    <Table
+      dataSource={availableTrips}
+      columns={hasAdminPrivileges ? [...columns, ...adminOnlyColumns] : columns}
+      pagination={antdPagination}
+      onChange={antdOnChange}
+      loading={availableTrips === undefined}
+      tableLayout='fixed'
+      rowKey={(trip) => trip.id}
+    />
   );
 }

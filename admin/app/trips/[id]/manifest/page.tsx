@@ -4,10 +4,14 @@ import React, { useEffect, useRef, useState } from 'react';
 import { TripManifest as ITripManifest } from '@ayahay/http';
 import TripManifest from '@/components/reports/TripManifest';
 import { getTripManifest } from '@/services/reporting.service';
-import { FloatButton, Skeleton } from 'antd';
+import { Button, FloatButton, Skeleton } from 'antd';
 import { PrinterOutlined } from '@ant-design/icons';
 import { useAuthGuard } from '@/hooks/auth';
 import { useAuth } from '@/contexts/AuthContext';
+import { getAxiosError } from '@ayahay/services/error.service';
+
+const textCenter = { textAlign: 'center' };
+const noPadding = { padding: '0' };
 
 export default function TripManifestPage({ params }: any) {
   const { loggedInAccount } = useAuth();
@@ -15,6 +19,7 @@ export default function TripManifestPage({ params }: any) {
 
   const manifestRef = useRef();
   const [manifest, setManifest] = useState<ITripManifest | undefined>();
+  const [errorCode, setErrorCode] = useState<number | undefined>();
 
   useEffect(() => {
     if (loggedInAccount === null) {
@@ -25,22 +30,62 @@ export default function TripManifestPage({ params }: any) {
   }, [loggedInAccount]);
 
   const fetchManifest = async (tripId: number): Promise<void> => {
-    setManifest(await getTripManifest(tripId));
+    try {
+      setManifest(await getTripManifest(tripId));
+    } catch (e) {
+      const axiosError = getAxiosError(e);
+      if (axiosError === undefined) {
+        setErrorCode(500);
+      } else {
+        setErrorCode(axiosError.statusCode);
+      }
+    }
   };
 
   return (
     <div style={{ padding: '32px' }} ref={manifestRef}>
-      <Skeleton loading={manifest === undefined}>
-        {manifest && <TripManifest manifest={manifest} />}
-      </Skeleton>
+      {errorCode === undefined && (
+        <>
+          <Skeleton loading={manifest === undefined}>
+            {manifest && <TripManifest manifest={manifest} />}
+          </Skeleton>
 
-      <FloatButton
-        className='hide-on-print'
-        type='primary'
-        onClick={() => window.print()}
-        tooltip='Print'
-        icon={<PrinterOutlined height={72} width={72} />}
-      ></FloatButton>
+          <FloatButton
+            className='hide-on-print'
+            type='primary'
+            onClick={() => window.print()}
+            tooltip='Print'
+            icon={<PrinterOutlined height={72} width={72} />}
+          ></FloatButton>
+        </>
+      )}
+      {errorCode === 404 && (
+        <p style={textCenter}>
+          The trip does not exist. Try again after a few minutes or&nbsp;
+          <Button
+            type='link'
+            href={`mailto:it@ayahay.com?subject=Trip Not Found`}
+            style={noPadding}
+          >
+            contact us for assistance
+          </Button>
+          .
+        </p>
+      )}
+      {errorCode === 403 && (
+        <p style={textCenter}>
+          You are not authorized to view this manifest.&nbsp;
+          <Button
+            type='link'
+            href={`mailto:it@ayahay.com?subject=I cannot access my manifest`}
+            style={noPadding}
+          >
+            Contact us for assistance
+          </Button>
+          &nbsp;if you think this is a mistake.
+        </p>
+      )}
+      {errorCode === 500 && <p style={textCenter}>Something went wrong.</p>}
     </div>
   );
 }

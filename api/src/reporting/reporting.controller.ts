@@ -6,6 +6,7 @@ import {
   ParseArrayPipe,
   Patch,
   Query,
+  Request,
   UseGuards,
 } from '@nestjs/common';
 import { ReportingService } from './reporting.service';
@@ -35,31 +36,41 @@ export class ReportingController {
   @Get('trips/:id/reporting')
   @UseGuards(AuthGuard)
   @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
-  async getTripsReporting(@Param('id') tripId: string): Promise<TripReport> {
-    return this.reportingService.getTripsReporting(Number(tripId));
+  async getTripsReporting(
+    @Param('id') tripId: string,
+    @Request() req
+  ): Promise<TripReport> {
+    return this.reportingService.getTripsReporting(Number(tripId), req.user);
   }
 
   @Get('ports')
   @UseGuards(AuthGuard)
   @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
   async getPortsByShip(
-    @Query() dates: TripSearchByDateRange
+    @Query() dates: TripSearchByDateRange,
+    @Request() req
   ): Promise<PortsByShip[]> {
-    return this.reportingService.getPortsByShip(dates);
+    return this.reportingService.getPortsByShip(dates, req.user);
   }
 
   @Get('trips/ships')
   @UseGuards(AuthGuard)
   @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
-  async getTripsByShip(@Query() data: PortsByShip): Promise<PerVesselReport[]> {
-    return this.reportingService.getTripsByShip(data);
+  async getTripsByShip(
+    @Query() data: PortsByShip,
+    @Request() req
+  ): Promise<PerVesselReport[]> {
+    return this.reportingService.getTripsByShip(data, req.user);
   }
 
   @Get('trips/:id/manifest')
   @UseGuards(AuthGuard)
   @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
-  async getManifest(@Param('id') tripId: string): Promise<TripManifest> {
-    return this.reportingService.getTripManifest(Number(tripId));
+  async getManifest(
+    @Param('id') tripId: string,
+    @Request() req
+  ): Promise<TripManifest> {
+    return this.reportingService.getTripManifest(Number(tripId), req.user);
   }
 
   @Get(':id/bol')
@@ -72,11 +83,13 @@ export class ReportingController {
   @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
   async getVoidBookingTripPassengers(
     @Query() pagination: PaginatedRequest,
-    @Param('tripId') tripId: string
+    @Param('tripId') tripId: string,
+    @Request() req
   ): Promise<PaginatedResponse<VoidBookings>> {
     return this.reportingService.getVoidBookingTripPassengers(
       pagination,
-      Number(tripId)
+      Number(tripId),
+      req.user
     );
   }
 
@@ -85,11 +98,13 @@ export class ReportingController {
   @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
   async getVoidBookingTripVehicles(
     @Query() pagination: PaginatedRequest,
-    @Param('tripId') tripId: string
+    @Param('tripId') tripId: string,
+    @Request() req
   ): Promise<PaginatedResponse<VoidBookings>> {
     return this.reportingService.getVoidBookingTripVehicles(
       pagination,
-      Number(tripId)
+      Number(tripId),
+      req.user
     );
   }
 
@@ -97,9 +112,10 @@ export class ReportingController {
   @UseGuards(AuthGuard)
   @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
   async getCollectTripBooking(
-    @Query('tripIds', new ParseArrayPipe({ items: Number })) tripIds: number[]
+    @Query('tripIds', new ParseArrayPipe({ items: Number })) tripIds: number[],
+    @Request() req
   ): Promise<CollectTripBooking[]> {
-    return this.reportingService.getCollectTripBooking(tripIds);
+    return this.reportingService.getCollectTripBooking(tripIds, req.user);
   }
 
   @Patch(':bookingId/bol/frr')

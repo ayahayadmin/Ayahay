@@ -75,6 +75,7 @@ export class SearchService {
 
   async getDashboardTrips(
     pagination: PaginatedRequest,
+    shippingLineId: number,
     startDate: string,
     endDate: string,
     srcPortId?: number,
@@ -94,7 +95,8 @@ export class SearchService {
           vehicle_capacity AS "vehicleCapacity"
         FROM ayahay.trip
         WHERE
-          departure_date > ${startDate}::TIMESTAMP
+          shipping_line_id = ${shippingLineId}
+          AND departure_date > ${startDate}::TIMESTAMP
           AND departure_date <= ${endDate}::TIMESTAMP
           ${
             !!srcPortId

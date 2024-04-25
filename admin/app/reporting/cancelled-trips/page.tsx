@@ -80,6 +80,7 @@ export default function CancelledTrips() {
 
       <div>
         <CancelledTripList
+          shippingLineId={loggedInAccount?.shippingLineId}
           searchQuery={searchQuery}
           loggedInAccount={loggedInAccount}
         />

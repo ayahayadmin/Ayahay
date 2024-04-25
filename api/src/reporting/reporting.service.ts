@@ -15,16 +15,24 @@ import {
 import { ReportingMapper } from './reporting.mapper';
 import { Prisma } from '@prisma/client';
 import { TripMapper } from '@/trip/trip.mapper';
+import { UtilityService } from '@/utility.service';
+import { IAccount } from '@ayahay/models';
+import { ShipService } from '@/ship/ship.service';
 
 @Injectable()
 export class ReportingService {
   constructor(
     private prisma: PrismaService,
+    private utilityService: UtilityService,
+    private shipService: ShipService,
     private readonly reportingMapper: ReportingMapper,
     private readonly tripMapper: TripMapper
   ) {}
 
-  async getTripsReporting(tripId: number): Promise<TripReport> {
+  async getTripsReporting(
+    tripId: number,
+    loggedInAccount: IAccount
+  ): Promise<TripReport> {
     const trip = await this.prisma.trip.findUnique({
       where: {
         id: tripId,
@@ -102,6 +110,15 @@ export class ReportingService {
         voyage: true,
       },
     });
+
+    if (trip === null) {
+      throw new NotFoundException();
+    }
+
+    this.utilityService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
+      trip,
+      loggedInAccount
+    );
 
     const { passengers, passengerDiscountsBreakdown } =
       this.buildPassengerDataForTripReporting(trip.bookingTripPassengers);
@@ -199,24 +216,40 @@ export class ReportingService {
     return { vehicles, vehicleTypesBreakdown };
   }
 
-  async getPortsByShip(dates: TripSearchByDateRange): Promise<PortsByShip[]> {
-    const { startDate, endDate } = dates;
-
-    const result = await this.prisma.$queryRaw<PortsByShip[]>`
-      SELECT DISTINCT src_port_id, dest_port_id, ship_id
-      FROM ayahay.trip
-      WHERE
-        departure_date > ${startDate}::TIMESTAMP
-        AND departure_date <= ${endDate}::TIMESTAMP
-    `;
+  async getPortsByShip(
+    { startDate, endDate }: TripSearchByDateRange,
+    loggedInAccount: IAccount
+  ): Promise<PortsByShip[]> {
+    const result = await this.prisma.trip.findMany({
+      where: {
+        departureDate: {
+          gte: new Date(startDate).toISOString(),
+          lte: new Date(endDate).toISOString(),
+        },
+        shippingLineId: loggedInAccount.shippingLineId,
+      },
+      select: {
+        srcPortId: true,
+        destPortId: true,
+        shipId: true,
+      },
+      distinct: ['srcPortId', 'destPortId', 'shipId'],
+    });
 
     return result.map((res) =>
       this.reportingMapper.convertPortsAndShipToDto(res)
     );
   }
 
-  async getTripsByShip(data: PortsByShip): Promise<PerVesselReport[]> {
-    const { shipId, srcPortId, destPortId, startDate, endDate } = data;
+  async getTripsByShip(
+    { shipId, srcPortId, destPortId, startDate, endDate }: PortsByShip,
+    loggedInAccount: IAccount
+  ): Promise<PerVesselReport[]> {
+    await this.shipService.verifyLoggedInUserShippingLineOwnsShip(
+      Number(shipId),
+      loggedInAccount,
+      this.prisma
+    );
 
     const trips = await this.prisma.trip.findMany({
       where: {
@@ -328,7 +361,10 @@ export class ReportingService {
     });
   }
 
-  async getTripManifest(tripId: number): Promise<TripManifest> {
+  async getTripManifest(
+    tripId: number,
+    loggedInAccount: IAccount
+  ): Promise<TripManifest> {
     const trip = await this.prisma.trip.findUnique({
       where: {
         id: tripId,
@@ -355,6 +391,11 @@ export class ReportingService {
     if (trip === null) {
       throw new NotFoundException();
     }
+
+    this.utilityService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
+      trip,
+      loggedInAccount
+    );
 
     return this.reportingMapper.convertTripToTripManifest(trip);
   }
@@ -404,7 +445,8 @@ export class ReportingService {
 
   async getVoidBookingTripPassengers(
     pagination: PaginatedRequest,
-    tripId: number
+    tripId: number,
+    loggedInAccount: IAccount
   ): Promise<PaginatedResponse<VoidBookings>> {
     const itemsPerPage = 10;
     const skip = (pagination.page - 1) * itemsPerPage;
@@ -414,12 +456,20 @@ export class ReportingService {
       NOT: {
         removedReasonType: null,
       },
+      trip: {
+        shippingLineId: loggedInAccount.shippingLineId,
+      },
     };
 
     const voidBookingTripPassengers =
       await this.prisma.bookingTripPassenger.findMany({
         where,
         select: {
+          trip: {
+            select: {
+              shippingLineId: true,
+            },
+          },
           removedReasonType: true,
           booking: {
             select: {
@@ -457,7 +507,8 @@ export class ReportingService {
 
   async getVoidBookingTripVehicles(
     pagination: PaginatedRequest,
-    tripId: number
+    tripId: number,
+    loggedInAccount: IAccount
   ): Promise<PaginatedResponse<VoidBookings>> {
     const itemsPerPage = 10;
     const skip = (pagination.page - 1) * itemsPerPage;
@@ -467,12 +518,20 @@ export class ReportingService {
       NOT: {
         removedReasonType: null,
       },
+      trip: {
+        shippingLineId: loggedInAccount.shippingLineId,
+      },
     };
 
     const voidBookingTripVehicles =
       await this.prisma.bookingTripVehicle.findMany({
         where,
         select: {
+          trip: {
+            select: {
+              shippingLineId: true,
+            },
+          },
           removedReasonType: true,
           booking: {
             select: {
@@ -509,7 +568,8 @@ export class ReportingService {
   }
 
   async getCollectTripBooking(
-    tripIds: number[]
+    tripIds: number[],
+    loggedInAccount: IAccount
   ): Promise<CollectTripBooking[]> {
     const bookingTrips = await this.prisma.bookingTrip.findMany({
       where: {
@@ -522,6 +582,9 @@ export class ReportingService {
             { cancellationType: 'PassengersFault' },
           ],
           voucherCode: 'AZNAR_COLLECT',
+        },
+        trip: {
+          shippingLineId: loggedInAccount.shippingLineId,
         },
       },
       select: {

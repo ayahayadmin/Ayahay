@@ -51,8 +51,14 @@ export class TripController {
   }
 
   @Get(':tripId')
-  async getTripById(@Param('tripId') tripId: string): Promise<ITrip> {
+  @UseGuards(AuthGuard)
+  @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
+  async getTripById(
+    @Param('tripId') tripId: string,
+    @Request() req
+  ): Promise<ITrip> {
     const trip = await this.tripService.getTrip(
+      req.user,
       { id: Number(tripId) },
       {
         srcPort: true,
@@ -66,17 +72,28 @@ export class TripController {
   }
 
   @Get('available-by-date-range')
+  @UseGuards(AuthGuard)
+  @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
   async getAvailableTripsByDateRange(
+    @Query() pagination: PaginatedRequest,
+    @Query('shippingLineId') shippingLineId: number,
     @Query() query: TripSearchByDateRange
-  ): Promise<ITrip[]> {
-    return await this.tripService.getAvailableTripsByDateRange(query);
+  ): Promise<PaginatedResponse<ITrip>> {
+    return await this.tripService.getAvailableTripsByDateRange(
+      pagination,
+      shippingLineId,
+      query
+    );
   }
 
   @Get('by-date-range')
+  @UseGuards(AuthGuard)
+  @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
   async getTripsByDateRange(
-    @Query() query: TripSearchByDateRange
+    @Query() query: TripSearchByDateRange,
+    @Request() req
   ): Promise<TripVoyage[]> {
-    return await this.tripService.getTripsByDateRange(query);
+    return await this.tripService.getTripsByDateRange(query, req.user);
   }
 
   @Get('cancelled-trips')
@@ -84,9 +101,16 @@ export class TripController {
   @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
   async getCancelledTrips(
     @Query() pagination: PaginatedRequest,
-    @Query() query: TripSearchByDateRange
+    @Query('shippingLineId') shippingLineId: number,
+    @Query() query: TripSearchByDateRange,
+    @Request() req
   ): Promise<PaginatedResponse<CancelledTrips>> {
-    return this.tripService.getCancelledTrips(pagination, query);
+    return this.tripService.getCancelledTrips(
+      pagination,
+      shippingLineId,
+      query,
+      req.user
+    );
   }
 
   @Get(':tripId/bookings')
@@ -94,9 +118,10 @@ export class TripController {
   @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
   async getBookingsOfTrip(
     @Query() pagination: PaginatedRequest,
-    @Param('tripId') tripId: number
+    @Param('tripId') tripId: number,
+    @Request() req
   ): Promise<PaginatedResponse<VehicleBookings>> {
-    return this.tripService.getBookingsOfTrip(pagination, tripId);
+    return this.tripService.getBookingsOfTrip(pagination, tripId, req.user);
   }
 
   @Post()

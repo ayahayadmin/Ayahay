@@ -158,14 +158,16 @@ export function getTime(date: string) {
 
 // Get Trip Information is for the Admin Dashboard
 export async function getDashboardTrips(
+  shippingLineId: number | undefined,
   searchQuery: DashboardSearchQuery | undefined,
   pagination: PaginatedRequest
 ): Promise<PaginatedResponse<DashboardTrips> | undefined> {
-  if (isEmpty(searchQuery)) {
+  if (isEmpty(searchQuery) || shippingLineId === undefined) {
     return;
   }
 
   const query = new URLSearchParams({
+    shippingLineId,
     ...searchQuery,
     ...pagination,
   } as any).toString();
