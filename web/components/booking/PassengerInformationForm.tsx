@@ -586,7 +586,7 @@ export default function PassengerInformationForm({
         )}
       </Form.List>
       <div style={{ marginTop: '24px' }}>
-        {hasPrivilegedAccess && (
+        {hasPrivilegedAccess && loggedInAccount?.shippingLineId === 1 && (
           <Form.Item name='voucherCode'>
             <Radio.Group>
               <Radio value='AZNAR_COLLECT'>Collect Voucher</Radio>
