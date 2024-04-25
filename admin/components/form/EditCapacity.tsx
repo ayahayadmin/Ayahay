@@ -21,15 +21,15 @@ export default function EditCapacity({
   const [api, contextHolder] = notification.useNotification();
 
   useEffect(() => {
+    const _cabinCount: CabinCount = {};
     cabins.forEach((cabin) => {
-      setCabinCount({
-        [cabin.cabinId]: {
-          label: cabin.cabin.cabinType!.name,
-          passengercapacity: Number(cabin.passengerCapacity),
-          availablePassengerCapacity: Number(cabin.passengerCapacity),
-        },
-      });
+      _cabinCount[cabin.cabinId] = {
+        label: cabin.cabin.cabinType!.name,
+        passengercapacity: Number(cabin.passengerCapacity),
+        availablePassengerCapacity: Number(cabin.passengerCapacity),
+      };
     });
+    setCabinCount(_cabinCount);
   }, []);
 
   const onDecrement = (key?: string) => {
