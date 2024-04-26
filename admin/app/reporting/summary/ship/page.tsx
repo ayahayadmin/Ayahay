@@ -1,22 +1,33 @@
 'use client';
 import { useAuthGuard } from '@/hooks/auth';
 import { Button, Typography } from 'antd';
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import styles from '../page.module.scss';
 import { DownloadOutlined } from '@ant-design/icons';
 import jsPDF from 'jspdf';
 import SummarySalesPerVessel from '@/components/reports/SummarySalesPerVessel';
 import { useShipReportingFromSearchParams } from '@/hooks/reporting';
 import { useSearchParams } from 'next/navigation';
+import { getShippingLine } from '@ayahay/services/shipping-line.service';
+import { IShippingLine } from '@ayahay/models';
 
 const { Title } = Typography;
 
 export default function ReportingPage() {
   useAuthGuard(['ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin']);
+  const [shippingLine, setShippingLine] = useState<IShippingLine>();
   const searchParams = useSearchParams();
   const params = Object.fromEntries(searchParams.entries());
   const { data } = useShipReportingFromSearchParams(params);
   const summarySalesPerVesselRef = useRef();
+
+  useEffect(() => {
+    fetchShippingLine();
+  }, []);
+
+  const fetchShippingLine = async () => {
+    setShippingLine(await getShippingLine(+params.shippingLineId));
+  };
 
   const handleDownloadSummarySalesPerVessel = async () => {
     const doc = new jsPDF('l', 'pt', 'a4', true);
@@ -42,9 +53,10 @@ export default function ReportingPage() {
         <DownloadOutlined /> Download
       </Button>
       <div style={{ display: 'none' }}>
-        {data && (
+        {data && shippingLine && (
           <SummarySalesPerVessel
             data={data}
+            shippingLine={shippingLine}
             startDate={params.startDate}
             endDate={params.endDate}
             reportType={params.reportType}

@@ -65,14 +65,14 @@ INSERT INTO ayahay.port
 INSERT INTO ayahay.shipping_line
     ("name")
     VALUES
-    ('Aznar Shipping')
+    ('E.B. Aznar Shipping Corporation')
 ;
 
 INSERT INTO ayahay.cabin_type
     ("name", "description", shipping_line_id)
     VALUES
-    ('Aircon', 'Aircon', (SELECT id FROM ayahay.shipping_line WHERE "name" = 'Aznar Shipping')),
-    ('Non-Aircon', 'Non-Aircon', (SELECT id FROM ayahay.shipping_line WHERE "name" = 'Aznar Shipping'))
+    ('Aircon', 'Aircon', (SELECT id FROM ayahay.shipping_line WHERE "name" = 'E.B. Aznar Shipping Corporation')),
+    ('Non-Aircon', 'Non-Aircon', (SELECT id FROM ayahay.shipping_line WHERE "name" = 'E.B. Aznar Shipping Corporation'))
 ;
 
 INSERT INTO ayahay.vehicle_type
@@ -139,8 +139,8 @@ INSERT INTO ayahay.vehicle_type
 INSERT INTO ayahay.ship
     ("name", shipping_line_id, recommended_vehicle_capacity)
     VALUES
-    ('Melrivic 2', (SELECT id FROM ayahay.shipping_line WHERE "name" = 'Aznar Shipping'), 5),
-    ('Melrivic 7', (SELECT id FROM ayahay.shipping_line WHERE "name" = 'Aznar Shipping'), 5)
+    ('Melrivic 2', (SELECT id FROM ayahay.shipping_line WHERE "name" = 'E.B. Aznar Shipping Corporation'), 5),
+    ('Melrivic 7', (SELECT id FROM ayahay.shipping_line WHERE "name" = 'E.B. Aznar Shipping Corporation'), 5)
 ;
 
 INSERT INTO ayahay.cabin
@@ -154,7 +154,7 @@ INSERT INTO ayahay.cabin
 -- INSERT INTO ayahay.seat_plan
 --     ("name", row_count, column_count, shipping_line_id)
 --     VALUES
---     ("Seat Plan", 5, 6, (SELECT id FROM ayahay.shipping_line WHERE "name" = 'Aznar Shipping'))
+--     ("Seat Plan", 5, 6, (SELECT id FROM ayahay.shipping_line WHERE "name" = 'E.B. Aznar Shipping Corporation'))
 -- ;
 --
 -- INSERT INTO ayahay.seat
@@ -196,7 +196,7 @@ INSERT INTO ayahay.shipping_line_schedule
         60,
         7,
         (SELECT id FROM ayahay.ship WHERE "name" = 'Melrivic 7'),
-        (SELECT id FROM ayahay.shipping_line WHERE "name" = 'Aznar Shipping'),
+        (SELECT id FROM ayahay.shipping_line WHERE "name" = 'E.B. Aznar Shipping Corporation'),
         (SELECT id FROM ayahay.port WHERE "name" = 'Bogo'),
         (SELECT id FROM ayahay.port WHERE "name" = 'Palompon')
     ),
@@ -207,7 +207,7 @@ INSERT INTO ayahay.shipping_line_schedule
         60,
         7,
         (SELECT id FROM ayahay.ship WHERE "name" = 'Melrivic 7'),
-        (SELECT id FROM ayahay.shipping_line WHERE "name" = 'Aznar Shipping'),
+        (SELECT id FROM ayahay.shipping_line WHERE "name" = 'E.B. Aznar Shipping Corporation'),
         (SELECT id FROM ayahay.port WHERE "name" = 'Bogo'),
         (SELECT id FROM ayahay.port WHERE "name" = 'Palompon')
     ),
@@ -218,7 +218,7 @@ INSERT INTO ayahay.shipping_line_schedule
         60,
         7,
         (SELECT id FROM ayahay.ship WHERE "name" = 'Melrivic 7'),
-        (SELECT id FROM ayahay.shipping_line WHERE "name" = 'Aznar Shipping'),
+        (SELECT id FROM ayahay.shipping_line WHERE "name" = 'E.B. Aznar Shipping Corporation'),
         (SELECT id FROM ayahay.port WHERE "name" = 'Palompon'),
         (SELECT id FROM ayahay.port WHERE "name" = 'Bogo')
     ),
@@ -229,7 +229,7 @@ INSERT INTO ayahay.shipping_line_schedule
         60,
         7,
         (SELECT id FROM ayahay.ship WHERE "name" = 'Melrivic 7'),
-        (SELECT id FROM ayahay.shipping_line WHERE "name" = 'Aznar Shipping'),
+        (SELECT id FROM ayahay.shipping_line WHERE "name" = 'E.B. Aznar Shipping Corporation'),
         (SELECT id FROM ayahay.port WHERE "name" = 'Palompon'),
         (SELECT id FROM ayahay.port WHERE "name" = 'Bogo')
     )

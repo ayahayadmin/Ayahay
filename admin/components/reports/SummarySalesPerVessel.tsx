@@ -12,9 +12,11 @@ import {
 } from './PassengerDailySalesReport';
 import { first, sum } from 'lodash';
 import { roundToTwoDecimalPlacesAndAddCommas } from '@/services/reporting.service';
+import { IShippingLine } from '@ayahay/models';
 
 interface SummarySalesPerVoyageProps {
   data: IPerVesselReport[];
+  shippingLine: IShippingLine;
   startDate: string;
   endDate: string;
   reportType?: string;
@@ -34,7 +36,13 @@ export interface MOPBreakdown {
 }
 
 const SummarySalesPerVessel = forwardRef(function (
-  { data, startDate, endDate, reportType }: SummarySalesPerVoyageProps,
+  {
+    data,
+    shippingLine,
+    startDate,
+    endDate,
+    reportType,
+  }: SummarySalesPerVoyageProps,
   ref
 ) {
   const { loggedInAccount } = useAuth();
@@ -64,7 +72,7 @@ const SummarySalesPerVessel = forwardRef(function (
     <div ref={ref}>
       <div style={{ fontSize: 9, width: 842 }}>
         <div className={styles['center-div']}>
-          <img src='/assets/ayahay-logo.png' alt={`Logo`} height={25} />
+          <img src='/assets/ayahay-logo.png' height={25} />
           <span
             style={{
               fontSize: 10,
@@ -82,8 +90,11 @@ const SummarySalesPerVessel = forwardRef(function (
               alignItems: 'center',
             }}
           >
-            <img src='/assets/aznar-logo.png' alt={`Logo`} height={50} />
-            <span style={{ fontWeight: 'bold' }}>EB AZNAR SHIPPING</span>
+            <img
+              src={`/assets/shipping-line-logos/${shippingLine.name}.png`}
+              height={50}
+            />
+            <span style={{ fontWeight: 'bold' }}>{shippingLine.name}</span>
           </div>
           <span className={styles['center-div']} style={{ fontWeight: 'bold' }}>
             {reportType === undefined

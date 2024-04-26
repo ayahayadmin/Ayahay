@@ -41,6 +41,7 @@ export class ReportingService {
         srcPort: true,
         destPort: true,
         ship: true,
+        shippingLine: true,
         bookingTripPassengers: {
           where: {
             OR: [
@@ -232,6 +233,7 @@ export class ReportingService {
         srcPortId: true,
         destPortId: true,
         shipId: true,
+        shippingLine: true,
       },
       distinct: ['srcPortId', 'destPortId', 'shipId'],
     });

@@ -86,7 +86,7 @@ const SummarySalesPerVoyage = forwardRef(function (
     <div ref={ref}>
       <div style={{ fontSize: 9, width: 842 }}>
         <div className={styles['center-div']}>
-          <img src='/assets/ayahay-logo.png' alt={`Logo`} height={25} />
+          <img src='/assets/ayahay-logo.png' height={25} />
           <span
             style={{
               fontSize: 10,
@@ -104,8 +104,11 @@ const SummarySalesPerVoyage = forwardRef(function (
               alignItems: 'center',
             }}
           >
-            <img src='/assets/aznar-logo.png' alt={`Logo`} height={50} />
-            <span style={{ fontWeight: 'bold' }}>EB AZNAR SHIPPING</span>
+            <img
+              src={`/assets/shipping-line-logos/${data.shippingLine.name}.png`}
+              height={50}
+            />
+            <span style={{ fontWeight: 'bold' }}>{data.shippingLine.name}</span>
           </div>
           <span className={styles['center-div']} style={{ fontWeight: 'bold' }}>
             SUMMARY SALES PER VOYAGE REPORT
