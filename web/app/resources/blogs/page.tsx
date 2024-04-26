@@ -8,7 +8,7 @@ export default function Blogs() {
   return (
     <div className={styles['main-container']}>
       <Title level={1} style={{ fontSize: 30, marginBottom: 5 }}>
-        Talks about how we closed the deal with Aznar
+        Talks about how we closed the deal with E.B. Aznar Shipping Corporation
       </Title>
       <img
         className={styles['image']}

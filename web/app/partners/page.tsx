@@ -19,7 +19,7 @@ export default function Partners() {
             <img
               className={styles['image']}
               alt='aznar'
-              src='/assets/aznar-logo.png'
+              src='/assets/shipping-line-logos/E.B. Aznar Shipping Corporation.png'
             />
           </a>
           <a href='#' target='_blank'>

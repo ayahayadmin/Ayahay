@@ -9,12 +9,18 @@ import { PortsByShip, TripSearchByDateRange } from '@ayahay/http';
 import { isEmpty } from 'lodash';
 import { ArrowRightOutlined } from '@ant-design/icons';
 import { useAuth } from '@/contexts/AuthContext';
+import { IShippingLine } from '@ayahay/models';
 
 const columns: ColumnsType<PortsByShip> = [
   {
     key: 'logo',
-    render: (_) => (
-      <img src='/assets/aznar-logo.png' alt={`Logo`} height={80} />
+    dataIndex: 'shippingLine',
+    render: (shippingLine: IShippingLine) => (
+      <img
+        src={`/assets/shipping-line-logos/${shippingLine.name}.png`}
+        alt='Logo'
+        height={80}
+      />
     ),
     align: 'center',
   },
@@ -42,7 +48,7 @@ const columns: ColumnsType<PortsByShip> = [
       return (
         <Button
           type='primary'
-          href={`/reporting/summary/ship?shipId=${record.shipId}&srcPortId=${record.srcPortId}&destPortId=${record.destPortId}&startDate=${record.startDate}&endDate=${record.endDate}`}
+          href={`/reporting/summary/ship?shipId=${record.shipId}&shippingLineId=${record.shippingLine.id}&srcPortId=${record.srcPortId}&destPortId=${record.destPortId}&startDate=${record.startDate}&endDate=${record.endDate}`}
           target='_blank'
         >
           Generate
@@ -57,7 +63,7 @@ const columns: ColumnsType<PortsByShip> = [
       return (
         <Button
           type='primary'
-          href={`/reporting/summary/ship?shipId=${record.shipId}&startDate=${record.startDate}&endDate=${record.endDate}&reportType=all`}
+          href={`/reporting/summary/ship?shipId=${record.shipId}&shippingLineId=${record.shippingLine.id}&startDate=${record.startDate}&endDate=${record.endDate}&reportType=all`}
           target='_blank'
         >
           Generate

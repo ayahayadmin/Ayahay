@@ -28,12 +28,16 @@ import jsPDF from 'jspdf';
 import { getCollectTripBooking } from '@/services/reporting.service';
 import { getTripsByDateRange } from '@/services/trip.service';
 import CollectTripBookings from '@/components/reports/CollectTripBookings';
+import { useAuth } from '@/contexts/AuthContext';
+import { IShippingLine } from '@ayahay/models';
+import { getShippingLine } from '@ayahay/services/shipping-line.service';
 
 const { RangePicker } = DatePicker;
 const { Title } = Typography;
 
 export default function CollectBookingsPage() {
   useAuthGuard(['ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin']);
+  const { loggedInAccount } = useAuth();
   const [form] = Form.useForm();
   const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(
@@ -47,6 +51,7 @@ export default function CollectBookingsPage() {
   const [checkAll, setCheckAll] = useState(false);
   const [buildReportClicked, setBuildReportClicked] = useState(false);
   const [isFetchingData, setIsFetchingData] = useState(false);
+  const [shippingLine, setShippingLine] = useState<IShippingLine>();
   const collectBookingsRef = useRef();
 
   const onPageLoad = () => {
@@ -56,6 +61,17 @@ export default function CollectBookingsPage() {
   };
 
   useEffect(onPageLoad, []);
+
+  useEffect(() => {
+    if (loggedInAccount === null) {
+      return;
+    }
+    fetchShippingLine(loggedInAccount);
+  }, [loggedInAccount]);
+
+  const fetchShippingLine = async (loggedInAccount: any) => {
+    setShippingLine(await getShippingLine(loggedInAccount.shippingLineId));
+  };
 
   const debounceSearch = useCallback(debounce(performSearch, 300), []);
 
@@ -192,7 +208,13 @@ export default function CollectBookingsPage() {
       </Form>
 
       <div style={{ display: 'none' }}>
-        {data && <CollectTripBookings data={data} ref={collectBookingsRef} />}
+        {data && shippingLine && (
+          <CollectTripBookings
+            data={data}
+            shippingLine={shippingLine}
+            ref={collectBookingsRef}
+          />
+        )}
       </div>
     </div>
   );

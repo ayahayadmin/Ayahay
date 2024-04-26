@@ -7,14 +7,21 @@ import {
   TripManifest,
   VoidBookings,
 } from '@ayahay/http';
+import { ShippingLineMapper } from '@/shipping-line/shipping-line.mapper';
 
 @Injectable()
 export class ReportingMapper {
-  constructor(private readonly portMapper: PortMapper) {}
+  constructor(
+    private readonly portMapper: PortMapper,
+    private readonly shippingLineMapper: ShippingLineMapper
+  ) {}
 
   convertTripsForReporting(trip) {
     return {
       id: trip.id,
+      shippingLine: this.shippingLineMapper.convertShippingLineToDto(
+        trip.shippingLine
+      ),
       srcPort: this.portMapper.convertPortToDto(trip.srcPort),
       destPort: this.portMapper.convertPortToDto(trip.destPort),
       shipName: trip.ship.name,
@@ -207,6 +214,9 @@ export class ReportingMapper {
       srcPortId: data.srcPortId,
       destPortId: data.destPortId,
       shipId: data.shipId,
+      shippingLine: this.shippingLineMapper.convertShippingLineToDto(
+        data.shippingLine
+      ),
     };
   }
 

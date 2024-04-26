@@ -23,10 +23,10 @@ const columns: ColumnsType<ITrip> = [
   {
     key: 'logo',
     dataIndex: 'shippingLine',
-    render: (text: IShippingLine) => (
+    render: (shippingLine: IShippingLine) => (
       <img
-        src='/assets/aznar-logo.png'
-        alt={`${text.name} Logo`}
+        src={`/assets/shipping-line-logos/${shippingLine.name}.png`}
+        alt={`${shippingLine.name} Logo`}
         height={80}
         className={styles['logo']}
       />

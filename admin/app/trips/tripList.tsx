@@ -109,10 +109,10 @@ export default function TripList({
     {
       key: 'logo',
       dataIndex: 'shippingLine',
-      render: (text: IShippingLine) => (
+      render: (shippingLine: IShippingLine) => (
         <img
-          src='/assets/aznar-logo.png'
-          alt={`${text.name} Logo`}
+          src={`/assets/shipping-line-logos/${shippingLine.name}.png`}
+          alt='Logo'
           height={80}
         />
       ),

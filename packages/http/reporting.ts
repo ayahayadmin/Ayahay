@@ -1,7 +1,8 @@
-import { IPort, IShip } from '@ayahay/models';
+import { IPort, IShip, IShippingLine } from '@ayahay/models';
 
 export interface TripReport {
   id: number;
+  shippingLine: IShippingLine;
   srcPort: IPort;
   destPort: IPort;
   shipName: string;
@@ -107,6 +108,7 @@ export interface PortsByShip {
   destPort?: IPort;
   shipId: number;
   ship?: IShip;
+  shippingLine: IShippingLine;
   startDate?: string;
   endDate?: string;
 }

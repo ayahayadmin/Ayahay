@@ -156,7 +156,7 @@ export class BookingPricingService {
     originalPrice: number,
     shippingLine: IShippingLine
   ): number {
-    if (shippingLine.name === 'Aznar Shipping') {
+    if (shippingLine.name === 'E.B. Aznar Shipping Corporation') {
       const wholePrice = Math.floor(originalPrice);
       return wholePrice - (wholePrice % 5);
     } else if (shippingLine.name === 'Jomalia Shipping Corporation') {
