@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { NotificationService } from './notification.service';
 import { AllowUnauthenticated } from '@/decorator/authenticated.decorator';
-import { AuthGuard } from '@/guard/auth.guard';
+import { AuthGuard } from '@/auth/auth.guard';
 import { PaginatedRequest } from '@ayahay/http';
 import { INotification } from '@ayahay/models';
 import { Roles } from '@/decorator/roles.decorator';

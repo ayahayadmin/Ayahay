@@ -5,7 +5,7 @@ import {
 } from '@ayahay/models';
 import { PaginatedRequest, PaginatedResponse } from '@ayahay/http';
 import axios from '@ayahay/services/axios';
-import { BOOKING_API } from '@ayahay/constants/api';
+import { ACCOUNT_API, BOOKING_API } from '@ayahay/constants/api';
 import { getVehicleType } from '@ayahay/services/vehicle-type.service';
 import { cacheItem, fetchItem } from '@ayahay/services/cache.service';
 import { firebase } from '@/app/utils/initFirebase';
@@ -90,6 +90,7 @@ export async function getMyBookings(
   const query = new URLSearchParams(pagination as any).toString();
 
   try {
+    await axios.post(`${ACCOUNT_API}/api-key`);
     const { data: bookings } = await axios.get<PaginatedResponse<IBooking>>(
       `${BOOKING_API}/mine?${query}`
     );

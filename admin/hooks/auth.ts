@@ -27,7 +27,7 @@ export function useAuthState() {
   return { firebase, ...authState };
 }
 
-export function useAuthGuard(roles: string[]) {
+export function useAuthGuard(roles?: string[]) {
   const { loggedInAccount } = useAuth();
 
   useEffect(() => {
@@ -35,9 +35,9 @@ export function useAuthGuard(roles: string[]) {
       return;
     }
 
-    if (loggedInAccount === undefined) {
+    if (loggedInAccount === undefined || loggedInAccount.role === 'Passenger') {
       redirect('/');
-    } else if (loggedInAccount && !roles.includes(loggedInAccount.role)) {
+    } else if (roles && !roles.includes(loggedInAccount.role)) {
       redirect('/403');
     }
   }, [loggedInAccount]);

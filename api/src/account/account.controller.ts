@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { AccountService } from './account.service';
 import { IAccount, IPassenger } from '@ayahay/models';
-import { AuthGuard } from '@/guard/auth.guard';
+import { AuthGuard } from '@/auth/auth.guard';
 import { Prisma } from '@prisma/client';
 import { Roles } from '@/decorator/roles.decorator';
 import { AllowUnverified } from '@/decorator/verified.decorator';
@@ -22,7 +22,7 @@ export class AccountController {
   @Get('mine')
   @AllowUnverified()
   async getMyAccountInformation(@Request() req): Promise<IAccount> {
-    return this.accountService.getMyAccountInformation(req.user);
+    return this.accountService.getMyAccountInformation(req.user, req.token);
   }
 
   @Get(':accountId')
@@ -52,5 +52,17 @@ export class AccountController {
     @Body() passenger: IPassenger
   ): Promise<void> {
     return this.accountService.createPassengerAccount(req.user, passenger);
+  }
+
+  @Get('mine/api-key')
+  @Roles('ShippingLineAdmin', 'TravelAgency', 'SuperAdmin')
+  async getMyApiKey(@Request() req): Promise<string> {
+    return this.accountService.getMyApiKey(req.user);
+  }
+
+  @Post('mine/api-key')
+  @Roles('ShippingLineAdmin', 'TravelAgency', 'SuperAdmin')
+  async generateApiKeyForAccount(@Request() req): Promise<string> {
+    return this.accountService.generateApiKeyForAccount(req.user);
   }
 }

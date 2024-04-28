@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { IDisbursement } from '@ayahay/models';
 import { DisbursementService } from './disbursement.service';
-import { AuthGuard } from '@/guard/auth.guard';
+import { AuthGuard } from '@/auth/auth.guard';
 import { Roles } from '@/decorator/roles.decorator';
 import { Prisma } from '@prisma/client';
 

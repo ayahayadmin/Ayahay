@@ -1,7 +1,7 @@
 import { Request, Controller, Get, Param, UseGuards } from '@nestjs/common';
 import { ShippingLineService } from './shipping-line.service';
 import { IShippingLine, IShippingLineSchedule } from '@ayahay/models';
-import { AuthGuard } from '@/guard/auth.guard';
+import { AuthGuard } from '@/auth/auth.guard';
 import { Roles } from '@/decorator/roles.decorator';
 
 @Controller('shipping-lines')

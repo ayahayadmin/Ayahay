@@ -17,7 +17,7 @@ import {
   PaymentInitiationResponse,
 } from '@ayahay/http';
 import { AllowUnauthenticated } from '@/decorator/authenticated.decorator';
-import { AuthGuard } from '@/guard/auth.guard';
+import { AuthGuard } from '@/auth/auth.guard';
 import { PayMongoCheckoutPaidPostbackRequest } from './payment.types';
 
 @Controller('pay')
@@ -30,7 +30,7 @@ export class PaymentController {
   async payBooking(
     @Request() req,
     @Param('tempBookingId') tempBookingId: number,
-    @Body() body: PaymentInitiationRequest
+    @Body() body: PaymentInitiationRequest = {}
   ): Promise<PaymentInitiationResponse> {
     return this.paymentService.startPaymentFlow(tempBookingId, body, req.user);
   }

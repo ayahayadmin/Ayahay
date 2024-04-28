@@ -7,14 +7,13 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import admin from 'firebase-admin';
 import { includes } from 'lodash';
-import { Request } from 'express';
 import { ACCOUNT_ROLE } from '@ayahay/constants';
 import { ROLES_KEY } from '@/decorator/roles.decorator';
-import { PrismaService } from '@/prisma.service';
 import { AUTHENTICATED_KEY } from '@/decorator/authenticated.decorator';
 import { VERIFIED_KEY } from '@/decorator/verified.decorator';
+import { IAccount } from '@ayahay/models';
+import { AuthService } from '@/auth/auth.service';
 
 /**
  * Sets request.user to the logged-in account making the request
@@ -39,24 +38,15 @@ import { VERIFIED_KEY } from '@/decorator/verified.decorator';
  **/
 @Injectable()
 export class AuthGuard implements CanActivate {
-  constructor(private reflector: Reflector, private prisma: PrismaService) {}
-
   private readonly logger = new Logger(AuthGuard.name);
 
-  private decryptToken(token: string): Promise<any> {
-    return admin
-      .auth()
-      .verifyIdToken(token)
-      .then((decodedToken) => decodedToken)
-      .catch((error) => {
-        this.logger.error(`Decrypt token failed: ${error}`);
-        throw new Error(error);
-      });
-  }
+  constructor(
+    private readonly reflector: Reflector,
+    private readonly authService: AuthService
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    const token = this.extractTokenFromHeader(request);
     const shouldBeAuthenticated =
       this.reflector.getAllAndOverride<boolean>(AUTHENTICATED_KEY, [
         context.getHandler(),
@@ -68,41 +58,20 @@ export class AuthGuard implements CanActivate {
         context.getClass(),
       ]) ?? true;
 
-    let isEmailVerified = false;
-    let email = '';
-    let uid = '';
-    let role = '';
-    let shippingLineId = undefined;
+    let loggedInAccount: IAccount | undefined;
 
     try {
-      const {
-        email: _email,
-        uid: _uid,
-        email_verified,
-        role: _role,
-        shippingLineId: _shippingLineId,
-      } = await this.decryptToken(token);
-      email = _email;
-      uid = _uid;
-      isEmailVerified = email_verified;
-      role = _role;
-      shippingLineId = _shippingLineId;
-    } catch (e: any) {
-      if (shouldBeAuthenticated === false) {
-        return true;
+      loggedInAccount = await this.authService.authenticate(request);
+    } catch (e) {
+      this.logger.error('Authentication Error: ', e);
+      if (shouldBeAuthenticated) {
+        throw new UnauthorizedException();
       }
-      throw new UnauthorizedException();
     }
 
-    request['user'] = {
-      id: uid,
-      role,
-      email,
-      token,
-      shippingLineId,
-    };
+    request.user = loggedInAccount;
 
-    if (shouldBeAuthenticated === false) {
+    if (!shouldBeAuthenticated) {
       return true;
     }
 
@@ -111,7 +80,7 @@ export class AuthGuard implements CanActivate {
       [context.getHandler(), context.getClass()]
     );
 
-    if (requiredRoles && !includes(requiredRoles, role)) {
+    if (requiredRoles && !includes(requiredRoles, loggedInAccount.role)) {
       throw new ForbiddenException('Insufficient access');
     }
 
@@ -119,15 +88,13 @@ export class AuthGuard implements CanActivate {
       return true;
     }
 
-    if (role === 'Passenger' && !isEmailVerified) {
+    if (
+      loggedInAccount.role === 'Passenger' &&
+      !loggedInAccount.isEmailVerified
+    ) {
       throw new ForbiddenException('Unverified email');
     }
 
     return true;
-  }
-
-  private extractTokenFromHeader(request: Request): string | undefined {
-    const [type, token] = request.headers.authorization?.split(' ') ?? [];
-    return type === 'Bearer' ? token : undefined;
   }
 }

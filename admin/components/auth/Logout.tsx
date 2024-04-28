@@ -4,6 +4,7 @@ import { Avatar, Button, Dropdown, MenuProps } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuthState } from '@/hooks/auth';
+import Link from 'next/link';
 
 export default function Logout() {
   const { currentUser, loggedInAccount, logout } = useAuth();
@@ -16,6 +17,10 @@ export default function Logout() {
   };
 
   const items: MenuProps['items'] = [
+    {
+      key: '/accounts/mine',
+      label: <Link href='/accounts/mine'>My Account</Link>,
+    },
     {
       key: '1',
       label: (
