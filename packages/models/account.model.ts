@@ -16,6 +16,8 @@ export interface IAccount {
 
   email: string;
   role: keyof typeof ACCOUNT_ROLE;
+  // TODO: properly save isEmailVerified from Firebase next time
+  isEmailVerified?: boolean;
   apiKey?: string;
 
   passengers?: IPassenger[];

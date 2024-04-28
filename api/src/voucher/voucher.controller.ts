@@ -8,7 +8,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { VoucherService } from './voucher.service';
-import { AuthGuard } from '@/guard/auth.guard';
+import { AuthGuard } from '@/auth/auth.guard';
 import { Roles } from '@/decorator/roles.decorator';
 import { IVoucher } from '@ayahay/models';
 import { PaginatedRequest, PaginatedResponse } from '@ayahay/http';

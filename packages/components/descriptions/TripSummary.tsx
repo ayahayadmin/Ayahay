@@ -1,7 +1,6 @@
 import { Descriptions, Skeleton, Typography, Grid } from 'antd';
 import { ITrip } from '@ayahay/models';
 import dayjs from 'dayjs';
-import { useTripFromSearchParams } from '@ayahay/web/hooks/trip';
 
 interface TripSummaryProps {
   trip?: ITrip;

@@ -21,7 +21,7 @@ import {
   TripSearchByDateRange,
   PassengerBookingSearchResponse,
 } from '@ayahay/http';
-import { AuthGuard } from '@/guard/auth.guard';
+import { AuthGuard } from '@/auth/auth.guard';
 import { Roles } from '@/decorator/roles.decorator';
 import { AllowUnauthenticated } from '@/decorator/authenticated.decorator';
 import { AccountService } from '@/account/account.service';
@@ -166,7 +166,7 @@ export class BookingController {
     @Body() booking: IBooking
   ): Promise<IBooking> {
     const loggedInAccount = req.user
-      ? await this.accountService.getMyAccountInformation(req.user)
+      ? await this.accountService.getMyAccountInformation(req.user, req.token)
       : undefined;
 
     return this.bookingService.createTentativeBooking(booking, loggedInAccount);

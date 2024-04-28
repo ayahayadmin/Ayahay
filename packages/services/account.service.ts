@@ -1,7 +1,7 @@
-import { IAccount, IPassenger, IShippingLine } from '@ayahay/models';
+import { IAccount, IPassenger } from '@ayahay/models';
 import { cacheItem, fetchItem } from './cache.service';
 import axios from './axios';
-import { ACCOUNT_API, PASSENGER_API } from '@ayahay/constants';
+import { ACCOUNT_API } from '@ayahay/constants';
 
 export async function getAccountInformation(): Promise<IAccount | undefined> {
   const cachedAccountInformation = fetchItem<IAccount>('logged-in-account');
@@ -33,4 +33,14 @@ export async function createPassengerAccount(
     console.error(e);
     return undefined;
   }
+}
+
+export async function getMyApiKey(): Promise<string> {
+  const { data } = await axios.get<string>(`${ACCOUNT_API}/mine/api-key`);
+  return data;
+}
+
+export async function generateApiKey(): Promise<string> {
+  const { data } = await axios.post<string>(`${ACCOUNT_API}/mine/api-key`);
+  return data;
 }

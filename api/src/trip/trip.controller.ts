@@ -15,7 +15,7 @@ import { ITrip } from '@ayahay/models';
 import { Prisma } from '@prisma/client';
 import { TripMapper } from './trip.mapper';
 import { Roles } from '@/decorator/roles.decorator';
-import { AuthGuard } from '@/guard/auth.guard';
+import { AuthGuard } from '@/auth/auth.guard';
 import {
   CancelledTrips,
   CreateTripsFromSchedulesRequest,

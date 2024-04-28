@@ -1,7 +1,7 @@
 import { Request, Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { PassengerService } from './passenger.service';
 import { IPassenger } from '@ayahay/models';
-import { AuthGuard } from '@/guard/auth.guard';
+import { AuthGuard } from '@/auth/auth.guard';
 import { AllowUnverified } from '@/decorator/verified.decorator';
 
 @Controller('passengers')

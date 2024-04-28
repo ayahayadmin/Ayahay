@@ -25,3 +25,4 @@ export * from './account-notification.model';
 export * from './voyage.model';
 export * from './dry-dock.model';
 export * from './voucher.model';
+export * from './travel-agency.model';
