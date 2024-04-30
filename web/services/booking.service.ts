@@ -90,7 +90,6 @@ export async function getMyBookings(
   const query = new URLSearchParams(pagination as any).toString();
 
   try {
-    await axios.post(`${ACCOUNT_API}/api-key`);
     const { data: bookings } = await axios.get<PaginatedResponse<IBooking>>(
       `${BOOKING_API}/mine?${query}`
     );
