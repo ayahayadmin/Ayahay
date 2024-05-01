@@ -17,6 +17,7 @@ import { BookingMapper } from '@/booking/booking.mapper';
 import { PassengerService } from '@/passenger/passenger.service';
 import { VehicleService } from '@/vehicle/vehicle.service';
 import { UtilityService } from '@/utility.service';
+import { BookingWebhookService } from '@/booking/booking-webhook.service';
 
 @Injectable()
 export class BookingReservationService {
@@ -32,7 +33,8 @@ export class BookingReservationService {
     private readonly emailService: EmailService,
     private readonly passengerService: PassengerService,
     private readonly vehicleService: VehicleService,
-    private readonly utilityService: UtilityService
+    private readonly utilityService: UtilityService,
+    private readonly bookingWebhookService: BookingWebhookService
   ) {}
 
   /**
@@ -418,14 +420,6 @@ WHERE row <= ${bookingTripPassengers.length}
   ): Promise<void> {
     transactionContext ??= this.prisma;
 
-    if (booking.contactEmail !== null) {
-      // we fire and forget; this operation will not affect the rest of the workflow
-      this.emailService.sendBookingConfirmedEmail({
-        recipient: booking.contactEmail,
-        bookingId: booking.id,
-      });
-    }
-
     await this.updateTripsCapacities(
       booking.bookingTrips,
       'decrement',
@@ -436,6 +430,16 @@ WHERE row <= ${bookingTripPassengers.length}
       booking.voucherCode,
       transactionContext
     );
+
+    if (booking.contactEmail !== null) {
+      // we fire and forget; this operation will not affect the rest of the workflow
+      this.emailService.sendBookingConfirmedEmail({
+        recipient: booking.contactEmail,
+        bookingId: booking.id,
+      });
+    }
+
+    this.bookingWebhookService.notifyBookingCreateWebhooks(booking);
   }
 
   async updateTripsCapacities(

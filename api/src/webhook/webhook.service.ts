@@ -1,14 +1,19 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '@/prisma.service';
 import { IAccount, IWebhook } from '@ayahay/models';
 import { AuthService } from '@/auth/auth.service';
 import { WebhookMapper } from '@/webhook/webhook.mapper';
+import { CryptoService } from '@/crypto/crypto.service';
+import axios, { AxiosError } from 'axios';
 
 @Injectable()
 export class WebhookService {
+  private readonly logger = new Logger(WebhookService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly authService: AuthService,
+    private readonly cryptoService: CryptoService,
     private readonly webhookMapper: WebhookMapper
   ) {}
 
@@ -104,5 +109,27 @@ export class WebhookService {
         id: webhookId,
       },
     });
+  }
+
+  async signRequestForWebhook(toSign: any): Promise<string> {
+    const requestBodyBuf = Buffer.from(JSON.stringify(toSign));
+    const signatureBuf = await this.cryptoService.signWithAyahay(
+      requestBodyBuf
+    );
+    return signatureBuf.toString('base64');
+  }
+
+  async postWebhook({ url }: IWebhook, body: any): Promise<void> {
+    try {
+      const signatureBase64 = await this.signRequestForWebhook(body);
+      await axios.post(url, body, {
+        headers: {
+          'ayahay-signature': signatureBase64,
+        },
+      });
+    } catch (e) {
+      const errorMessage = e instanceof AxiosError ? e.toJSON() : e;
+      this.logger.error(`Error calling webhook at ${url}: ${errorMessage}`);
+    }
   }
 }
