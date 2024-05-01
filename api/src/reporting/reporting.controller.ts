@@ -66,11 +66,16 @@ export class ReportingController {
   @Get('trips/:id/manifest')
   @UseGuards(AuthGuard)
   @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
-  async getManifest(
+  async getTripManifest(
     @Param('id') tripId: string,
+    @Query('onboarded') onboarded: boolean,
     @Request() req
   ): Promise<TripManifest> {
-    return this.reportingService.getTripManifest(Number(tripId), req.user);
+    return this.reportingService.getTripManifest(
+      Number(tripId),
+      onboarded,
+      req.user
+    );
   }
 
   @Get(':id/bol')

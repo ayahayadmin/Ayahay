@@ -365,6 +365,7 @@ export class ReportingService {
 
   async getTripManifest(
     tripId: number,
+    onboarded: boolean,
     loggedInAccount: IAccount
   ): Promise<TripManifest> {
     const trip = await this.prisma.trip.findUnique({
@@ -377,6 +378,7 @@ export class ReportingService {
         destPort: true,
         bookingTripPassengers: {
           where: {
+            checkInDate: onboarded ? { not: null } : undefined,
             booking: {
               bookingStatus: {
                 in: ['Confirmed', 'Requested'],

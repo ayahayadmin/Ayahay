@@ -9,6 +9,7 @@ import { PrinterOutlined } from '@ant-design/icons';
 import { useAuthGuard } from '@/hooks/auth';
 import { useAuth } from '@/contexts/AuthContext';
 import { getAxiosError } from '@ayahay/services/error.service';
+import { useSearchParams } from 'next/navigation';
 
 const textCenter = { textAlign: 'center' };
 const noPadding = { padding: '0' };
@@ -16,7 +17,8 @@ const noPadding = { padding: '0' };
 export default function TripManifestPage({ params }: any) {
   const { loggedInAccount } = useAuth();
   useAuthGuard(['ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin']);
-
+  const searchParams = useSearchParams();
+  const query = Object.fromEntries(searchParams.entries());
   const manifestRef = useRef();
   const [manifest, setManifest] = useState<ITripManifest | undefined>();
   const [errorCode, setErrorCode] = useState<number | undefined>();
@@ -31,7 +33,7 @@ export default function TripManifestPage({ params }: any) {
 
   const fetchManifest = async (tripId: number): Promise<void> => {
     try {
-      setManifest(await getTripManifest(tripId));
+      setManifest(await getTripManifest(tripId, query.onboarded));
     } catch (e) {
       const axiosError = getAxiosError(e);
       if (axiosError === undefined) {
