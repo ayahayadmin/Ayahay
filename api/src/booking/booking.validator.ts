@@ -10,7 +10,7 @@ import {
   IBookingTripPassenger,
 } from '@ayahay/models';
 import { FieldError } from '@ayahay/http';
-import { UtilityService } from '@/utility.service';
+import { AuthService } from '@/auth/auth.service';
 
 @Injectable()
 export class BookingValidator {
@@ -18,7 +18,7 @@ export class BookingValidator {
   private readonly MAX_TRIPS_PER_BOOKING = 10;
   private readonly MAX_VEHICLES_PER_BOOKING = 15;
 
-  constructor(private readonly utilityService: UtilityService) {}
+  constructor(private readonly authService: AuthService) {}
 
   public validateCreateTentativeBookingRequest(
     booking: IBooking,
@@ -132,7 +132,7 @@ export class BookingValidator {
 
     if (
       drivesVehicleIds.size > 0 &&
-      this.utilityService.hasPrivilegedAccess(loggedInAccount)
+      this.authService.hasPrivilegedAccess(loggedInAccount)
     ) {
       errorMessages.push({
         fieldName: ['bookingTrips', tripIndex],
@@ -172,7 +172,7 @@ export class BookingValidator {
       }
 
       if (
-        !this.utilityService.hasPrivilegedAccess(loggedInAccount) &&
+        !this.authService.hasPrivilegedAccess(loggedInAccount) &&
         (bookingTripPassengers[i].discountType !== undefined ||
           passenger.discountType !== undefined)
       ) {
@@ -225,7 +225,7 @@ export class BookingValidator {
         });
       }
       if (
-        !this.utilityService.hasPrivilegedAccess(loggedInAccount) &&
+        !this.authService.hasPrivilegedAccess(loggedInAccount) &&
         !onlineVehicleTypeIds.has(vehicleTypeId)
       ) {
         errorMessages.push({
@@ -308,7 +308,7 @@ export class BookingValidator {
 
     if (
       !voucher.canBookOnline &&
-      !this.utilityService.hasPrivilegedAccess(loggedInAccount)
+      !this.authService.hasPrivilegedAccess(loggedInAccount)
     ) {
       errorMessages.push({
         fieldName: ['voucherCode'],
@@ -337,7 +337,7 @@ export class BookingValidator {
       throw new BadRequestException('Only confirmed bookings can be modified.');
     }
 
-    this.utilityService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
+    this.authService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
       booking,
       loggedInAccount
     );

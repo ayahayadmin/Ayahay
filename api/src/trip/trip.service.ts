@@ -27,6 +27,7 @@ import { ShipService } from '@/ship/ship.service';
 import { UtilityService } from '@/utility.service';
 import { EmailService } from '@/email/email.service';
 import { BookingMapper } from '@/booking/booking.mapper';
+import { AuthService } from '@/auth/auth.service';
 
 const TRIP_AVAILABLE_QUERY_SELECT = Prisma.sql`
   SELECT 
@@ -69,6 +70,7 @@ export class TripService {
     private readonly shipService: ShipService,
     private readonly emailService: EmailService,
     private readonly utilityService: UtilityService,
+    private readonly authService: AuthService,
     private readonly tripMapper: TripMapper,
     private readonly bookingMapper: BookingMapper,
     private readonly tripValidator: TripValidator
@@ -112,7 +114,7 @@ export class TripService {
       throw new NotFoundException('Trip Not Found');
     }
 
-    this.utilityService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
+    this.authService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
       trip,
       loggedInAccount
     );
@@ -271,7 +273,7 @@ export class TripService {
     { startDate, endDate }: TripSearchByDateRange,
     loggedInAccount: IAccount
   ): Promise<PaginatedResponse<CancelledTrips>> {
-    this.utilityService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
+    this.authService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
       { shippingLineId },
       loggedInAccount
     );
@@ -536,7 +538,7 @@ export class TripService {
       throw new NotFoundException();
     }
 
-    this.utilityService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
+    this.authService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
       trip,
       loggedInAccount
     );
@@ -660,7 +662,7 @@ export class TripService {
       throw new NotFoundException();
     }
 
-    this.utilityService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
+    this.authService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
       tripToCancel,
       loggedInAccount
     );
@@ -700,7 +702,7 @@ export class TripService {
       throw new NotFoundException();
     }
 
-    this.utilityService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
+    this.authService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
       tripToUpdate,
       loggedInAccount
     );
@@ -747,7 +749,7 @@ export class TripService {
       throw new NotFoundException();
     }
 
-    this.utilityService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
+    this.authService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
       tripToUpdate,
       loggedInAccount
     );

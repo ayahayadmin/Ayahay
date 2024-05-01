@@ -15,16 +15,16 @@ import {
 import { ReportingMapper } from './reporting.mapper';
 import { Prisma } from '@prisma/client';
 import { TripMapper } from '@/trip/trip.mapper';
-import { UtilityService } from '@/utility.service';
 import { IAccount } from '@ayahay/models';
 import { ShipService } from '@/ship/ship.service';
+import { AuthService } from '@/auth/auth.service';
 
 @Injectable()
 export class ReportingService {
   constructor(
-    private prisma: PrismaService,
-    private utilityService: UtilityService,
-    private shipService: ShipService,
+    private readonly prisma: PrismaService,
+    private readonly authService: AuthService,
+    private readonly shipService: ShipService,
     private readonly reportingMapper: ReportingMapper,
     private readonly tripMapper: TripMapper
   ) {}
@@ -116,7 +116,7 @@ export class ReportingService {
       throw new NotFoundException();
     }
 
-    this.utilityService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
+    this.authService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
       trip,
       loggedInAccount
     );
@@ -396,7 +396,7 @@ export class ReportingService {
       throw new NotFoundException();
     }
 
-    this.utilityService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
+    this.authService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
       trip,
       loggedInAccount
     );

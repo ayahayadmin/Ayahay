@@ -73,7 +73,13 @@ export class TripController {
 
   @Get('available-by-date-range')
   @UseGuards(AuthGuard)
-  @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
+  @Roles(
+    'ShippingLineStaff',
+    'ShippingLineAdmin',
+    'TravelAgencyStaff',
+    'TravelAgencyAdmin',
+    'SuperAdmin'
+  )
   async getAvailableTripsByDateRange(
     @Query() pagination: PaginatedRequest,
     @Query('shippingLineId') shippingLineId: number,

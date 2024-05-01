@@ -10,19 +10,23 @@ import {
   ITripVehicleType,
 } from '@ayahay/models';
 import { BOOKING_CANCELLATION_TYPE } from '@ayahay/constants';
-import { UtilityService } from '@/utility.service';
 import {
   PrismaClient,
   BookingTripPassenger,
   BookingTripVehicle,
 } from '@prisma/client';
+import { AuthService } from '@/auth/auth.service';
+import { UtilityService } from '@/utility.service';
 
 @Injectable()
 export class BookingPricingService {
   private readonly AYAHAY_MARKUP_FLAT = 50;
   private readonly AYAHAY_MARKUP_PERCENT = 0.05;
 
-  constructor(private readonly utilityService: UtilityService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly utilityService: UtilityService
+  ) {}
 
   /**
    * Populates Payment Items and calculates Total Prices for all
@@ -262,7 +266,7 @@ export class BookingPricingService {
     bookingCreator?: IAccount
   ): number {
     if (
-      this.utilityService.hasPrivilegedAccess(bookingCreator) ||
+      this.authService.hasPrivilegedAccess(bookingCreator) ||
       !this.isPayingPassenger(bookingTripPassenger)
     ) {
       return 0;
@@ -278,7 +282,7 @@ export class BookingPricingService {
     chargeablePrice: number,
     bookingCreator?: IAccount
   ): number {
-    if (this.utilityService.hasPrivilegedAccess(bookingCreator)) {
+    if (this.authService.hasPrivilegedAccess(bookingCreator)) {
       return 0;
     }
 

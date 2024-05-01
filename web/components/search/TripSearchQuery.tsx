@@ -4,7 +4,7 @@ import { Button, DatePicker, Form } from 'antd';
 import PortAutoComplete from '@ayahay/components/form/PortAutoComplete';
 import styles from './TripSearchQuery.module.scss';
 import dayjs from 'dayjs';
-import EnumRadio from '@/components/form/EnumRadio';
+import EnumRadio from '@ayahay/components/form/EnumRadio';
 import { BOOKING_TYPE } from '@ayahay/constants/enum';
 import PassengerAndVehicleCount from '../form/PassengerAndVehicleCount';
 

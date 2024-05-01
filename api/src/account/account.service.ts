@@ -12,7 +12,6 @@ import { AccountMapper } from './account.mapper';
 import { AuthService } from '@/auth/auth.service';
 import { isEmpty } from 'lodash';
 import { CryptoService } from '@/crypto/crypto.service';
-import { UtilityService } from '@/utility.service';
 
 @Injectable()
 export class AccountService {
@@ -20,8 +19,7 @@ export class AccountService {
     private readonly prisma: PrismaService,
     private readonly accountMapper: AccountMapper,
     private readonly authService: AuthService,
-    private readonly cryptoService: CryptoService,
-    private readonly utilityService: UtilityService
+    private readonly cryptoService: CryptoService
   ) {}
 
   async getMyAccountInformation(user, token): Promise<IAccount> {
@@ -68,12 +66,14 @@ export class AccountService {
       token &&
       (isEmpty(userClaims) ||
         userClaims.role !== myAccountEntityRole ||
-        userClaims.shippingLineId !== myAccountEntity.shippingLineId)
+        userClaims.shippingLineId !== myAccountEntity.shippingLineId ||
+        userClaims.travelAgencyId !== myAccountEntity.travelAgencyId)
     ) {
       await this.authService.setUserClaims({
         token,
         role: myAccountEntityRole,
         shippingLineId: myAccountEntity.shippingLineId,
+        travelAgencyId: myAccountEntity.travelAgencyId,
       });
     }
 

@@ -5,7 +5,7 @@ import AyahayLogo from '/public/assets/ayahay-logo.png';
 import { Menu } from 'antd';
 import { usePathname, useRouter } from 'next/navigation';
 import Logout from './auth/Logout';
-import { webLinks } from '@/services/nav.service';
+import { webLinks, accountLinks } from '@/services/nav.service';
 import { useAuth } from '@/contexts/AuthContext';
 import Notifications from '@ayahay/components/Notifications';
 
@@ -15,12 +15,8 @@ export default function AdminHeader() {
   const router = useRouter();
 
   const userRole = loggedInAccount && loggedInAccount.role;
-  const headerTabs =
-    userRole === 'SuperAdmin' || userRole === 'ShippingLineAdmin'
-      ? webLinks.Admin
-      : userRole === 'ShippingLineStaff'
-      ? webLinks.Staff
-      : webLinks.Scanner;
+  const headerTabs = webLinks[loggedInAccount?.role ?? ''] ?? [];
+  const accountTabs = accountLinks[loggedInAccount?.role ?? ''] ?? [];
 
   return (
     <nav className={`hide-on-print ${styles['nav-container']}`}>
@@ -50,7 +46,7 @@ export default function AdminHeader() {
               loggedInAccount.role === 'SuperAdmin'
             }
           />
-          <Logout />
+          <Logout roleSpecificMenuItems={accountTabs} />
         </div>
       )}
     </nav>

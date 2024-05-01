@@ -1,6 +1,5 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import {
-  IAccount,
   IBookingTrip,
   IBookingTripPassenger,
   IBookingTripVehicle,
@@ -30,34 +29,6 @@ export class UtilityService {
     }
 
     return result;
-  }
-
-  verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
-    shippingLineRestrictedEntity: { shippingLineId: number },
-    loggedInAccount: IAccount
-  ) {
-    if (loggedInAccount.role === 'SuperAdmin') {
-      return;
-    }
-    if (
-      loggedInAccount.shippingLineId !==
-      shippingLineRestrictedEntity.shippingLineId
-    ) {
-      throw new ForbiddenException();
-    }
-  }
-
-  hasPrivilegedAccess(loggedInAccount?: IAccount): boolean {
-    if (loggedInAccount === undefined) {
-      return false;
-    }
-
-    const privilegedAccessRoles = [
-      'ShippingLineStaff',
-      'ShippingLineAdmin',
-      'SuperAdmin',
-    ];
-    return privilegedAccessRoles.includes(loggedInAccount.role);
   }
 
   combineAllBookingTripEntities(bookingTrips: IBookingTrip[]): {

@@ -18,3 +18,4 @@ export const SHIPS_API = `${BASE_URL}/ships`;
 export const TRIP_API = `${BASE_URL}/trips`;
 export const VEHICLE_TYPES_API = `${BASE_URL}/vehicle-types`;
 export const VOUCHERS_API = `${BASE_URL}/vouchers`;
+export const WEBHOOKS_API = `${BASE_URL}/webhooks`;

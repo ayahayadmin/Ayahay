@@ -22,8 +22,8 @@ export default function EnumRadio({
           </Radio>
         )}
         {Object.keys(_enum).map((enumKey) => (
-          <Radio value={_enum[enumKey]} key={enumKey}>
-            {enumKey}
+          <Radio value={enumKey} key={enumKey}>
+            {_enum[enumKey]}
           </Radio>
         ))}
       </Radio.Group>

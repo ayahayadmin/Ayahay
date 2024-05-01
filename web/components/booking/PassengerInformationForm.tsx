@@ -12,7 +12,7 @@ import {
 import React, { useEffect, useState } from 'react';
 import { DISCOUNT_TYPE, SEX } from '@ayahay/constants/enum';
 import { IPassenger, ITrip, IVehicle } from '@ayahay/models';
-import EnumRadio from '@/components/form/EnumRadio';
+import EnumRadio from '@ayahay/components/form/EnumRadio';
 import AddCompanionsModal from '@/components/booking/AddCompanionsModal';
 import AddVehiclesModal from '@/components/booking/AddVehiclesModal';
 import {

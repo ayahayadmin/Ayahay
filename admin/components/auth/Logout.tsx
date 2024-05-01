@@ -6,7 +6,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useAuthState } from '@/hooks/auth';
 import Link from 'next/link';
 
-export default function Logout() {
+interface LogoutProps {
+  roleSpecificMenuItems: { label: string; href: string }[];
+}
+
+export default function Logout({ roleSpecificMenuItems }: LogoutProps) {
   const { currentUser, loggedInAccount, logout } = useAuth();
   const { pending } = useAuthState();
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -21,6 +25,10 @@ export default function Logout() {
       key: '/accounts/mine',
       label: <Link href='/accounts/mine'>My Account</Link>,
     },
+    ...roleSpecificMenuItems.map((menuItem) => ({
+      key: menuItem.href,
+      label: <Link href={menuItem.href}>{menuItem.label}</Link>,
+    })),
     {
       key: '1',
       label: (
