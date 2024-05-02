@@ -4,14 +4,14 @@ import { IAccount, IShip, IVoyage } from '@ayahay/models';
 import { ShipMapper } from './ship.mapper';
 import { Prisma, PrismaClient } from '@prisma/client';
 import { PaginatedRequest, PaginatedResponse } from '@ayahay/http';
-import { UtilityService } from '@/utility.service';
+import { AuthService } from '@/auth/auth.service';
 
 @Injectable()
 export class ShipService {
   constructor(
-    private prisma: PrismaService,
-    private utilityService: UtilityService,
-    private shipMapper: ShipMapper
+    private readonly prisma: PrismaService,
+    private readonly authService: AuthService,
+    private readonly shipMapper: ShipMapper
   ) {}
 
   async getShipsOfShippingLine(shippingLineId: number): Promise<IShip[]> {
@@ -129,7 +129,7 @@ export class ShipService {
       throw new NotFoundException();
     }
 
-    this.utilityService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
+    this.authService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
       ship,
       loggedInAccount
     );

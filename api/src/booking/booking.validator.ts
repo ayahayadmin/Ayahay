@@ -10,7 +10,8 @@ import {
   IBookingTripPassenger,
 } from '@ayahay/models';
 import { FieldError } from '@ayahay/http';
-import { UtilityService } from '@/utility.service';
+import { AuthService } from '@/auth/auth.service';
+import { PrismaService } from '@/prisma.service';
 
 @Injectable()
 export class BookingValidator {
@@ -18,12 +19,15 @@ export class BookingValidator {
   private readonly MAX_TRIPS_PER_BOOKING = 10;
   private readonly MAX_VEHICLES_PER_BOOKING = 15;
 
-  constructor(private readonly utilityService: UtilityService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly prisma: PrismaService
+  ) {}
 
-  public validateCreateTentativeBookingRequest(
+  async validateCreateTentativeBookingRequest(
     booking: IBooking,
     loggedInAccount?: IAccount
-  ): FieldError[] {
+  ): Promise<FieldError[]> {
     const errorMessages: FieldError[] = [];
     const trips = booking.bookingTrips
       ?.filter(({ trip }) => trip)
@@ -52,6 +56,22 @@ export class BookingValidator {
       });
     }
 
+    booking.shippingLineId = shippingLineId;
+
+    if (this.authService.isTravelAgencyAccount(loggedInAccount)) {
+      const travelAgencyErrors = await this.validateTravelAgencyBooking(
+        booking,
+        loggedInAccount
+      );
+      errorMessages.push(...travelAgencyErrors);
+    }
+
+    if (this.authService.isShippingLineAccount(loggedInAccount)) {
+      errorMessages.push(
+        ...this.validateShippingLineBooking(booking, loggedInAccount)
+      );
+    }
+
     errorMessages.push(
       ...this.validateBookingTrips(booking.bookingTrips, loggedInAccount),
       ...this.validateVoucher(
@@ -60,6 +80,55 @@ export class BookingValidator {
         loggedInAccount
       )
     );
+
+    return errorMessages;
+  }
+
+  /**
+   * Travel Agencies can only make a booking if:
+   * 1. They are partnered with the shipping line hosting the trip
+   * 2. They use a voucher
+   * @param booking
+   * @param loggedInAccount
+   * @private
+   */
+  private async validateTravelAgencyBooking(
+    booking: IBooking,
+    loggedInAccount?: IAccount
+  ): Promise<FieldError[]> {
+    const errorMessages: FieldError[] = [];
+    if (booking.voucher === undefined) {
+      errorMessages.push({
+        fieldName: ['voucherCode'],
+        message: 'Vouchers are required for travel agencies.',
+      });
+    }
+    await this.authService.verifyTravelAgencyHasAccessToShippingLineRestrictedEntity(
+      booking,
+      loggedInAccount
+    );
+    return errorMessages;
+  }
+
+  private validateShippingLineBooking(
+    booking: IBooking,
+    loggedInAccount?: IAccount
+  ): FieldError[] {
+    const errorMessages: FieldError[] = [];
+
+    if (loggedInAccount?.role === 'ShippingLineScanner') {
+      errorMessages.push({
+        fieldName: ['loggedInAccount'],
+        message: 'Scanners cannot make bookings',
+      });
+    }
+
+    if (booking.shippingLineId !== loggedInAccount?.shippingLineId) {
+      errorMessages.push({
+        fieldName: ['shippingLineId'],
+        message: 'You cannot make a booking for another shipping line',
+      });
+    }
 
     return errorMessages;
   }
@@ -132,7 +201,7 @@ export class BookingValidator {
 
     if (
       drivesVehicleIds.size > 0 &&
-      this.utilityService.hasPrivilegedAccess(loggedInAccount)
+      this.authService.hasPrivilegedAccess(loggedInAccount)
     ) {
       errorMessages.push({
         fieldName: ['bookingTrips', tripIndex],
@@ -172,7 +241,7 @@ export class BookingValidator {
       }
 
       if (
-        !this.utilityService.hasPrivilegedAccess(loggedInAccount) &&
+        !this.authService.hasPrivilegedAccess(loggedInAccount) &&
         (bookingTripPassengers[i].discountType !== undefined ||
           passenger.discountType !== undefined)
       ) {
@@ -225,7 +294,7 @@ export class BookingValidator {
         });
       }
       if (
-        !this.utilityService.hasPrivilegedAccess(loggedInAccount) &&
+        !this.authService.hasPrivilegedAccess(loggedInAccount) &&
         !onlineVehicleTypeIds.has(vehicleTypeId)
       ) {
         errorMessages.push({
@@ -308,7 +377,7 @@ export class BookingValidator {
 
     if (
       !voucher.canBookOnline &&
-      !this.utilityService.hasPrivilegedAccess(loggedInAccount)
+      !this.authService.hasPrivilegedAccess(loggedInAccount)
     ) {
       errorMessages.push({
         fieldName: ['voucherCode'],
@@ -337,7 +406,7 @@ export class BookingValidator {
       throw new BadRequestException('Only confirmed bookings can be modified.');
     }
 
-    this.utilityService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
+    this.authService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
       booking,
       loggedInAccount
     );

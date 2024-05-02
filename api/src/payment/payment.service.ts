@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -20,9 +21,9 @@ import {
   PayMongoCheckoutPaidPostbackRequest,
   PayMongoCheckoutSession,
 } from './payment.types';
-import { UtilityService } from '@/utility.service';
 import { BookingMapper } from '@/booking/booking.mapper';
 import { BookingRequestService } from '@/booking/booking-request.service';
+import { AuthService } from '@/auth/auth.service';
 
 @Injectable()
 export class PaymentService {
@@ -31,7 +32,7 @@ export class PaymentService {
   constructor(
     private prisma: PrismaService,
     private bookingService: BookingService,
-    private utilityService: UtilityService,
+    private authService: AuthService,
     private bookingRequestService: BookingRequestService,
     private bookingMapper: BookingMapper
   ) {}
@@ -56,6 +57,10 @@ export class PaymentService {
         'This booking session has expired. Please create another booking.'
       );
     }
+    // can't pay for bookings not made by current user
+    if ((loggedInAccount?.id ?? null) !== tempBooking.createdByAccountId) {
+      throw new ForbiddenException();
+    }
 
     const booking = this.bookingMapper.convertTempBookingToBooking(tempBooking);
     if (
@@ -68,7 +73,7 @@ export class PaymentService {
 
     const paymentReference = uuidv4();
 
-    if (this.utilityService.hasPrivilegedAccess(loggedInAccount)) {
+    if (this.authService.hasPrivilegedAccess(loggedInAccount)) {
       // don't save email/mobile if staff/admin
       contactEmail = contactMobile = undefined;
     } else if (loggedInAccount !== undefined) {
@@ -121,7 +126,7 @@ export class PaymentService {
 
     return (
       isLocalEnvironment ||
-      this.utilityService.hasPrivilegedAccess(loggedInAccount)
+      this.authService.hasPrivilegedAccess(loggedInAccount)
     );
   }
 

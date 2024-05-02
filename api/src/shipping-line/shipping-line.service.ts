@@ -9,13 +9,15 @@ import {
 import { CreateTripsFromSchedulesRequest } from '@ayahay/http';
 import { ShippingLineMapper } from './shipping-line.mapper';
 import { UtilityService } from '@/utility.service';
+import { AuthService } from '@/auth/auth.service';
 
 @Injectable()
 export class ShippingLineService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly shippingLineMapper: ShippingLineMapper,
-    private readonly utilityService: UtilityService
+    private readonly utilityService: UtilityService,
+    private readonly authService: AuthService
   ) {}
 
   async getShippingLines(): Promise<IShippingLine[]> {
@@ -26,7 +28,7 @@ export class ShippingLineService {
     shippingLineId: number,
     loggedInAccount: IAccount
   ): Promise<IShippingLineSchedule[]> {
-    this.utilityService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
+    this.authService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
       { shippingLineId },
       loggedInAccount
     );
@@ -95,7 +97,7 @@ export class ShippingLineService {
     }
 
     scheduleEntities.forEach((schedule) =>
-      this.utilityService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
+      this.authService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
         schedule,
         loggedInAccount
       )

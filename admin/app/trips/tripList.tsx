@@ -28,8 +28,16 @@ const tripActions = (trip: ITrip): any[] => {
   const actions: any[] = [
     {
       label: (
-        <a href={`/trips/${trip.id}/manifest`} target='_blank'>
-          View manifest
+        <a href={`/trips/${trip.id}/manifest?onboarded=false`} target='_blank'>
+          View booked manifest
+        </a>
+      ),
+      key: 'view-manifest',
+    },
+    {
+      label: (
+        <a href={`/trips/${trip.id}/manifest?onboarded=true`} target='_blank'>
+          View onboarded manifest
         </a>
       ),
       key: 'view-manifest',

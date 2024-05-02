@@ -25,12 +25,14 @@ interface SummarySalesPerVoyageProps {
 export interface MOPBreakdown {
   OTC: {
     aggTicketCost?: number;
-    aggAdminFee?: number;
     aggFare: number;
   };
-  Ayahay: {
+  Agency: {
     aggTicketCost?: number;
-    aggAdminFee?: number;
+    aggFare: number;
+  };
+  Online: {
+    aggTicketCost?: number;
     aggFare: number;
   };
 }
@@ -53,7 +55,10 @@ const SummarySalesPerVessel = forwardRef(function (
     OTC: {
       aggFare: 0,
     },
-    Ayahay: {
+    Agency: {
+      aggFare: 0,
+    },
+    Online: {
       aggFare: 0,
     },
   };
@@ -166,8 +171,10 @@ const SummarySalesPerVessel = forwardRef(function (
 
                 shipData.passengers.map((passenger: any) => {
                   totalPaxFare += passenger.ticketCost;
-                  if (passenger.paymentStatus === 'PayMongo') {
-                    mopBreakdown.Ayahay.aggFare += passenger.ticketCost;
+                  if (passenger.paymentStatus === 'Online') {
+                    mopBreakdown.Online.aggFare += passenger.ticketCost;
+                  } else if (passenger.paymentStatus === 'Agency') {
+                    mopBreakdown.Agency.aggFare += passenger.ticketCost;
                   } else {
                     mopBreakdown.OTC.aggFare += passenger.ticketCost;
                   }
@@ -278,8 +285,10 @@ const SummarySalesPerVessel = forwardRef(function (
 
                 shipData.vehicles.map((vehicle: any) => {
                   totalVehicleFare += vehicle.ticketCost;
-                  if (vehicle.paymentStatus === 'PayMongo') {
-                    mopBreakdown.Ayahay.aggFare += vehicle.ticketCost;
+                  if (vehicle.paymentStatus === 'Online') {
+                    mopBreakdown.Online.aggFare += vehicle.ticketCost;
+                  } else if (vehicle.paymentStatus === 'Agency') {
+                    mopBreakdown.Agency.aggFare += vehicle.ticketCost;
                   } else {
                     mopBreakdown.OTC.aggFare += vehicle.ticketCost;
                   }

@@ -1,4 +1,9 @@
-import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  Logger,
+  UnauthorizedException,
+} from '@nestjs/common';
 import admin from 'firebase-admin';
 import { AccountMapper } from '@/account/account.mapper';
 import { CryptoService } from '@/crypto/crypto.service';
@@ -17,14 +22,23 @@ export class AuthService {
     private readonly prisma: PrismaService
   ) {}
 
-  async setUserClaims({ token, role, shippingLineId }): Promise<void> {
+  async setUserClaims({
+    token,
+    role,
+    shippingLineId,
+    travelAgencyId,
+  }): Promise<void> {
     const claims = await admin.auth().verifyIdToken(token);
 
     // Verify user is eligible for additional privileges.
     if (typeof claims.email !== 'undefined') {
       await admin
         .auth()
-        .setCustomUserClaims(claims.sub, { role, shippingLineId })
+        .setCustomUserClaims(claims.sub, {
+          role,
+          shippingLineId,
+          travelAgencyId,
+        })
         .catch((error) => {
           this.logger.error(`Set claims error: ${error}`);
           throw new Error(error);
@@ -87,6 +101,7 @@ export class AuthService {
       role: decoded.role,
       email: decoded.email,
       shippingLineId: decoded.shippingLineId,
+      travelAgencyId: decoded.travelAgencyId,
       isEmailVerified: decoded.isEmailVerified,
     };
   }
@@ -121,5 +136,93 @@ export class AuthService {
     if (!verified) {
       throw new UnauthorizedException();
     }
+  }
+
+  verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
+    shippingLineRestrictedEntity: { shippingLineId: number },
+    loggedInAccount: IAccount
+  ): void {
+    if (loggedInAccount.role === 'SuperAdmin') {
+      return;
+    }
+    if (
+      loggedInAccount.shippingLineId !==
+      shippingLineRestrictedEntity.shippingLineId
+    ) {
+      throw new ForbiddenException();
+    }
+  }
+
+  async verifyTravelAgencyHasAccessToShippingLineRestrictedEntity(
+    shippingLineRestrictedEntity: { shippingLineId: number },
+    loggedInAccount?: IAccount
+  ): Promise<void> {
+    if (!loggedInAccount?.travelAgencyId) {
+      throw new ForbiddenException();
+    }
+
+    const partnerShippingLineIds =
+      await this.prisma.travelAgencyShippingLine.findMany({
+        where: {
+          travelAgencyId: loggedInAccount.travelAgencyId,
+        },
+        select: {
+          shippingLineId: true,
+        },
+      });
+
+    const isPartneredWithShippingLineOfBooking = partnerShippingLineIds.some(
+      ({ shippingLineId }) =>
+        shippingLineId === shippingLineRestrictedEntity.shippingLineId
+    );
+
+    if (!isPartneredWithShippingLineOfBooking) {
+      throw new ForbiddenException();
+    }
+  }
+
+  verifyLoggedInAccountHasAccessToTravelAgencyRestrictedEntity(
+    travelAgencyRestrictedEntity: { travelAgencyId: number },
+    loggedInAccount: IAccount
+  ): void {
+    if (loggedInAccount.role === 'SuperAdmin') {
+      return;
+    }
+    if (
+      loggedInAccount.travelAgencyId !==
+      travelAgencyRestrictedEntity.travelAgencyId
+    ) {
+      throw new ForbiddenException();
+    }
+  }
+
+  hasPrivilegedAccess(loggedInAccount?: IAccount): boolean {
+    if (loggedInAccount === undefined) {
+      return false;
+    }
+
+    const privilegedAccessRoles = [
+      'ShippingLineStaff',
+      'ShippingLineAdmin',
+      'TravelAgencyStaff',
+      'TravelAgencyAdmin',
+      'SuperAdmin',
+    ];
+    return privilegedAccessRoles.includes(loggedInAccount.role);
+  }
+
+  isTravelAgencyAccount(loggedInAccount?: IAccount): boolean {
+    return (
+      loggedInAccount?.role === 'TravelAgencyStaff' ||
+      loggedInAccount?.role === 'TravelAgencyAdmin'
+    );
+  }
+
+  isShippingLineAccount(loggedInAccount?: IAccount): boolean {
+    return (
+      loggedInAccount?.role === 'ShippingLineScanner' ||
+      loggedInAccount?.role === 'ShippingLineStaff' ||
+      loggedInAccount?.role === 'ShippingLineAdmin'
+    );
   }
 }

@@ -28,6 +28,8 @@ export enum ACCOUNT_ROLE {
   ShippingLineScanner = 'ShippingLineScanner',
   ShippingLineStaff = 'ShippingLineStaff',
   ShippingLineAdmin = 'ShippingLineAdmin',
+  TravelAgencyStaff = 'TravelAgencyStaff',
+  TravelAgencyAdmin = 'TravelAgencyAdmin',
   SuperAdmin = 'SuperAdmin',
 }
 
@@ -112,4 +114,8 @@ export enum BOOKING_CANCELLATION_TYPE {
   NoFault = "No One's Fault",
   // e.g. change of mind; 80% refund
   PassengersFault = "Passenger's Fault",
+}
+
+export enum WEBHOOK_TYPE {
+  BOOKING_CREATE = 'On Booking Creation',
 }

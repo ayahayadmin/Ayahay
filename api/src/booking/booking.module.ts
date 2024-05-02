@@ -11,6 +11,8 @@ import { BookingPricingService } from './booking-pricing.service';
 import { EmailModule } from '@/email/email.module';
 import { VoucherModule } from '@/voucher/voucher.module';
 import { BookingRequestService } from '@/booking/booking-request.service';
+import { BookingWebhookService } from '@/booking/booking-webhook.service';
+import { WebhookModule } from '@/webhook/webhook.module';
 
 @Module({
   imports: [
@@ -20,6 +22,7 @@ import { BookingRequestService } from '@/booking/booking-request.service';
     AccountModule,
     EmailModule,
     VoucherModule,
+    WebhookModule,
   ],
   controllers: [BookingController],
   providers: [
@@ -28,6 +31,7 @@ import { BookingRequestService } from '@/booking/booking-request.service';
     BookingRequestService,
     BookingReservationService,
     BookingPricingService,
+    BookingWebhookService,
   ],
   exports: [
     BookingService,

@@ -54,9 +54,12 @@ export async function getTripsByShip({
 }
 
 export async function getTripManifest(
-  tripId: number
+  tripId: number,
+  onboarded: string
 ): Promise<TripManifest | undefined> {
-  const { data } = await axios.get(`${REPORTING_API}/trips/${tripId}/manifest`);
+  const { data } = await axios.get(
+    `${REPORTING_API}/trips/${tripId}/manifest?onboarded=${onboarded}`
+  );
   return data;
 }
 

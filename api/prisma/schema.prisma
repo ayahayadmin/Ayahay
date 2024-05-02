@@ -159,6 +159,8 @@ model ShippingLine {
   accounts Account[]
   bookings Booking[]
   tempBookings TempBooking[]
+  webhooks Webhook[]
+  travelAgencies TravelAgencyShippingLine[]
 
   @@map("shipping_line")
 }
@@ -553,6 +555,32 @@ model TravelAgency {
   name String
 
   accounts Account[]
+  webhooks Webhook[]
+  shippingLines TravelAgencyShippingLine[]
 
   @@map("travel_agency")
+}
+
+model TravelAgencyShippingLine {
+  travelAgencyId Int @map("travel_agency_id")
+  travelAgency TravelAgency @relation(fields: [travelAgencyId], references: [id])
+  shippingLineId Int @map("shipping_line_id")
+  shippingLine ShippingLine @relation(fields: [shippingLineId], references: [id])
+
+  @@id([travelAgencyId, shippingLineId])
+  @@map("travel_agency_shipping_line")
+}
+
+model Webhook {
+  id Int @default(autoincrement()) @id
+  shippingLineId Int? @map("shipping_line_id")
+  shippingLine ShippingLine? @relation(fields: [shippingLineId], references: [id])
+  travelAgencyId Int? @map("travel_agency_id")
+  travelAgency TravelAgency? @relation(fields: [travelAgencyId], references: [id])
+
+  type String
+  url String
+
+  @@index([type], type: Hash)
+  @@map("webhook")
 }

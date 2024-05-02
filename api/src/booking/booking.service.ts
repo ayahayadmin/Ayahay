@@ -25,6 +25,7 @@ import { BookingValidator } from './booking.validator';
 import { BookingReservationService } from './booking-reservation.service';
 import { BookingPricingService } from './booking-pricing.service';
 import { BOOKING_CANCELLATION_TYPE } from '@ayahay/constants';
+import { AuthService } from '@/auth/auth.service';
 
 @Injectable()
 export class BookingService {
@@ -33,6 +34,7 @@ export class BookingService {
     private readonly tripService: TripService,
     private readonly bookingReservationService: BookingReservationService,
     private readonly bookingPricingService: BookingPricingService,
+    private readonly authService: AuthService,
     private readonly bookingMapper: BookingMapper,
     private readonly bookingValidator: BookingValidator
   ) {}
@@ -264,18 +266,29 @@ export class BookingService {
   }
 
   private verifyLoggedInUserHasAccessToBooking(loggedInAccount, booking): void {
-    if (loggedInAccount === undefined && booking.createdByAccountId !== null) {
-      throw new ForbiddenException();
+    // allow if account is the booking's creator
+    if (
+      loggedInAccount !== undefined &&
+      booking.createdByAccountId === loggedInAccount.id
+    ) {
+      return;
     }
 
-    if (
-      booking.createdByAccountId !== null &&
-      loggedInAccount !== undefined &&
-      loggedInAccount.role === 'Passenger' &&
-      booking.createdByAccountId !== loggedInAccount.id
-    ) {
-      throw new ForbiddenException();
+    // allow if booking was created anonymously
+    if (booking.createdByAccountId === null) {
+      return;
     }
+
+    try {
+      this.authService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
+        booking,
+        loggedInAccount
+      );
+      // allow if account has access to booking's shipping line
+      return;
+    } catch {}
+
+    throw new ForbiddenException();
   }
 
   async searchPassengerBookings(
@@ -499,7 +512,7 @@ export class BookingService {
     }
 
     const errorMessages =
-      this.bookingValidator.validateCreateTentativeBookingRequest(
+      await this.bookingValidator.validateCreateTentativeBookingRequest(
         booking,
         loggedInAccount
       );
@@ -630,6 +643,13 @@ export class BookingService {
         'The booking session with the specified payment reference cannot be found.'
       );
     }
+
+    // we remove the temp booking to prevent double booking
+    await transactionContext.tempBooking.delete({
+      where: {
+        id: tempBooking.id,
+      },
+    });
 
     const bookingToCreate =
       this.bookingMapper.convertTempBookingToBooking(tempBooking);

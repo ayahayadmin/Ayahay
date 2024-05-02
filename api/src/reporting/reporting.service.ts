@@ -15,16 +15,16 @@ import {
 import { ReportingMapper } from './reporting.mapper';
 import { Prisma } from '@prisma/client';
 import { TripMapper } from '@/trip/trip.mapper';
-import { UtilityService } from '@/utility.service';
 import { IAccount } from '@ayahay/models';
 import { ShipService } from '@/ship/ship.service';
+import { AuthService } from '@/auth/auth.service';
 
 @Injectable()
 export class ReportingService {
   constructor(
-    private prisma: PrismaService,
-    private utilityService: UtilityService,
-    private shipService: ShipService,
+    private readonly prisma: PrismaService,
+    private readonly authService: AuthService,
+    private readonly shipService: ShipService,
     private readonly reportingMapper: ReportingMapper,
     private readonly tripMapper: TripMapper
   ) {}
@@ -116,7 +116,7 @@ export class ReportingService {
       throw new NotFoundException();
     }
 
-    this.utilityService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
+    this.authService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
       trip,
       loggedInAccount
     );
@@ -151,6 +151,15 @@ export class ReportingService {
         passenger.bookingPaymentItems.find(
           ({ type }) => type === 'CancellationRefund'
         )?.price ?? 0;
+      const paymentStatus = this.authService.isShippingLineAccount(
+        passenger.booking.createdByAccount
+      )
+        ? 'OTC'
+        : this.authService.isTravelAgencyAccount(
+            passenger.booking.createdByAccount
+          )
+        ? 'Agency'
+        : 'Online';
 
       passengers.push(
         this.reportingMapper.convertTripPassengersForReporting(
@@ -158,7 +167,8 @@ export class ReportingService {
           passengerFare,
           passenger.totalPrice,
           discountAmount,
-          partialRefundAmount
+          partialRefundAmount,
+          paymentStatus
         )
       );
 
@@ -192,6 +202,15 @@ export class ReportingService {
         vehicle.bookingPaymentItems.find(
           ({ type }) => type === 'CancellationRefund'
         )?.price ?? 0;
+      const paymentStatus = this.authService.isShippingLineAccount(
+        vehicle.booking.createdByAccount
+      )
+        ? 'OTC'
+        : this.authService.isTravelAgencyAccount(
+            vehicle.booking.createdByAccount
+          )
+        ? 'Agency'
+        : 'Online';
 
       vehicles.push(
         this.reportingMapper.convertTripVehiclesForReporting(
@@ -199,7 +218,8 @@ export class ReportingService {
           vehicleFare,
           vehicle.totalPrice,
           discountAmount,
-          partialRefundAmount
+          partialRefundAmount,
+          paymentStatus
         )
       );
 
@@ -365,6 +385,7 @@ export class ReportingService {
 
   async getTripManifest(
     tripId: number,
+    onboarded: boolean,
     loggedInAccount: IAccount
   ): Promise<TripManifest> {
     const trip = await this.prisma.trip.findUnique({
@@ -377,6 +398,7 @@ export class ReportingService {
         destPort: true,
         bookingTripPassengers: {
           where: {
+            checkInDate: onboarded ? { not: null } : undefined,
             booking: {
               bookingStatus: {
                 in: ['Confirmed', 'Requested'],
@@ -394,7 +416,7 @@ export class ReportingService {
       throw new NotFoundException();
     }
 
-    this.utilityService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
+    this.authService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
       trip,
       loggedInAccount
     );

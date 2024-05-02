@@ -40,7 +40,13 @@ const items: MenuProps['items'] = [
 ];
 
 export default function Schedules() {
-  useAuthGuard(['ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin']);
+  useAuthGuard([
+    'ShippingLineStaff',
+    'ShippingLineAdmin',
+    'TravelAgencyStaff',
+    'TravelAgencyAdmin',
+    'SuperAdmin',
+  ]);
   const [api, contextHolder] = notification.useNotification();
   const { loggedInAccount } = useAuth();
   const [form] = Form.useForm();

@@ -63,6 +63,8 @@ export default function AuthContextProvider({ children }: any) {
       const _hasPrivilegedAccess =
         myAccountInformation?.role === 'ShippingLineStaff' ||
         myAccountInformation?.role === 'ShippingLineAdmin' ||
+        myAccountInformation?.role === 'TravelAgencyStaff' ||
+        myAccountInformation?.role === 'TravelAgencyAdmin' ||
         myAccountInformation?.role === 'SuperAdmin';
       setHasPrivilegedAccess(_hasPrivilegedAccess);
     } else {
