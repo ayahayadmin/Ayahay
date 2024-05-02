@@ -32,12 +32,14 @@ const SummarySalesPerVoyage = forwardRef(function (
   const mopBreakdown: MOPBreakdown = {
     OTC: {
       aggTicketCost: 0,
-      aggAdminFee: 0,
       aggFare: 0,
     },
-    Ayahay: {
+    Agency: {
       aggTicketCost: 0,
-      aggAdminFee: 0,
+      aggFare: 0,
+    },
+    Online: {
+      aggTicketCost: 0,
       aggFare: 0,
     },
   };
@@ -52,9 +54,12 @@ const SummarySalesPerVoyage = forwardRef(function (
     totalPassengerRefund += passenger.refundAmount;
     totalPassengerNetSales += passenger.ticketCost;
 
-    if (passenger.paymentStatus === 'PayMongo') {
-      mopBreakdown.Ayahay.aggTicketCost! += passenger.ticketCost;
-      mopBreakdown.Ayahay.aggFare += passenger.fare;
+    if (passenger.paymentStatus === 'Online') {
+      mopBreakdown.Online.aggTicketCost! += passenger.ticketCost;
+      mopBreakdown.Online.aggFare += passenger.fare;
+    } else if (passenger.paymentStatus === 'Agency') {
+      mopBreakdown.Agency.aggTicketCost! += passenger.ticketCost;
+      mopBreakdown.Agency.aggFare += passenger.fare;
     } else {
       mopBreakdown.OTC.aggTicketCost! += passenger.ticketCost;
       mopBreakdown.OTC.aggFare += passenger.fare;
@@ -71,9 +76,12 @@ const SummarySalesPerVoyage = forwardRef(function (
     totalVehicleRefund += vehicle.refundAmount;
     totalVehicleNetSales += vehicle.ticketCost;
 
-    if (vehicle.paymentStatus === 'PayMongo') {
-      mopBreakdown.Ayahay.aggTicketCost! += vehicle.ticketCost;
-      mopBreakdown.Ayahay.aggFare += vehicle.fare;
+    if (vehicle.paymentStatus === 'Online') {
+      mopBreakdown.Online.aggTicketCost! += vehicle.ticketCost;
+      mopBreakdown.Online.aggFare += vehicle.fare;
+    } else if (vehicle.paymentStatus === 'Agency') {
+      mopBreakdown.Agency.aggTicketCost! += vehicle.ticketCost;
+      mopBreakdown.Agency.aggFare += vehicle.fare;
     } else {
       mopBreakdown.OTC.aggTicketCost! += vehicle.ticketCost;
       mopBreakdown.OTC.aggFare += vehicle.fare;

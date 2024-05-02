@@ -41,7 +41,8 @@ export class ReportingMapper {
     passengerFare,
     totalPrice,
     discountAmount,
-    refundAmount
+    refundAmount,
+    paymentStatus
   ) {
     return {
       passengerName: `${passenger.passenger.firstName.trim() ?? ''} ${
@@ -56,11 +57,7 @@ export class ReportingMapper {
       ticketSale: passengerFare + discountAmount,
       ticketCost: passengerFare + discountAmount + refundAmount,
       fare: totalPrice,
-      paymentStatus:
-        passenger.booking.createdByAccount?.role === 'ShippingLineStaff' ||
-        passenger.booking.createdByAccount?.role === 'ShippingLineAdmin'
-          ? 'OTC'
-          : 'PayMongo',
+      paymentStatus,
     };
   }
 
@@ -69,7 +66,8 @@ export class ReportingMapper {
     vehicleFare,
     totalPrice,
     discountAmount,
-    refundAmount
+    refundAmount,
+    paymentStatus
   ) {
     return {
       teller: vehicle.booking.createdByAccount?.email,
@@ -83,11 +81,7 @@ export class ReportingMapper {
       ticketSale: vehicleFare + discountAmount,
       ticketCost: vehicleFare + discountAmount + refundAmount,
       fare: totalPrice,
-      paymentStatus:
-        vehicle.booking.createdByAccount?.role === 'ShippingLineStaff' ||
-        vehicle.booking.createdByAccount?.role === 'ShippingLineAdmin'
-          ? 'OTC'
-          : 'PayMongo',
+      paymentStatus,
     };
   }
 

@@ -42,7 +42,10 @@ const PassengerDailySalesReport = forwardRef(function (
     OTC: {
       aggFare: 0,
     },
-    Ayahay: {
+    Agency: {
+      aggFare: 0,
+    },
+    Online: {
       aggFare: 0,
     },
   };
@@ -144,8 +147,10 @@ const PassengerDailySalesReport = forwardRef(function (
                 totalRefundAmount += passenger.refundAmount;
                 const paymentStatus = passenger.paymentStatus;
 
-                if (paymentStatus === 'PayMongo') {
-                  mopBreakdown.Ayahay.aggFare += passenger.ticketSale;
+                if (paymentStatus === 'Online') {
+                  mopBreakdown.Online.aggFare += passenger.ticketSale;
+                } else if (paymentStatus === 'Agency') {
+                  mopBreakdown.Agency.aggFare += passenger.ticketSale;
                 } else {
                   mopBreakdown.OTC.aggFare += passenger.ticketSale;
                 }

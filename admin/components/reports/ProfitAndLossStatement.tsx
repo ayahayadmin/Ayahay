@@ -35,7 +35,12 @@ const ProfitAndLossStatement = forwardRef(function (
         totalRefund: 0,
         totalNetSales: 0,
       },
-      Ayahay: {
+      Agency: {
+        totalSales: 0,
+        totalRefund: 0,
+        totalNetSales: 0,
+      },
+      Online: {
         totalSales: 0,
         totalRefund: 0,
         totalNetSales: 0,
@@ -47,7 +52,12 @@ const ProfitAndLossStatement = forwardRef(function (
         totalRefund: 0,
         totalNetSales: 0,
       },
-      Ayahay: {
+      Agency: {
+        totalSales: 0,
+        totalRefund: 0,
+        totalNetSales: 0,
+      },
+      Online: {
         totalSales: 0,
         totalRefund: 0,
         totalNetSales: 0,
@@ -70,10 +80,14 @@ const ProfitAndLossStatement = forwardRef(function (
     totalPassengerRefund += passenger.refundAmount;
     totalPassengerNetSales += passenger.ticketCost;
 
-    if (passenger.paymentStatus === 'PayMongo') {
-      breakdown.passenger.Ayahay.totalSales += passenger.ticketSale;
-      breakdown.passenger.Ayahay.totalRefund += passenger.refundAmount;
-      breakdown.passenger.Ayahay.totalNetSales += passenger.ticketCost;
+    if (passenger.paymentStatus === 'Online') {
+      breakdown.passenger.Online.totalSales += passenger.ticketSale;
+      breakdown.passenger.Online.totalRefund += passenger.refundAmount;
+      breakdown.passenger.Online.totalNetSales += passenger.ticketCost;
+    } else if (passenger.paymentStatus === 'Agency') {
+      breakdown.passenger.Agency.totalSales += passenger.ticketSale;
+      breakdown.passenger.Agency.totalRefund += passenger.refundAmount;
+      breakdown.passenger.Agency.totalNetSales += passenger.ticketCost;
     } else {
       breakdown.passenger.OTC.totalSales += passenger.ticketSale;
       breakdown.passenger.OTC.totalRefund += passenger.refundAmount;
@@ -86,10 +100,14 @@ const ProfitAndLossStatement = forwardRef(function (
     totalVehicleRefund += vehicle.refundAmount;
     totalVehicleNetSales += vehicle.ticketCost;
 
-    if (vehicle.paymentStatus === 'PayMongo') {
-      breakdown.vehicle.Ayahay.totalSales += vehicle.ticketSale;
-      breakdown.vehicle.Ayahay.totalRefund += vehicle.refundAmount;
-      breakdown.vehicle.Ayahay.totalNetSales += vehicle.ticketCost;
+    if (vehicle.paymentStatus === 'Online') {
+      breakdown.vehicle.Online.totalSales += vehicle.ticketSale;
+      breakdown.vehicle.Online.totalRefund += vehicle.refundAmount;
+      breakdown.vehicle.Online.totalNetSales += vehicle.ticketCost;
+    } else if (vehicle.paymentStatus === 'Agency') {
+      breakdown.vehicle.Agency.totalSales += vehicle.ticketSale;
+      breakdown.vehicle.Agency.totalRefund += vehicle.refundAmount;
+      breakdown.vehicle.Agency.totalNetSales += vehicle.ticketCost;
     } else {
       breakdown.vehicle.OTC.totalSales += vehicle.ticketSale;
       breakdown.vehicle.OTC.totalRefund += vehicle.refundAmount;
@@ -97,7 +115,7 @@ const ProfitAndLossStatement = forwardRef(function (
     }
   });
 
-  const paymentMethods = ['OTC', 'Ayahay'];
+  const paymentMethods = ['OTC', 'Online', 'Agency'];
 
   return (
     <div ref={ref}>
@@ -197,7 +215,9 @@ const ProfitAndLossStatement = forwardRef(function (
                       {roundToTwoDecimalPlacesAndAddCommas(
                         paymentMethod === 'OTC'
                           ? breakdown.passenger.OTC.totalSales
-                          : breakdown.passenger.Ayahay.totalSales
+                          : paymentMethod === 'Agency'
+                          ? breakdown.passenger.Agency.totalSales
+                          : breakdown.passenger.Online.totalSales
                       )}
                     </td>
                     <td style={{ textAlign: 'left' }}>
@@ -205,7 +225,9 @@ const ProfitAndLossStatement = forwardRef(function (
                       {roundToTwoDecimalPlacesAndAddCommas(
                         paymentMethod === 'OTC'
                           ? breakdown.passenger.OTC.totalRefund
-                          : breakdown.passenger.Ayahay.totalRefund
+                          : paymentMethod === 'Agency'
+                          ? breakdown.passenger.Agency.totalRefund
+                          : breakdown.passenger.Online.totalRefund
                       )}
                     </td>
                     <td style={{ textAlign: 'left' }}>
@@ -213,7 +235,9 @@ const ProfitAndLossStatement = forwardRef(function (
                       {roundToTwoDecimalPlacesAndAddCommas(
                         paymentMethod === 'OTC'
                           ? breakdown.passenger.OTC.totalNetSales
-                          : breakdown.passenger.Ayahay.totalNetSales
+                          : paymentMethod === 'Agency'
+                          ? breakdown.passenger.Agency.totalNetSales
+                          : breakdown.passenger.Online.totalNetSales
                       )}
                     </td>
                   </tr>
@@ -227,7 +251,9 @@ const ProfitAndLossStatement = forwardRef(function (
                       {roundToTwoDecimalPlacesAndAddCommas(
                         paymentMethod === 'OTC'
                           ? breakdown.vehicle.OTC.totalSales
-                          : breakdown.vehicle.Ayahay.totalSales
+                          : paymentMethod === 'Agency'
+                          ? breakdown.vehicle.Agency.totalSales
+                          : breakdown.vehicle.Online.totalSales
                       )}
                     </td>
                     <td style={{ textAlign: 'left' }}>
@@ -235,7 +261,9 @@ const ProfitAndLossStatement = forwardRef(function (
                       {roundToTwoDecimalPlacesAndAddCommas(
                         paymentMethod === 'OTC'
                           ? breakdown.vehicle.OTC.totalRefund
-                          : breakdown.vehicle.Ayahay.totalRefund
+                          : paymentMethod === 'Agency'
+                          ? breakdown.vehicle.Agency.totalRefund
+                          : breakdown.vehicle.Online.totalRefund
                       )}
                     </td>
                     <td style={{ textAlign: 'left' }}>
@@ -243,7 +271,9 @@ const ProfitAndLossStatement = forwardRef(function (
                       {roundToTwoDecimalPlacesAndAddCommas(
                         paymentMethod === 'OTC'
                           ? breakdown.vehicle.OTC.totalNetSales
-                          : breakdown.vehicle.Ayahay.totalNetSales
+                          : paymentMethod === 'Agency'
+                          ? breakdown.vehicle.Agency.totalNetSales
+                          : breakdown.vehicle.Online.totalNetSales
                       )}
                     </td>
                   </tr>
@@ -257,8 +287,11 @@ const ProfitAndLossStatement = forwardRef(function (
                         paymentMethod === 'OTC'
                           ? breakdown.passenger.OTC.totalSales +
                               breakdown.vehicle.OTC.totalSales
-                          : breakdown.passenger.Ayahay.totalSales +
-                              breakdown.vehicle.Ayahay.totalSales
+                          : paymentMethod === 'Agency'
+                          ? breakdown.passenger.Agency.totalSales +
+                            breakdown.vehicle.Agency.totalSales
+                          : breakdown.passenger.Online.totalSales +
+                            breakdown.vehicle.Online.totalSales
                       )}
                     </td>
                     <td style={{ textAlign: 'left' }}>
@@ -267,8 +300,11 @@ const ProfitAndLossStatement = forwardRef(function (
                         paymentMethod === 'OTC'
                           ? breakdown.passenger.OTC.totalRefund +
                               breakdown.vehicle.OTC.totalRefund
-                          : breakdown.passenger.Ayahay.totalRefund +
-                              breakdown.vehicle.Ayahay.totalRefund
+                          : paymentMethod === 'Agency'
+                          ? breakdown.passenger.Agency.totalRefund +
+                            breakdown.vehicle.Agency.totalRefund
+                          : breakdown.passenger.Online.totalRefund +
+                            breakdown.vehicle.Online.totalRefund
                       )}
                     </td>
                     <td style={{ textAlign: 'left' }}>
@@ -277,8 +313,11 @@ const ProfitAndLossStatement = forwardRef(function (
                         paymentMethod === 'OTC'
                           ? breakdown.passenger.OTC.totalNetSales +
                               breakdown.vehicle.OTC.totalNetSales
-                          : breakdown.passenger.Ayahay.totalNetSales +
-                              breakdown.vehicle.Ayahay.totalNetSales
+                          : paymentMethod === 'Agency'
+                          ? breakdown.passenger.Agency.totalNetSales +
+                            breakdown.vehicle.Agency.totalNetSales
+                          : breakdown.passenger.Online.totalNetSales +
+                            breakdown.vehicle.Online.totalNetSales
                       )}
                     </td>
                   </tr>
@@ -383,8 +422,11 @@ const ProfitAndLossStatement = forwardRef(function (
                         paymentMethod === 'OTC'
                           ? breakdown.passenger.OTC.totalSales +
                               breakdown.vehicle.OTC.totalSales
-                          : breakdown.passenger.Ayahay.totalSales +
-                              breakdown.vehicle.Ayahay.totalSales
+                          : paymentMethod === 'Agency'
+                          ? breakdown.passenger.Agency.totalSales +
+                            breakdown.vehicle.Agency.totalSales
+                          : breakdown.passenger.Online.totalSales +
+                            breakdown.vehicle.Online.totalSales
                       )}
                     </td>
                   </tr>

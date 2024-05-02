@@ -29,7 +29,10 @@ const CargoDailySalesReport = forwardRef(function (
     OTC: {
       aggFare: 0,
     },
-    Ayahay: {
+    Agency: {
+      aggFare: 0,
+    },
+    Online: {
       aggFare: 0,
     },
   };
@@ -131,8 +134,10 @@ const CargoDailySalesReport = forwardRef(function (
                 totalRefundAmount += vehicle.refundAmount;
                 const paymentStatus = vehicle.paymentStatus;
 
-                if (paymentStatus === 'PayMongo') {
-                  mopBreakdown.Ayahay.aggFare += vehicle.ticketSale;
+                if (paymentStatus === 'Online') {
+                  mopBreakdown.Online.aggFare += vehicle.ticketSale;
+                } else if (paymentStatus === 'Agency') {
+                  mopBreakdown.Agency.aggFare += vehicle.ticketSale;
                 } else {
                   mopBreakdown.OTC.aggFare += vehicle.ticketSale;
                 }

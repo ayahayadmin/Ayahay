@@ -151,6 +151,15 @@ export class ReportingService {
         passenger.bookingPaymentItems.find(
           ({ type }) => type === 'CancellationRefund'
         )?.price ?? 0;
+      const paymentStatus = this.authService.isShippingLineAccount(
+        passenger.booking.createdByAccount
+      )
+        ? 'OTC'
+        : this.authService.isTravelAgencyAccount(
+            passenger.booking.createdByAccount
+          )
+        ? 'Agency'
+        : 'Online';
 
       passengers.push(
         this.reportingMapper.convertTripPassengersForReporting(
@@ -158,7 +167,8 @@ export class ReportingService {
           passengerFare,
           passenger.totalPrice,
           discountAmount,
-          partialRefundAmount
+          partialRefundAmount,
+          paymentStatus
         )
       );
 
@@ -192,6 +202,15 @@ export class ReportingService {
         vehicle.bookingPaymentItems.find(
           ({ type }) => type === 'CancellationRefund'
         )?.price ?? 0;
+      const paymentStatus = this.authService.isShippingLineAccount(
+        vehicle.booking.createdByAccount
+      )
+        ? 'OTC'
+        : this.authService.isTravelAgencyAccount(
+            vehicle.booking.createdByAccount
+          )
+        ? 'Agency'
+        : 'Online';
 
       vehicles.push(
         this.reportingMapper.convertTripVehiclesForReporting(
@@ -199,7 +218,8 @@ export class ReportingService {
           vehicleFare,
           vehicle.totalPrice,
           discountAmount,
-          partialRefundAmount
+          partialRefundAmount,
+          paymentStatus
         )
       );
 
