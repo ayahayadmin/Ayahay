@@ -279,7 +279,6 @@ WHERE row <= ${bookingTripPassengers.length}
       bookingToCreate
     );
 
-    // TODO: connect BTP drivesVehicleId to BTV
     await this.onBookingConfirmation(booking, transactionContext);
 
     return this.bookingMapper.convertBookingToBasicDto(bookingEntity);

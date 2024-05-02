@@ -153,6 +153,34 @@ export class AuthService {
     }
   }
 
+  async verifyTravelAgencyHasAccessToShippingLineRestrictedEntity(
+    shippingLineRestrictedEntity: { shippingLineId: number },
+    loggedInAccount?: IAccount
+  ): Promise<void> {
+    if (!loggedInAccount?.travelAgencyId) {
+      throw new ForbiddenException();
+    }
+
+    const partnerShippingLineIds =
+      await this.prisma.travelAgencyShippingLine.findMany({
+        where: {
+          travelAgencyId: loggedInAccount.travelAgencyId,
+        },
+        select: {
+          shippingLineId: true,
+        },
+      });
+
+    const isPartneredWithShippingLineOfBooking = partnerShippingLineIds.some(
+      ({ shippingLineId }) =>
+        shippingLineId === shippingLineRestrictedEntity.shippingLineId
+    );
+
+    if (!isPartneredWithShippingLineOfBooking) {
+      throw new ForbiddenException();
+    }
+  }
+
   verifyLoggedInAccountHasAccessToTravelAgencyRestrictedEntity(
     travelAgencyRestrictedEntity: { travelAgencyId: number },
     loggedInAccount: IAccount
@@ -176,8 +204,25 @@ export class AuthService {
     const privilegedAccessRoles = [
       'ShippingLineStaff',
       'ShippingLineAdmin',
+      'TravelAgencyStaff',
+      'TravelAgencyAdmin',
       'SuperAdmin',
     ];
     return privilegedAccessRoles.includes(loggedInAccount.role);
+  }
+
+  isTravelAgencyAccount(loggedInAccount?: IAccount): boolean {
+    return (
+      loggedInAccount?.role === 'TravelAgencyStaff' ||
+      loggedInAccount?.role === 'TravelAgencyAdmin'
+    );
+  }
+
+  isShippingLineAccount(loggedInAccount?: IAccount): boolean {
+    return (
+      loggedInAccount?.role === 'ShippingLineScanner' ||
+      loggedInAccount?.role === 'ShippingLineStaff' ||
+      loggedInAccount?.role === 'ShippingLineAdmin'
+    );
   }
 }

@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -55,6 +56,10 @@ export class PaymentService {
       throw new Error(
         'This booking session has expired. Please create another booking.'
       );
+    }
+    // can't pay for bookings not made by current user
+    if ((loggedInAccount?.id ?? null) !== tempBooking.createdByAccountId) {
+      throw new ForbiddenException();
     }
 
     const booking = this.bookingMapper.convertTempBookingToBooking(tempBooking);
