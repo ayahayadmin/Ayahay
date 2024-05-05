@@ -138,9 +138,9 @@ export async function setTripAsArrived(tripId: number): Promise<void> {
   return axios.patch(`${TRIP_API}/${tripId}/arrived`);
 }
 
-export async function setTripAsCancelled(
+export async function cancelTrip(
   tripId: number,
   reason: string
 ): Promise<void> {
-  return axios.patch(`${TRIP_API}/${tripId}/cancelled`, { reason });
+  return axios.patch(`${TRIP_API}/${tripId}/cancel`, { reason });
 }

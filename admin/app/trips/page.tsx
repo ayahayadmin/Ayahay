@@ -24,7 +24,7 @@ import dayjs from 'dayjs';
 import { RangePickerProps } from 'antd/es/date-picker';
 import { DATE_FORMAT_LIST, DATE_PLACEHOLDER } from '@ayahay/constants';
 import { PlusCircleOutlined } from '@ant-design/icons';
-import { setTripAsArrived, setTripAsCancelled } from '@/services/trip.service';
+import { setTripAsArrived, cancelTrip } from '@/services/trip.service';
 import CancelledTripModal from '@/components/modal/CancelledTripModal';
 
 const { RangePicker } = DatePicker;
@@ -159,7 +159,7 @@ export default function Schedules() {
       <CancelledTripModal
         open={isModalOpen}
         tripId={tripNumber}
-        setTripAsCancelled={setTripAsCancelled}
+        setTripAsCancelled={cancelTrip}
         setIsModalOpen={setIsModalOpen}
         api={api}
       />
