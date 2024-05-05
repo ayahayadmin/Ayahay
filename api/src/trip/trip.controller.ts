@@ -185,15 +185,4 @@ export class TripController {
   ): Promise<void> {
     return this.tripService.setTripAsArrived(tripId, req.user);
   }
-
-  @Patch(':tripId/cancelled')
-  @UseGuards(AuthGuard)
-  @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
-  async setTripAsCancelled(
-    @Param('tripId') tripId: number,
-    @Body('reason') reason: string,
-    @Request() req
-  ): Promise<void> {
-    return this.tripService.setTripAsCancelled(tripId, reason, req.user);
-  }
 }
