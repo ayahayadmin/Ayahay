@@ -472,7 +472,13 @@ WHERE row <= ${bookingTripPassengers.length}
       };
     } = {};
 
-    bookingTripPassengers.forEach(({ tripId, cabinId }) => {
+    bookingTripPassengers.forEach(({ tripId, cabinId, removedReason }) => {
+      if (typeof removedReason === 'string') {
+        // a String typed removedReason means that the passenger is voided beforehand
+        // allowing a void passenger will result to an incorrect availalbe_passenger_capacity
+        return;
+      }
+
       if (tripCabinPassengerCount[tripId] === undefined) {
         tripCabinPassengerCount[tripId] = {};
       }
