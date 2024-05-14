@@ -48,6 +48,11 @@ export class ReportingService {
               { removedReasonType: null },
               { removedReasonType: 'PassengersFault' },
             ],
+            booking: {
+              bookingStatus: {
+                in: ['Confirmed', 'Requested'],
+              },
+            },
           },
           include: {
             booking: {
@@ -79,6 +84,11 @@ export class ReportingService {
               { removedReasonType: null },
               { removedReasonType: 'PassengersFault' },
             ],
+            booking: {
+              bookingStatus: {
+                in: ['Confirmed', 'Requested'],
+              },
+            },
           },
           include: {
             booking: {
