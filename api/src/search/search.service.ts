@@ -119,6 +119,7 @@ export class SearchService {
           INNER JOIN ayahay.booking b ON bp.booking_id = b.id
         WHERE 
           b.booking_status = 'Confirmed'
+          AND bp.removed_reason IS NULL
           AND trip_id IN (SELECT id FROM trips_matching_query)
         GROUP BY bp.trip_id, booking_id, passenger_id, check_in_date
       ), checked_in_passenger_count_per_trip AS (
@@ -148,6 +149,7 @@ export class SearchService {
           INNER JOIN ayahay.booking b ON bv.booking_id = b.id
         WHERE
           b.booking_status = 'Confirmed'
+          AND bv.removed_reason IS NULL
           AND trip_id IN (SELECT id FROM trips_matching_query)
         GROUP BY bv.trip_id, vehicle_id, check_in_date
       ), checked_in_vehicle_count_per_trip AS (
