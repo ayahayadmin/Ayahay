@@ -48,6 +48,11 @@ export class ReportingService {
               { removedReasonType: null },
               { removedReasonType: 'PassengersFault' },
             ],
+            booking: {
+              bookingStatus: {
+                in: ['Confirmed', 'Requested'],
+              },
+            },
           },
           include: {
             booking: {
@@ -79,6 +84,11 @@ export class ReportingService {
               { removedReasonType: null },
               { removedReasonType: 'PassengersFault' },
             ],
+            booking: {
+              bookingStatus: {
+                in: ['Confirmed', 'Requested'],
+              },
+            },
           },
           include: {
             booking: {
@@ -399,6 +409,7 @@ export class ReportingService {
         bookingTripPassengers: {
           where: {
             checkInDate: onboarded ? { not: null } : undefined,
+            removedReasonType: null,
             booking: {
               bookingStatus: {
                 in: ['Confirmed', 'Requested'],
