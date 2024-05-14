@@ -409,6 +409,7 @@ export class ReportingService {
         bookingTripPassengers: {
           where: {
             checkInDate: onboarded ? { not: null } : undefined,
+            removedReasonType: null,
             booking: {
               bookingStatus: {
                 in: ['Confirmed', 'Requested'],
