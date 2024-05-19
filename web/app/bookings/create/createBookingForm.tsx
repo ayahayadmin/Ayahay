@@ -50,6 +50,9 @@ export default function CreateBookingForm({
   const [currentStep, setCurrentStep] = useState(0);
 
   const nextStep = () => {
+    if (currentStep === 0) {
+      setFirstPassengerAsConsignee();
+    }
     setCurrentStep(currentStep + 1);
   };
 
@@ -291,6 +294,31 @@ export default function CreateBookingForm({
     const discountType = getDiscountTypeFromAge(age);
     form.setFieldValue(discountTypeFieldName, discountType);
     form.setFields([{ name: discountTypeFieldName, errors: [] }]);
+  };
+
+  const setFirstPassengerAsConsignee = () => {
+    const firstPassengerField = [
+      'bookingTrips',
+      0,
+      'bookingTripPassengers',
+      0,
+      'passenger',
+    ];
+    const firstPassengerFirstName = form.getFieldValue([
+      ...firstPassengerField,
+      'firstName',
+    ]);
+    const firstPassengerLastName = form.getFieldValue([
+      ...firstPassengerField,
+      'lastName',
+    ]);
+
+    if (firstPassengerFirstName && firstPassengerLastName) {
+      form.setFieldValue(
+        'consigneeName',
+        `${firstPassengerFirstName} ${firstPassengerLastName}`
+      );
+    }
   };
 
   return (

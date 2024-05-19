@@ -3,6 +3,7 @@ import { Button, Badge } from 'antd';
 import { IBookingTripVehicle } from '@ayahay/models';
 import Table, { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
+import { ExportOutlined } from '@ant-design/icons';
 
 interface VehiclesSummaryProps {
   vehicles?: IBookingTripVehicle[];
@@ -51,9 +52,9 @@ export default function VehiclesSummary({
         bookingId: bookingVehicle.bookingId,
         tripId: bookingVehicle.tripId,
         vehicleId: bookingVehicle.vehicleId,
-        plateNo: vehicle.plateNo,
-        model: vehicle.modelName,
-        vehicleTypeName: vehicle.vehicleType?.name ?? '',
+        plateNo: vehicle?.plateNo ?? '',
+        model: vehicle?.modelName ?? '',
+        vehicleTypeName: vehicle?.vehicleType?.name ?? '',
         checkInDate: bookingVehicle.checkInDate,
       }))
     );
@@ -85,6 +86,17 @@ export default function VehiclesSummary({
             <Badge status='success' text={`Checked in ${checkInDateFromNow}`} />
           );
         },
+      },
+      {
+        title: 'Actions',
+        render: (_, vehicle) => (
+          <Button
+            type='default'
+            href={`/bookings/${vehicle.bookingId}/trips/${vehicle.tripId}/vehicles/${vehicle.vehicleId}`}
+            target='_blank'
+            icon={<ExportOutlined />}
+          />
+        ),
       },
     ]);
   };

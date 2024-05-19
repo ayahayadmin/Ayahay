@@ -36,6 +36,19 @@ export async function removeTripPassenger(
   );
 }
 
+export async function removeTripVehicle(
+  bookingId: string,
+  tripId: number,
+  vehicleId: number,
+  removedReason: string,
+  reasonType: keyof typeof BOOKING_CANCELLATION_TYPE
+): Promise<void> {
+  return axios.patch(
+    `${BOOKING_API}/${bookingId}/trips/${tripId}/vehicles/${vehicleId}/remove`,
+    { removedReason, reasonType }
+  );
+}
+
 export async function checkInVehicle(
   bookingId: string,
   tripId: number,

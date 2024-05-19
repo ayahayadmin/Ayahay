@@ -167,6 +167,7 @@ export class BookingMapper {
 
       totalPrice: bookingTripVehicle.totalPrice ?? undefined,
       checkInDate: bookingTripVehicle.checkInDate ?? undefined,
+      removedReason: bookingTripVehicle.removedReason ?? undefined,
 
       bookingPaymentItems: bookingTripVehicle.bookingPaymentItems?.map(
         (paymentItem) => this.paymentMapper.convertPaymentItemToDto(paymentItem)

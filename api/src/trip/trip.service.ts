@@ -367,6 +367,9 @@ export class TripService {
       where,
       include: {
         bookingTripVehicles: {
+          where: {
+            removedReason: null,
+          },
           include: {
             vehicle: {
               include: {
