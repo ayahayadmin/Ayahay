@@ -293,4 +293,25 @@ export class BookingController {
       req.user
     );
   }
+
+  @Patch(':bookingId/trips/:tripId/vehicles/:vehicleId/remove')
+  @UseGuards(AuthGuard)
+  @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
+  async removeTripVehicle(
+    @Request() req,
+    @Param('bookingId') bookingId: string,
+    @Param('tripId') tripId: number,
+    @Param('vehicleId') vehicleId: number,
+    @Body('removedReason') removedReason: string,
+    @Body('reasonType') reasonType: keyof typeof BOOKING_CANCELLATION_TYPE
+  ): Promise<void> {
+    return this.bookingService.removeTripVehicle(
+      bookingId,
+      tripId,
+      vehicleId,
+      removedReason,
+      reasonType,
+      req.user
+    );
+  }
 }

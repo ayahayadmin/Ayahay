@@ -1,8 +1,15 @@
 import React, { useState } from 'react';
 import TripSummary from './TripSummary';
-import { Button, Descriptions, QRCode, Skeleton, Typography } from 'antd';
+import {
+  Badge,
+  Button,
+  Descriptions,
+  QRCode,
+  Skeleton,
+  Typography,
+} from 'antd';
 import { IBookingTripVehicle } from '@ayahay/models';
-import { PrinterOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, PrinterOutlined } from '@ant-design/icons';
 import { useBookingControls } from '@ayahay/hooks/booking';
 import BookingCancellationModal from '../modals/BookingCancellationModal';
 import dayjs from 'dayjs';
@@ -65,7 +72,11 @@ export default function BookingTripVehicleSummary({
       )}
       {showCancelBookingButton && (
         <>
-          <Button type='default' onClick={() => setIsRemoveModalOpen(true)}>
+          <Button
+            type='primary'
+            danger
+            onClick={() => setIsRemoveModalOpen(true)}
+          >
             Remove Vehicle
           </Button>
           <BookingCancellationModal
@@ -84,6 +95,14 @@ export default function BookingTripVehicleSummary({
     <Skeleton loading={bookingTripVehicle === undefined} active>
       {booking && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+          <Button
+            type='link'
+            href={`/bookings/${booking?.id}`}
+            icon={<ArrowLeftOutlined />}
+            style={{ alignSelf: 'start' }}
+          >
+            Booking Summary
+          </Button>
           <Title level={1}>Booking Details</Title>
           <section
             style={{
@@ -91,7 +110,7 @@ export default function BookingTripVehicleSummary({
               flexWrap: screens.lg ? 'nowrap' : 'wrap',
             }}
           >
-            {showQrCode && (
+            {showQrCode && bookingTripVehicle.removedReason === undefined && (
               <article style={{ flexGrow: '1' }}>
                 <p>{getUserAction()}</p>
                 <QRCode
@@ -128,8 +147,25 @@ export default function BookingTripVehicleSummary({
                 <Descriptions.Item label='Vehicle Type'>
                   {vehicle?.vehicleType?.name}
                 </Descriptions.Item>
+                <Descriptions.Item label='Status'>
+                  {bookingTripVehicle.removedReason !== undefined ? (
+                    <Badge
+                      status='error'
+                      text={`Removed due to ${bookingTripVehicle.removedReason}`}
+                    />
+                  ) : bookingTripVehicle.checkInDate ? (
+                    <Badge
+                      status='success'
+                      text={`Checked in ${dayjs(
+                        bookingTripVehicle.checkInDate
+                      ).fromNow()}`}
+                    />
+                  ) : (
+                    <Badge status='default' text='Not checked in' />
+                  )}
+                </Descriptions.Item>
               </Descriptions>
-              {bookingActions}
+              {bookingTripVehicle.removedReason === undefined && bookingActions}
             </article>
           </section>
           <section id='trip-summary'>

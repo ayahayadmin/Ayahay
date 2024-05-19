@@ -6,17 +6,18 @@ import { useAuth } from '@/contexts/AuthContext';
 import { getAxiosError } from '@ayahay/services/error.service';
 import styles from '@/app/bookings/[id]/page.module.scss';
 import BookingTripVehicleSummary from '@ayahay/components/descriptions/BookingTripVehicleSummary';
-import { Button, Modal, notification, Typography } from 'antd';
-import { checkInVehicle } from '@ayahay/services/booking.service';
-
-const { Title } = Typography;
+import { App, Button } from 'antd';
+import { BOOKING_CANCELLATION_TYPE } from '@ayahay/constants';
+import {
+  checkInVehicle,
+  removeTripVehicle,
+} from '@ayahay/services/booking.service';
 
 const textCenter = { textAlign: 'center' };
 const noPadding = { padding: '0' };
 
 export default function BookingTripVehiclePage({ params }) {
-  const [api, notificationContext] = notification.useNotification();
-  const [modal, modalContext] = Modal.useModal();
+  const { notification } = App.useApp();
   const { loggedInAccount, hasPrivilegedAccess } = useAuth();
   const [bookingTripVehicle, setBookingTripVehicle] = useState<
     IBookingTripVehicle | undefined
@@ -50,13 +51,31 @@ export default function BookingTripVehiclePage({ params }) {
     loadBookingTripVehicle();
   }, [loggedInAccount]);
 
-  const removeVehicle = async () => {
+  const removeVehicle = async (
+    remarks: string,
+    reasonType: keyof typeof BOOKING_CANCELLATION_TYPE
+  ) => {
     if (bookingTripVehicle === undefined) {
       return;
     }
 
     try {
-    } catch (e) {}
+      await removeTripVehicle(
+        bookingTripVehicle.bookingId,
+        bookingTripVehicle.tripId,
+        bookingTripVehicle.vehicleId,
+        remarks,
+        reasonType
+      );
+      notification.success({
+        message: 'Vehicle Removal Success',
+        description:
+          'This passenger has been removed from the booking successfully.',
+      });
+      loadBookingTripVehicle();
+    } catch (e) {
+      handleAxiosError(e, 'Vehicle Removal Failed');
+    }
   };
 
   const checkInBookingVehicle = async () => {
@@ -70,7 +89,7 @@ export default function BookingTripVehiclePage({ params }) {
         bookingTripVehicle.tripId,
         bookingTripVehicle.vehicleId
       );
-      api.success({
+      notification.success({
         message: 'Check In Success',
         description: 'The selected vehicle has checked in successfully.',
       });
@@ -86,7 +105,7 @@ export default function BookingTripVehiclePage({ params }) {
     const errorMessage = axiosError
       ? axiosError.message
       : 'Something went wrong.';
-    api.error({
+    notification.error({
       message: errorTitle,
       description: errorMessage,
     });
@@ -133,8 +152,6 @@ export default function BookingTripVehiclePage({ params }) {
         </p>
       )}
       {errorCode === 500 && <p style={textCenter}>Something went wrong.</p>}
-      {notificationContext}
-      {modalContext}
     </div>
   );
 }

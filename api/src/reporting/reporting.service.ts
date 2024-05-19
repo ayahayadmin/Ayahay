@@ -49,9 +49,15 @@ export class ReportingService {
               { removedReasonType: 'PassengersFault' },
             ],
             booking: {
-              bookingStatus: {
-                in: ['Confirmed', 'Requested'],
-              },
+              OR: [
+                {
+                  bookingStatus: {
+                    in: ['Confirmed', 'Requested'],
+                  },
+                },
+                { cancellationType: null },
+                { cancellationType: 'PassengersFault' },
+              ],
             },
           },
           include: {
@@ -85,9 +91,15 @@ export class ReportingService {
               { removedReasonType: 'PassengersFault' },
             ],
             booking: {
-              bookingStatus: {
-                in: ['Confirmed', 'Requested'],
-              },
+              OR: [
+                {
+                  bookingStatus: {
+                    in: ['Confirmed', 'Requested'],
+                  },
+                },
+                { cancellationType: null },
+                { cancellationType: 'PassengersFault' },
+              ],
             },
           },
           include: {

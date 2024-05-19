@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { getAxiosError } from '@ayahay/services/error.service';
 import styles from '@/app/bookings/[id]/page.module.scss';
 import BookingTripPassengerSummary from '@ayahay/components/descriptions/BookingTripPassengerSummary';
-import { Button, notification, Typography } from 'antd';
+import { App, Button } from 'antd';
 import {
   checkInPassenger,
   removeTripPassenger,
@@ -17,7 +17,7 @@ const textCenter = { textAlign: 'center' };
 const noPadding = { padding: '0' };
 
 export default function BookingTripPassengerPage({ params }) {
-  const [api, notificationContext] = notification.useNotification();
+  const { notification } = App.useApp();
   const { loggedInAccount, hasPrivilegedAccess } = useAuth();
   const [bookingTripPassenger, setBookingTripPassenger] = useState<
     IBookingTripPassenger | undefined
@@ -67,7 +67,7 @@ export default function BookingTripPassengerPage({ params }) {
         remarks,
         reasonType
       );
-      api.success({
+      notification.success({
         message: 'Passenger Removal Success',
         description:
           'This passenger has been removed from the booking successfully.',
@@ -89,7 +89,7 @@ export default function BookingTripPassengerPage({ params }) {
         bookingTripPassenger.tripId,
         bookingTripPassenger.passengerId
       );
-      api.success({
+      notification.success({
         message: 'Check In Success',
         description: 'The selected passenger has checked in successfully.',
       });
@@ -105,7 +105,7 @@ export default function BookingTripPassengerPage({ params }) {
     const errorMessage = axiosError
       ? axiosError.message
       : 'Something went wrong.';
-    api.error({
+    notification.error({
       message: errorTitle,
       description: errorMessage,
     });
@@ -152,7 +152,6 @@ export default function BookingTripPassengerPage({ params }) {
         </p>
       )}
       {errorCode === 500 && <p style={textCenter}>Something went wrong.</p>}
-      {notificationContext}
     </div>
   );
 }

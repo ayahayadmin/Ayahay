@@ -15,7 +15,7 @@ const underlined = {
 };
 
 const header = {
-  fontSize: '16px',
+  fontSize: '12px',
   fontWeight: '400',
   textAlign: 'center',
 };

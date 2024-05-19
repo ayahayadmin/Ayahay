@@ -239,6 +239,9 @@ export class BookingService {
                 },
                 bookingPaymentItems: true,
               },
+              where: {
+                removedReason: null,
+              },
             },
           },
         },
@@ -1009,6 +1012,73 @@ export class BookingService {
 
       await this.bookingReservationService.updatePassengerCapacities(
         [bookingTripPassenger] as any[],
+        'increment',
+        transactionContext as any
+      );
+    });
+  }
+
+  async removeTripVehicle(
+    bookingId: string,
+    tripId: number,
+    vehicleId: number,
+    removedReason: string,
+    reasonType: keyof typeof BOOKING_CANCELLATION_TYPE,
+    loggedInAccount: IAccount
+  ): Promise<void> {
+    const where: Prisma.BookingTripVehicleWhereUniqueInput = {
+      bookingId_tripId_vehicleId: {
+        bookingId,
+        tripId,
+        vehicleId,
+      },
+    };
+
+    const bookingTripVehicle = await this.prisma.bookingTripVehicle.findUnique({
+      where,
+      include: {
+        booking: true,
+      },
+    });
+
+    if (bookingTripVehicle === null) {
+      throw new NotFoundException();
+    }
+
+    this.bookingValidator.validateBookingAccessForModification(
+      bookingTripVehicle.booking,
+      loggedInAccount
+    );
+
+    if (bookingTripVehicle.removedReason !== null) {
+      throw new BadRequestException('The vehicle has been removed already.');
+    }
+
+    await this.prisma.$transaction(async (transactionContext) => {
+      const refundedAmount = await this.bookingPricingService.refundTripVehicle(
+        bookingTripVehicle as any,
+        reasonType,
+        transactionContext as any
+      );
+
+      await transactionContext.booking.update({
+        where: { id: bookingTripVehicle.bookingId },
+        data: {
+          totalPrice: bookingTripVehicle.booking.totalPrice - refundedAmount,
+        },
+      });
+
+      await transactionContext.bookingTripVehicle.update({
+        where,
+        data: {
+          removedReason,
+          removedReasonType: reasonType as any,
+          totalPrice: bookingTripVehicle.totalPrice - refundedAmount,
+        },
+      });
+
+      await this.bookingReservationService.updateVehicleCapacities(
+        [bookingTripVehicle] as any[],
         'increment',
         transactionContext as any
       );
