@@ -167,10 +167,10 @@ export class TripController {
 
   @Patch(':tripId/cancel')
   @UseGuards(AuthGuard)
-  @Roles('ShippingLineAdmin', 'SuperAdmin')
+  @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
   async cancelTrip(
     @Param('tripId') tripId: number,
-    @Query('reason') reason: string,
+    @Body('reason') reason: string,
     @Request() req
   ): Promise<void> {
     return this.tripService.cancelTrip(tripId, reason, req.user);
