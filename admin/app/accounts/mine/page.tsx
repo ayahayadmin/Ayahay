@@ -19,6 +19,7 @@ export default function MyAccountPage() {
 
   const canViewApiKey =
     loggedInAccount?.role === 'ShippingLineAdmin' ||
+    loggedInAccount?.role === 'TravelAgencyAdmin' ||
     loggedInAccount?.role === 'SuperAdmin';
 
   useEffect(() => {
