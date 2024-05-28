@@ -55,13 +55,13 @@ export class AccountController {
   }
 
   @Get('mine/api-key')
-  @Roles('ShippingLineAdmin', 'TravelAgency', 'SuperAdmin')
+  @Roles('ShippingLineAdmin', 'TravelAgencyAdmin', 'SuperAdmin')
   async getMyApiKey(@Request() req): Promise<string> {
     return this.accountService.getMyApiKey(req.user);
   }
 
   @Post('mine/api-key')
-  @Roles('ShippingLineAdmin', 'TravelAgency', 'SuperAdmin')
+  @Roles('ShippingLineAdmin', 'TravelAgencyAdmin', 'SuperAdmin')
   async generateApiKeyForAccount(@Request() req): Promise<string> {
     return this.accountService.generateApiKeyForAccount(req.user);
   }
