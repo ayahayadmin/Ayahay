@@ -12,12 +12,13 @@ import { isEmpty } from 'lodash';
 import {
   AvailableTrips,
   CancelledTrips,
+  CollectOption,
   CreateTripsFromSchedulesRequest,
   PaginatedRequest,
   PaginatedResponse,
+  PortsAndDateRangeSearch,
   SearchAvailableTrips,
   TripSearchByDateRange,
-  TripVoyage,
   UpdateTripCapacityRequest,
   VehicleBookings,
 } from '@ayahay/http';
@@ -198,7 +199,10 @@ export class TripService {
   async getAvailableTripsByDateRange(
     pagination: PaginatedRequest,
     shippingLineId: number,
-    { startDate, endDate }: TripSearchByDateRange
+    startDate: string,
+    endDate: string,
+    srcPortId?: number,
+    destPortId?: number
   ): Promise<PaginatedResponse<ITrip>> {
     const itemsPerPage = 10;
     const skip = (pagination.page - 1) * itemsPerPage;
@@ -206,6 +210,16 @@ export class TripService {
       WHERE t.shipping_line_id = ${Number(shippingLineId)}
       AND t.departure_date > ${startDate}::TIMESTAMP
       AND t.departure_date <= ${endDate}::TIMESTAMP
+      ${
+        !!srcPortId
+          ? Prisma.sql`AND t.src_port_id = ${srcPortId}`
+          : Prisma.empty
+      }
+      ${
+        !!destPortId
+          ? Prisma.sql`AND t.dest_port_id = ${destPortId}`
+          : Prisma.empty
+      }
     `;
 
     const trips = await this.prisma.$queryRaw<AvailableTrips[]>`
@@ -233,10 +247,10 @@ export class TripService {
     };
   }
 
-  async getTripsByDateRange(
-    { startDate, endDate }: TripSearchByDateRange,
+  async getTripsForCollectBooking(
+    { startDate, endDate, srcPortId, destPortId }: PortsAndDateRangeSearch,
     loggedInAccount: IAccount
-  ): Promise<TripVoyage[]> {
+  ): Promise<CollectOption[]> {
     const trips = await this.prisma.trip.findMany({
       where: {
         departureDate: {
@@ -244,6 +258,8 @@ export class TripService {
           lte: new Date(endDate).toISOString(),
         },
         shippingLineId: loggedInAccount.shippingLineId,
+        srcPortId: Number(srcPortId) || undefined,
+        destPortId: Number(destPortId) || undefined,
       },
       select: {
         id: true,
@@ -264,13 +280,13 @@ export class TripService {
       },
     });
 
-    return trips.map((trip) => this.tripMapper.convertTripToTripVoyage(trip));
+    return this.tripMapper.convertTripToCollectOptions(trips);
   }
 
   async getCancelledTrips(
     pagination: PaginatedRequest,
     shippingLineId: number,
-    { startDate, endDate }: TripSearchByDateRange,
+    { startDate, endDate, srcPortId, destPortId }: PortsAndDateRangeSearch,
     loggedInAccount: IAccount
   ): Promise<PaginatedResponse<CancelledTrips>> {
     this.authService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
@@ -288,6 +304,8 @@ export class TripService {
         lte: new Date(endDate).toISOString(),
       },
       status: 'Cancelled',
+      srcPortId: Number(srcPortId) || undefined,
+      destPortId: Number(destPortId) || undefined,
     };
 
     const cancelledTrips = await this.prisma.trip.findMany({

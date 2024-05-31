@@ -8,4 +8,16 @@
   .range-picker {
     min-width: 20%;
   }
+
+  .port-input {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+
+    @media (max-width: 767px) {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5px;
+    }
+  }
 }

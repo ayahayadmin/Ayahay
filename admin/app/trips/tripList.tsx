@@ -8,7 +8,7 @@ import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import { getAvailableTripsByDateRange } from '@/services/trip.service';
 import Table, { ColumnsType } from 'antd/es/table';
 import { getLocaleTimeString } from '@ayahay/services/date.service';
-import { PaginatedRequest, TripSearchByDateRange } from '@ayahay/http';
+import { PaginatedRequest, PortsAndDateRangeSearch } from '@ayahay/http';
 import EditCapacity from '@/components/form/EditCapacity';
 import { ArrowRightOutlined, DownOutlined } from '@ant-design/icons';
 import { useServerPagination } from '@ayahay/hooks';
@@ -18,7 +18,7 @@ dayjs.extend(isSameOrBefore);
 dayjs.extend(isSameOrAfter);
 
 interface TripListProps {
-  searchQuery: TripSearchByDateRange | undefined;
+  searchQuery: PortsAndDateRangeSearch | undefined;
   hasAdminPrivileges: boolean;
   onSetTripAsArrived: (tripId: number) => Promise<void>;
   onSetTripAsCancelled: (tripId: number) => Promise<void>;

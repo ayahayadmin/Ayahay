@@ -96,10 +96,13 @@ export async function getVoidBookingTripVehicles(
 }
 
 export async function getCollectTripBooking(
-  tripIds: number[]
+  tripIds: string[]
 ): Promise<CollectTripBooking[] | undefined> {
+  const tripIdsArray: string[] = [];
+  tripIds.forEach((tripId) => tripIdsArray.push(...tripId.split(',')));
+
   const tripIdQuery = new URLSearchParams();
-  tripIds.forEach((tripId) => tripIdQuery.append('tripIds', tripId.toString()));
+  tripIdsArray.forEach((tripId) => tripIdQuery.append('tripIds', tripId));
 
   try {
     const { data } = await axios.get<CollectTripBooking[]>(

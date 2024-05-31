@@ -18,12 +18,13 @@ import { Roles } from '@/decorator/roles.decorator';
 import { AuthGuard } from '@/auth/auth.guard';
 import {
   CancelledTrips,
+  CollectOption,
   CreateTripsFromSchedulesRequest,
   PaginatedRequest,
   PaginatedResponse,
+  PortsAndDateRangeSearch,
   SearchAvailableTrips,
   TripSearchByDateRange,
-  TripVoyage,
   UpdateTripCapacityRequest,
   VehicleBookings,
 } from '@ayahay/http';
@@ -83,23 +84,29 @@ export class TripController {
   async getAvailableTripsByDateRange(
     @Query() pagination: PaginatedRequest,
     @Query('shippingLineId') shippingLineId: number,
-    @Query() query: TripSearchByDateRange
+    @Query('startDate') startDate: string,
+    @Query('endDate') endDate: string,
+    @Query('srcPortId') srcPortId?: number,
+    @Query('destPortId') destPortId?: number
   ): Promise<PaginatedResponse<ITrip>> {
     return await this.tripService.getAvailableTripsByDateRange(
       pagination,
       shippingLineId,
-      query
+      startDate,
+      endDate,
+      srcPortId,
+      destPortId
     );
   }
 
-  @Get('by-date-range')
+  @Get('collect')
   @UseGuards(AuthGuard)
   @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
-  async getTripsByDateRange(
-    @Query() query: TripSearchByDateRange,
+  async getTripsForCollectBooking(
+    @Query() query: PortsAndDateRangeSearch,
     @Request() req
-  ): Promise<TripVoyage[]> {
-    return await this.tripService.getTripsByDateRange(query, req.user);
+  ): Promise<CollectOption[]> {
+    return await this.tripService.getTripsForCollectBooking(query, req.user);
   }
 
   @Get('cancelled-trips')
@@ -108,7 +115,7 @@ export class TripController {
   async getCancelledTrips(
     @Query() pagination: PaginatedRequest,
     @Query('shippingLineId') shippingLineId: number,
-    @Query() query: TripSearchByDateRange,
+    @Query() query: PortsAndDateRangeSearch,
     @Request() req
   ): Promise<PaginatedResponse<CancelledTrips>> {
     return this.tripService.getCancelledTrips(

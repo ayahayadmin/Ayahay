@@ -1,8 +1,8 @@
 'use client';
 import {
-  buildSearchQueryFromRangePickerForm,
-  buildUrlQueryParamsFromRangePickerForm,
-  initializeRangePickerFormFromQueryParams,
+  buildSearchQueryFromPortsAndDateRange,
+  buildUrlQueryParamsFromPortsAndDateRange,
+  initializePortsAndDateRangeFromQueryParams,
 } from '@/services/search.service';
 import {
   Button,
@@ -14,7 +14,7 @@ import {
 } from 'antd';
 import { debounce } from 'lodash';
 import { useCallback, useEffect, useState } from 'react';
-import { TripSearchByDateRange } from '@ayahay/http';
+import { PortsAndDateRangeSearch } from '@ayahay/http';
 import TripList from './tripList';
 import { useSearchParams } from 'next/navigation';
 import { useAuthGuard } from '@/hooks/auth';
@@ -26,6 +26,7 @@ import { DATE_FORMAT_LIST, DATE_PLACEHOLDER } from '@ayahay/constants';
 import { PlusCircleOutlined } from '@ant-design/icons';
 import { setTripAsArrived, cancelTrip } from '@/services/trip.service';
 import CancelledTripModal from '@/components/modal/CancelledTripModal';
+import PortsFilter from '@/components/form/PortsFilter';
 
 const { RangePicker } = DatePicker;
 const items: MenuProps['items'] = [
@@ -52,7 +53,7 @@ export default function Schedules() {
   const [form] = Form.useForm();
   const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(
-    {} as TripSearchByDateRange | undefined
+    {} as PortsAndDateRangeSearch | undefined
   );
   const [hasAdminPrivileges, setHasAdminPrivileges] = useState(false);
   const [tripNumber, setTripNumber] = useState(-1);
@@ -60,7 +61,7 @@ export default function Schedules() {
 
   const onPageLoad = () => {
     const params = Object.fromEntries(searchParams.entries());
-    initializeRangePickerFormFromQueryParams(form, params);
+    initializePortsAndDateRangeFromQueryParams(form, params);
     debounceSearch();
   };
 
@@ -102,13 +103,13 @@ export default function Schedules() {
   const debounceSearch = useCallback(debounce(performSearch, 300), []);
 
   function performSearch() {
-    const query = buildSearchQueryFromRangePickerForm(form);
+    const query = buildSearchQueryFromPortsAndDateRange(form);
     setSearchQuery(query);
     updateUrl();
   }
 
   const updateUrl = () => {
-    const updatedQueryParams = buildUrlQueryParamsFromRangePickerForm(form);
+    const updatedQueryParams = buildUrlQueryParamsFromPortsAndDateRange(form);
     const updatedUrl = `${window.location.origin}${window.location.pathname}?${updatedQueryParams}`;
     window.history.replaceState({ path: updatedUrl }, '', updatedUrl);
   };
@@ -144,6 +145,9 @@ export default function Schedules() {
               </Dropdown>
             )}
           </div>
+        </div>
+        <div className={styles['port-input']}>
+          <PortsFilter debounceSearch={debounceSearch} />
         </div>
       </Form>
 

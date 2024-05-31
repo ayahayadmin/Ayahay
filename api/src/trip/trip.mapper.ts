@@ -12,7 +12,12 @@ import { PortMapper } from '@/port/port.mapper';
 import { map } from 'lodash';
 import { Prisma } from '@prisma/client';
 import { ShipMapper } from '@/ship/ship.mapper';
-import { AvailableTrips, CancelledTrips, TripVoyage } from '@ayahay/http';
+import {
+  AvailableTrips,
+  CancelledTrips,
+  CollectOption,
+  TripVoyage,
+} from '@ayahay/http';
 
 @Injectable()
 export class TripMapper {
@@ -258,6 +263,34 @@ export class TripMapper {
       destPortName: trip.destPort.name,
       departureDateIso: trip.departureDate.toISOString(),
     };
+  }
+
+  convertTripToCollectOptions(trips: any[]): CollectOption[] {
+    const collectOptions: { label: string; value: string }[] = [];
+
+    trips.forEach((trip) => {
+      const label = `${trip.srcPort.name} to ${
+        trip.destPort.name
+      } at ${new Date(trip.departureDate).toLocaleTimeString()}`;
+
+      const index = collectOptions.findIndex(
+        (collectOption) => collectOption.label === label
+      );
+
+      if (index !== -1) {
+        collectOptions[index] = {
+          ...collectOptions[index],
+          value: `${collectOptions[index].value},${trip.id}`,
+        };
+      } else {
+        collectOptions.push({
+          label,
+          value: `${trip.id}`,
+        });
+      }
+    });
+
+    return collectOptions;
   }
 
   convertTripToEntityForCreation(trip: ITrip): Prisma.TripCreateManyInput {
