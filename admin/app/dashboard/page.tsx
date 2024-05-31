@@ -1,5 +1,5 @@
 'use client';
-import { Button, DatePicker, Form } from 'antd';
+import { DatePicker, Form } from 'antd';
 import { RangePickerProps } from 'antd/es/date-picker';
 import dayjs from 'dayjs';
 import { useCallback, useEffect, useState } from 'react';
@@ -9,15 +9,15 @@ import styles from './page.module.scss';
 import { useAuthGuard } from '@/hooks/auth';
 import { useSearchParams } from 'next/navigation';
 import {
-  buildSearchQueryFromDashboardForm,
-  buildUrlQueryParamsFromDashboardForm,
-  initializeDashboardFormFromQueryParams,
+  buildSearchQueryFromPortsAndDateRange,
+  buildUrlQueryParamsFromPortsAndDateRange,
+  initializePortsAndDateRangeFromQueryParams,
 } from '@/services/search.service';
-import { DashboardSearchQuery } from '@ayahay/http';
+import { PortsAndDateRangeSearch } from '@ayahay/http';
 import { DATE_FORMAT_LIST, DATE_PLACEHOLDER } from '@ayahay/constants';
 import { debounce } from 'lodash';
 import DashboardTable from './dashboardTable';
-import PortAutoComplete from '@ayahay/components/form/PortAutoComplete';
+import PortsFilter from '@/components/form/PortsFilter';
 
 const { RangePicker } = DatePicker;
 dayjs.extend(isSameOrBefore);
@@ -31,17 +31,14 @@ export default function Dashboard() {
     'SuperAdmin',
   ]);
   const [form] = Form.useForm();
-  const srcPortId = Form.useWatch('srcPortId', form);
-  const destPortId = Form.useWatch('destPortId', form);
   const searchParams = useSearchParams();
-
   const [searchQuery, setSearchQuery] = useState(
-    {} as DashboardSearchQuery | undefined
+    {} as PortsAndDateRangeSearch | undefined
   );
 
   const onPageLoad = () => {
     const params = Object.fromEntries(searchParams.entries());
-    initializeDashboardFormFromQueryParams(form, params);
+    initializePortsAndDateRangeFromQueryParams(form, params);
     debounceSearch();
   };
 
@@ -50,13 +47,13 @@ export default function Dashboard() {
   const debounceSearch = useCallback(debounce(performSearch, 300), []);
 
   function performSearch() {
-    const query = buildSearchQueryFromDashboardForm(form);
+    const query = buildSearchQueryFromPortsAndDateRange(form);
     setSearchQuery(query);
     updateUrl();
   }
 
   const updateUrl = () => {
-    const updatedQueryParams = buildUrlQueryParamsFromDashboardForm(form);
+    const updatedQueryParams = buildUrlQueryParamsFromPortsAndDateRange(form);
     const updatedUrl = `${window.location.origin}${window.location.pathname}?${updatedQueryParams}`;
     window.history.replaceState({ path: updatedUrl }, '', updatedUrl);
   };
@@ -82,35 +79,7 @@ export default function Dashboard() {
           />
         </Form.Item>
         <div className={styles['port-input']}>
-          <Form.Item name='srcPortId' label='Origin Port'>
-            <PortAutoComplete
-              excludePortId={destPortId}
-              size='medium'
-              labelCol={{ span: 24 }}
-              colon={false}
-              name='srcPortId'
-              className={styles['input']}
-            />
-          </Form.Item>
-          <Form.Item name='destPortId' label='Destination Port'>
-            <PortAutoComplete
-              excludePortId={srcPortId}
-              size='medium'
-              labelCol={{ span: 24 }}
-              colon={false}
-              name='destPortId'
-              className={styles['input']}
-            />
-          </Form.Item>
-          <Button
-            onClick={() => {
-              form.resetFields(['srcPortId', 'destPortId']);
-              debounceSearch();
-            }}
-            className={styles['clear-btn']}
-          >
-            Clear Ports
-          </Button>
+          <PortsFilter debounceSearch={debounceSearch} />
         </div>
       </Form>
       <div>

@@ -2,11 +2,12 @@ import { IShippingLineSchedule, ITrip } from '@ayahay/models';
 import { TRIP_API } from '@ayahay/constants';
 import {
   CancelledTrips,
+  CollectOption,
   CreateTripsFromSchedulesRequest,
   PaginatedRequest,
   PaginatedResponse,
+  PortsAndDateRangeSearch,
   TripSearchByDateRange,
-  TripVoyage,
   UpdateTripCapacityRequest,
   VehicleBookings,
 } from '@ayahay/http';
@@ -22,7 +23,7 @@ dayjs.extend(isSameOrAfter);
 
 export async function getAvailableTripsByDateRange(
   shippingLineId: number | undefined,
-  searchQuery: TripSearchByDateRange | undefined,
+  searchQuery: PortsAndDateRangeSearch | undefined,
   pagination: PaginatedRequest
 ): Promise<PaginatedResponse<ITrip> | undefined> {
   if (isEmpty(searchQuery) || shippingLineId === undefined) {
@@ -43,16 +44,16 @@ export async function getAvailableTripsByDateRange(
   return trips;
 }
 
-export async function getTripsByDateRange(
+export async function getTripsForCollectBooking(
   searchQuery: TripSearchByDateRange | undefined
-): Promise<TripVoyage[] | undefined> {
+): Promise<CollectOption[] | undefined> {
   if (isEmpty(searchQuery)) {
     return;
   }
 
   const query = new URLSearchParams(searchQuery as any).toString();
-  const { data: trips } = await axios.get<TripVoyage[]>(
-    `${TRIP_API}/by-date-range?${query}`
+  const { data: trips } = await axios.get<CollectOption[]>(
+    `${TRIP_API}/collect?${query}`
   );
 
   return trips;

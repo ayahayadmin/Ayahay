@@ -7,9 +7,9 @@ import {
   InfoCircleOutlined,
 } from '@ant-design/icons';
 import {
-  DashboardSearchQuery,
   DashboardTrips,
   PaginatedRequest,
+  PortsAndDateRangeSearch,
 } from '@ayahay/http';
 import {
   getFullDate,
@@ -106,7 +106,7 @@ const columns: ColumnsType<DashboardTrips> = [
 ];
 
 interface DashboardTableProps {
-  searchQuery: DashboardSearchQuery | undefined;
+  searchQuery: PortsAndDateRangeSearch | undefined;
 }
 
 export default function DashboardTable({ searchQuery }: DashboardTableProps) {

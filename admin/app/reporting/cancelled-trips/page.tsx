@@ -11,11 +11,12 @@ import { TripSearchByDateRange } from '@ayahay/http';
 import { RangePickerProps } from 'antd/es/date-picker';
 import { DATE_FORMAT_LIST, DATE_PLACEHOLDER } from '@ayahay/constants';
 import {
-  buildSearchQueryFromRangePickerForm,
-  buildUrlQueryParamsFromRangePickerForm,
-  initializeRangePickerFormFromQueryParams,
+  buildSearchQueryFromPortsAndDateRange,
+  buildUrlQueryParamsFromPortsAndDateRange,
+  initializePortsAndDateRangeFromQueryParams,
 } from '@/services/search.service';
 import CancelledTripList from './cancelledTripList';
+import PortsFilter from '@/components/form/PortsFilter';
 
 const { RangePicker } = DatePicker;
 
@@ -30,7 +31,7 @@ export default function CancelledTrips() {
 
   const onPageLoad = () => {
     const params = Object.fromEntries(searchParams.entries());
-    initializeRangePickerFormFromQueryParams(form, params);
+    initializePortsAndDateRangeFromQueryParams(form, params);
     debounceSearch();
   };
 
@@ -45,13 +46,13 @@ export default function CancelledTrips() {
   const debounceSearch = useCallback(debounce(performSearch, 300), []);
 
   function performSearch() {
-    const query = buildSearchQueryFromRangePickerForm(form);
+    const query = buildSearchQueryFromPortsAndDateRange(form);
     setSearchQuery(query);
     updateUrl();
   }
 
   const updateUrl = () => {
-    const updatedQueryParams = buildUrlQueryParamsFromRangePickerForm(form);
+    const updatedQueryParams = buildUrlQueryParamsFromPortsAndDateRange(form);
     const updatedUrl = `${window.location.origin}${window.location.pathname}?${updatedQueryParams}`;
     window.history.replaceState({ path: updatedUrl }, '', updatedUrl);
   };
@@ -76,6 +77,9 @@ export default function CancelledTrips() {
             className={styles['range-picker']}
           />
         </Form.Item>
+        <div className={styles['port-input']}>
+          <PortsFilter debounceSearch={debounceSearch} />
+        </div>
       </Form>
 
       <div>

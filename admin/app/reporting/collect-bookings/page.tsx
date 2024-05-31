@@ -15,22 +15,27 @@ import dayjs from 'dayjs';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { debounce } from 'lodash';
-import { CollectTripBooking, TripSearchByDateRange } from '@ayahay/http';
+import {
+  CollectOption,
+  CollectTripBooking,
+  PortsAndDateRangeSearch,
+} from '@ayahay/http';
 import { RangePickerProps } from 'antd/es/date-picker';
 import { DATE_FORMAT_LIST, DATE_PLACEHOLDER } from '@ayahay/constants';
 import {
-  buildSearchQueryFromRangePickerForm,
-  buildUrlQueryParamsFromRangePickerForm,
-  initializeRangePickerFormFromQueryParams,
+  buildSearchQueryFromPortsAndDateRange,
+  buildUrlQueryParamsFromPortsAndDateRange,
+  initializePortsAndDateRangeFromQueryParams,
 } from '@/services/search.service';
 import { DownloadOutlined, FilePdfTwoTone } from '@ant-design/icons';
 import jsPDF from 'jspdf';
 import { getCollectTripBooking } from '@/services/reporting.service';
-import { getTripsByDateRange } from '@/services/trip.service';
+import { getTripsForCollectBooking } from '@/services/trip.service';
 import CollectTripBookings from '@/components/reports/CollectTripBookings';
 import { useAuth } from '@/contexts/AuthContext';
 import { IShippingLine } from '@ayahay/models';
 import { getShippingLine } from '@ayahay/services/shipping-line.service';
+import PortsFilter from '@/components/form/PortsFilter';
 
 const { RangePicker } = DatePicker;
 const { Title } = Typography;
@@ -41,13 +46,11 @@ export default function CollectBookingsPage() {
   const [form] = Form.useForm();
   const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(
-    {} as TripSearchByDateRange | undefined
+    {} as PortsAndDateRangeSearch | undefined
   );
   const [data, setData] = useState([] as CollectTripBooking[] | undefined);
-  const [tripOptions, setTripOptions] = useState(
-    [] as { label: string; value: number }[]
-  );
-  const [checkedList, setCheckedList] = useState([] as number[]);
+  const [tripOptions, setTripOptions] = useState([] as CollectOption[]);
+  const [checkedList, setCheckedList] = useState([] as string[]);
   const [checkAll, setCheckAll] = useState(false);
   const [buildReportClicked, setBuildReportClicked] = useState(false);
   const [isFetchingData, setIsFetchingData] = useState(false);
@@ -56,7 +59,7 @@ export default function CollectBookingsPage() {
 
   const onPageLoad = () => {
     const params = Object.fromEntries(searchParams.entries());
-    initializeRangePickerFormFromQueryParams(form, params);
+    initializePortsAndDateRangeFromQueryParams(form, params);
     debounceSearch();
   };
 
@@ -76,14 +79,14 @@ export default function CollectBookingsPage() {
   const debounceSearch = useCallback(debounce(performSearch, 300), []);
 
   function performSearch() {
-    const query = buildSearchQueryFromRangePickerForm(form);
+    const query = buildSearchQueryFromPortsAndDateRange(form);
     setSearchQuery(query);
     updateUrl();
     setBuildReportClicked(false);
   }
 
   const updateUrl = () => {
-    const updatedQueryParams = buildUrlQueryParamsFromRangePickerForm(form);
+    const updatedQueryParams = buildUrlQueryParamsFromPortsAndDateRange(form);
     const updatedUrl = `${window.location.origin}${window.location.pathname}?${updatedQueryParams}`;
     window.history.replaceState({ path: updatedUrl }, '', updatedUrl);
   };
@@ -100,21 +103,12 @@ export default function CollectBookingsPage() {
   }, [searchQuery]);
 
   const fetchTrips = async (searchQuery: any) => {
-    const trips = await getTripsByDateRange(searchQuery);
+    const trips = await getTripsForCollectBooking(searchQuery);
     if (trips === undefined) {
       return;
     }
 
-    setTripOptions(
-      trips.map((trip) => {
-        return {
-          label: `${trip.srcPortName} to ${trip.destPortName} at ${dayjs(
-            trip.departureDateIso
-          ).format('MMMM D, YYYY h:mm A')}`,
-          value: trip.id,
-        };
-      })
-    );
+    setTripOptions(trips);
   };
 
   const onChange = (list: any) => {
@@ -167,6 +161,9 @@ export default function CollectBookingsPage() {
             className={styles['range-picker']}
           />
         </Form.Item>
+        <div className={styles['port-input']}>
+          <PortsFilter debounceSearch={debounceSearch} />
+        </div>
 
         {tripOptions && (
           <div style={{ margin: 10, marginBottom: 20 }}>

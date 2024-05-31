@@ -80,7 +80,7 @@ export interface TripSearchByDateRange {
   endDate: string;
 }
 
-export interface DashboardSearchQuery extends TripSearchByDateRange {
+export interface PortsAndDateRangeSearch extends TripSearchByDateRange {
   srcPortId?: number;
   destPortId?: number;
 }
@@ -149,4 +149,9 @@ export interface AvailableTrips {
   pipeSeparatedVehicleTypeIds: string;
   pipeSeparatedVehicleNames: string;
   pipeSeparatedVehicleFares: string;
+}
+
+export interface CollectOption {
+  label: string;
+  value: string;
 }

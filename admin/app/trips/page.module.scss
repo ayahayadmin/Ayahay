@@ -12,15 +12,27 @@
     @media (max-width: 580px) {
       grid-template-columns: 2fr 1fr;
     }
+
+    .range-picker {
+      min-width: 20%;
+    }
+
+    .create-button {
+      display: flex;
+      justify-content: flex-end;
+    }
   }
 
-  .range-picker {
-    min-width: 20%;
-  }
-
-  .create-button {
+  .port-input {
     display: flex;
-    justify-content: flex-end;
+    flex-direction: row;
+    gap: 20px;
+
+    @media (max-width: 767px) {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5px;
+    }
   }
 }
 
