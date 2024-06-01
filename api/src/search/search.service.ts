@@ -160,10 +160,11 @@ export class SearchService {
         WHERE 
           cv.check_in_date IS NOT NULL
         GROUP BY trip_id
-      ), not_checked_in_vehicle_plate_no AS (
+      ), not_checked_in_vehicles AS (
         SELECT
           trip_id,
-          STRING_AGG(v.plate_number::TEXT, '|') AS "pipeSeparatedVehiclePlateNumbers"
+          STRING_AGG(v.plate_number::TEXT, '|') AS "pipeSeparatedVehiclePlateNumbers",
+          STRING_AGG(v.model_name::TEXT, '|') AS "pipeSeparatedVehicleModelNames"
         FROM confirmed_vehicles cv
           INNER JOIN ayahay.vehicle v ON cv.vehicle_id = v.id
         WHERE
@@ -199,7 +200,7 @@ export class SearchService {
         LEFT JOIN checked_in_passenger_count_per_trip pc ON t.id = pc.trip_id
         LEFT JOIN not_checked_in_passenger_names ncp ON t.id = ncp.trip_id
         LEFT JOIN checked_in_vehicle_count_per_trip vc ON t.id = vc.trip_id
-        LEFT JOIN not_checked_in_vehicle_plate_no ncv ON t.id = ncv.trip_id
+        LEFT JOIN not_checked_in_vehicles ncv ON t.id = ncv.trip_id
         LEFT JOIN cabin_information_per_trip cb ON t.id = cb.trip_id
         LEFT JOIN vehicle_rates_per_trip vr ON t.id = vr.trip_id  
     `;
