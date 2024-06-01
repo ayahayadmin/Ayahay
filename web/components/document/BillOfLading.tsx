@@ -123,14 +123,14 @@ export default function BillOfLading({ data }: BillOfLadingProps) {
                       <span style={underlined}>{data.destPortName}</span>
                     </p>
                   </div>
-                  <div>
-                    <p
-                      style={{
-                        fontSize: '16px',
-                        fontWeight: 'bold',
-                        paddingTop: '10px',
-                      }}
-                    >
+                  <div
+                    style={{
+                      fontSize: '16px',
+                      fontWeight: 'bold',
+                      paddingTop: '10px',
+                    }}
+                  >
+                    <p>
                       {data.freightRateReceipt ? (
                         <span>FRR:&nbsp;{data.freightRateReceipt}&nbsp;</span>
                       ) : (
@@ -151,6 +151,7 @@ export default function BillOfLading({ data }: BillOfLadingProps) {
                         Save
                       </Button>
                     </p>
+                    {data.isCollectBooking ? <span>COLLECT</span> : null}
                   </div>
                 </div>
               </section>
@@ -188,16 +189,12 @@ export default function BillOfLading({ data }: BillOfLadingProps) {
                   <tr className={styles['main']}>
                     <td>1</td>
                     <td>Unit</td>
-                    {/* {vehicle.classification} will use vehicle type description */}
                     <td>{vehicle.vehicleTypeDesc}</td>
                     <td>
                       {vehicle.modelName} {vehicle.plateNo}
                     </td>
                     <td></td>
-                    {/* {vehicle.weight} will use vehicle type description */}
-                    <td>
-                      {vehicle.vehicleTypeDesc.includes('Loaded') ? 'L' : 'E'}
-                    </td>
+                    <td>{vehicle.weight}</td>
                     <td></td>
                     <td>{vehicle.fare}</td>
                   </tr>
