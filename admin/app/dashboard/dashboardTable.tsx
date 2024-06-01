@@ -79,9 +79,11 @@ const columns: ColumnsType<DashboardTrips> = [
     title: 'Vehicle Onboarded',
     key: 'vehicleOnboardedOverBooked',
     render: (_: string, record: DashboardTrips) => {
-      const plateNumbers = record.notCheckedInPlateNumbers.map((plateNo) => ({
-        data: plateNo,
-      }));
+      const plateNumbersAndModelName = record.notCheckedInVehicles.map(
+        (plateNoAndModelName) => ({
+          data: plateNoAndModelName,
+        })
+      );
 
       return (
         <div>
@@ -91,7 +93,7 @@ const columns: ColumnsType<DashboardTrips> = [
           </span>
           &nbsp;
           <Popover
-            content={<NotCheckedInModal data={plateNumbers} />}
+            content={<NotCheckedInModal data={plateNumbersAndModelName} />}
             trigger='click'
           >
             <Button type='text' style={{ padding: 0 }}>
