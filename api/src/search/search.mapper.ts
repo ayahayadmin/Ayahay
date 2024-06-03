@@ -40,8 +40,9 @@ export class SearchMapper {
         trip.pipeSeparatedPassengerFirstNames?.split('|'),
         trip.pipeSeparatedPassengerLastNames?.split('|')
       ),
-      notCheckedInPlateNumbers: this.convertPlateNumber(
-        trip.pipeSeparatedVehiclePlateNumbers?.split('|')
+      notCheckedInVehicles: this.convertVehiclePlateNoAndModelName(
+        trip.pipeSeparatedVehiclePlateNumbers?.split('|'),
+        trip.pipeSeparatedVehicleModelNames?.split('|')
       ),
     };
   }
@@ -74,7 +75,13 @@ export class SearchMapper {
     );
   }
 
-  private convertPlateNumber(plateNumbers): string[] {
-    return map(plateNumbers, (plateNo) => plateNo);
+  private convertVehiclePlateNoAndModelName(
+    plateNumbers,
+    modelNames
+  ): string[] {
+    return map(
+      plateNumbers,
+      (plateNo, idx) => `${plateNo} (${modelNames[idx]})`
+    );
   }
 }

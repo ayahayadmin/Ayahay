@@ -181,14 +181,29 @@ export class ReportingMapper {
       booking.bookingTripVehicles[0].trip.departureDate.toISOString();
     const voyageNumber = booking.bookingTripVehicles[0].trip.voyage?.number;
 
-    const vehicles = booking.bookingTripVehicles.map((vehicle) => ({
-      classification: '', //If needed - Add a new column "class" in vehicle_type
-      modelName: vehicle.vehicle.modelName,
-      plateNo: vehicle.vehicle.plateNo,
-      weight: '', //If needed - Add a new column "weight" in vehicle_type
-      vehicleTypeDesc: vehicle.vehicle.vehicleType.description,
-      fare: vehicle.totalPrice,
-    }));
+    const isCollectBooking = booking.voucherCode === 'AZNAR_COLLECT';
+    const vehicles = booking.bookingTripVehicles.map((vehicle) => {
+      const fare = isCollectBooking
+        ? booking.bookingPaymentItems.find(
+            (paymentItem) =>
+              paymentItem.vehicleId === vehicle.vehicleId &&
+              paymentItem.type === 'Fare'
+          ).price
+        : vehicle.totalPrice;
+
+      return {
+        classification: '', //If needed - Add a new column "class" in vehicle_type
+        modelName: vehicle.vehicle.modelName,
+        plateNo: vehicle.vehicle.plateNo,
+        weight: vehicle.vehicle.vehicleType.description
+          .toLowerCase()
+          .includes('loaded')
+          ? 'L'
+          : 'E',
+        vehicleTypeDesc: vehicle.vehicle.vehicleType.description,
+        fare,
+      };
+    });
 
     return {
       referenceNo,
@@ -200,6 +215,7 @@ export class ReportingMapper {
       departureDate,
       voyageNumber,
       vehicles,
+      isCollectBooking,
     };
   }
 

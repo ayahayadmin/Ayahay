@@ -99,6 +99,7 @@ export interface BillOfLading {
     vehicleTypeDesc: string;
     fare: number;
   }[];
+  isCollectBooking: boolean;
 }
 
 export interface PortsByShip {
