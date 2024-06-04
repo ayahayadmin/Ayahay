@@ -520,8 +520,8 @@ export default function PassengerInformationForm({
                         (tripVehicleType) =>
                           hasPrivilegedAccess || tripVehicleType.canBookOnline
                       )
-                      ?.map(({ vehicleType }) => ({
-                        label: vehicleType.name,
+                      ?.map(({ vehicleType, fare }) => ({
+                        label: `${vehicleType.name} · P${fare}`,
                         value: vehicleType.id,
                       }))}
                   />
