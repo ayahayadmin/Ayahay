@@ -1,4 +1,12 @@
-import { Descriptions, Skeleton, Typography, Grid, QRCode, Button } from 'antd';
+import {
+  Descriptions,
+  Skeleton,
+  Typography,
+  Grid,
+  QRCode,
+  Button,
+  Segmented,
+} from 'antd';
 import { IBooking } from '@ayahay/models/booking.model';
 import {
   BOOKING_CANCELLATION_TYPE,
@@ -22,7 +30,6 @@ interface BookingSummaryProps {
   titleLevel: 1 | 2 | 3 | 4 | 5;
   hasPrivilegedAccess?: boolean;
   canCheckIn?: boolean;
-  showTripSummary: boolean;
   onPayBooking?: () => Promise<void>;
   onCancelBooking?: (
     remarks: string,
@@ -37,7 +44,6 @@ export default function BookingSummary({
   titleLevel,
   hasPrivilegedAccess,
   canCheckIn,
-  showTripSummary,
   onPayBooking,
   onCancelBooking,
   onCheckInPassenger,
@@ -46,8 +52,9 @@ export default function BookingSummary({
   const screens = useBreakpoint();
 
   const [isCancellationModalOpen, setIsCancellationModalOpen] = useState(false);
+  const [selectedTripIndex, setSelectedTripIndex] = useState(0);
 
-  const bookingTrip = booking?.bookingTrips?.[0];
+  const bookingTrip = booking?.bookingTrips?.[selectedTripIndex];
   const trip = bookingTrip?.trip;
   const bookingPaymentItems = booking
     ? combineBookingPaymentItems(booking)
@@ -67,6 +74,16 @@ export default function BookingSummary({
   ) => {
     setIsCancellationModalOpen(false);
     onCancelBooking && onCancelBooking(remarks, reasonType);
+  };
+
+  const selectTrip = (selectedTripId: number) => {
+    if (!booking || !booking.bookingTrips) {
+      return;
+    }
+    const tripIndex = booking.bookingTrips.findIndex(
+      ({ tripId }) => tripId === selectedTripId
+    );
+    setSelectedTripIndex(tripIndex);
   };
 
   const payable =
@@ -165,17 +182,27 @@ export default function BookingSummary({
           </article>
         </section>
       )}
-      {booking &&
-        booking.bookingTrips?.map((bookingTrip) => (
-          <BookingTripSummary
-            bookingTrip={bookingTrip}
-            titleLevel={titleLevel}
-            canCheckIn={canCheckIn}
-            showTripSummary={showTripSummary}
-            onCheckInPassenger={onCheckInPassenger}
-            onCheckInVehicle={onCheckInVehicle}
-          />
-        ))}
+
+      {booking && booking.bookingTrips && booking.bookingTrips.length > 1 && (
+        <Segmented
+          size='large'
+          options={booking.bookingTrips.map(({ trip }) => ({
+            label: `${trip?.srcPort?.name} -> ${trip?.destPort?.name}`,
+            value: trip?.id,
+          }))}
+          onChange={selectTrip}
+          block
+        />
+      )}
+      {bookingTrip && (
+        <BookingTripSummary
+          bookingTrip={bookingTrip}
+          titleLevel={titleLevel}
+          canCheckIn={canCheckIn}
+          onCheckInPassenger={onCheckInPassenger}
+          onCheckInVehicle={onCheckInVehicle}
+        />
+      )}
       {bookingPaymentItems.length > 0 && (
         <section id='payment-summary'>
           <Title level={titleLevel}>Payment Summary</Title>
@@ -185,55 +212,97 @@ export default function BookingSummary({
     </div>
   );
 
-  const minimalBookingSummary = booking && (
-    <div>
-      <QRCode
-        value={`${process.env.NEXT_PUBLIC_WEB_URL}/bookings/${booking.id}`}
-        size={160}
-        viewBox={`0 0 256 256`}
-        type='svg'
-      />
-      {bookingTrip &&
-        bookingTrip.bookingTripPassengers &&
-        bookingTrip.bookingTripPassengers.map((bookingTripPassenger, index) => (
-          <div key={index} style={{ breakBefore: 'page' }}>
-            <section>
-              <p>Ref # {booking.referenceNo}</p>
-              <QRCode
-                value={`${process.env.NEXT_PUBLIC_WEB_URL}/bookings/${booking.id}/trips/${bookingTripPassenger.tripId}/passengers/${bookingTripPassenger.passengerId}`}
-                size={160}
-                viewBox={`0 0 256 256`}
-                type='svg'
-              />
-            </section>
-            <section>
-              <p>
-                {trip?.srcPort?.name} - {trip?.destPort?.name}
-              </p>
-              <p>
-                {dayjs(trip?.departureDateIso).format(
-                  'MMM D, YYYY [at] h:mm A'
-                )}
-              </p>
-            </section>
-            <section>
-              <table style={{ tableLayout: 'fixed', width: '100%' }}>
-                <tbody>
-                  <tr>
-                    <td>
-                      {bookingTripPassenger.passenger?.firstName}&nbsp;
-                      {bookingTripPassenger.passenger?.lastName}
-                    </td>
-                    <td>₱{bookingTripPassenger.totalPrice}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </section>
-            <p style={{ textAlign: 'center' }}>Powered by AYAHAY</p>
-          </div>
-        ))}
-    </div>
-  );
+  const minimalBookingSummary =
+    booking &&
+    booking.bookingTrips &&
+    booking.bookingTrips.map((bookingTrip, tripIndex) => (
+      <>
+        {bookingTrip.bookingTripPassengers &&
+          bookingTrip.bookingTripPassengers.map(
+            (bookingTripPassenger, passengerIndex) => (
+              <div
+                key={passengerIndex}
+                style={{
+                  breakBefore:
+                    passengerIndex === 0 && tripIndex === 0 ? 'auto' : 'page',
+                }}
+              >
+                <section>
+                  <p>Ref # {booking.referenceNo}</p>
+                  <QRCode
+                    value={`${process.env.NEXT_PUBLIC_WEB_URL}/bookings/${booking.id}/trips/${bookingTripPassenger.tripId}/passengers/${bookingTripPassenger.passengerId}`}
+                    size={160}
+                    viewBox={`0 0 256 256`}
+                    type='svg'
+                  />
+                </section>
+                <section>
+                  <p>
+                    {bookingTrip.trip?.srcPort?.name} -&nbsp;
+                    {bookingTrip.trip?.destPort?.name}
+                  </p>
+                  <p>
+                    {dayjs(bookingTrip.trip?.departureDateIso).format(
+                      'MMM D, YYYY [at] h:mm A'
+                    )}
+                  </p>
+                </section>
+                <section>
+                  <table style={{ tableLayout: 'fixed', width: '100%' }}>
+                    <tbody>
+                      <tr>
+                        <td>
+                          {bookingTripPassenger.passenger?.firstName}&nbsp;
+                          {bookingTripPassenger.passenger?.lastName}
+                        </td>
+                        <td>₱{bookingTripPassenger.totalPrice}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </section>
+                <p style={{ textAlign: 'center' }}>Powered by AYAHAY</p>
+              </div>
+            )
+          )}
+        {bookingTrip.bookingTripVehicles &&
+          bookingTrip.bookingTripVehicles.map((bookingTripVehicle, index) => (
+            <div key={index} style={{ breakBefore: 'page' }}>
+              <section>
+                <p>Ref # {booking.referenceNo}</p>
+                <QRCode
+                  value={`${process.env.NEXT_PUBLIC_WEB_URL}/bookings/${booking.id}/trips/${bookingTripVehicle.tripId}/vehicles/${bookingTripVehicle.vehicleId}`}
+                  size={160}
+                  viewBox={`0 0 256 256`}
+                  type='svg'
+                />
+              </section>
+              <section>
+                <p>
+                  {bookingTrip.trip?.srcPort?.name} -&nbsp;
+                  {bookingTrip.trip?.destPort?.name}
+                </p>
+                <p>
+                  {dayjs(bookingTrip.trip?.departureDateIso).format(
+                    'MMM D, YYYY [at] h:mm A'
+                  )}
+                </p>
+              </section>
+              <section>
+                <table style={{ tableLayout: 'fixed', width: '100%' }}>
+                  <tbody>
+                    <tr>
+                      <td>{bookingTripVehicle.vehicle?.plateNo}</td>
+                      <td>{bookingTripVehicle.vehicle?.modelName}</td>
+                      <td>₱{bookingTripVehicle.totalPrice}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </section>
+              <p style={{ textAlign: 'center' }}>Powered by AYAHAY</p>
+            </div>
+          ))}
+      </>
+    ));
 
   return (
     <Skeleton loading={booking === undefined} active>

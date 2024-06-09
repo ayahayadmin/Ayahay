@@ -1,6 +1,7 @@
 import { IBookingTripPassenger } from './booking-trip-passenger.model';
 import { IBookingTripVehicle } from './booking-trip-vehicle.model';
 import { IBooking } from './booking.model';
+import { ITrip } from './trip.model';
 import { BOOKING_PAYMENT_ITEM_TYPE } from '@ayahay/constants';
 
 export interface IBookingPaymentItem {
@@ -8,6 +9,7 @@ export interface IBookingPaymentItem {
   bookingId: string;
   booking?: IBooking;
   tripId?: number;
+  trip?: ITrip;
   passengerId?: number;
   bookingTripPassenger?: IBookingTripPassenger;
   vehicleId?: number;

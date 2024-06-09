@@ -78,11 +78,7 @@ export default function BookingConfirmation({
       <Title level={2}>Confirm Booking</Title>
       <div style={{ margin: '32px 0' }}>
         {tentativeBooking && (
-          <BookingSummary
-            booking={tentativeBooking}
-            showTripSummary={false}
-            titleLevel={3}
-          />
+          <BookingSummary booking={tentativeBooking} titleLevel={3} />
         )}
         {!tentativeBooking && (
           <p>

@@ -33,7 +33,13 @@ export default function CreateBooking() {
         </div>
         <article className={styles['trip-summary']}>
           <Title level={2}>Trip Summary</Title>
-          <TripSummary trip={trip} />
+          {trips &&
+            trips.map((trip, index) => (
+              <div key={trip.id}>
+                {trips.length > 1 && <Title level={3}>Trip {index + 1}</Title>}
+                <TripSummary trip={trip} />
+              </div>
+            ))}
         </article>
       </div>
     </div>

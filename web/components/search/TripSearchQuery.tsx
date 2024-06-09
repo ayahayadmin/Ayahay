@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { Button, DatePicker, Form } from 'antd';
+import { Button, DatePicker, Flex, Form } from 'antd';
 import PortAutoComplete from '@ayahay/components/form/PortAutoComplete';
 import styles from './TripSearchQuery.module.scss';
 import dayjs from 'dayjs';
@@ -12,7 +12,7 @@ export default function TripSearchQuery({
   ...htmlAttributes
 }: React.HTMLAttributes<HTMLElement>) {
   const form = Form.useFormInstance();
-  const tripType = Form.useWatch('tripType', form);
+  const bookingType = Form.useWatch('bookingType', form);
   const srcPortId = Form.useWatch('srcPortId', form);
   const destPortId = Form.useWatch('destPortId', form);
 
@@ -22,7 +22,7 @@ export default function TripSearchQuery({
     >
       <div className={styles['search-container']}>
         <div className={styles['search-type']}>
-          <EnumRadio _enum={BOOKING_TYPE} name='tripType' disabled={false} />
+          <EnumRadio _enum={BOOKING_TYPE} name='bookingType' disabled={false} />
         </div>
 
         <article className={styles['search-main']}>
@@ -52,7 +52,7 @@ export default function TripSearchQuery({
               labelCol={{ span: 24 }}
               colon={false}
               name='departureDate'
-              style={{ marginBottom: 0 }}
+              style={{ marginBottom: 0, maxWidth: '128px' }}
             >
               <DatePicker
                 className={styles['ant-picker-input']}
@@ -63,13 +63,15 @@ export default function TripSearchQuery({
                 size='large'
               />
             </Form.Item>
-            {tripType === 'round' && (
+          </div>
+          {bookingType === 'Round' && (
+            <div className={styles['search-input-wrapper']}>
+              <label>Return Date</label>
               <Form.Item
-                label='Return Date'
                 labelCol={{ span: 24 }}
                 colon={false}
                 name='returnDate'
-                style={{ marginBottom: 0 }}
+                style={{ marginBottom: 0, maxWidth: '128px' }}
               >
                 <DatePicker
                   className={styles['ant-picker-input']}
@@ -79,8 +81,8 @@ export default function TripSearchQuery({
                   size='large'
                 />
               </Form.Item>
-            )}
-          </div>
+            </div>
+          )}
           <div
             className={styles['search-input-wrapper']}
             style={{ borderRight: 0, fontSize: '16px' }}

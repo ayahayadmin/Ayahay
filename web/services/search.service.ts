@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
 import {
   DEFAULT_NUM_PASSENGERS,
   DEFAULT_NUM_VEHICLES,
-  DEFAULT_TRIP_TYPE,
+  DEFAULT_BOOKING_TYPE,
 } from '@ayahay/constants/default';
 import { forEach } from 'lodash';
 
@@ -19,7 +19,7 @@ export function initializeSearchFormFromQueryParams(
   params: { [p: string]: string }
 ) {
   form.setFieldsValue({
-    tripType: params.tripType ?? DEFAULT_TRIP_TYPE,
+    bookingType: params.bookingType ?? DEFAULT_BOOKING_TYPE,
     srcPortId: params.srcPortId ? +params.srcPortId : undefined,
     destPortId: params.destPortId ? +params.destPortId : undefined,
     passengerCount: params.passengerCount
@@ -42,7 +42,7 @@ export function initializeSearchFormFromQueryParams(
 
 export function buildUrlQueryParamsFromSearchForm(form: FormInstance): string {
   const searchQuery: Record<string, string> = {
-    tripType: form.getFieldValue('tripType'),
+    bookingType: form.getFieldValue('bookingType'),
     srcPortId: form.getFieldValue('srcPortId')?.toString(),
     destPortId: form.getFieldValue('destPortId')?.toString(),
     departureDate: form
@@ -57,10 +57,12 @@ export function buildUrlQueryParamsFromSearchForm(form: FormInstance): string {
     sort: form.getFieldValue('sort'),
   };
 
-  if (searchQuery.tripType === 'round') {
+  if (searchQuery.bookingType === 'Round') {
     searchQuery.returnDate = form
       .getFieldValue('returnDate')
-      ?.format('YYYY-MM-DD');
+      .tz('Asia/Shanghai')
+      .startOf('date')
+      .toISOString();
   }
 
   Object.keys(searchQuery).forEach((key) => {
@@ -76,7 +78,7 @@ export function buildSearchQueryFromSearchForm(
   form: FormInstance
 ): TripsSearchQuery {
   const searchQuery: TripsSearchQuery = {
-    tripType: form.getFieldValue('tripType'),
+    bookingType: form.getFieldValue('bookingType'),
     srcPortId: form.getFieldValue('srcPortId'),
     destPortId: form.getFieldValue('destPortId'),
     departureDate: form
@@ -91,9 +93,11 @@ export function buildSearchQueryFromSearchForm(
     sort: form.getFieldValue('sort'),
   };
 
-  if (searchQuery.tripType === 'round') {
+  if (searchQuery.bookingType === 'Round') {
     searchQuery.returnDateIso = form
-      .getFieldValue('departureDate')
+      .getFieldValue('returnDate')
+      .tz('Asia/Shanghai')
+      .startOf('date')
       .toISOString();
   }
 
