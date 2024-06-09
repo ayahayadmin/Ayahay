@@ -20,28 +20,30 @@ export async function createTentativeBooking(
     throw 'Booking must have at least one trip';
   }
 
-  const { bookingTripPassengers: passengers, bookingTripVehicles: vehicles } =
-    tempBooking.bookingTrips?.[0];
-  const vehicleIds = new Set<number>();
-  if (vehicles !== undefined) {
-    for (let bookingTripVehicle of vehicles) {
-      if (bookingTripVehicle.vehicle === undefined) {
-        continue;
+  for (const bookingTrip of tempBooking.bookingTrips) {
+    const { bookingTripPassengers: passengers, bookingTripVehicles: vehicles } =
+      bookingTrip;
+    const vehicleIds = new Set<number>();
+    if (vehicles !== undefined) {
+      for (let bookingTripVehicle of vehicles) {
+        if (bookingTripVehicle.vehicle === undefined) {
+          continue;
+        }
+        vehicleIds.add(bookingTripVehicle.vehicleId);
+        // TODO: remove these after file upload has been properly implemented
+        bookingTripVehicle.vehicle.certificateOfRegistrationUrl ??= '';
+        bookingTripVehicle.vehicle.officialReceiptUrl ??= '';
+        bookingTripVehicle.vehicle.modelYear = 0;
+
+        bookingTripVehicle.vehicle.vehicleType = await getVehicleType(
+          bookingTripVehicle.vehicle.vehicleTypeId
+        );
       }
-      vehicleIds.add(bookingTripVehicle.vehicleId);
-      // TODO: remove these after file upload has been properly implemented
-      bookingTripVehicle.vehicle.certificateOfRegistrationUrl ??= '';
-      bookingTripVehicle.vehicle.officialReceiptUrl ??= '';
-      bookingTripVehicle.vehicle.modelYear = 0;
-
-      bookingTripVehicle.vehicle.vehicleType = await getVehicleType(
-        bookingTripVehicle.vehicle.vehicleTypeId
-      );
     }
-  }
 
-  if (passengers !== undefined) {
-    clearNonExistingVehiclesInPassengers(passengers, vehicleIds);
+    if (passengers !== undefined) {
+      clearNonExistingVehiclesInPassengers(passengers, vehicleIds);
+    }
   }
 
   const { data: booking } = await axios.post<IBooking>(

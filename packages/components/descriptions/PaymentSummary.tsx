@@ -13,6 +13,14 @@ const paymentItemColumns: ColumnsType<IBookingPaymentItem> = [
     key: 'description',
   },
   {
+    title: 'Trip',
+    dataIndex: 'trip',
+    key: 'trip',
+    render: (trip) => {
+      return `${trip?.srcPort?.name} -> ${trip?.destPort?.name}`;
+    },
+  },
+  {
     title: 'Price',
     dataIndex: 'price',
     key: 'price',
@@ -31,7 +39,8 @@ const paymentItemTotal = (paymentItems: readonly IBookingPaymentItem[]) => {
       <Table.Summary.Cell index={0}>
         <strong>Total</strong>
       </Table.Summary.Cell>
-      <Table.Summary.Cell index={1}>
+      <Table.Summary.Cell index={1}></Table.Summary.Cell>
+      <Table.Summary.Cell index={2}>
         <strong>₱{totalPrice}</strong>
       </Table.Summary.Cell>
     </Table.Summary.Row>

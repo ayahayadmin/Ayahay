@@ -1,51 +1,96 @@
 'use client';
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { Form } from 'antd';
+import { Button, Card, Flex, Form, Typography } from 'antd';
 import styles from './page.module.scss';
-import debounce from 'lodash/debounce';
+import { debounce, isEqual } from 'lodash';
 import {
   buildSearchQueryFromSearchForm,
   buildUrlQueryParamsFromSearchForm,
+  getTime,
   initializeSearchFormFromQueryParams,
 } from '@/services/search.service';
 import TripSearchQuery from '@/components/search/TripSearchQuery';
 import TripSortOptions from '@/components/form/TripSortOptions';
-import SearchResult from '@/app/trips/searchResults';
+import TripSearchResult from '@/app/trips/searchResults';
 import CabinFilter from '@/components/form/CabinFilter';
 import ShippingLineFilter from '@/components/form/ShippingLineFilter';
 import { TripsSearchQuery } from '@ayahay/http';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { IPort, ITrip } from '@ayahay/models';
+import { getPort } from '@ayahay/services/port.service';
+import dayjs from 'dayjs';
+const { Title } = Typography;
 
 export default function Trips() {
+  const router = useRouter();
   const [form] = Form.useForm();
   const searchParams = useSearchParams();
+  const [srcPort, setSrcPort] = useState<IPort | undefined>();
+  const [destPort, setDestPort] = useState<IPort | undefined>();
 
+  const bookingType = Form.useWatch('bookingType', form);
   const passengerCount = Form.useWatch('passengerCount', form);
   const vehicleCount = Form.useWatch('vehicleCount', form);
+  const srcPortId = Form.useWatch('srcPortId', form);
+  const destPortId = Form.useWatch('destPortId', form);
 
-  const [searchQuery, setSearchQuery] = useState({} as TripsSearchQuery);
+  const [selectedTrips, setSelectedTrips] = useState<ITrip[]>([{} as any]);
+  const [searchQueries, setSearchQueries] = useState<TripsSearchQuery[]>([
+    {} as TripsSearchQuery,
+  ]);
+  const [activeSearchIndex, setActiveSearchIndex] = useState<number>(0);
+  const [errorMessages, setErrorMessages] = useState<string[]>([]);
 
-  const onPageLoad = () => {
+  const onPageLoad = async () => {
     const params = Object.fromEntries(searchParams.entries());
     initializeSearchFormFromQueryParams(form, params);
     debounceSearch();
   };
 
-  useEffect(onPageLoad, []);
+  useEffect(() => {
+    onPageLoad();
+  }, []);
+
+  useEffect(() => {
+    validateSelectedTrips();
+  }, [selectedTrips]);
+
+  useEffect(() => {
+    fetchSrcPort();
+  }, [srcPortId]);
+
+  useEffect(() => {
+    fetchDestPort();
+  }, [destPortId]);
 
   /*
-    these form items are updated thru form.setFieldValue, so Form.onValueChange does not
+    these form items can be updated thru form.setFieldValue, so Form.onValueChange does not
     fire when they are updated. as a workaround, we watch the items manually for form changes
     and use it as dependency in useEffect
    */
   useEffect(() => debounceSearch(), [passengerCount, vehicleCount]);
 
-  const debounceSearch = useCallback(debounce(performSearch, 300), []);
+  const fetchSrcPort = async () => {
+    setSrcPort(await getPort(srcPortId));
+  };
 
-  function performSearch() {
+  const fetchDestPort = async () => {
+    setDestPort(await getPort(destPortId));
+  };
+
+  const debounceSearch = useCallback(debounce(buildSearchQueries, 300), []);
+
+  function buildSearchQueries() {
     const query = buildSearchQueryFromSearchForm(form);
-    setSearchQuery(query);
+    const returnTripQuery = buildReturnTripQueryFromFirstQuery(query);
+    if (returnTripQuery === undefined) {
+      setSearchQueries([query]);
+    } else {
+      setSearchQueries([query, returnTripQuery]);
+    }
+    setSelectedTrips([{} as any]);
+    setActiveSearchIndex(0);
     updateUrl();
   }
 
@@ -53,6 +98,84 @@ export default function Trips() {
     const updatedQueryParams = buildUrlQueryParamsFromSearchForm(form);
     const updatedUrl = `${window.location.origin}${window.location.pathname}?${updatedQueryParams}`;
     window.history.replaceState({ path: updatedUrl }, '', updatedUrl);
+  };
+
+  const selectTrip = (index: number, trip: ITrip) => {
+    if (bookingType === 'Single') {
+      redirectToBookingPage([trip.id]);
+      return;
+    }
+    const trips = [...selectedTrips];
+    if (index === selectedTrips.length) {
+      trips.push(trip);
+    } else {
+      trips[index] = trip;
+    }
+    setSelectedTrips(trips);
+  };
+
+  const validateSelectedTrips = () => {
+    const errors = [];
+    const tripShippingLines = new Set(
+      selectedTrips.map((trip) => trip.shippingLineId)
+    );
+    if (tripShippingLines.size !== 1) {
+      errors.push('All trips must be from the same shipping line.');
+    }
+    for (let i = 1; i < selectedTrips.length; i++) {
+      const previousTrip = selectedTrips[i - 1];
+      const currentTrip = selectedTrips[i];
+      if (
+        dayjs(currentTrip.departureDateIso).isBefore(
+          previousTrip.departureDateIso
+        )
+      ) {
+        errors.push(
+          `The ${currentTrip.srcPort?.name} -> ${currentTrip.destPort?.name} trip must depart before the ${previousTrip.srcPort?.name} -> ${previousTrip.destPort?.name} trip.`
+        );
+        break;
+      }
+    }
+    setErrorMessages(errors);
+  };
+
+  const confirmRoundTripSchedule = () => {
+    const tripIds = selectedTrips.map((trip) => trip.id);
+    redirectToBookingPage(tripIds);
+  };
+
+  const redirectToBookingPage = (tripIds: number[]) => {
+    const tripIdsQuery = tripIds.map((tripId) => `tripId=${tripId}`).join('&');
+    router.push(`/bookings/create?${tripIdsQuery}`);
+  };
+
+  const scheduleCardClass = (scheduleIndex: number) => {
+    if (scheduleIndex === activeSearchIndex) {
+      return `${styles['flight-schedule-card']} ${styles['selected']}`;
+    }
+    return styles['flight-schedule-card'];
+  };
+
+  const buildReturnTripQueryFromFirstQuery = (firstQuery: TripsSearchQuery) => {
+    const returnTripQuery = { ...firstQuery };
+    returnTripQuery.srcPortId = firstQuery.destPortId;
+    returnTripQuery.destPortId = firstQuery.srcPortId;
+    returnTripQuery.departureDate = returnTripQuery.returnDateIso ?? '';
+
+    return returnTripQuery;
+  };
+
+  const deselectTripIfBeforeDate = (index: number, date: dayjs.Dayjs) => {
+    if (!selectedTrips[index] || !date) {
+      return;
+    }
+    const selectedTripDeparture = dayjs(selectedTrips[index].departureDateIso);
+    if (selectedTripDeparture.isBefore(date)) {
+      return;
+    }
+    const trips = [...selectedTrips];
+    trips[index] = {} as any;
+    setSelectedTrips(trips);
   };
 
   return (
@@ -84,8 +207,82 @@ export default function Trips() {
             {/*  <TripSortOptions name='sort' label='Sort By' />*/}
             {/*</div>*/}
           </div>
+          {bookingType === 'Round' && (
+            <div style={{ marginBottom: '32px' }}>
+              <Title level={2} style={{ fontSize: '24px' }}>
+                Round Trip Schedule
+              </Title>
+              <Flex gap='large' align='center'>
+                <Card
+                  onClick={() => setActiveSearchIndex(0)}
+                  className={scheduleCardClass(0)}
+                >
+                  <Title
+                    level={3}
+                    style={{ fontSize: '18px', marginBottom: '0' }}
+                  >
+                    {srcPort?.name} -&gt; {destPort?.name}
+                  </Title>
+                  {selectedTrips[0]?.id && (
+                    <div>
+                      {dayjs(selectedTrips[0].departureDateIso).format(
+                        'MMMM D, YYYY'
+                      )}
+                      &nbsp;at&nbsp;
+                      {getTime(selectedTrips[0].departureDateIso)}
+                    </div>
+                  )}
+                  {!selectedTrips[0]?.id && <p>No trip selected</p>}
+                </Card>
+                <Card
+                  onClick={() => setActiveSearchIndex(1)}
+                  className={scheduleCardClass(1)}
+                >
+                  <Title
+                    level={3}
+                    style={{ fontSize: '18px', marginBottom: '0' }}
+                  >
+                    {destPort?.name} -&gt; {srcPort?.name}
+                  </Title>
+                  {selectedTrips[1]?.id && (
+                    <div>
+                      {dayjs(selectedTrips[1].departureDateIso).format(
+                        'MMMM D, YYYY'
+                      )}
+                      &nbsp;at&nbsp;
+                      {getTime(selectedTrips[1].departureDateIso)}
+                    </div>
+                  )}
+                  {!selectedTrips[1]?.id && <p>No trip selected</p>}
+                </Card>
+                <Button
+                  type='primary'
+                  size='large'
+                  disabled={
+                    errorMessages.length > 0 ||
+                    selectedTrips.length !== 2 ||
+                    selectedTrips.some((trip) => !trip.id)
+                  }
+                  onClick={() => confirmRoundTripSchedule()}
+                >
+                  Book Now!
+                </Button>
+              </Flex>
+              <div style={{ marginTop: '8px' }}>
+                {errorMessages.map((error, index) => (
+                  <p style={{ color: 'red' }} key={index}>
+                    {error}
+                  </p>
+                ))}
+              </div>
+            </div>
+          )}
           <div className={styles['results-card']}>
-            <SearchResult searchQuery={searchQuery} />
+            <TripSearchResult
+              searchQuery={searchQueries[activeSearchIndex]}
+              selectedTrip={selectedTrips[activeSearchIndex]}
+              onSelectTrip={(tripId) => selectTrip(activeSearchIndex, tripId)}
+            />
           </div>
         </div>
       </div>

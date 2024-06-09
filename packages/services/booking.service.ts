@@ -91,6 +91,14 @@ export function combineBookingPaymentItems(
             []
           )
       : [];
+
+    passengerPaymentItems.forEach(
+      (paymentItem) => (paymentItem.trip = bookingTrip.trip)
+    );
+    vehiclePaymentItems.forEach(
+      (paymentItem) => (paymentItem.trip = bookingTrip.trip)
+    );
+
     bookingPaymentItems.push(...passengerPaymentItems, ...vehiclePaymentItems);
   });
   bookingPaymentItems.push(...(booking.bookingPaymentItems ?? []));

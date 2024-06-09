@@ -47,6 +47,27 @@
     }
   }
 
+  .flight-schedule-card {
+    transition: border-color 250ms cubic-bezier(0.4, 0, 0.2, 1);
+    border: 3px solid transparent;
+
+    &.selected {
+      border-color: #4096ff;
+    }
+
+    &.disabled {
+      background-color: lightgray;
+
+      &:hover {
+        cursor: default;
+      }
+    }
+
+    &:hover {
+      cursor: pointer;
+    }
+  }
+
   @media (max-width: 886px) {
     padding-left: 5%;
   }

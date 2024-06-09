@@ -79,7 +79,6 @@ export default function BookingRequestPage({ params }) {
               hasPrivilegedAccess ||
               loggedInAccount?.role === 'ShippingLineScanner'
             }
-            showTripSummary={true}
           />
         </>
       )}

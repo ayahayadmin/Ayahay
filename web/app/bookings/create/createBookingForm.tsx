@@ -1,6 +1,15 @@
-import { Form, Spin, Steps, Grid, notification, Modal, Button } from 'antd';
+import {
+  Form,
+  Spin,
+  Steps,
+  Grid,
+  notification,
+  Modal,
+  Button,
+  App,
+} from 'antd';
 import styles from './createBookingForm.module.scss';
-import { IBooking } from '@ayahay/models';
+import { IBooking, IBookingTrip } from '@ayahay/models';
 import PassengerInformationForm from '@/components/booking/PassengerInformationForm';
 import React, { useState } from 'react';
 import { DISCOUNT_TYPE } from '@ayahay/constants/enum';
@@ -36,9 +45,9 @@ export default function CreateBookingForm({
 }: CreateBookingFormProps) {
   const { loggedInAccount, hasPrivilegedAccess } = useAuth();
   const { tripIds, trips } = useTripFromSearchParams();
+  const { modal } = App.useApp();
   const trip = trips?.[0];
   const screens = useBreakpoint();
-  const [modal, contextHolder] = Modal.useModal();
   const [form] = Form.useForm();
   const vehicles = Form.useWatch(
     ['bookingTrips', 0, 'bookingTripVehicles'],
@@ -65,15 +74,38 @@ export default function CreateBookingForm({
       'Looking for available seats that match your preferences...'
     );
 
-    if (trip === undefined) {
+    if (trip === undefined || trips === undefined) {
       onBookError('Trip is not defined');
       return;
     }
 
-    try {
-      const tentativeBooking = await createTentativeBooking(
-        form.getFieldsValue(true)
+    const booking = form.getFieldsValue(true);
+    const firstBookingTrip = booking.bookingTrips[0];
+    // add succeeding round/multiple trips from first trip
+    for (let i = 1; i < trips.length; i++) {
+      const succeedingTrip = trips[i];
+      const succeedingBookingTrip = JSON.parse(
+        JSON.stringify(firstBookingTrip)
+      ) as IBookingTrip;
+      succeedingBookingTrip.tripId = succeedingTrip.id;
+      succeedingBookingTrip.bookingTripPassengers?.forEach(
+        (tripPassenger) => (tripPassenger.tripId = succeedingTrip.id)
       );
+      succeedingBookingTrip.bookingTripVehicles?.forEach(
+        (tripVehicle) => (tripVehicle.tripId = succeedingTrip.id)
+      );
+
+      // if an old booking trip exists (e.g. user edits the booking after confirmation screen)
+      // override it
+      if (i < booking.bookingTrips.length) {
+        booking.bookingTrips[i] = succeedingBookingTrip;
+      } else {
+        booking.bookingTrips.push(succeedingBookingTrip);
+      }
+    }
+
+    try {
+      const tentativeBooking = await createTentativeBooking(booking);
       setBookingPreview(tentativeBooking);
       nextStep();
     } catch (e: any) {
@@ -377,7 +409,6 @@ export default function CreateBookingForm({
           />
         </div>
       </Spin>
-      {contextHolder}
     </Form>
   );
 }

@@ -31,13 +31,13 @@ export async function getTrips(
       `${TRIP_API}?${tripIdQuery.toString()}`
     );
 
-    uncachedTripIds.forEach((tripId, index) => {
+    trips.forEach((trip) => {
       // TODO: calculate seat types in backend
-      trips[index].availableSeatTypes = [];
+      trip.availableSeatTypes = [];
 
       // TODO: create table for 'Meal Menu'
-      trips[index].meals = ['Bacsilog'];
-      cachedTrips[tripId] = trips[index];
+      trip.meals = ['Bacsilog'];
+      cachedTrips[trip.id] = trip;
     });
 
     cacheItem('trips-by-id', cachedTrips, 60);

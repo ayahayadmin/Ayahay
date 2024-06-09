@@ -194,7 +194,6 @@ export default function BookingSummaryPage({ params }) {
               hasPrivilegedAccess ||
               loggedInAccount?.role === 'ShippingLineScanner'
             }
-            showTripSummary={true}
             onPayBooking={payBooking}
             onCancelBooking={onCancelBooking}
             onCheckInPassenger={checkInBookingPassenger}

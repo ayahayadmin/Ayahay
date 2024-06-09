@@ -4,7 +4,7 @@ import TripSearchQuery from '@/components/search/TripSearchQuery';
 import {
   DEFAULT_NUM_PASSENGERS,
   DEFAULT_NUM_VEHICLES,
-  DEFAULT_TRIP_TYPE,
+  DEFAULT_BOOKING_TYPE,
 } from '@ayahay/constants/default';
 import { Form } from 'antd';
 import { useRouter } from 'next/navigation';
@@ -26,7 +26,7 @@ export default function Home() {
       <Form
         form={form}
         initialValues={{
-          tripType: DEFAULT_TRIP_TYPE,
+          bookingType: DEFAULT_BOOKING_TYPE,
           passengerCount: DEFAULT_NUM_PASSENGERS,
           vehicleCount: DEFAULT_NUM_VEHICLES,
           departureDate: dayjs(),

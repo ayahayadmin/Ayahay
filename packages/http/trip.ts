@@ -1,9 +1,10 @@
 import { IPort, IShip, ITrip } from '@ayahay/models';
 import { VehicleRates } from './vehicle-type';
 import { PassengerRates } from './cabin-type';
+import { BOOKING_TYPE } from '@ayahay/constants';
 
 export interface TripsSearchQuery {
-  tripType: 'single' | 'round';
+  bookingType: keyof typeof BOOKING_TYPE;
   srcPortId: number;
   destPortId: number;
   departureDate: string;
