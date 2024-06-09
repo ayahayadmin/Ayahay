@@ -178,7 +178,9 @@ const PassengerDailySalesReport = forwardRef(function (
 
                 return (
                   <tr>
-                    <td>{passenger.passengerName}</td>
+                    <td style={{ textAlign: 'left', paddingLeft: 15 }}>
+                      {passenger.passengerName}
+                    </td>
                     <td>{passenger.teller}</td>
                     <td>{padZeroes(idx + 1, 4)}</td>
                     <td>{passenger.accommodation}</td>
