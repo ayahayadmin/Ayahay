@@ -38,12 +38,15 @@ export class ReportingMapper {
 
   convertTripPassengersForReporting(
     passenger,
+    collect,
+    isBookingCancelled,
     passengerFare,
     totalPrice,
     discountAmount,
     refundAmount,
     paymentStatus
   ) {
+    const isCancelledCollectBooking = collect && isBookingCancelled;
     return {
       passengerName: `${passenger.passenger.firstName.trim() ?? ''} ${
         passenger.passenger.lastName.trim() ?? ''
@@ -51,11 +54,17 @@ export class ReportingMapper {
       teller: passenger.booking.createdByAccount?.email,
       accommodation: passenger.cabin.cabinType.name,
       discount: passenger.discountType ?? 'Adult',
-      collect: passenger.booking.voucherCode === 'AZNAR_COLLECT',
-      discountAmount,
-      refundAmount,
+      collect,
+      discountAmount: collect ? discountAmount * -1 : discountAmount,
+      refundAmount: isCancelledCollectBooking
+        ? discountAmount * 0.8
+        : refundAmount,
       ticketSale: passengerFare + discountAmount,
-      ticketCost: passengerFare + discountAmount + refundAmount,
+      ticketCost: isCancelledCollectBooking
+        ? discountAmount * -1 * 0.2
+        : collect
+        ? discountAmount * -1
+        : passengerFare + discountAmount + refundAmount,
       fare: totalPrice,
       paymentStatus,
     };
@@ -63,23 +72,32 @@ export class ReportingMapper {
 
   convertTripVehiclesForReporting(
     vehicle,
+    collect,
+    isBookingCancelled,
     vehicleFare,
     totalPrice,
     discountAmount,
     refundAmount,
     paymentStatus
   ) {
+    const isCancelledCollectBooking = collect && isBookingCancelled;
     return {
       teller: vehicle.booking.createdByAccount?.email,
       referenceNo: vehicle.booking.referenceNo,
       freightRateReceipt: vehicle.booking.freightRateReceipt,
       typeOfVehicle: vehicle.vehicle.vehicleType.description,
       plateNo: vehicle.vehicle.plateNo,
-      collect: vehicle.booking.voucherCode === 'AZNAR_COLLECT',
-      discountAmount,
-      refundAmount,
+      collect,
+      discountAmount: collect ? discountAmount * -1 : discountAmount,
+      refundAmount: isCancelledCollectBooking
+        ? discountAmount * 0.8
+        : refundAmount,
       ticketSale: vehicleFare + discountAmount,
-      ticketCost: vehicleFare + discountAmount + refundAmount,
+      ticketCost: isCancelledCollectBooking
+        ? discountAmount * -1 * 0.2
+        : collect
+        ? discountAmount * -1
+        : vehicleFare + discountAmount + refundAmount,
       fare: totalPrice,
       paymentStatus,
     };
@@ -87,6 +105,8 @@ export class ReportingMapper {
 
   convertTripPassengersToPassengerBreakdown(
     passenger,
+    collect,
+    isBookingCancelled,
     passengerFare,
     discountAmount,
     refundAmount,
@@ -94,7 +114,11 @@ export class ReportingMapper {
   ) {
     const discountType = passenger.discountType ?? 'Adult';
     const discountedPassengerFare =
-      passengerFare + discountAmount + refundAmount;
+      collect && isBookingCancelled
+        ? discountAmount * -1 * 0.2
+        : collect
+        ? discountAmount * -1 + refundAmount
+        : passengerFare + discountAmount + refundAmount;
     const index = passengerDiscountsBreakdown.findIndex(
       (passengerBreakdown) => passengerBreakdown.typeOfDiscount === discountType
     );
@@ -120,16 +144,22 @@ export class ReportingMapper {
 
   convertTripVehiclesToVehicleBreakdown(
     vehicle,
+    collect,
+    isBookingCancelled,
     vehicleFare,
     discountAmount,
     refundAmount,
     vehicleTypesBreakdown
   ) {
-    const discountedVehicleFare = vehicleFare + discountAmount + refundAmount;
+    const description = vehicle.vehicle.vehicleType.description;
+    const discountedVehicleFare =
+      collect && isBookingCancelled
+        ? discountAmount * -1 * 0.2
+        : collect
+        ? discountAmount * -1 + refundAmount
+        : vehicleFare + discountAmount + refundAmount;
     const index = vehicleTypesBreakdown.findIndex(
-      (vehicleBreakdown) =>
-        vehicleBreakdown.typeOfVehicle ===
-        vehicle.vehicle.vehicleType.description
+      (vehicleBreakdown) => vehicleBreakdown.typeOfVehicle === description
     );
 
     if (index !== -1) {
@@ -141,7 +171,7 @@ export class ReportingMapper {
       };
     } else {
       vehicleTypesBreakdown.push({
-        typeOfVehicle: vehicle.vehicle.vehicleType.description,
+        typeOfVehicle: description,
         totalBooked: 1,
         totalSales: discountedVehicleFare,
       });

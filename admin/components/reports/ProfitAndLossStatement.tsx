@@ -40,6 +40,11 @@ const ProfitAndLossStatement = forwardRef(function (
         totalRefund: 0,
         totalNetSales: 0,
       },
+      Collect: {
+        totalSales: 0,
+        totalRefund: 0,
+        totalNetSales: 0,
+      },
       Online: {
         totalSales: 0,
         totalRefund: 0,
@@ -53,6 +58,11 @@ const ProfitAndLossStatement = forwardRef(function (
         totalNetSales: 0,
       },
       Agency: {
+        totalSales: 0,
+        totalRefund: 0,
+        totalNetSales: 0,
+      },
+      Collect: {
         totalSales: 0,
         totalRefund: 0,
         totalNetSales: 0,
@@ -76,18 +86,25 @@ const ProfitAndLossStatement = forwardRef(function (
   let totalExpenses = 0;
 
   data.passengers.map((passenger) => {
-    totalPassengerSales += passenger.ticketSale;
+    const paymentStatus = passenger.paymentStatus;
+    totalPassengerSales += passenger.collect
+      ? passenger.discountAmount
+      : passenger.ticketSale;
     totalPassengerRefund += passenger.refundAmount;
     totalPassengerNetSales += passenger.ticketCost;
 
-    if (passenger.paymentStatus === 'Online') {
+    if (paymentStatus === 'Online') {
       breakdown.passenger.Online.totalSales += passenger.ticketSale;
       breakdown.passenger.Online.totalRefund += passenger.refundAmount;
       breakdown.passenger.Online.totalNetSales += passenger.ticketCost;
-    } else if (passenger.paymentStatus === 'Agency') {
+    } else if (paymentStatus === 'Agency') {
       breakdown.passenger.Agency.totalSales += passenger.ticketSale;
       breakdown.passenger.Agency.totalRefund += passenger.refundAmount;
       breakdown.passenger.Agency.totalNetSales += passenger.ticketCost;
+    } else if (paymentStatus === 'Collect') {
+      breakdown.passenger.Collect.totalSales += passenger.discountAmount;
+      breakdown.passenger.Collect.totalRefund += passenger.refundAmount;
+      breakdown.passenger.Collect.totalNetSales += passenger.ticketCost;
     } else {
       breakdown.passenger.OTC.totalSales += passenger.ticketSale;
       breakdown.passenger.OTC.totalRefund += passenger.refundAmount;
@@ -96,18 +113,25 @@ const ProfitAndLossStatement = forwardRef(function (
   });
 
   data.vehicles.map((vehicle) => {
-    totalVehicleSales += vehicle.ticketSale;
+    const paymentStatus = vehicle.paymentStatus;
+    totalVehicleSales += vehicle.collect
+      ? vehicle.discountAmount
+      : vehicle.ticketSale;
     totalVehicleRefund += vehicle.refundAmount;
     totalVehicleNetSales += vehicle.ticketCost;
 
-    if (vehicle.paymentStatus === 'Online') {
+    if (paymentStatus === 'Online') {
       breakdown.vehicle.Online.totalSales += vehicle.ticketSale;
       breakdown.vehicle.Online.totalRefund += vehicle.refundAmount;
       breakdown.vehicle.Online.totalNetSales += vehicle.ticketCost;
-    } else if (vehicle.paymentStatus === 'Agency') {
+    } else if (paymentStatus === 'Agency') {
       breakdown.vehicle.Agency.totalSales += vehicle.ticketSale;
       breakdown.vehicle.Agency.totalRefund += vehicle.refundAmount;
       breakdown.vehicle.Agency.totalNetSales += vehicle.ticketCost;
+    } else if (paymentStatus === 'Collect') {
+      breakdown.vehicle.Collect.totalSales += vehicle.discountAmount;
+      breakdown.vehicle.Collect.totalRefund += vehicle.refundAmount;
+      breakdown.vehicle.Collect.totalNetSales += vehicle.ticketCost;
     } else {
       breakdown.vehicle.OTC.totalSales += vehicle.ticketSale;
       breakdown.vehicle.OTC.totalRefund += vehicle.refundAmount;
@@ -115,7 +139,7 @@ const ProfitAndLossStatement = forwardRef(function (
     }
   });
 
-  const paymentMethods = ['OTC', 'Online', 'Agency'];
+  const paymentMethods = ['OTC', 'Online', 'Agency', 'Collect'];
 
   return (
     <div ref={ref}>
@@ -217,6 +241,8 @@ const ProfitAndLossStatement = forwardRef(function (
                           ? breakdown.passenger.OTC.totalSales
                           : paymentMethod === 'Agency'
                           ? breakdown.passenger.Agency.totalSales
+                          : paymentMethod === 'Collect'
+                          ? breakdown.passenger.Collect.totalSales
                           : breakdown.passenger.Online.totalSales
                       )}
                     </td>
@@ -227,6 +253,8 @@ const ProfitAndLossStatement = forwardRef(function (
                           ? breakdown.passenger.OTC.totalRefund
                           : paymentMethod === 'Agency'
                           ? breakdown.passenger.Agency.totalRefund
+                          : paymentMethod === 'Collect'
+                          ? breakdown.passenger.Collect.totalRefund
                           : breakdown.passenger.Online.totalRefund
                       )}
                     </td>
@@ -237,6 +265,8 @@ const ProfitAndLossStatement = forwardRef(function (
                           ? breakdown.passenger.OTC.totalNetSales
                           : paymentMethod === 'Agency'
                           ? breakdown.passenger.Agency.totalNetSales
+                          : paymentMethod === 'Collect'
+                          ? breakdown.passenger.Collect.totalNetSales
                           : breakdown.passenger.Online.totalNetSales
                       )}
                     </td>
@@ -253,6 +283,8 @@ const ProfitAndLossStatement = forwardRef(function (
                           ? breakdown.vehicle.OTC.totalSales
                           : paymentMethod === 'Agency'
                           ? breakdown.vehicle.Agency.totalSales
+                          : paymentMethod === 'Collect'
+                          ? breakdown.vehicle.Collect.totalSales
                           : breakdown.vehicle.Online.totalSales
                       )}
                     </td>
@@ -263,6 +295,8 @@ const ProfitAndLossStatement = forwardRef(function (
                           ? breakdown.vehicle.OTC.totalRefund
                           : paymentMethod === 'Agency'
                           ? breakdown.vehicle.Agency.totalRefund
+                          : paymentMethod === 'Collect'
+                          ? breakdown.vehicle.Collect.totalRefund
                           : breakdown.vehicle.Online.totalRefund
                       )}
                     </td>
@@ -273,6 +307,8 @@ const ProfitAndLossStatement = forwardRef(function (
                           ? breakdown.vehicle.OTC.totalNetSales
                           : paymentMethod === 'Agency'
                           ? breakdown.vehicle.Agency.totalNetSales
+                          : paymentMethod === 'Collect'
+                          ? breakdown.vehicle.Collect.totalNetSales
                           : breakdown.vehicle.Online.totalNetSales
                       )}
                     </td>
@@ -290,6 +326,9 @@ const ProfitAndLossStatement = forwardRef(function (
                           : paymentMethod === 'Agency'
                           ? breakdown.passenger.Agency.totalSales +
                             breakdown.vehicle.Agency.totalSales
+                          : paymentMethod === 'Collect'
+                          ? breakdown.passenger.Collect.totalSales +
+                            breakdown.vehicle.Collect.totalSales
                           : breakdown.passenger.Online.totalSales +
                             breakdown.vehicle.Online.totalSales
                       )}
@@ -303,6 +342,9 @@ const ProfitAndLossStatement = forwardRef(function (
                           : paymentMethod === 'Agency'
                           ? breakdown.passenger.Agency.totalRefund +
                             breakdown.vehicle.Agency.totalRefund
+                          : paymentMethod === 'Collect'
+                          ? breakdown.passenger.Collect.totalRefund +
+                            breakdown.vehicle.Collect.totalRefund
                           : breakdown.passenger.Online.totalRefund +
                             breakdown.vehicle.Online.totalRefund
                       )}
@@ -316,6 +358,9 @@ const ProfitAndLossStatement = forwardRef(function (
                           : paymentMethod === 'Agency'
                           ? breakdown.passenger.Agency.totalNetSales +
                             breakdown.vehicle.Agency.totalNetSales
+                          : paymentMethod === 'Collect'
+                          ? breakdown.passenger.Collect.totalNetSales +
+                            breakdown.vehicle.Collect.totalNetSales
                           : breakdown.passenger.Online.totalNetSales +
                             breakdown.vehicle.Online.totalNetSales
                       )}
@@ -425,6 +470,9 @@ const ProfitAndLossStatement = forwardRef(function (
                           : paymentMethod === 'Agency'
                           ? breakdown.passenger.Agency.totalSales +
                             breakdown.vehicle.Agency.totalSales
+                          : paymentMethod === 'Collect'
+                          ? breakdown.passenger.Collect.totalSales +
+                            breakdown.vehicle.Collect.totalSales
                           : breakdown.passenger.Online.totalSales +
                             breakdown.vehicle.Online.totalSales
                       )}

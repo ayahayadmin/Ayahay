@@ -18,6 +18,7 @@ import { TripMapper } from '@/trip/trip.mapper';
 import { IAccount } from '@ayahay/models';
 import { ShipService } from '@/ship/ship.service';
 import { AuthService } from '@/auth/auth.service';
+import { sortBy } from 'lodash';
 
 @Injectable()
 export class ReportingService {
@@ -83,6 +84,11 @@ export class ReportingService {
             },
             passenger: true,
           },
+          orderBy: {
+            passenger: {
+              firstName: 'asc',
+            },
+          },
         },
         bookingTripVehicles: {
           where: {
@@ -129,6 +135,11 @@ export class ReportingService {
               },
             },
           },
+          orderBy: {
+            vehicle: {
+              plateNo: 'asc',
+            },
+          },
         },
         voyage: true,
       },
@@ -143,9 +154,11 @@ export class ReportingService {
       loggedInAccount
     );
 
-    const { passengers, passengerDiscountsBreakdown } =
-      this.buildPassengerDataForTripReporting(trip.bookingTripPassengers);
-    const { vehicles, vehicleTypesBreakdown } =
+    const {
+      passengers,
+      sortedPassengerDiscountsBreakdown: passengerDiscountsBreakdown,
+    } = this.buildPassengerDataForTripReporting(trip.bookingTripPassengers);
+    const { vehicles, sortedVehicleTypesBreakdown: vehicleTypesBreakdown } =
       this.buildVehicleDataForTripReporting(trip.bookingTripVehicles);
 
     return {
@@ -162,6 +175,9 @@ export class ReportingService {
     let passengerDiscountsBreakdown = [];
 
     bookingTripPassengers.forEach((passenger) => {
+      const collect = passenger.booking.voucherCode === 'AZNAR_COLLECT';
+      const isBookingCancelled =
+        passenger.booking.cancellationType === 'PassengersFault';
       const passengerFare = passenger.bookingPaymentItems.find(
         ({ type }) => type === 'Fare'
       )?.price;
@@ -173,9 +189,11 @@ export class ReportingService {
         passenger.bookingPaymentItems.find(
           ({ type }) => type === 'CancellationRefund'
         )?.price ?? 0;
-      const paymentStatus = this.authService.isShippingLineAccount(
-        passenger.booking.createdByAccount
-      )
+      const paymentStatus = collect
+        ? 'Collect'
+        : this.authService.isShippingLineAccount(
+            passenger.booking.createdByAccount
+          )
         ? 'OTC'
         : this.authService.isTravelAgencyAccount(
             passenger.booking.createdByAccount
@@ -186,6 +204,8 @@ export class ReportingService {
       passengers.push(
         this.reportingMapper.convertTripPassengersForReporting(
           passenger,
+          collect,
+          isBookingCancelled,
           passengerFare,
           passenger.totalPrice,
           discountAmount,
@@ -197,6 +217,8 @@ export class ReportingService {
       const passengerDiscountsBreakdownArr =
         this.reportingMapper.convertTripPassengersToPassengerBreakdown(
           passenger,
+          collect,
+          isBookingCancelled,
           passengerFare,
           discountAmount,
           partialRefundAmount,
@@ -205,7 +227,12 @@ export class ReportingService {
       passengerDiscountsBreakdown = passengerDiscountsBreakdownArr;
     });
 
-    return { passengers, passengerDiscountsBreakdown };
+    const sortedPassengerDiscountsBreakdown = sortBy(
+      passengerDiscountsBreakdown,
+      ['typeOfDiscount']
+    );
+
+    return { passengers, sortedPassengerDiscountsBreakdown };
   }
 
   private buildVehicleDataForTripReporting(bookingTripVehicles) {
@@ -213,6 +240,9 @@ export class ReportingService {
     let vehicleTypesBreakdown = [];
 
     bookingTripVehicles.forEach((vehicle) => {
+      const collect = vehicle.booking.voucherCode === 'AZNAR_COLLECT';
+      const isBookingCancelled =
+        vehicle.booking.cancellationType === 'PassengersFault';
       const vehicleFare = vehicle.bookingPaymentItems.find(
         ({ type }) => type === 'Fare'
       )?.price;
@@ -224,9 +254,11 @@ export class ReportingService {
         vehicle.bookingPaymentItems.find(
           ({ type }) => type === 'CancellationRefund'
         )?.price ?? 0;
-      const paymentStatus = this.authService.isShippingLineAccount(
-        vehicle.booking.createdByAccount
-      )
+      const paymentStatus = collect
+        ? 'Collect'
+        : this.authService.isShippingLineAccount(
+            vehicle.booking.createdByAccount
+          )
         ? 'OTC'
         : this.authService.isTravelAgencyAccount(
             vehicle.booking.createdByAccount
@@ -237,6 +269,8 @@ export class ReportingService {
       vehicles.push(
         this.reportingMapper.convertTripVehiclesForReporting(
           vehicle,
+          collect,
+          isBookingCancelled,
           vehicleFare,
           vehicle.totalPrice,
           discountAmount,
@@ -248,6 +282,8 @@ export class ReportingService {
       const vehicleTypesBreakdownArr =
         this.reportingMapper.convertTripVehiclesToVehicleBreakdown(
           vehicle,
+          collect,
+          isBookingCancelled,
           vehicleFare,
           discountAmount,
           partialRefundAmount,
@@ -256,7 +292,11 @@ export class ReportingService {
       vehicleTypesBreakdown = vehicleTypesBreakdownArr;
     });
 
-    return { vehicles, vehicleTypesBreakdown };
+    const sortedVehicleTypesBreakdown = sortBy(vehicleTypesBreakdown, [
+      'typeOfVehicle',
+    ]);
+
+    return { vehicles, sortedVehicleTypesBreakdown };
   }
 
   async getPortsByShip(
@@ -385,9 +425,11 @@ export class ReportingService {
     });
 
     return trips.map((trip) => {
-      const { passengers, passengerDiscountsBreakdown } =
-        this.buildPassengerDataForTripReporting(trip.bookingTripPassengers);
-      const { vehicles, vehicleTypesBreakdown } =
+      const {
+        passengers,
+        sortedPassengerDiscountsBreakdown: passengerDiscountsBreakdown,
+      } = this.buildPassengerDataForTripReporting(trip.bookingTripPassengers);
+      const { vehicles, sortedVehicleTypesBreakdown: vehicleTypesBreakdown } =
         this.buildVehicleDataForTripReporting(trip.bookingTripVehicles);
 
       return {
@@ -614,7 +656,7 @@ export class ReportingService {
     };
   }
 
-  async getCollectTripBooking(
+  async getCollectTripBookings(
     tripIds: number[],
     loggedInAccount: IAccount
   ): Promise<CollectTripBooking[]> {
