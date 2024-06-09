@@ -48,11 +48,15 @@ const PassengerDailySalesReport = forwardRef(function (
     Online: {
       aggFare: 0,
     },
+    Collect: {
+      aggFare: 0,
+    },
   };
 
   let totalPassengers = data.passengers.length;
   let totalTicketSale = 0;
   let totalRefundAmount = 0;
+  let totalCollectTicketSale = 0;
 
   return (
     <div ref={ref}>
@@ -117,7 +121,7 @@ const PassengerDailySalesReport = forwardRef(function (
 
         <div
           className={`${styles['center-div']} ${styles['font-style']}`}
-          style={{ marginTop: 15 }}
+          style={{ marginTop: 10 }}
         >
           <table
             style={{
@@ -143,14 +147,20 @@ const PassengerDailySalesReport = forwardRef(function (
             </thead>
             <tbody>
               {data.passengers.map((passenger, idx) => {
+                const collect = passenger.collect;
                 totalTicketSale += passenger.ticketSale;
                 totalRefundAmount += passenger.refundAmount;
+                totalCollectTicketSale += collect
+                  ? passenger.discountAmount
+                  : 0;
                 const paymentStatus = passenger.paymentStatus;
 
                 if (paymentStatus === 'Online') {
                   mopBreakdown.Online.aggFare += passenger.ticketSale;
                 } else if (paymentStatus === 'Agency') {
                   mopBreakdown.Agency.aggFare += passenger.ticketSale;
+                } else if (paymentStatus === 'Collect') {
+                  mopBreakdown.Collect.aggFare += passenger.discountAmount;
                 } else {
                   mopBreakdown.OTC.aggFare += passenger.ticketSale;
                 }
@@ -173,7 +183,9 @@ const PassengerDailySalesReport = forwardRef(function (
                     <td>{padZeroes(idx + 1, 4)}</td>
                     <td>{passenger.accommodation}</td>
                     <td>{passenger.discount}</td>
-                    <td style={{ textAlign: 'left' }}>{discountAmount}</td>
+                    <td style={{ textAlign: 'left' }}>
+                      {collect ? '' : discountAmount}
+                    </td>
                     <td style={{ textAlign: 'left' }}>
                       PHP&nbsp;
                       {roundToTwoDecimalPlacesAndAddCommas(
@@ -182,7 +194,7 @@ const PassengerDailySalesReport = forwardRef(function (
                     </td>
                     <td style={{ textAlign: 'left' }}>{refundAmount}</td>
                     <td>{paymentStatus}</td>
-                    <td>{passenger.collect ? 'Yes' : ''}</td>
+                    <td>{collect ? discountAmount : ''}</td>
                   </tr>
                 );
               })}
@@ -201,7 +213,10 @@ const PassengerDailySalesReport = forwardRef(function (
                   {roundToTwoDecimalPlacesAndAddCommas(totalRefundAmount)}
                 </td>
                 <td>-</td>
-                <td>-</td>
+                <td>
+                  PHP&nbsp;
+                  {roundToTwoDecimalPlacesAndAddCommas(totalCollectTicketSale)}
+                </td>
               </tr>
             </tfoot>
           </table>
@@ -287,7 +302,9 @@ const PassengerDailySalesReport = forwardRef(function (
                     <div style={{ textAlign: 'left' }}>
                       PHP&nbsp;
                       {roundToTwoDecimalPlacesAndAddCommas(
-                        totalTicketSale + totalRefundAmount
+                        totalTicketSale +
+                          totalRefundAmount +
+                          totalCollectTicketSale
                       )}
                     </div>
                   </div>

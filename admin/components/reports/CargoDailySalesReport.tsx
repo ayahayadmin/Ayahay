@@ -35,11 +35,15 @@ const CargoDailySalesReport = forwardRef(function (
     Online: {
       aggFare: 0,
     },
+    Collect: {
+      aggFare: 0,
+    },
   };
 
   let totalVehicles = data.vehicles?.length;
   let totalTicketSale = 0;
   let totalRefundAmount = 0;
+  let totalCollectTicketSale = 0;
 
   return (
     <div ref={ref}>
@@ -104,7 +108,7 @@ const CargoDailySalesReport = forwardRef(function (
 
         <div
           className={`${styles['center-div']} ${styles['font-style']}`}
-          style={{ marginTop: 15 }}
+          style={{ marginTop: 10 }}
         >
           <table
             style={{
@@ -130,14 +134,18 @@ const CargoDailySalesReport = forwardRef(function (
             </thead>
             <tbody>
               {data.vehicles.map((vehicle) => {
+                const collect = vehicle.collect;
                 totalTicketSale += vehicle.ticketSale;
                 totalRefundAmount += vehicle.refundAmount;
+                totalCollectTicketSale += collect ? vehicle.discountAmount : 0;
                 const paymentStatus = vehicle.paymentStatus;
 
                 if (paymentStatus === 'Online') {
                   mopBreakdown.Online.aggFare += vehicle.ticketSale;
                 } else if (paymentStatus === 'Agency') {
                   mopBreakdown.Agency.aggFare += vehicle.ticketSale;
+                } else if (paymentStatus === 'Collect') {
+                  mopBreakdown.Collect.aggFare += vehicle.discountAmount;
                 } else {
                   mopBreakdown.OTC.aggFare += vehicle.ticketSale;
                 }
@@ -161,14 +169,16 @@ const CargoDailySalesReport = forwardRef(function (
                     <td>{vehicle.freightRateReceipt}</td>
                     <td>{vehicle.typeOfVehicle}</td>
                     <td>{vehicle.plateNo}</td>
-                    <td style={{ textAlign: 'left' }}>{discountAmount}</td>
+                    <td style={{ textAlign: 'left' }}>
+                      {collect ? '' : discountAmount}
+                    </td>
                     <td style={{ textAlign: 'left' }}>
                       PHP&nbsp;
                       {roundToTwoDecimalPlacesAndAddCommas(vehicle.ticketSale)}
                     </td>
                     <td style={{ textAlign: 'left' }}>{refundAmount}</td>
                     <td>{paymentStatus}</td>
-                    <td>{vehicle.collect ? 'Yes' : ''}</td>
+                    <td>{collect ? discountAmount : ''}</td>
                   </tr>
                 );
               })}
@@ -187,7 +197,10 @@ const CargoDailySalesReport = forwardRef(function (
                   {roundToTwoDecimalPlacesAndAddCommas(totalRefundAmount)}
                 </td>
                 <td>-</td>
-                <td>-</td>
+                <td>
+                  PHP&nbsp;
+                  {roundToTwoDecimalPlacesAndAddCommas(totalCollectTicketSale)}
+                </td>
               </tr>
             </tfoot>
           </table>
@@ -273,7 +286,9 @@ const CargoDailySalesReport = forwardRef(function (
                     <div style={{ textAlign: 'left' }}>
                       PHP&nbsp;
                       {roundToTwoDecimalPlacesAndAddCommas(
-                        totalTicketSale + totalRefundAmount
+                        totalTicketSale +
+                          totalRefundAmount +
+                          totalCollectTicketSale
                       )}
                     </div>
                   </div>

@@ -116,11 +116,11 @@ export class ReportingController {
   @Get('trip/booking/collect')
   @UseGuards(AuthGuard)
   @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
-  async getCollectTripBooking(
+  async getCollectTripBookings(
     @Query('tripIds', new ParseArrayPipe({ items: Number })) tripIds: number[],
     @Request() req
   ): Promise<CollectTripBooking[]> {
-    return this.reportingService.getCollectTripBooking(tripIds, req.user);
+    return this.reportingService.getCollectTripBookings(tripIds, req.user);
   }
 
   @Patch(':bookingId/bol/frr')

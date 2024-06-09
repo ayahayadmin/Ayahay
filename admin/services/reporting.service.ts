@@ -95,7 +95,7 @@ export async function getVoidBookingTripVehicles(
   }
 }
 
-export async function getCollectTripBooking(
+export async function getCollectTripBookings(
   tripIds: string[]
 ): Promise<CollectTripBooking[] | undefined> {
   const tripIdsArray: string[] = [];

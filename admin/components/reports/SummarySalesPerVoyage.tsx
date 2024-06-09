@@ -31,15 +31,15 @@ const SummarySalesPerVoyage = forwardRef(function (
 
   const mopBreakdown: MOPBreakdown = {
     OTC: {
-      aggTicketCost: 0,
       aggFare: 0,
     },
     Agency: {
-      aggTicketCost: 0,
       aggFare: 0,
     },
     Online: {
-      aggTicketCost: 0,
+      aggFare: 0,
+    },
+    Collect: {
       aggFare: 0,
     },
   };
@@ -50,19 +50,21 @@ const SummarySalesPerVoyage = forwardRef(function (
   let totalPassengerNetSales = 0;
 
   data.passengers.map((passenger) => {
-    totalPassengerSales += passenger.ticketSale;
+    const paymentStatus = passenger.paymentStatus;
+    totalPassengerSales += passenger.collect
+      ? passenger.discountAmount
+      : passenger.ticketSale;
     totalPassengerRefund += passenger.refundAmount;
     totalPassengerNetSales += passenger.ticketCost;
 
-    if (passenger.paymentStatus === 'Online') {
-      mopBreakdown.Online.aggTicketCost! += passenger.ticketCost;
-      mopBreakdown.Online.aggFare += passenger.fare;
-    } else if (passenger.paymentStatus === 'Agency') {
-      mopBreakdown.Agency.aggTicketCost! += passenger.ticketCost;
-      mopBreakdown.Agency.aggFare += passenger.fare;
+    if (paymentStatus === 'Online') {
+      mopBreakdown.Online.aggFare += passenger.ticketSale;
+    } else if (paymentStatus === 'Agency') {
+      mopBreakdown.Agency.aggFare += passenger.ticketSale;
+    } else if (paymentStatus === 'Collect') {
+      mopBreakdown.Collect.aggFare += passenger.discountAmount;
     } else {
-      mopBreakdown.OTC.aggTicketCost! += passenger.ticketCost;
-      mopBreakdown.OTC.aggFare += passenger.fare;
+      mopBreakdown.OTC.aggFare += passenger.ticketSale;
     }
   });
 
@@ -72,19 +74,21 @@ const SummarySalesPerVoyage = forwardRef(function (
   let totalVehicleNetSales = 0;
 
   data.vehicles?.map((vehicle) => {
-    totalVehicleSales += vehicle.ticketSale;
+    const paymentStatus = vehicle.paymentStatus;
+    totalVehicleSales += vehicle.collect
+      ? vehicle.discountAmount
+      : vehicle.ticketSale;
     totalVehicleRefund += vehicle.refundAmount;
     totalVehicleNetSales += vehicle.ticketCost;
 
-    if (vehicle.paymentStatus === 'Online') {
-      mopBreakdown.Online.aggTicketCost! += vehicle.ticketCost;
-      mopBreakdown.Online.aggFare += vehicle.fare;
-    } else if (vehicle.paymentStatus === 'Agency') {
-      mopBreakdown.Agency.aggTicketCost! += vehicle.ticketCost;
-      mopBreakdown.Agency.aggFare += vehicle.fare;
+    if (paymentStatus === 'Online') {
+      mopBreakdown.Online.aggFare += vehicle.ticketSale;
+    } else if (paymentStatus === 'Agency') {
+      mopBreakdown.Agency.aggFare += vehicle.ticketSale;
+    } else if (paymentStatus === 'Collect') {
+      mopBreakdown.Collect.aggFare += vehicle.discountAmount;
     } else {
-      mopBreakdown.OTC.aggTicketCost! += vehicle.ticketCost;
-      mopBreakdown.OTC.aggFare += vehicle.fare;
+      mopBreakdown.OTC.aggFare += vehicle.ticketSale;
     }
   });
 
@@ -154,7 +158,7 @@ const SummarySalesPerVoyage = forwardRef(function (
 
         <div
           className={`${styles['center-div']} ${styles['font-style']}`}
-          style={{ marginTop: 15 }}
+          style={{ marginTop: 10 }}
         >
           <table
             style={{
@@ -250,8 +254,7 @@ const SummarySalesPerVoyage = forwardRef(function (
                         <div style={{ textAlign: 'left' }}>
                           PHP&nbsp;
                           {roundToTwoDecimalPlacesAndAddCommas(
-                            mopBreakdown[mop as keyof MOPBreakdown]
-                              .aggTicketCost ?? 0
+                            mopBreakdown[mop as keyof MOPBreakdown].aggFare ?? 0
                           )}
                         </div>
                       </div>
@@ -259,6 +262,24 @@ const SummarySalesPerVoyage = forwardRef(function (
                   </tr>
                 );
               })}
+              <tr>
+                <td
+                  className={styles['cell-border']}
+                  style={{ borderLeft: '0.001px solid black' }}
+                >
+                  Refund
+                </td>
+                <td className={styles['cell-border']}>
+                  <div className={styles['wrap']}>
+                    <div style={{ textAlign: 'left' }}>
+                      PHP&nbsp;
+                      {roundToTwoDecimalPlacesAndAddCommas(
+                        totalPassengerRefund + totalVehicleRefund
+                      )}
+                    </div>
+                  </div>
+                </td>
+              </tr>
             </tbody>
             <tfoot style={{ backgroundColor: '#ddebf7' }}>
               <tr style={{ fontWeight: 'bold' }}>
@@ -273,7 +294,10 @@ const SummarySalesPerVoyage = forwardRef(function (
                     <div style={{ textAlign: 'left' }}>
                       PHP&nbsp;
                       {roundToTwoDecimalPlacesAndAddCommas(
-                        totalPassengerNetSales + totalVehicleNetSales
+                        totalPassengerSales +
+                          totalVehicleSales +
+                          totalPassengerRefund +
+                          totalVehicleRefund
                       )}
                     </div>
                   </div>
@@ -293,7 +317,7 @@ const SummarySalesPerVoyage = forwardRef(function (
             <tbody>
               <tr>
                 <td style={{ textAlign: 'left', width: '50%' }}>
-                  Total Passenger Sales
+                  Total Passenger Net Sales
                 </td>
                 <td style={{ textAlign: 'left' }}>
                   PHP&nbsp;
@@ -302,7 +326,7 @@ const SummarySalesPerVoyage = forwardRef(function (
               </tr>
               <tr>
                 <td style={{ textAlign: 'left', width: '50%' }}>
-                  Total Cargo Sales
+                  Total Cargo Net Sales
                 </td>
                 <td style={{ textAlign: 'left' }}>
                   PHP&nbsp;
@@ -324,7 +348,7 @@ const SummarySalesPerVoyage = forwardRef(function (
                   PHP&nbsp;
                   {roundToTwoDecimalPlacesAndAddCommas(
                     totalPassengerNetSales +
-                      totalVehicleNetSales -
+                      totalVehicleNetSales +
                       totalDisbursements
                   )}
                 </td>

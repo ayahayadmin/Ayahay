@@ -29,7 +29,7 @@ import {
 } from '@/services/search.service';
 import { DownloadOutlined, FilePdfTwoTone } from '@ant-design/icons';
 import jsPDF from 'jspdf';
-import { getCollectTripBooking } from '@/services/reporting.service';
+import { getCollectTripBookings } from '@/services/reporting.service';
 import { getTripsForCollectBooking } from '@/services/trip.service';
 import CollectTripBookings from '@/components/reports/CollectTripBookings';
 import { useAuth } from '@/contexts/AuthContext';
@@ -127,7 +127,7 @@ export default function CollectBookingsPage() {
 
   const fetchCollectTripBookings = async () => {
     setIsFetchingData(true);
-    setData(await getCollectTripBooking(checkedList));
+    setData(await getCollectTripBookings(checkedList));
     setIsFetchingData(false);
     setBuildReportClicked(true);
   };

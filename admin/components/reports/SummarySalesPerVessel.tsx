@@ -24,15 +24,15 @@ interface SummarySalesPerVoyageProps {
 
 export interface MOPBreakdown {
   OTC: {
-    aggTicketCost?: number;
     aggFare: number;
   };
   Agency: {
-    aggTicketCost?: number;
     aggFare: number;
   };
   Online: {
-    aggTicketCost?: number;
+    aggFare: number;
+  };
+  Collect: {
     aggFare: number;
   };
 }
