@@ -42,6 +42,9 @@ const SummarySalesPerVoyage = forwardRef(function (
     Collect: {
       aggFare: 0,
     },
+    RoundTrip: {
+      aggFare: 0,
+    },
   };
 
   let totalPassengers = data.passengers.length;
@@ -63,6 +66,8 @@ const SummarySalesPerVoyage = forwardRef(function (
       mopBreakdown.Agency.aggFare += passenger.ticketSale;
     } else if (paymentStatus === 'Collect') {
       mopBreakdown.Collect.aggFare += passenger.discountAmount;
+    } else if (paymentStatus === 'Round Trip') {
+      mopBreakdown.RoundTrip.aggFare += passenger.ticketSale;
     } else {
       mopBreakdown.OTC.aggFare += passenger.ticketSale;
     }
@@ -87,6 +92,8 @@ const SummarySalesPerVoyage = forwardRef(function (
       mopBreakdown.Agency.aggFare += vehicle.ticketSale;
     } else if (paymentStatus === 'Collect') {
       mopBreakdown.Collect.aggFare += vehicle.discountAmount;
+    } else if (paymentStatus === 'Round Trip') {
+      mopBreakdown.RoundTrip.aggFare += vehicle.ticketSale;
     } else {
       mopBreakdown.OTC.aggFare += vehicle.ticketSale;
     }
@@ -348,7 +355,7 @@ const SummarySalesPerVoyage = forwardRef(function (
                   PHP&nbsp;
                   {roundToTwoDecimalPlacesAndAddCommas(
                     totalPassengerNetSales +
-                      totalVehicleNetSales +
+                      totalVehicleNetSales -
                       totalDisbursements
                   )}
                 </td>

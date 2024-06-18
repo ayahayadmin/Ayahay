@@ -251,6 +251,7 @@ export class BookingMapper {
       createdAtIso: tempBooking.createdAt.toISOString(),
       isBookingRequest: tempBooking.isBookingRequest,
       consigneeName: tempBooking.consigneeName ?? undefined,
+      firstTripId: bookingTrips.length > 1 ? bookingTrips[0].tripId : null,
 
       bookingTrips,
       bookingPaymentItems,
@@ -331,6 +332,7 @@ export class BookingMapper {
         createdAt: booking.createdAtIso,
         isBookingRequest: booking.isBookingRequest,
         consigneeName: booking.consigneeName,
+        firstTripId: booking.firstTripId,
 
         bookingTrips: {
           createMany: {

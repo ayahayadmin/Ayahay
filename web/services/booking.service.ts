@@ -5,7 +5,7 @@ import {
 } from '@ayahay/models';
 import { PaginatedRequest, PaginatedResponse } from '@ayahay/http';
 import axios from '@ayahay/services/axios';
-import { ACCOUNT_API, BOOKING_API } from '@ayahay/constants/api';
+import { BOOKING_API } from '@ayahay/constants/api';
 import { getVehicleType } from '@ayahay/services/vehicle-type.service';
 import { cacheItem, fetchItem } from '@ayahay/services/cache.service';
 import { firebase } from '@/app/utils/initFirebase';

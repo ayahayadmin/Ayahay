@@ -280,6 +280,7 @@ model Booking {
   cancellationType String? @map("cancellation_type")
   consigneeName String? @map("consignee_name")
   freightRateReceipt String? @map("freight_rate_receipt")
+  firstTripId Int? @map("first_trip_id")
 
   bookingTrips BookingTrip[]
   bookingTripPassengers BookingTripPassenger[]

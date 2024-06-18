@@ -62,6 +62,12 @@ export interface IBooking {
    * undefined if booking has no vehicles
    */
   consigneeName?: string;
+  /**
+   * If a booking is a round trip, this field will contain the
+   * first trip id (i.e. origin trip). Otherwise, if a booking is
+   * a single trip, this field will be null
+   */
+  firstTripId?: number;
 
   bookingTrips?: IBookingTrip[];
   bookingPaymentItems?: IBookingPaymentItem[];

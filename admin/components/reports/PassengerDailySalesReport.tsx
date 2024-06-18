@@ -51,12 +51,16 @@ const PassengerDailySalesReport = forwardRef(function (
     Collect: {
       aggFare: 0,
     },
+    RoundTrip: {
+      aggFare: 0,
+    },
   };
 
   let totalPassengers = data.passengers.length;
   let totalTicketSale = 0;
   let totalRefundAmount = 0;
   let totalCollectTicketSale = 0;
+  let totalRoundTripTicketSale = 0;
 
   return (
     <div ref={ref}>
@@ -143,15 +147,20 @@ const PassengerDailySalesReport = forwardRef(function (
                 <th style={{ textAlign: 'left' }}>Refund</th>
                 <th>Payment Method</th>
                 <th>Collect</th>
+                <th>Round Trip</th>
               </tr>
             </thead>
             <tbody>
               {data.passengers.map((passenger, idx) => {
                 const collect = passenger.collect;
-                totalTicketSale += passenger.ticketSale;
+                const roundTrip = passenger.roundTrip;
+                totalTicketSale += roundTrip ? 0 : passenger.ticketSale;
                 totalRefundAmount += passenger.refundAmount;
                 totalCollectTicketSale += collect
                   ? passenger.discountAmount
+                  : 0;
+                totalRoundTripTicketSale += roundTrip
+                  ? passenger.ticketSale
                   : 0;
                 const paymentStatus = passenger.paymentStatus;
 
@@ -161,6 +170,8 @@ const PassengerDailySalesReport = forwardRef(function (
                   mopBreakdown.Agency.aggFare += passenger.ticketSale;
                 } else if (paymentStatus === 'Collect') {
                   mopBreakdown.Collect.aggFare += passenger.discountAmount;
+                } else if (paymentStatus === 'Round Trip') {
+                  mopBreakdown.RoundTrip.aggFare += passenger.ticketSale;
                 } else {
                   mopBreakdown.OTC.aggFare += passenger.ticketSale;
                 }
@@ -175,6 +186,9 @@ const PassengerDailySalesReport = forwardRef(function (
                       passenger.refundAmount
                     )}`
                   : '';
+                const ticketCost = `PHP ${roundToTwoDecimalPlacesAndAddCommas(
+                  passenger.ticketSale
+                )}`;
 
                 return (
                   <tr>
@@ -189,14 +203,12 @@ const PassengerDailySalesReport = forwardRef(function (
                       {collect ? '' : discountAmount}
                     </td>
                     <td style={{ textAlign: 'left' }}>
-                      PHP&nbsp;
-                      {roundToTwoDecimalPlacesAndAddCommas(
-                        passenger.ticketSale
-                      )}
+                      {roundTrip ? '' : ticketCost}
                     </td>
                     <td style={{ textAlign: 'left' }}>{refundAmount}</td>
                     <td>{paymentStatus}</td>
                     <td>{collect ? discountAmount : ''}</td>
+                    <td>{roundTrip ? ticketCost : ''}</td>
                   </tr>
                 );
               })}
@@ -218,6 +230,12 @@ const PassengerDailySalesReport = forwardRef(function (
                 <td>
                   PHP&nbsp;
                   {roundToTwoDecimalPlacesAndAddCommas(totalCollectTicketSale)}
+                </td>
+                <td>
+                  PHP&nbsp;
+                  {roundToTwoDecimalPlacesAndAddCommas(
+                    totalRoundTripTicketSale
+                  )}
                 </td>
               </tr>
             </tfoot>
@@ -306,7 +324,8 @@ const PassengerDailySalesReport = forwardRef(function (
                       {roundToTwoDecimalPlacesAndAddCommas(
                         totalTicketSale +
                           totalRefundAmount +
-                          totalCollectTicketSale
+                          totalCollectTicketSale +
+                          totalRoundTripTicketSale
                       )}
                     </div>
                   </div>
