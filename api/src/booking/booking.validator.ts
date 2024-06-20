@@ -11,7 +11,6 @@ import {
 } from '@ayahay/models';
 import { FieldError } from '@ayahay/http';
 import { AuthService } from '@/auth/auth.service';
-import { PrismaService } from '@/prisma.service';
 
 @Injectable()
 export class BookingValidator {
@@ -19,10 +18,7 @@ export class BookingValidator {
   private readonly MAX_TRIPS_PER_BOOKING = 10;
   private readonly MAX_VEHICLES_PER_BOOKING = 15;
 
-  constructor(
-    private readonly authService: AuthService,
-    private readonly prisma: PrismaService
-  ) {}
+  constructor(private readonly authService: AuthService) {}
 
   async validateCreateTentativeBookingRequest(
     booking: IBooking,
@@ -103,7 +99,7 @@ export class BookingValidator {
         message: 'Vouchers are required for travel agencies.',
       });
     }
-    await this.authService.verifyTravelAgencyHasAccessToShippingLineRestrictedEntity(
+    await this.authService.verifyTravelAgencyCanBookForShippingLine(
       booking,
       loggedInAccount
     );
@@ -261,7 +257,7 @@ export class BookingValidator {
   }
 
   private validateVehicles(
-    { availableVehicleTypes }: ITrip,
+    { rateTable }: ITrip,
     tripIndex: number,
     vehicles: IBookingTripVehicle[],
     loggedInAccount?: IAccount
@@ -277,13 +273,15 @@ export class BookingValidator {
 
     const availableVehicleTypeIds = new Set<number>();
     const onlineVehicleTypeIds = new Set<number>();
-    availableVehicleTypes?.forEach(({ vehicleTypeId, canBookOnline }) => {
-      availableVehicleTypeIds.add(vehicleTypeId);
+    rateTable.rows
+      .filter((rate) => rate.vehicleTypeId)
+      .forEach(({ vehicleTypeId, canBookOnline }) => {
+        availableVehicleTypeIds.add(vehicleTypeId);
 
-      if (canBookOnline) {
-        onlineVehicleTypeIds.add(vehicleTypeId);
-      }
-    });
+        if (canBookOnline) {
+          onlineVehicleTypeIds.add(vehicleTypeId);
+        }
+      });
 
     vehicles.forEach(({ vehicle }, index) => {
       const vehicleTypeId = vehicle.vehicleTypeId;
@@ -398,7 +396,7 @@ export class BookingValidator {
     return errorMessages;
   }
 
-  validateBookingAccessForModification(
+  validateBookingWriteAccess(
     booking: { bookingStatus: string; shippingLineId: number },
     loggedInAccount: IAccount
   ): void {
@@ -406,7 +404,7 @@ export class BookingValidator {
       throw new BadRequestException('Only confirmed bookings can be modified.');
     }
 
-    this.authService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
+    this.authService.verifyAccountHasAccessToShippingLineRestrictedEntity(
       booking,
       loggedInAccount
     );

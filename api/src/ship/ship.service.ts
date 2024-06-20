@@ -129,7 +129,7 @@ export class ShipService {
       throw new NotFoundException();
     }
 
-    this.authService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
+    this.authService.verifyAccountHasAccessToShippingLineRestrictedEntity(
       ship,
       loggedInAccount
     );

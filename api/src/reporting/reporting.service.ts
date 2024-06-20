@@ -154,7 +154,7 @@ export class ReportingService {
           include: {
             vehicleType: {
               include: {
-                trips: {
+                rateTableRows: {
                   select: {
                     fare: true,
                   },
@@ -177,7 +177,7 @@ export class ReportingService {
       (vehicle) => vehicle.bookingId
     );
 
-    this.authService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
+    this.authService.verifyAccountHasAccessToShippingLineRestrictedEntity(
       trip,
       loggedInAccount
     );
@@ -207,7 +207,7 @@ export class ReportingService {
   }
 
   private buildPassengerDataForTripReporting(bookingTripPassengers, tripId) {
-    let passengers = [];
+    const passengers = [];
     let passengerDiscountsBreakdown = [];
 
     for (const [_key, bookingTripPassenger] of Object.entries(
@@ -332,7 +332,7 @@ export class ReportingService {
   }
 
   private buildVehicleDataForTripReporting(bookingTripVehicles, tripId) {
-    let vehicles = [];
+    const vehicles = [];
     let vehicleTypesBreakdown = [];
 
     for (const [_key, bookingTripVehicle] of Object.entries(
@@ -704,7 +704,7 @@ export class ReportingService {
       throw new NotFoundException();
     }
 
-    this.authService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
+    this.authService.verifyAccountHasAccessToShippingLineRestrictedEntity(
       trip,
       loggedInAccount
     );

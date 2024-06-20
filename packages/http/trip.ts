@@ -131,6 +131,7 @@ export interface AvailableTrips {
   shippingLineId: string;
   srcPortId: string;
   destPortId: string;
+  rateTableId: string;
   status: string;
   seatSelection: string;
   availableVehicleCapacity: string;

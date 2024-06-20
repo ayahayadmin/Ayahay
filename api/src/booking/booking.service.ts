@@ -283,7 +283,7 @@ export class BookingService {
     }
 
     try {
-      this.authService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
+      this.authService.verifyAccountHasAccessToShippingLineRestrictedEntity(
         booking,
         loggedInAccount
       );
@@ -495,7 +495,7 @@ export class BookingService {
     const tripIds = booking.bookingTrips.map(
       (bookingTrip) => bookingTrip.tripId
     );
-    const trips = await this.tripService.getTripsByIds(tripIds);
+    const trips = await this.tripService.getFullTripsById(tripIds);
 
     booking.bookingTrips.forEach(
       (bookingTrip) =>
@@ -734,7 +734,7 @@ export class BookingService {
       throw new NotFoundException();
     }
 
-    this.bookingValidator.validateBookingAccessForModification(
+    this.bookingValidator.validateBookingWriteAccess(
       bookingTripPassenger.booking,
       loggedInAccount
     );
@@ -775,7 +775,7 @@ export class BookingService {
       throw new NotFoundException();
     }
 
-    this.bookingValidator.validateBookingAccessForModification(
+    this.bookingValidator.validateBookingWriteAccess(
       bookingTripVehicle.booking,
       loggedInAccount
     );
@@ -812,10 +812,7 @@ export class BookingService {
       },
     });
 
-    this.bookingValidator.validateBookingAccessForModification(
-      booking,
-      loggedInAccount
-    );
+    this.bookingValidator.validateBookingWriteAccess(booking, loggedInAccount);
 
     if (booking === null) {
       throw new NotFoundException();
@@ -977,7 +974,7 @@ export class BookingService {
       throw new NotFoundException();
     }
 
-    this.bookingValidator.validateBookingAccessForModification(
+    this.bookingValidator.validateBookingWriteAccess(
       bookingTripPassenger.booking,
       loggedInAccount
     );
@@ -1045,7 +1042,7 @@ export class BookingService {
       throw new NotFoundException();
     }
 
-    this.bookingValidator.validateBookingAccessForModification(
+    this.bookingValidator.validateBookingWriteAccess(
       bookingTripVehicle.booking,
       loggedInAccount
     );

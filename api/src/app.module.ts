@@ -22,6 +22,7 @@ import { DisbursementModule } from './disbursement/disbursement.module';
 import { EmailModule } from './email/email.module';
 import { VoucherModule } from './voucher/voucher.module';
 import { WebhookModule } from '@/webhook/webhook.module';
+import { RateTableModule } from '@/rate-table/rate-table.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { WebhookModule } from '@/webhook/webhook.module';
     EmailModule,
     VoucherModule,
     WebhookModule,
+    RateTableModule,
   ],
 })
 export class AppModule {}

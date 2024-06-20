@@ -3,6 +3,7 @@ import { ACCOUNT_ROLE, CIVIL_STATUS, OCCUPATION, SEX } from '@ayahay/constants';
 import { IVehicle } from './vehicle.model';
 import { IShippingLine } from './shipping-line.model';
 import { ITravelAgency } from './travel-agency.model';
+import { IClient } from './client.model';
 
 export interface IAccount {
   // firebase user ID
@@ -13,6 +14,8 @@ export interface IAccount {
   shippingLine?: IShippingLine;
   travelAgencyId?: number;
   travelAgency?: ITravelAgency;
+  clientId?: number;
+  client?: IClient;
 
   email: string;
   role: keyof typeof ACCOUNT_ROLE;

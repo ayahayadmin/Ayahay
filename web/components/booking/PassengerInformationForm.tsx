@@ -51,7 +51,8 @@ export default function PassengerInformationForm({
   const [companionModalOpen, setCompanionModalOpen] = useState(false);
   const [vehicleModalOpen, setVehicleModalOpen] = useState(false);
   const [newEntityId, setNewEntityId] = useState(-1);
-  const canBookVehicles = trip?.availableVehicleTypes?.length > 0;
+  const vehicleRates = trip?.rateTable?.rows?.filter((row) => row.vehicleType);
+  const canBookVehicles = vehicleRates?.length;
 
   useEffect(() => {
     if (loggedInAccount === null) {
@@ -515,14 +516,13 @@ export default function PassengerInformationForm({
                     }
                     disabled={vehicles?.[index]?.vehicle?.id > 0}
                     placeholder='Select an option...'
-                    options={trip.availableVehicleTypes
+                    options={vehicleRates
                       ?.filter(
-                        (tripVehicleType) =>
-                          hasPrivilegedAccess || tripVehicleType.canBookOnline
+                        (rate) => hasPrivilegedAccess || rate.canBookOnline
                       )
                       ?.map(({ vehicleType, fare }) => ({
-                        label: `${vehicleType.name} · P${fare}`,
-                        value: vehicleType.id,
+                        label: `${vehicleType?.name} · P${fare}`,
+                        value: vehicleType?.id,
                       }))}
                   />
                 </Form.Item>

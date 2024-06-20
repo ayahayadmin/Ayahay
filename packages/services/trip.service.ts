@@ -4,6 +4,7 @@ import { getPort, getPorts } from './port.service';
 import { getShippingLine, getShippingLines } from './shipping-line.service';
 import { cacheItem, fetchItem } from './cache.service';
 import axios from './axios';
+import { getRateTableById } from './rate-table.service';
 
 export async function getTrips(
   tripIds: number[]
@@ -31,14 +32,15 @@ export async function getTrips(
       `${TRIP_API}?${tripIdQuery.toString()}`
     );
 
-    trips.forEach((trip) => {
+    for (const trip of trips) {
       // TODO: calculate seat types in backend
       trip.availableSeatTypes = [];
 
       // TODO: create table for 'Meal Menu'
       trip.meals = ['Bacsilog'];
+      trip.rateTable = await getRateTableById(trip.rateTableId);
       cachedTrips[trip.id] = trip;
-    });
+    }
 
     cacheItem('trips-by-id', cachedTrips, 60);
 

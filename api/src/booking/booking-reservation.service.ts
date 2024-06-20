@@ -64,9 +64,7 @@ export class BookingReservationService {
   private assignCabinsToPassengersInTripWithoutSeatSelection(
     bookingTrip: IBookingTrip
   ): void {
-    bookingTrip.trip.availableCabins
-      // by default, get the cheapest cabin
-      .sort((cabinA, cabinB) => cabinA.adultFare - cabinB.adultFare);
+    // TODO: sort cabins
 
     bookingTrip.bookingTripPassengers.forEach((bookingTripPassenger) => {
       const assignedCabinIndex = this.getAssignedCabinIndexToPassenger(

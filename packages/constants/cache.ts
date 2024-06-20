@@ -14,6 +14,7 @@ export const publicCacheKeys = <const>[
   'vehicle-types',
   'trips',
   'trips-by-id',
+  'rate-tables-by-id',
   'saved-bookings',
 ];
 
