@@ -22,7 +22,7 @@ export class WebhookService {
     travelAgencyId: number | undefined,
     loggedInAccount: IAccount
   ): Promise<IWebhook[]> {
-    this.verifyAccessToWebhook(
+    await this.verifyAccessToWebhook(
       { shippingLineId, travelAgencyId },
       loggedInAccount
     );
@@ -35,19 +35,19 @@ export class WebhookService {
     return webhooks.map(this.webhookMapper.convertWebhookToDto);
   }
 
-  private verifyAccessToWebhook(
+  private async verifyAccessToWebhook(
     webhook: { shippingLineId?: number; travelAgencyId?: number },
     loggedInAccount
-  ): void {
+  ): Promise<void> {
     const { shippingLineId, travelAgencyId } = webhook;
     if (shippingLineId) {
-      this.authService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
+      this.authService.verifyAccountHasAccessToShippingLineRestrictedEntity(
         { shippingLineId },
         loggedInAccount
       );
     }
     if (travelAgencyId) {
-      this.authService.verifyLoggedInAccountHasAccessToTravelAgencyRestrictedEntity(
+      this.authService.verifyAccountHasAccessToTravelAgencyRestrictedEntity(
         { travelAgencyId },
         loggedInAccount
       );

@@ -20,7 +20,7 @@ export async function getTripsReporting(
   const { data } = await axios.get(
     `${REPORTING_API}/trips/${tripId}/reporting`
   );
-  return data;
+  return data || undefined;
 }
 
 export async function getPortsByShip(

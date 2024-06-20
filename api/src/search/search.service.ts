@@ -11,7 +11,6 @@ import {
   PaginatedRequest,
   PaginatedResponse,
   TripInformation,
-  TripSearchByDateRange,
 } from '@ayahay/http';
 
 @Injectable()
@@ -175,23 +174,25 @@ export class SearchService {
           tc.trip_id,
           STRING_AGG(c.cabin_type_id::TEXT, '|') AS "pipeSeparatedCabinTypeIds",
           STRING_AGG(c.name::TEXT, '|') AS "pipeSeparatedCabinNames",
-          STRING_AGG(tc.adult_fare::TEXT, '|') AS "pipeSeparatedCabinFares",
+          STRING_AGG(rtr.fare::TEXT, '|') AS "pipeSeparatedCabinFares",
           STRING_AGG(tc.available_passenger_capacity::TEXT, '|') AS "pipeSeparatedCabinAvailableCapacities",
           STRING_AGG(tc.passenger_capacity::TEXT, '|') AS "pipeSeparatedCabinCapacities"
         FROM ayahay.trip_cabin tc
-          INNER JOIN ayahay.cabin c ON tc.cabin_id = c.id 
+          INNER JOIN ayahay.cabin c ON tc.cabin_id = c.id
+          INNER JOIN ayahay.rate_table_row rtr ON tc.cabin_id = rtr.cabin_id
         WHERE tc.trip_id IN (SELECT id FROM trips_matching_query)
         GROUP BY tc.trip_id 
       ), vehicle_rates_per_trip AS (
         SELECT
-          trip_id,
-          STRING_AGG(tvt.vehicle_type_id::TEXT, '|') AS "pipeSeparatedVehicleTypeIds",
-          STRING_AGG(tvt.fare::TEXT, '|') AS "pipeSeparatedVehicleFares",
+          t.id,
+          STRING_AGG(rtr.vehicle_type_id::TEXT, '|') AS "pipeSeparatedVehicleTypeIds",
+          STRING_AGG(rtr.fare::TEXT, '|') AS "pipeSeparatedVehicleFares",
           STRING_AGG(vt.name::TEXT, '|') AS "pipeSeparatedVehicleNames"
-        FROM ayahay.trip_vehicle_type tvt
-          INNER JOIN ayahay.vehicle_type vt ON tvt.vehicle_type_id = vt.id
-        WHERE trip_id IN (SELECT id FROM trips_matching_query)
-        GROUP BY trip_id
+        FROM ayahay.rate_table_row rtr
+          INNER JOIN ayahay.trip t ON rtr.rate_table_id = t.rate_table_id
+          INNER JOIN ayahay.vehicle_type vt ON rtr.vehicle_type_id = vt.id
+        WHERE t.id IN (SELECT id FROM trips_matching_query)
+        GROUP BY t.id
       )
     `;
 
@@ -202,7 +203,7 @@ export class SearchService {
         LEFT JOIN checked_in_vehicle_count_per_trip vc ON t.id = vc.trip_id
         LEFT JOIN not_checked_in_vehicles ncv ON t.id = ncv.trip_id
         LEFT JOIN cabin_information_per_trip cb ON t.id = cb.trip_id
-        LEFT JOIN vehicle_rates_per_trip vr ON t.id = vr.trip_id  
+        LEFT JOIN vehicle_rates_per_trip vr ON t.id = vr.id  
     `;
 
     const trips = await this.prisma.$queryRaw<TripInformation[]>`

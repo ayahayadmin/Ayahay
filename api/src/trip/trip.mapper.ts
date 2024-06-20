@@ -4,7 +4,6 @@ import {
   ICabinType,
   ITrip,
   ITripCabin,
-  ITripVehicleType,
   IVehicleType,
 } from '@ayahay/models';
 import { ShippingLineMapper } from '@/shipping-line/shipping-line.mapper';
@@ -18,13 +17,15 @@ import {
   CollectOption,
   TripVoyage,
 } from '@ayahay/http';
+import { RateTableMapper } from '@/rate-table/rate-table.mapper';
 
 @Injectable()
 export class TripMapper {
   constructor(
     private readonly shippingLineMapper: ShippingLineMapper,
     private readonly portMapper: PortMapper,
-    private readonly shipMapper: ShipMapper
+    private readonly shipMapper: ShipMapper,
+    private readonly rateTableMapper: RateTableMapper
   ) {}
 
   convertTripToBasicDto(trip: any): ITrip {
@@ -41,6 +42,7 @@ export class TripMapper {
       srcPort: this.portMapper.convertPortToDto(trip.srcPort),
       destPortId: trip.destPortId,
       destPort: this.portMapper.convertPortToDto(trip.destPort),
+      rateTableId: trip.rateTableId,
 
       status: trip.status as any,
       departureDateIso: trip.departureDate.toISOString(),
@@ -51,7 +53,6 @@ export class TripMapper {
       bookingCutOffDateIso: trip.bookingCutOffDateIso,
 
       availableCabins: [],
-      availableVehicleTypes: [],
       availableSeatTypes: [],
       meals: [],
     };
@@ -68,8 +69,26 @@ export class TripMapper {
       availableCabins: trip.availableCabins?.map((tripCabin) =>
         this.convertTripCabinToDto(tripCabin)
       ),
-      availableVehicleTypes: trip.availableVehicleTypes?.map(
-        (tripVehicleType) => this.convertTripVehicleTypeToDto(tripVehicleType)
+      departureDateIso: trip.departureDate.toISOString(),
+      voyage: trip.voyage,
+      availableSeatTypes: [],
+      meals: [],
+    };
+  }
+
+  convertFullTripToDto(trip: any): ITrip {
+    return {
+      ...trip,
+      srcPort: this.portMapper.convertPortToDto(trip.srcPort),
+      destPort: this.portMapper.convertPortToDto(trip.destPort),
+      shippingLine: this.shippingLineMapper.convertShippingLineToDto(
+        trip.shippingLine
+      ),
+      rateTable: this.rateTableMapper.convertRateTableToPrivilegedDto(
+        trip.rateTable
+      ),
+      availableCabins: trip.availableCabins?.map((tripCabin) =>
+        this.convertTripCabinToDto(tripCabin)
       ),
       departureDateIso: trip.departureDate.toISOString(),
       voyage: trip.voyage,
@@ -86,6 +105,7 @@ export class TripMapper {
       shippingLineId: Number(trip.shippingLineId),
       srcPortId: Number(trip.srcPortId),
       destPortId: Number(trip.destPortId),
+      rateTableId: Number(trip.rateTableId),
       status: trip.status as any,
       seatSelection: Boolean(trip.seatSelection),
       availableVehicleCapacity: Number(trip.availableVehicleCapacity),
@@ -106,12 +126,6 @@ export class TripMapper {
         trip.pipeSeparatedCabinFares.split('|'),
         trip.pipeSeparatedCabinTypeNames.split('|'),
         trip.pipeSeparatedCabinTypeDescriptions.split('|')
-      ),
-      availableVehicleTypes: this.covertPipeSeparatedTripVehicleTypesToDto(
-        trip.id,
-        trip.pipeSeparatedVehicleTypeIds?.split('|'),
-        trip.pipeSeparatedVehicleNames?.split('|'),
-        trip.pipeSeparatedVehicleFares?.split('|')
       ),
       availableSeatTypes: [],
       meals: [],
@@ -202,37 +216,6 @@ export class TripMapper {
     };
   }
 
-  private covertPipeSeparatedTripVehicleTypesToDto(
-    tripId,
-    vehicleTypeIds,
-    vehicleNames,
-    vehicleFares
-  ): ITripVehicleType[] {
-    return map(vehicleTypeIds, (vehicleTypeId, idx) => {
-      return {
-        tripId,
-        vehicleTypeId,
-        vehicleType: this.covertPipeSeparatedVehicleTypeToDto(
-          vehicleTypeId,
-          vehicleNames[idx]
-        ),
-        fare: vehicleFares[idx],
-        canBookOnline: false,
-      };
-    });
-  }
-
-  private covertPipeSeparatedVehicleTypeToDto(
-    vehicleTypeId,
-    vehicleName
-  ): IVehicleType {
-    return {
-      id: vehicleTypeId,
-      name: vehicleName,
-      description: '',
-    };
-  }
-
   convertTripCabinToDto(tripCabin: any): ITripCabin {
     return {
       ...tripCabin,
@@ -242,16 +225,6 @@ export class TripMapper {
         cabinType: {
           ...tripCabin.cabin.cabinType,
         },
-      },
-    };
-  }
-
-  convertTripVehicleTypeToDto(tripVehicleType: any): ITripVehicleType {
-    return {
-      ...tripVehicleType,
-      // TODO: put this in VehicleMapper
-      vehicleType: {
-        ...tripVehicleType.vehicleType,
       },
     };
   }
@@ -299,6 +272,7 @@ export class TripMapper {
       shippingLineId: trip.shippingLineId,
       srcPortId: trip.srcPortId,
       destPortId: trip.destPortId,
+      rateTableId: trip.rateTableId,
 
       status: trip.status,
       departureDate: new Date(trip.departureDateIso),
@@ -318,18 +292,6 @@ export class TripMapper {
       cabinId: tripCabin.cabinId,
       availablePassengerCapacity: tripCabin.passengerCapacity,
       passengerCapacity: tripCabin.passengerCapacity,
-      adultFare: tripCabin.adultFare,
-    };
-  }
-
-  convertTripVehicleTypeToEntityForCreation(
-    tripVehicleType: ITripVehicleType
-  ): Prisma.TripVehicleTypeCreateManyInput {
-    return {
-      tripId: -1,
-      vehicleTypeId: tripVehicleType.vehicleTypeId,
-      fare: tripVehicleType.fare,
-      canBookOnline: tripVehicleType.canBookOnline,
     };
   }
 }

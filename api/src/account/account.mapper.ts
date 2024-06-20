@@ -23,6 +23,7 @@ export class AccountMapper {
       role: account.role as ACCOUNT_ROLE,
       shippingLineId: account.shippingLineId,
       travelAgencyId: account.travelAgencyId,
+      clientId: account.clientId,
 
       vehicles: account.vehicles?.map((vehicle) =>
         this.vehicleMapper.convertVehicleToDto(vehicle)

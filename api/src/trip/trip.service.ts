@@ -18,7 +18,6 @@ import {
   PaginatedResponse,
   PortsAndDateRangeSearch,
   SearchAvailableTrips,
-  TripSearchByDateRange,
   UpdateTripCapacityRequest,
   VehicleBookings,
 } from '@ayahay/http';
@@ -46,7 +45,7 @@ const TRIP_AVAILABLE_QUERY_SELECT = Prisma.sql`
     t.booking_start_date AS "bookingStartDate",
     t.booking_cut_off_date AS "bookingCutOffDate",
     STRING_AGG(tc.cabin_id::TEXT, '|') AS "pipeSeparatedCabinIds",
-    STRING_AGG(tc.adult_fare::TEXT, '|') AS "pipeSeparatedCabinFares",
+    STRING_AGG(rtr.fare::TEXT, '|') AS "pipeSeparatedCabinFares",
     STRING_AGG(tc.available_passenger_capacity::TEXT, '|') AS "pipeSeparatedCabinAvailableCapacities",
     STRING_AGG(tc.passenger_capacity::TEXT, '|') AS "pipeSeparatedCabinCapacities",
     STRING_AGG(c.cabin_type_id::TEXT, '|') AS "pipeSeparatedCabinTypeIds",
@@ -60,6 +59,7 @@ const TRIP_AVAILABLE_QUERY_FROM = Prisma.sql`
   FROM ayahay.trip t
     INNER JOIN ayahay.trip_cabin tc ON t.id = tc.trip_id
     INNER JOIN ayahay.cabin c ON tc.cabin_id = c.id
+    INNER JOIN ayahay.rate_table_row rtr ON tc.cabin_id = rtr.cabin_id
     INNER JOIN ayahay.cabin_type ct ON c.cabin_type_id = ct.id
 `;
 
@@ -115,7 +115,7 @@ export class TripService {
       throw new NotFoundException('Trip Not Found');
     }
 
-    this.authService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
+    this.authService.verifyAccountHasAccessToShippingLineRestrictedEntity(
       trip,
       loggedInAccount
     );
@@ -185,15 +185,54 @@ export class TripService {
             },
           },
         },
-        availableVehicleTypes: {
+      },
+    });
+
+    return trips.map((trip) => this.tripMapper.convertTripToDto(trip));
+  }
+
+  async getFullTripsById(tripIds: number[]): Promise<ITrip[]> {
+    if (!tripIds || tripIds.length === 0 || tripIds.length > 10) {
+      throw new BadRequestException();
+    }
+    const trips = await this.prisma.trip.findMany({
+      where: {
+        id: {
+          in: tripIds,
+        },
+      },
+      include: {
+        srcPort: true,
+        destPort: true,
+        shippingLine: true,
+        availableCabins: {
           include: {
-            vehicleType: true,
+            cabin: {
+              include: {
+                cabinType: true,
+              },
+            },
+          },
+        },
+        rateTable: {
+          include: {
+            rows: {
+              include: {
+                cabin: {
+                  include: {
+                    cabinType: true,
+                  },
+                },
+                vehicleType: true,
+              },
+            },
+            markups: true,
           },
         },
       },
     });
 
-    return trips.map((trip) => this.tripMapper.convertTripToDto(trip));
+    return trips.map((trip) => this.tripMapper.convertFullTripToDto(trip));
   }
 
   async getAvailableTripsByDateRange(
@@ -289,7 +328,7 @@ export class TripService {
     { startDate, endDate, srcPortId, destPortId }: PortsAndDateRangeSearch,
     loggedInAccount: IAccount
   ): Promise<PaginatedResponse<CancelledTrips>> {
-    this.authService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
+    this.authService.verifyAccountHasAccessToShippingLineRestrictedEntity(
       { shippingLineId },
       loggedInAccount
     );
@@ -459,9 +498,6 @@ export class TripService {
     const tripCabinsPerTrip: {
       [referenceNo: string]: Prisma.TripCabinCreateManyInput[];
     } = {};
-    const tripVehicleTypesPerTrip: {
-      [referenceNo: string]: Prisma.TripVehicleTypeCreateManyInput[];
-    } = {};
 
     for (const trip of tripsToCreate) {
       const referenceNo = trip.referenceNo;
@@ -472,12 +508,6 @@ export class TripService {
       tripCabinsPerTrip[referenceNo] = trip.availableCabins.map((tripCabin) =>
         this.tripMapper.convertTripCabinToEntityForCreation(tripCabin)
       );
-      tripVehicleTypesPerTrip[referenceNo] = trip.availableVehicleTypes.map(
-        (tripVehicleType) =>
-          this.tripMapper.convertTripVehicleTypeToEntityForCreation(
-            tripVehicleType
-          )
-      );
     }
 
     try {
@@ -487,8 +517,6 @@ export class TripService {
         });
 
         const tripCabinEntities: Prisma.TripCabinCreateManyInput[] = [];
-        const tripVehicleTypeEntities: Prisma.TripVehicleTypeCreateManyInput[] =
-          [];
 
         const createdTripEntities = await transactionContext.trip.findMany({
           where: {
@@ -504,26 +532,15 @@ export class TripService {
         for (const createdTripEntity of createdTripEntities) {
           const tripCabinsOfTrip =
             tripCabinsPerTrip[createdTripEntity.referenceNo];
-          const tripVehicleTypesOfTrip =
-            tripVehicleTypesPerTrip[createdTripEntity.referenceNo];
 
           for (const tripCabin of tripCabinsOfTrip) {
             tripCabin.tripId = createdTripEntity.id;
             tripCabinEntities.push(tripCabin);
           }
-
-          for (const tripVehicleType of tripVehicleTypesOfTrip) {
-            tripVehicleType.tripId = createdTripEntity.id;
-            tripVehicleTypeEntities.push(tripVehicleType);
-          }
         }
 
         await transactionContext.tripCabin.createMany({
           data: tripCabinEntities,
-        });
-
-        await transactionContext.tripVehicleType.createMany({
-          data: tripVehicleTypeEntities,
         });
       });
     } catch (e) {
@@ -559,7 +576,7 @@ export class TripService {
       throw new NotFoundException();
     }
 
-    this.authService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
+    this.authService.verifyAccountHasAccessToShippingLineRestrictedEntity(
       trip,
       loggedInAccount
     );
@@ -682,7 +699,7 @@ export class TripService {
       throw new NotFoundException();
     }
 
-    this.authService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
+    this.authService.verifyAccountHasAccessToShippingLineRestrictedEntity(
       tripToUpdate,
       loggedInAccount
     );
@@ -728,7 +745,7 @@ export class TripService {
       throw new NotFoundException();
     }
 
-    this.authService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
+    this.authService.verifyAccountHasAccessToShippingLineRestrictedEntity(
       tripToUpdate,
       loggedInAccount
     );

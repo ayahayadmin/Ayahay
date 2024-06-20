@@ -30,6 +30,7 @@ export enum ACCOUNT_ROLE {
   ShippingLineAdmin = 'ShippingLineAdmin',
   TravelAgencyStaff = 'TravelAgencyStaff',
   TravelAgencyAdmin = 'TravelAgencyAdmin',
+  ClientStaff = 'ClientStaff',
   SuperAdmin = 'SuperAdmin',
 }
 

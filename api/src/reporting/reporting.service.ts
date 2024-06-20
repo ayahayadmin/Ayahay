@@ -18,7 +18,22 @@ import { TripMapper } from '@/trip/trip.mapper';
 import { IAccount } from '@ayahay/models';
 import { ShipService } from '@/ship/ship.service';
 import { AuthService } from '@/auth/auth.service';
-import { sortBy } from 'lodash';
+import { groupBy, isEmpty, sortBy } from 'lodash';
+
+const BOOKING_TRIP_PAX_VEHICLE_WHERE = {
+  OR: [{ removedReasonType: null }, { removedReasonType: 'PassengersFault' }],
+  booking: {
+    OR: [
+      {
+        bookingStatus: {
+          in: ['Confirmed', 'Requested'],
+        },
+      },
+      { cancellationType: null },
+      { cancellationType: 'PassengersFault' },
+    ],
+  },
+};
 
 @Injectable()
 export class ReportingService {
@@ -34,132 +49,153 @@ export class ReportingService {
     tripId: number,
     loggedInAccount: IAccount
   ): Promise<TripReport> {
-    const trip = await this.prisma.trip.findUnique({
-      where: {
-        id: tripId,
-      },
-      include: {
-        srcPort: true,
-        destPort: true,
-        ship: true,
-        shippingLine: true,
-        bookingTripPassengers: {
-          where: {
-            OR: [
-              { removedReasonType: null },
-              { removedReasonType: 'PassengersFault' },
-            ],
-            booking: {
-              OR: [
-                {
-                  bookingStatus: {
-                    in: ['Confirmed', 'Requested'],
-                  },
-                },
-                { cancellationType: null },
-                { cancellationType: 'PassengersFault' },
-              ],
-            },
-          },
-          include: {
-            booking: {
-              include: {
-                createdByAccount: {
-                  select: {
-                    email: true,
-                    role: true,
-                  },
-                },
-              },
-            },
-            bookingPaymentItems: true,
-            cabin: {
-              select: {
-                cabinType: {
-                  select: {
-                    name: true,
-                  },
-                },
-              },
-            },
-            passenger: true,
-          },
-          orderBy: {
-            passenger: {
-              firstName: 'asc',
-            },
-          },
-        },
-        bookingTripVehicles: {
-          where: {
-            OR: [
-              { removedReasonType: null },
-              { removedReasonType: 'PassengersFault' },
-            ],
-            booking: {
-              OR: [
-                {
-                  bookingStatus: {
-                    in: ['Confirmed', 'Requested'],
-                  },
-                },
-                { cancellationType: null },
-                { cancellationType: 'PassengersFault' },
-              ],
-            },
-          },
-          include: {
-            booking: {
-              include: {
-                createdByAccount: {
-                  select: {
-                    email: true,
-                    role: true,
-                  },
-                },
-              },
-            },
-            bookingPaymentItems: true,
-            vehicle: {
-              include: {
-                vehicleType: {
-                  include: {
-                    trips: {
-                      select: {
-                        fare: true,
-                      },
-                      take: 1,
-                    },
-                  },
-                },
-              },
-            },
-          },
-          orderBy: {
-            vehicle: {
-              plateNo: 'asc',
-            },
-          },
-        },
-        voyage: true,
-      },
-    });
-
-    if (trip === null) {
+    const tripCount = await this.prisma.trip.count({ where: { id: tripId } });
+    if (tripCount === 0) {
       throw new NotFoundException();
     }
 
-    this.authService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
+    const bookingTrips = await this.prisma.bookingTrip.findMany({
+      where: { tripId },
+      select: {
+        bookingId: true,
+        trip: {
+          select: {
+            id: true,
+            srcPort: {
+              select: {
+                name: true,
+                code: true,
+              },
+            },
+            destPort: {
+              select: {
+                name: true,
+                code: true,
+              },
+            },
+            ship: {
+              select: {
+                name: true,
+              },
+            },
+            shippingLineId: true,
+            shippingLine: {
+              select: {
+                name: true,
+              },
+            },
+            departureDate: true,
+            voyage: {
+              select: {
+                number: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (bookingTrips.length === 0) {
+      // no bookings in this trip yet
+      return;
+    }
+
+    const bookingIds = bookingTrips.map(({ bookingId }) => bookingId);
+
+    const bookingTripPassengers =
+      await this.prisma.bookingTripPassenger.findMany({
+        where: {
+          bookingId: { in: bookingIds },
+          ...BOOKING_TRIP_PAX_VEHICLE_WHERE,
+        },
+        include: {
+          booking: {
+            include: {
+              createdByAccount: {
+                select: {
+                  email: true,
+                  role: true,
+                },
+              },
+            },
+          },
+          bookingPaymentItems: true,
+          cabin: {
+            select: {
+              cabinType: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          },
+          passenger: true,
+        },
+      });
+
+    const bookingTripVehicles = await this.prisma.bookingTripVehicle.findMany({
+      where: {
+        bookingId: { in: bookingIds },
+        ...BOOKING_TRIP_PAX_VEHICLE_WHERE,
+      },
+      include: {
+        booking: {
+          include: {
+            createdByAccount: {
+              select: {
+                email: true,
+                role: true,
+              },
+            },
+          },
+        },
+        bookingPaymentItems: true,
+        vehicle: {
+          include: {
+            vehicleType: {
+              include: {
+                rateTableRows: {
+                  select: {
+                    fare: true,
+                  },
+                  take: 1,
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const trip = bookingTrips[0]?.trip;
+    const bookingTripPassengersGroupByBookingId = groupBy(
+      bookingTripPassengers,
+      (passenger) => passenger.bookingId
+    );
+    const bookingTripVehiclesGroupByBookingId = groupBy(
+      bookingTripVehicles,
+      (vehicle) => vehicle.bookingId
+    );
+
+    this.authService.verifyAccountHasAccessToShippingLineRestrictedEntity(
       trip,
       loggedInAccount
     );
 
     const {
-      passengers,
+      sortedPassengers: passengers,
       sortedPassengerDiscountsBreakdown: passengerDiscountsBreakdown,
-    } = this.buildPassengerDataForTripReporting(trip.bookingTripPassengers);
-    const { vehicles, sortedVehicleTypesBreakdown: vehicleTypesBreakdown } =
-      this.buildVehicleDataForTripReporting(trip.bookingTripVehicles);
+    } = this.buildPassengerDataForTripReporting(
+      bookingTripPassengersGroupByBookingId,
+      trip.id
+    );
+    const {
+      sortedVehicles: vehicles,
+      sortedVehicleTypesBreakdown: vehicleTypesBreakdown,
+    } = this.buildVehicleDataForTripReporting(
+      bookingTripVehiclesGroupByBookingId,
+      trip.id
+    );
 
     return {
       ...this.reportingMapper.convertTripsForReporting(trip),
@@ -170,133 +206,252 @@ export class ReportingService {
     };
   }
 
-  private buildPassengerDataForTripReporting(bookingTripPassengers) {
-    let passengers = [];
+  private buildPassengerDataForTripReporting(bookingTripPassengers, tripId) {
+    const passengers = [];
     let passengerDiscountsBreakdown = [];
 
-    bookingTripPassengers.forEach((passenger) => {
-      const collect = passenger.booking.voucherCode === 'AZNAR_COLLECT';
-      const isBookingCancelled =
-        passenger.booking.cancellationType === 'PassengersFault';
-      const passengerFare = passenger.bookingPaymentItems.find(
-        ({ type }) => type === 'Fare'
-      )?.price;
-      const discountAmount =
-        passenger.bookingPaymentItems.find(
-          ({ type }) => type === 'VoucherDiscount'
-        )?.price ?? 0;
-      const partialRefundAmount =
-        passenger.bookingPaymentItems.find(
-          ({ type }) => type === 'CancellationRefund'
-        )?.price ?? 0;
-      const paymentStatus = collect
-        ? 'Collect'
-        : this.authService.isShippingLineAccount(
-            passenger.booking.createdByAccount
-          )
-        ? 'OTC'
-        : this.authService.isTravelAgencyAccount(
-            passenger.booking.createdByAccount
-          )
-        ? 'Agency'
-        : 'Online';
+    for (const [_key, bookingTripPassenger] of Object.entries(
+      bookingTripPassengers
+    ) as any) {
+      const isRoundTrip = !!bookingTripPassenger[0].booking.firstTripId;
+      const isOriginTrip =
+        tripId === bookingTripPassenger[0].booking.firstTripId;
 
-      passengers.push(
-        this.reportingMapper.convertTripPassengersForReporting(
-          passenger,
-          collect,
-          isBookingCancelled,
-          passengerFare,
-          passenger.totalPrice,
-          discountAmount,
-          partialRefundAmount,
-          paymentStatus
-        )
-      );
+      let roundTripPassengers = {};
+      if (isRoundTrip) {
+        roundTripPassengers =
+          this.reportingMapper.convertTripPassengersToRoundTripPassengers(
+            bookingTripPassenger,
+            tripId,
+            isOriginTrip
+          );
+      } else {
+        bookingTripPassenger.forEach((passenger) => {
+          const collect = passenger.booking.voucherCode === 'AZNAR_COLLECT';
+          const isBookingCancelled =
+            passenger.booking.cancellationType === 'PassengersFault';
+          const passengerFare = passenger.bookingPaymentItems.find(
+            ({ type }) => type === 'Fare'
+          )?.price;
+          const discountAmount =
+            passenger.bookingPaymentItems.find(
+              ({ type }) => type === 'VoucherDiscount'
+            )?.price ?? 0;
+          const partialRefundAmount =
+            passenger.bookingPaymentItems.find(
+              ({ type }) => type === 'CancellationRefund'
+            )?.price ?? 0;
+          const paymentStatus = collect
+            ? 'Collect'
+            : this.authService.isShippingLineAccount(
+                passenger.booking.createdByAccount
+              )
+            ? 'OTC'
+            : this.authService.isTravelAgencyAccount(
+                passenger.booking.createdByAccount
+              )
+            ? 'Agency'
+            : 'Online';
 
-      const passengerDiscountsBreakdownArr =
-        this.reportingMapper.convertTripPassengersToPassengerBreakdown(
-          passenger,
-          collect,
-          isBookingCancelled,
-          passengerFare,
-          discountAmount,
-          partialRefundAmount,
-          passengerDiscountsBreakdown
-        );
-      passengerDiscountsBreakdown = passengerDiscountsBreakdownArr;
-    });
+          passengers.push(
+            this.reportingMapper.convertTripPassengersForReporting(
+              `${passenger.passenger.firstName.trim() ?? ''} ${
+                passenger.passenger.lastName.trim() ?? ''
+              }`,
+              passenger.booking.createdByAccount?.email,
+              passenger.cabin.cabinType.name,
+              passenger.discountType ?? 'Adult',
+              collect,
+              isBookingCancelled,
+              isRoundTrip,
+              passengerFare,
+              passenger.totalPrice,
+              discountAmount,
+              partialRefundAmount,
+              paymentStatus
+            )
+          );
 
+          const passengerDiscountsBreakdownArr =
+            this.reportingMapper.convertTripPassengersToPassengerBreakdown(
+              passenger.discountType ?? 'Adult',
+              collect,
+              isBookingCancelled,
+              passengerFare,
+              discountAmount,
+              partialRefundAmount,
+              passengerDiscountsBreakdown
+            );
+          passengerDiscountsBreakdown = passengerDiscountsBreakdownArr;
+        });
+      }
+
+      if (!isEmpty(roundTripPassengers)) {
+        for (const [_key, roundTripPassenger] of Object.entries(
+          roundTripPassengers
+        ) as any) {
+          passengers.push(
+            this.reportingMapper.convertTripPassengersForReporting(
+              roundTripPassenger.passengerName,
+              roundTripPassenger.teller,
+              roundTripPassenger.accommodation,
+              roundTripPassenger.discount,
+              roundTripPassenger.collect,
+              roundTripPassenger.isBookingCancelled,
+              isRoundTrip,
+              roundTripPassenger.passengerFare,
+              roundTripPassenger.totalPrice,
+              roundTripPassenger.discountAmount,
+              roundTripPassenger.partialRefundAmount,
+              roundTripPassenger.paymentStatus
+            )
+          );
+
+          const passengerDiscountsBreakdownArr =
+            this.reportingMapper.convertTripPassengersToPassengerBreakdown(
+              roundTripPassenger.discount,
+              roundTripPassenger.collect,
+              roundTripPassenger.isBookingCancelled,
+              roundTripPassenger.passengerFare,
+              roundTripPassenger.discountAmount,
+              roundTripPassenger.partialRefundAmount,
+              passengerDiscountsBreakdown
+            );
+          passengerDiscountsBreakdown = passengerDiscountsBreakdownArr;
+        }
+      }
+    }
+
+    const sortedPassengers = sortBy(passengers, ['passengerName']);
     const sortedPassengerDiscountsBreakdown = sortBy(
       passengerDiscountsBreakdown,
       ['typeOfDiscount']
     );
 
-    return { passengers, sortedPassengerDiscountsBreakdown };
+    return { sortedPassengers, sortedPassengerDiscountsBreakdown };
   }
 
-  private buildVehicleDataForTripReporting(bookingTripVehicles) {
-    let vehicles = [];
+  private buildVehicleDataForTripReporting(bookingTripVehicles, tripId) {
+    const vehicles = [];
     let vehicleTypesBreakdown = [];
 
-    bookingTripVehicles.forEach((vehicle) => {
-      const collect = vehicle.booking.voucherCode === 'AZNAR_COLLECT';
-      const isBookingCancelled =
-        vehicle.booking.cancellationType === 'PassengersFault';
-      const vehicleFare = vehicle.bookingPaymentItems.find(
-        ({ type }) => type === 'Fare'
-      )?.price;
-      const discountAmount =
-        vehicle.bookingPaymentItems.find(
-          ({ type }) => type === 'VoucherDiscount'
-        )?.price ?? 0;
-      const partialRefundAmount =
-        vehicle.bookingPaymentItems.find(
-          ({ type }) => type === 'CancellationRefund'
-        )?.price ?? 0;
-      const paymentStatus = collect
-        ? 'Collect'
-        : this.authService.isShippingLineAccount(
-            vehicle.booking.createdByAccount
-          )
-        ? 'OTC'
-        : this.authService.isTravelAgencyAccount(
-            vehicle.booking.createdByAccount
-          )
-        ? 'Agency'
-        : 'Online';
+    for (const [_key, bookingTripVehicle] of Object.entries(
+      bookingTripVehicles
+    ) as any) {
+      const isRoundTrip = !!bookingTripVehicle[0].booking.firstTripId;
+      const isOriginTrip = tripId === bookingTripVehicle[0].booking.firstTripId;
 
-      vehicles.push(
-        this.reportingMapper.convertTripVehiclesForReporting(
-          vehicle,
-          collect,
-          isBookingCancelled,
-          vehicleFare,
-          vehicle.totalPrice,
-          discountAmount,
-          partialRefundAmount,
-          paymentStatus
-        )
-      );
+      let roundTripVehicles = {};
+      if (isRoundTrip) {
+        roundTripVehicles =
+          this.reportingMapper.convertTripVehiclesToRoundTripVehicles(
+            bookingTripVehicle,
+            tripId,
+            isOriginTrip
+          );
+      } else {
+        bookingTripVehicle.forEach((vehicle) => {
+          const collect = vehicle.booking.voucherCode === 'AZNAR_COLLECT';
+          const isBookingCancelled =
+            vehicle.booking.cancellationType === 'PassengersFault';
+          const vehicleFare = vehicle.bookingPaymentItems.find(
+            ({ type }) => type === 'Fare'
+          )?.price;
+          const discountAmount =
+            vehicle.bookingPaymentItems.find(
+              ({ type }) => type === 'VoucherDiscount'
+            )?.price ?? 0;
+          const partialRefundAmount =
+            vehicle.bookingPaymentItems.find(
+              ({ type }) => type === 'CancellationRefund'
+            )?.price ?? 0;
+          const paymentStatus = collect
+            ? 'Collect'
+            : this.authService.isShippingLineAccount(
+                vehicle.booking.createdByAccount
+              )
+            ? 'OTC'
+            : this.authService.isTravelAgencyAccount(
+                vehicle.booking.createdByAccount
+              )
+            ? 'Agency'
+            : 'Online';
 
-      const vehicleTypesBreakdownArr =
-        this.reportingMapper.convertTripVehiclesToVehicleBreakdown(
-          vehicle,
-          collect,
-          isBookingCancelled,
-          vehicleFare,
-          discountAmount,
-          partialRefundAmount,
-          vehicleTypesBreakdown
-        );
-      vehicleTypesBreakdown = vehicleTypesBreakdownArr;
-    });
+          vehicles.push(
+            this.reportingMapper.convertTripVehiclesForReporting(
+              vehicle.booking.createdByAccount?.email,
+              vehicle.booking.referenceNo,
+              vehicle.booking.freightRateReceipt,
+              vehicle.vehicle.vehicleType.description,
+              vehicle.vehicle.plateNo,
+              collect,
+              isBookingCancelled,
+              isRoundTrip,
+              vehicleFare,
+              vehicle.totalPrice,
+              discountAmount,
+              partialRefundAmount,
+              paymentStatus
+            )
+          );
 
+          const vehicleTypesBreakdownArr =
+            this.reportingMapper.convertTripVehiclesToVehicleBreakdown(
+              vehicle.vehicle.vehicleType.description,
+              collect,
+              isBookingCancelled,
+              vehicleFare,
+              discountAmount,
+              partialRefundAmount,
+              vehicleTypesBreakdown
+            );
+          vehicleTypesBreakdown = vehicleTypesBreakdownArr;
+        });
+      }
+
+      if (!isEmpty(roundTripVehicles)) {
+        for (const [_key, roundTripVehicle] of Object.entries(
+          roundTripVehicles
+        ) as any) {
+          vehicles.push(
+            this.reportingMapper.convertTripVehiclesForReporting(
+              roundTripVehicle.teller,
+              roundTripVehicle.referenceNo,
+              roundTripVehicle.freightRateReceipt,
+              roundTripVehicle.typeOfVehicle,
+              roundTripVehicle.plateNo,
+              roundTripVehicle.collect,
+              roundTripVehicle.isBookingCancelled,
+              isRoundTrip,
+              roundTripVehicle.vehicleFare,
+              roundTripVehicle.totalPrice,
+              roundTripVehicle.discountAmount,
+              roundTripVehicle.partialRefundAmount,
+              roundTripVehicle.paymentStatus
+            )
+          );
+
+          const passengerDiscountsBreakdownArr =
+            this.reportingMapper.convertTripVehiclesToVehicleBreakdown(
+              roundTripVehicle.typeOfVehicle,
+              roundTripVehicle.collect,
+              roundTripVehicle.isBookingCancelled,
+              roundTripVehicle.vehicleFare,
+              roundTripVehicle.discountAmount,
+              roundTripVehicle.partialRefundAmount,
+              vehicleTypesBreakdown
+            );
+          vehicleTypesBreakdown = passengerDiscountsBreakdownArr;
+        }
+      }
+    }
+
+    const sortedVehicles = sortBy(vehicles, ['plateNo']);
     const sortedVehicleTypesBreakdown = sortBy(vehicleTypesBreakdown, [
       'typeOfVehicle',
     ]);
 
-    return { vehicles, sortedVehicleTypesBreakdown };
+    return { sortedVehicles, sortedVehicleTypesBreakdown };
   }
 
   async getPortsByShip(
@@ -335,7 +490,7 @@ export class ReportingService {
       this.prisma
     );
 
-    const trips = await this.prisma.trip.findMany({
+    const tripIds = await this.prisma.trip.findMany({
       where: {
         shipId: +shipId,
         srcPortId: isNaN(srcPortId) ? undefined : +srcPortId,
@@ -346,17 +501,76 @@ export class ReportingService {
         },
         status: 'Arrived',
       },
-      include: {
-        srcPort: true,
-        destPort: true,
-        ship: true,
-        shippingLine: true,
-        bookingTripPassengers: {
+      select: {
+        id: true,
+      },
+    });
+
+    const tripIdArray = tripIds.map(({ id }) => id);
+
+    const bookingTrips = await this.prisma.bookingTrip.findMany({
+      where: { tripId: { in: tripIdArray } },
+      select: {
+        bookingId: true,
+        trip: {
+          select: {
+            id: true,
+            srcPort: {
+              select: {
+                name: true,
+                code: true,
+              },
+            },
+            destPort: {
+              select: {
+                name: true,
+                code: true,
+              },
+            },
+            ship: {
+              select: {
+                name: true,
+              },
+            },
+            shippingLineId: true,
+            shippingLine: {
+              select: {
+                name: true,
+              },
+            },
+            departureDate: true,
+            voyage: {
+              select: {
+                number: true,
+              },
+            },
+            disbursements: {
+              select: {
+                amount: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const bookingTripGroupByTrip = groupBy(
+      bookingTrips,
+      (bookingTrip) => bookingTrip.trip.id
+    );
+
+    const tripsByShip = [];
+
+    for (const [tripId, bookingTrips] of Object.entries(
+      bookingTripGroupByTrip
+    ) as any) {
+      const bookingIds = bookingTrips.map(({ bookingId }) => bookingId);
+
+      const bookingTripPassengers =
+        await this.prisma.bookingTripPassenger.findMany({
           where: {
-            OR: [
-              { removedReasonType: null },
-              { removedReasonType: 'PassengersFault' },
-            ],
+            bookingId: { in: bookingIds },
+            ...BOOKING_TRIP_PAX_VEHICLE_WHERE,
           },
           include: {
             booking: {
@@ -381,13 +595,13 @@ export class ReportingService {
             },
             passenger: true,
           },
-        },
-        bookingTripVehicles: {
+        });
+
+      const bookingTripVehicles = await this.prisma.bookingTripVehicle.findMany(
+        {
           where: {
-            OR: [
-              { removedReasonType: null },
-              { removedReasonType: 'PassengersFault' },
-            ],
+            bookingId: { in: bookingIds },
+            ...BOOKING_TRIP_PAX_VEHICLE_WHERE,
           },
           include: {
             booking: {
@@ -411,40 +625,49 @@ export class ReportingService {
               },
             },
           },
-        },
-        voyage: true,
-        disbursements: {
-          select: {
-            amount: true,
-          },
-        },
-      },
-      orderBy: {
-        departureDate: 'asc',
-      },
-    });
+        }
+      );
 
-    return trips.map((trip) => {
+      const bookingTripPassengersGroupByBookingId = groupBy(
+        bookingTripPassengers,
+        (passenger) => passenger.bookingId
+      );
+      const bookingTripVehiclesGroupByBookingId = groupBy(
+        bookingTripVehicles,
+        (vehicle) => vehicle.bookingId
+      );
+
       const {
-        passengers,
+        sortedPassengers: passengers,
         sortedPassengerDiscountsBreakdown: passengerDiscountsBreakdown,
-      } = this.buildPassengerDataForTripReporting(trip.bookingTripPassengers);
-      const { vehicles, sortedVehicleTypesBreakdown: vehicleTypesBreakdown } =
-        this.buildVehicleDataForTripReporting(trip.bookingTripVehicles);
+      } = this.buildPassengerDataForTripReporting(
+        bookingTripPassengersGroupByBookingId,
+        Number(tripId)
+      );
+      const {
+        sortedVehicles: vehicles,
+        sortedVehicleTypesBreakdown: vehicleTypesBreakdown,
+      } = this.buildVehicleDataForTripReporting(
+        bookingTripVehiclesGroupByBookingId,
+        Number(tripId)
+      );
 
-      return {
-        ...this.reportingMapper.convertTripsForReporting(trip),
+      const tripData = bookingTrips[0].trip;
+
+      tripsByShip.push({
+        ...this.reportingMapper.convertTripsForReporting(tripData),
         passengers,
         vehicles,
         passengerDiscountsBreakdown,
         vehicleTypesBreakdown,
-        totalVehicles: trip.bookingTripVehicles.length,
-        totalDisbursements: trip.disbursements.reduce(
+        totalDisbursements: tripData.disbursements.reduce(
           (prev, curr) => prev + curr.amount,
           0
         ),
-      };
-    });
+      });
+    }
+
+    return tripsByShip;
   }
 
   async getTripManifest(
@@ -481,7 +704,7 @@ export class ReportingService {
       throw new NotFoundException();
     }
 
-    this.authService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
+    this.authService.verifyAccountHasAccessToShippingLineRestrictedEntity(
       trip,
       loggedInAccount
     );

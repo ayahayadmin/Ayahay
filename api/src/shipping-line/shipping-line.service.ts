@@ -28,7 +28,7 @@ export class ShippingLineService {
     shippingLineId: number,
     loggedInAccount: IAccount
   ): Promise<IShippingLineSchedule[]> {
-    this.authService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
+    this.authService.verifyAccountHasAccessToShippingLineRestrictedEntity(
       { shippingLineId },
       loggedInAccount
     );
@@ -49,14 +49,18 @@ export class ShippingLineService {
               },
             },
           },
-          rates: {
+          rateTable: {
             include: {
-              cabin: {
+              rows: {
                 include: {
-                  cabinType: true,
+                  cabin: {
+                    include: {
+                      cabinType: true,
+                    },
+                  },
+                  vehicleType: true,
                 },
               },
-              vehicleType: true,
             },
           },
         },
@@ -88,7 +92,20 @@ export class ShippingLineService {
             cabins: true,
           },
         },
-        rates: true,
+        rateTable: {
+          include: {
+            rows: {
+              include: {
+                cabin: {
+                  include: {
+                    cabinType: true,
+                  },
+                },
+                vehicleType: true,
+              },
+            },
+          },
+        },
       },
     });
 
@@ -97,7 +114,7 @@ export class ShippingLineService {
     }
 
     scheduleEntities.forEach((schedule) =>
-      this.authService.verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
+      this.authService.verifyAccountHasAccessToShippingLineRestrictedEntity(
         schedule,
         loggedInAccount
       )

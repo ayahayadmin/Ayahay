@@ -1,25 +1,21 @@
 import { Injectable } from '@nestjs/common';
-import { ShippingLine, ShippingLineScheduleRate } from '@prisma/client';
+import { ShippingLine } from '@prisma/client';
 import {
   IShippingLine,
   IShippingLineSchedule,
-  IShippingLineScheduleRate,
   ITrip,
   ITripCabin,
-  ITripVehicleType,
 } from '@ayahay/models';
 import { ShipMapper } from '@/ship/ship.mapper';
-import { VehicleMapper } from '@/vehicle/vehicle.mapper';
-import { CabinMapper } from '@/cabin/cabin.mapper';
 import { PortMapper } from '@/port/port.mapper';
+import { RateTableMapper } from '@/rate-table/rate-table.mapper';
 
 @Injectable()
 export class ShippingLineMapper {
   constructor(
     private readonly shipMapper: ShipMapper,
     private readonly portMapper: PortMapper,
-    private readonly vehicleMapper: VehicleMapper,
-    private readonly cabinMapper: CabinMapper
+    private readonly rateTableMapper: RateTableMapper
   ) {}
 
   convertShippingLineToDto(shippingLine: ShippingLine): IShippingLine {
@@ -32,10 +28,6 @@ export class ShippingLineMapper {
   convertShippingLineScheduleToDto(
     shippingLineSchedule: any
   ): IShippingLineSchedule {
-    const shippingLineScheduleRates = shippingLineSchedule.rates.map(
-      (shippingLineScheduleRate) =>
-        this.convertShippingLineScheduleRateToDto(shippingLineScheduleRate)
-    );
     return {
       id: shippingLineSchedule.id,
       shippingLineId: shippingLineSchedule.shippingLineId,
@@ -45,72 +37,27 @@ export class ShippingLineMapper {
       destPort: this.portMapper.convertPortToDto(shippingLineSchedule.destPort),
       shipId: shippingLineSchedule.shipId,
       ship: this.shipMapper.convertShipToDto(shippingLineSchedule.ship),
-
+      rateTableId: shippingLineSchedule.rateTableId,
       name: shippingLineSchedule.name,
       departureHour: shippingLineSchedule.departureHour,
       departureMinute: shippingLineSchedule.departureMinute,
       daysBeforeBookingStart: shippingLineSchedule.daysBeforeBookingStart,
       daysBeforeBookingCutOff: shippingLineSchedule.daysBeforeBookingCutOff,
-
-      rates: shippingLineScheduleRates,
-    };
-  }
-
-  convertShippingLineScheduleRateToDto(
-    shippingLineScheduleRate: any
-  ): IShippingLineScheduleRate {
-    return {
-      id: shippingLineScheduleRate.id,
-      shippingLineScheduleId: shippingLineScheduleRate.shippingLineId,
-      vehicleTypeId: shippingLineScheduleRate.vehicleTypeId ?? undefined,
-      vehicleType:
-        shippingLineScheduleRate.vehicleType !== null
-          ? this.vehicleMapper.convertVehicleTypeToDto(
-              shippingLineScheduleRate.vehicleType
-            )
-          : undefined,
-      cabinId: shippingLineScheduleRate.cabinId ?? undefined,
-      cabin:
-        shippingLineScheduleRate.cabin !== null
-          ? this.cabinMapper.convertCabinToDto(shippingLineScheduleRate.cabin)
-          : undefined,
-      fare: shippingLineScheduleRate.fare,
-      canBookOnline: shippingLineScheduleRate.canBookOnline,
     };
   }
 
   convertScheduleToTrip(schedule: any): ITrip {
-    const ratesPerCabin: { [cabinId: number]: ShippingLineScheduleRate } = {};
-    const ratesPerVehicleType: {
-      [vehicleTypeId: number]: ShippingLineScheduleRate;
-    } = {};
-    schedule.rates.forEach((rate) => {
-      if (rate.cabinId !== null) {
-        ratesPerCabin[rate.cabinId] = rate;
-      }
-      if (rate.vehicleTypeId !== null) {
-        ratesPerVehicleType[rate.vehicleTypeId] = rate;
-      }
-    });
-
+    const cabinIdsWithRates = schedule.rateTable.rows
+      .filter((rate) => rate.cabinId)
+      .map((rate) => rate.cabinId);
     const availableCabins: ITripCabin[] = schedule.ship.cabins
-      .filter((cabin) => ratesPerCabin[cabin.id])
+      .filter((cabin) => cabinIdsWithRates.includes(cabin.id))
       .map((cabin) => ({
         tripId: -1,
         cabinId: cabin.id,
         availablePassengerCapacity: cabin.recommendedPassengerCapacity,
         passengerCapacity: cabin.recommendedPassengerCapacity,
-        adultFare: ratesPerCabin[cabin.id].fare,
       }));
-
-    const availableVehicleTypes: ITripVehicleType[] = Object.keys(
-      ratesPerVehicleType
-    ).map((vehicleTypeIdStr) => ({
-      tripId: -1,
-      vehicleTypeId: Number(vehicleTypeIdStr),
-      fare: ratesPerVehicleType[vehicleTypeIdStr].fare,
-      canBookOnline: ratesPerVehicleType[vehicleTypeIdStr].canBookOnline,
-    }));
 
     return {
       id: -1,
@@ -118,6 +65,7 @@ export class ShippingLineMapper {
       shippingLineId: schedule.shippingLineId,
       srcPortId: schedule.srcPortId,
       destPortId: schedule.destPortId,
+      rateTableId: schedule.rateTableId,
 
       status: 'Awaiting',
       availableVehicleCapacity: schedule.ship.recommendedVehicleCapacity,
@@ -129,7 +77,6 @@ export class ShippingLineMapper {
       seatSelection: false,
 
       availableCabins,
-      availableVehicleTypes,
       availableSeatTypes: [],
       meals: [],
     };

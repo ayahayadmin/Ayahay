@@ -69,6 +69,7 @@ export class AccountService {
         userClaims.shippingLineId !== myAccountEntity.shippingLineId ||
         userClaims.travelAgencyId !== myAccountEntity.travelAgencyId)
     ) {
+      // TODO: user claims for Clients
       await this.authService.setUserClaims({
         token,
         role: myAccountEntityRole,

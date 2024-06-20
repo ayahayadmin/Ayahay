@@ -21,6 +21,8 @@ model Trip {
   srcPort Port @relation("srcPort", fields: [srcPortId], references: [id])
   destPortId Int @map("dest_port_id")
   destPort Port @relation("destPort", fields: [destPortId], references: [id])
+  rateTableId Int @map("rate_table_id")
+  rateTable RateTable @relation(fields: [rateTableId], references: [id])
   voyage Voyage?
 
   status String
@@ -38,24 +40,10 @@ model Trip {
   bookingTripVehicles BookingTripVehicle[]
   notifications Notification[]
   availableCabins TripCabin[]
-  availableVehicleTypes TripVehicleType[]
   disbursements Disbursement[]
 
   @@map("trip")
   @@unique([shipId, srcPortId, destPortId, departureDate])
-}
-
-model TripVehicleType {
-  tripId Int @map("trip_id")
-  trip Trip @relation(fields: [tripId], references: [id])
-  vehicleTypeId Int @map("vehicle_type_id")
-  vehicleType VehicleType @relation(fields: [vehicleTypeId], references: [id])
-
-  fare Float
-  canBookOnline Boolean @map("can_book_online")
-
-  @@map("trip_vehicle_type")
-  @@id([tripId, vehicleTypeId])
 }
 
 model TripCabin {
@@ -68,7 +56,6 @@ model TripCabin {
 
   availablePassengerCapacity Int @map("available_passenger_capacity")
   passengerCapacity Int @map("passenger_capacity")
-  adultFare Float @map("adult_fare")
 
   bookingTripPassengers BookingTripPassenger[]
 
@@ -106,7 +93,7 @@ model Cabin {
   recommendedPassengerCapacity Int @map("recommended_passenger_capacity")
 
   tripSpecificInfo TripCabin[]
-  schedules ShippingLineScheduleRate[]
+  rateTableRows RateTableRow[]
   bookingTripPassengers BookingTripPassenger[] @relation("cabin")
   preferredByPassengers BookingTripPassenger[] @relation("preferredCabin")
 
@@ -161,6 +148,7 @@ model ShippingLine {
   tempBookings TempBooking[]
   webhooks Webhook[]
   travelAgencies TravelAgencyShippingLine[]
+  rateTables RateTable[]
 
   @@map("shipping_line")
 }
@@ -175,6 +163,8 @@ model ShippingLineSchedule {
   destPort Port @relation("destPort", fields: [destPortId], references: [id])
   shipId Int @map("ship_id")
   ship Ship @relation(fields: [shipId], references: [id])
+  rateTableId Int @map("rate_table_id")
+  rateTable RateTable @relation(fields: [rateTableId], references: [id])
 
   name String
   departureHour Int @map("departure_hour")
@@ -182,24 +172,7 @@ model ShippingLineSchedule {
   daysBeforeBookingStart Int @map("days_before_booking_start")
   daysBeforeBookingCutOff Int @map("days_before_booking_cut_off")
 
-  rates ShippingLineScheduleRate[]
-
   @@map("shipping_line_schedule")
-}
-
-model ShippingLineScheduleRate {
-  id Int @default(autoincrement()) @id
-  scheduleId Int @map("schedule_id")
-  schedule ShippingLineSchedule @relation(fields: [scheduleId], references: [id])
-  cabinId Int? @map("cabin_id")
-  cabin Cabin? @relation(fields: [cabinId], references: [id])
-  vehicleTypeId Int? @map("vehicle_type_id")
-  vehicleType VehicleType? @relation(fields: [vehicleTypeId], references: [id])
-
-  fare Float
-  canBookOnline Boolean @map("can_book_online")
-
-  @@map("shipping_line_schedule_rate")
 }
 
 model Port {
@@ -280,6 +253,7 @@ model Booking {
   cancellationType String? @map("cancellation_type")
   consigneeName String? @map("consignee_name")
   freightRateReceipt String? @map("freight_rate_receipt")
+  firstTripId Int? @map("first_trip_id")
 
   bookingTrips BookingTrip[]
   bookingTripPassengers BookingTripPassenger[]
@@ -391,6 +365,8 @@ model Account {
   shippingLine ShippingLine? @relation(fields: [shippingLineId], references: [id])
   travelAgencyId Int? @map("travel_agency_id")
   travelAgency TravelAgency? @relation(fields: [travelAgencyId], references: [id])
+  clientId Int? @map("client_id")
+  client Client? @relation(fields: [clientId], references: [id])
 
   email String
   role String
@@ -465,8 +441,7 @@ model VehicleType {
   name String
   description String
 
-  trips TripVehicleType[]
-  schedules ShippingLineScheduleRate[]
+  rateTableRows RateTableRow[]
   vehicles Vehicle[]
 
   @@map("vehicle_type")
@@ -557,6 +532,7 @@ model TravelAgency {
   accounts Account[]
   webhooks Webhook[]
   shippingLines TravelAgencyShippingLine[]
+  markups RateTableMarkup[]
 
   @@map("travel_agency")
 }
@@ -583,4 +559,62 @@ model Webhook {
 
   @@index([type], type: Hash)
   @@map("webhook")
+}
+
+model Client {
+  id Int @default(autoincrement()) @id
+
+  name String
+
+  accounts Account[]
+  markups RateTableMarkup[]
+
+  @@map("client")
+}
+
+model RateTable {
+  id Int @default(autoincrement()) @id
+  shippingLineId Int @map("shipping_line_id")
+  shippingLine ShippingLine @relation(fields: [shippingLineId], references: [id])
+
+  name String
+
+  rows RateTableRow[]
+  markups RateTableMarkup[]
+  trips Trip[]
+  schedules ShippingLineSchedule[]
+
+  @@map("rate_table")
+}
+
+
+model RateTableRow {
+  id Int @default(autoincrement()) @id
+  rateTableId Int @map("rate_table_id")
+  rateTable RateTable @relation(fields: [rateTableId], references: [id])
+  cabinId Int? @map("cabin_id")
+  cabin Cabin? @relation(fields: [cabinId], references: [id])
+  vehicleTypeId Int? @map("vehicle_type_id")
+  vehicleType VehicleType? @relation(fields: [vehicleTypeId], references: [id])
+
+  fare Float
+  canBookOnline Boolean @map("can_book_online")
+
+  @@map("rate_table_row")
+}
+
+model RateTableMarkup {
+  id Int @default(autoincrement()) @id
+  rateTableId Int @map("rate_table_id")
+  rateTable RateTable @relation(fields: [rateTableId], references: [id])
+  travelAgencyId Int? @map("travel_agency_id")
+  travelAgency TravelAgency? @relation(fields: [travelAgencyId], references: [id])
+  clientId Int? @map("client_id")
+  client Client? @relation(fields: [clientId], references: [id])
+
+  markupFlat Float @map("markup_flat")
+  markupPercent Float @map("markup_percent")
+  markupMaxFlat Float @map("markup_max_flat")
+
+  @@map("rate_table_markup")
 }

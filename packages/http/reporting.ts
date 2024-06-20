@@ -16,6 +16,7 @@ export interface TripReport {
     discount: string;
     collect: boolean;
     paymentStatus: string;
+    roundTrip: boolean;
 
     discountAmount: number;
     refundAmount: number;
@@ -26,6 +27,8 @@ export interface TripReport {
     ticketCost: number;
     // base fare + Ayahay convenience fee
     fare: number;
+    // round trip fare
+    roundTripFare: number;
   }[];
 
   passengerDiscountsBreakdown?: {
@@ -42,6 +45,7 @@ export interface TripReport {
     plateNo: string;
     collect: boolean;
     paymentStatus: string;
+    roundTrip: boolean;
 
     discountAmount: number;
     refundAmount: number;
@@ -52,6 +56,8 @@ export interface TripReport {
     ticketCost: number;
     // base fare + Ayahay convenience fee
     fare: number;
+    // round trip fare
+    roundTripFare: number;
   }[];
 
   vehicleTypesBreakdown?: {
@@ -62,8 +68,6 @@ export interface TripReport {
 }
 
 export interface PerVesselReport extends TripReport {
-  totalPassengers: number;
-  totalVehicles: number;
   totalDisbursements: number;
 }
 

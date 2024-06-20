@@ -28,5 +28,4 @@ export interface ITripCabin {
 
   availablePassengerCapacity: number;
   passengerCapacity: number;
-  adultFare: number;
 }

@@ -7,7 +7,7 @@ import {
   IBookingTripPassenger,
   IVoucher,
   IBookingTripVehicle,
-  ITripVehicleType,
+  IRateTable,
 } from '@ayahay/models';
 import { BOOKING_CANCELLATION_TYPE } from '@ayahay/constants';
 import {
@@ -43,6 +43,7 @@ export class BookingPricingService {
         this.assignBookingTripPassengerPricing(
           bookingTripPassenger,
           bookingTrip.trip.shippingLine,
+          bookingTrip.trip.rateTable,
           booking.voucher,
           loggedInAccount
         );
@@ -51,7 +52,7 @@ export class BookingPricingService {
       bookingTrip.bookingTripVehicles.forEach((bookingTripVehicle) => {
         this.assignBookingTripVehiclePricing(
           bookingTripVehicle,
-          bookingTrip.trip.availableVehicleTypes,
+          bookingTrip.trip.rateTable,
           booking.voucher,
           loggedInAccount
         );
@@ -64,14 +65,17 @@ export class BookingPricingService {
   private assignBookingTripPassengerPricing(
     bookingTripPassenger: IBookingTripPassenger,
     shippingLine: IShippingLine,
+    rateTable: IRateTable,
     voucher?: IVoucher,
     loggedInAccount?: IAccount
   ): void {
     const tripCabin = bookingTripPassenger.tripCabin;
     const bookingPaymentItems: IBookingPaymentItem[] = [];
 
-    const ticketPrice =
-      this.calculateTicketPriceForBookingTripPassenger(bookingTripPassenger);
+    const ticketPrice = this.calculateTicketPriceForBookingTripPassenger(
+      bookingTripPassenger,
+      rateTable
+    );
 
     const roundedTicketPrice = this.roundPassengerPriceBasedOnShippingLine(
       ticketPrice,
@@ -128,13 +132,16 @@ export class BookingPricingService {
   }
 
   private calculateTicketPriceForBookingTripPassenger(
-    bookingTripPassenger: IBookingTripPassenger
+    bookingTripPassenger: IBookingTripPassenger,
+    rateTable: IRateTable
   ): number {
     if (bookingTripPassenger.drivesVehicleId !== undefined) {
       return 0;
     }
 
-    const cabinFeeWithVat = bookingTripPassenger.tripCabin.adultFare;
+    const cabinRateWithVat = rateTable.rows.find(
+      (rate) => rate.cabinId === bookingTripPassenger.cabinId
+    ).fare;
 
     switch (bookingTripPassenger.discountType) {
       case 'Infant':
@@ -143,16 +150,16 @@ export class BookingPricingService {
       case 'Helper':
         return 0;
       case 'Student':
-        return cabinFeeWithVat - cabinFeeWithVat * 0.2;
+        return cabinRateWithVat - cabinRateWithVat * 0.2;
       case 'Senior':
       case 'PWD':
-        const cabinFeeWithoutVat = cabinFeeWithVat / 1.12;
+        const cabinFeeWithoutVat = cabinRateWithVat / 1.12;
         const vatAmount = cabinFeeWithoutVat * 0.12;
-        return cabinFeeWithVat - cabinFeeWithoutVat * 0.2 - vatAmount;
+        return cabinRateWithVat - cabinFeeWithoutVat * 0.2 - vatAmount;
       case 'Child':
-        return cabinFeeWithVat * 0.5;
+        return cabinRateWithVat * 0.5;
       case undefined:
-        return cabinFeeWithVat;
+        return cabinRateWithVat;
     }
   }
 
@@ -175,7 +182,7 @@ export class BookingPricingService {
 
   private assignBookingTripVehiclePricing(
     bookingTripVehicle: IBookingTripVehicle,
-    availableVehicleTypes: ITripVehicleType[],
+    rateTable: IRateTable,
     voucher?: IVoucher,
     loggedInAccount?: IAccount
   ): void {
@@ -184,7 +191,7 @@ export class BookingPricingService {
 
     const ticketPrice = this.calculateTicketPriceForBookingTripVehicle(
       bookingTripVehicle,
-      availableVehicleTypes
+      rateTable
     );
 
     bookingPaymentItems.push({
@@ -236,12 +243,10 @@ export class BookingPricingService {
 
   private calculateTicketPriceForBookingTripVehicle(
     bookingTripVehicle: IBookingTripVehicle,
-    availableVehicleTypes: ITripVehicleType[]
+    rateTable: IRateTable
   ): number {
-    const availableVehicleType = availableVehicleTypes.find(
-      (tripVehicleType) =>
-        tripVehicleType.vehicleTypeId ===
-        bookingTripVehicle.vehicle.vehicleTypeId
+    const availableVehicleType = rateTable.rows.find(
+      (rate) => rate.vehicleTypeId === bookingTripVehicle.vehicle.vehicleTypeId
     );
 
     return availableVehicleType.fare;

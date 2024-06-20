@@ -27,19 +27,17 @@ export class ReportingMapper {
       shipName: trip.ship.name,
       departureDate: trip.departureDate.toISOString(),
       voyageNumber: trip.voyage?.number,
-      totalPassengers: trip.bookingTripPassengers.length,
-      totalBoardedPassengers: trip.bookingTripPassengers.filter(
-        (passenger) =>
-          passenger.checkInDate &&
-          passenger.booking.bookingStatus === 'Confirmed'
-      ).length,
     };
   }
 
   convertTripPassengersForReporting(
-    passenger,
+    passengerName,
+    teller,
+    accommodation,
+    discount,
     collect,
     isBookingCancelled,
+    roundTrip,
     passengerFare,
     totalPrice,
     discountAmount,
@@ -48,13 +46,12 @@ export class ReportingMapper {
   ) {
     const isCancelledCollectBooking = collect && isBookingCancelled;
     return {
-      passengerName: `${passenger.passenger.firstName.trim() ?? ''} ${
-        passenger.passenger.lastName.trim() ?? ''
-      }`,
-      teller: passenger.booking.createdByAccount?.email,
-      accommodation: passenger.cabin.cabinType.name,
-      discount: passenger.discountType ?? 'Adult',
+      passengerName,
+      teller,
+      accommodation,
+      discount,
       collect,
+      roundTrip,
       discountAmount: collect ? discountAmount * -1 : discountAmount,
       refundAmount: isCancelledCollectBooking
         ? discountAmount * 0.8
@@ -71,9 +68,14 @@ export class ReportingMapper {
   }
 
   convertTripVehiclesForReporting(
-    vehicle,
+    teller,
+    referenceNo,
+    freightRateReceipt,
+    typeOfVehicle,
+    plateNo,
     collect,
     isBookingCancelled,
+    roundTrip,
     vehicleFare,
     totalPrice,
     discountAmount,
@@ -82,12 +84,13 @@ export class ReportingMapper {
   ) {
     const isCancelledCollectBooking = collect && isBookingCancelled;
     return {
-      teller: vehicle.booking.createdByAccount?.email,
-      referenceNo: vehicle.booking.referenceNo,
-      freightRateReceipt: vehicle.booking.freightRateReceipt,
-      typeOfVehicle: vehicle.vehicle.vehicleType.description,
-      plateNo: vehicle.vehicle.plateNo,
+      teller,
+      referenceNo,
+      freightRateReceipt,
+      typeOfVehicle,
+      plateNo,
       collect,
+      roundTrip,
       discountAmount: collect ? discountAmount * -1 : discountAmount,
       refundAmount: isCancelledCollectBooking
         ? discountAmount * 0.8
@@ -104,7 +107,7 @@ export class ReportingMapper {
   }
 
   convertTripPassengersToPassengerBreakdown(
-    passenger,
+    discountType,
     collect,
     isBookingCancelled,
     passengerFare,
@@ -112,7 +115,6 @@ export class ReportingMapper {
     refundAmount,
     passengerDiscountsBreakdown
   ) {
-    const discountType = passenger.discountType ?? 'Adult';
     const discountedPassengerFare =
       collect && isBookingCancelled
         ? discountAmount * -1 * 0.2
@@ -143,7 +145,7 @@ export class ReportingMapper {
   }
 
   convertTripVehiclesToVehicleBreakdown(
-    vehicle,
+    vehicleDescription,
     collect,
     isBookingCancelled,
     vehicleFare,
@@ -151,7 +153,6 @@ export class ReportingMapper {
     refundAmount,
     vehicleTypesBreakdown
   ) {
-    const description = vehicle.vehicle.vehicleType.description;
     const discountedVehicleFare =
       collect && isBookingCancelled
         ? discountAmount * -1 * 0.2
@@ -159,7 +160,8 @@ export class ReportingMapper {
         ? discountAmount * -1 + refundAmount
         : vehicleFare + discountAmount + refundAmount;
     const index = vehicleTypesBreakdown.findIndex(
-      (vehicleBreakdown) => vehicleBreakdown.typeOfVehicle === description
+      (vehicleBreakdown) =>
+        vehicleBreakdown.typeOfVehicle === vehicleDescription
     );
 
     if (index !== -1) {
@@ -171,13 +173,175 @@ export class ReportingMapper {
       };
     } else {
       vehicleTypesBreakdown.push({
-        typeOfVehicle: description,
+        typeOfVehicle: vehicleDescription,
         totalBooked: 1,
         totalSales: discountedVehicleFare,
       });
     }
 
     return vehicleTypesBreakdown;
+  }
+
+  convertTripPassengersToRoundTripPassengers(
+    bookingTripPassenger,
+    tripId,
+    isOriginTrip
+  ) {
+    let roundTripPassengers = {};
+
+    bookingTripPassenger.forEach((passenger) => {
+      const passengerId = passenger.passengerId;
+      const passengerRecordToRetrieve = tripId === passenger.tripId;
+
+      const voucherDiscount =
+        passenger.bookingPaymentItems.find(
+          ({ type }) => type === 'VoucherDiscount'
+        )?.price ?? 0;
+      const refundAmount =
+        passenger.bookingPaymentItems.find(
+          ({ type }) => type === 'CancellationRefund'
+        )?.price ?? 0;
+
+      if (roundTripPassengers.hasOwnProperty(passengerId)) {
+        roundTripPassengers = {
+          ...roundTripPassengers,
+          [passengerId]: {
+            ...roundTripPassengers[passengerId],
+            accommodation:
+              passengerRecordToRetrieve &&
+              roundTripPassengers[passengerId].accommodation === null
+                ? passenger.cabin.cabinType.name
+                : roundTripPassengers[passengerId].accommodation,
+            isBookingCancelled:
+              passengerRecordToRetrieve &&
+              roundTripPassengers[passengerId].isBookingCancelled === null
+                ? passenger.booking.cancellationType === 'PassengersFault'
+                : roundTripPassengers[passengerId].isBookingCancelled,
+            passengerFare: isOriginTrip
+              ? passenger.bookingPaymentItems.find(
+                  ({ type }) => type === 'Fare'
+                )?.price + roundTripPassengers[passengerId].passengerFare
+              : 0,
+            discountAmount: isOriginTrip
+              ? voucherDiscount +
+                roundTripPassengers[passengerId].discountAmount
+              : 0,
+            partialRefundAmount: isOriginTrip
+              ? refundAmount +
+                roundTripPassengers[passengerId].partialRefundAmount
+              : 0,
+          },
+        };
+      } else {
+        roundTripPassengers[passengerId] = {
+          passengerName: `${passenger.passenger.firstName.trim() ?? ''} ${
+            passenger.passenger.lastName.trim() ?? ''
+          }`,
+          teller: passenger.booking.createdByAccount?.email,
+          accommodation: passengerRecordToRetrieve
+            ? passenger.cabin.cabinType.name
+            : null,
+          discount: passenger.discountType ?? 'Adult',
+          collect: passenger.booking.voucherCode === 'AZNAR_COLLECT',
+          isBookingCancelled: passengerRecordToRetrieve
+            ? passenger.booking.cancellationType === 'PassengersFault'
+            : null,
+          passengerFare: isOriginTrip
+            ? passenger.bookingPaymentItems.find(({ type }) => type === 'Fare')
+                ?.price
+            : 0,
+          totalPrice: isOriginTrip ? passenger.totalPrice : 0,
+          discountAmount: isOriginTrip
+            ? passenger.bookingPaymentItems.find(
+                ({ type }) => type === 'VoucherDiscount'
+              )?.price ?? 0
+            : 0,
+          partialRefundAmount: isOriginTrip
+            ? passenger.bookingPaymentItems.find(
+                ({ type }) => type === 'CancellationRefund'
+              )?.price ?? 0
+            : 0,
+          paymentStatus: 'Round Trip',
+        };
+      }
+    });
+
+    return roundTripPassengers;
+  }
+
+  convertTripVehiclesToRoundTripVehicles(
+    bookingTripVehicle,
+    tripId,
+    isOriginTrip
+  ) {
+    let roundTripVehicles = {};
+
+    bookingTripVehicle.forEach((vehicle) => {
+      const vehicleId = vehicle.vehicleId;
+      const vehicleRecordToRetrieve = tripId === vehicle.tripId;
+
+      const voucherDiscount =
+        vehicle.bookingPaymentItems.find(
+          ({ type }) => type === 'VoucherDiscount'
+        )?.price ?? 0;
+      const refundAmount =
+        vehicle.bookingPaymentItems.find(
+          ({ type }) => type === 'CancellationRefund'
+        )?.price ?? 0;
+
+      if (roundTripVehicles.hasOwnProperty(vehicleId)) {
+        roundTripVehicles = {
+          ...roundTripVehicles,
+          [vehicleId]: {
+            ...roundTripVehicles[vehicleId],
+            isBookingCancelled:
+              vehicleRecordToRetrieve &&
+              roundTripVehicles[vehicleId].isBookingCancelled === null
+                ? vehicle.booking.cancellationType === 'PassengersFault'
+                : roundTripVehicles[vehicleId].isBookingCancelled,
+            vehicleFare: isOriginTrip
+              ? vehicle.bookingPaymentItems.find(({ type }) => type === 'Fare')
+                  ?.price + roundTripVehicles[vehicleId].vehicleFare
+              : 0,
+            discountAmount: isOriginTrip
+              ? voucherDiscount + roundTripVehicles[vehicleId].discountAmount
+              : 0,
+            partialRefundAmount: isOriginTrip
+              ? refundAmount + roundTripVehicles[vehicleId].partialRefundAmount
+              : 0,
+          },
+        };
+      } else {
+        roundTripVehicles[vehicleId] = {
+          teller: vehicle.booking.createdByAccount?.email,
+          referenceNo: vehicle.booking.referenceNo,
+          freightRateReceipt: vehicle.booking.freightRateReceipt,
+          typeOfVehicle: vehicle.vehicle.vehicleType.description,
+          plateNo: vehicle.vehicle.plateNo,
+          collect: vehicle.booking.voucherCode === 'AZNAR_COLLECT',
+          isBookingCancelled: vehicleRecordToRetrieve
+            ? vehicle.booking.cancellationType === 'PassengersFault'
+            : null,
+          vehicleFare: isOriginTrip
+            ? vehicle.bookingPaymentItems.find(({ type }) => type === 'Fare')
+                ?.price
+            : 0,
+          totalPrice: isOriginTrip ? vehicle.totalPrice : 0,
+          discountAmount: isOriginTrip
+            ? vehicle.bookingPaymentItems.find(
+                ({ type }) => type === 'VoucherDiscount'
+              )?.price ?? 0
+            : 0,
+          partialRefundAmount: isOriginTrip
+            ? vehicle.bookingPaymentItems.find(
+                ({ type }) => type === 'CancellationRefund'
+              )?.price ?? 0
+            : 0,
+          paymentStatus: 'Round Trip',
+        };
+      }
+    });
+    return roundTripVehicles;
   }
 
   convertTripToTripManifest(trip): TripManifest {

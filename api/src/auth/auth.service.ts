@@ -8,7 +8,7 @@ import admin from 'firebase-admin';
 import { AccountMapper } from '@/account/account.mapper';
 import { CryptoService } from '@/crypto/crypto.service';
 import { UtilityService } from '@/utility.service';
-import { IAccount } from '@ayahay/models';
+import { IAccount, IBooking } from '@ayahay/models';
 import { PrismaService } from '@/prisma.service';
 
 @Injectable()
@@ -138,7 +138,7 @@ export class AuthService {
     }
   }
 
-  verifyLoggedInAccountHasAccessToShippingLineRestrictedEntity(
+  verifyAccountHasAccessToShippingLineRestrictedEntity(
     shippingLineRestrictedEntity: { shippingLineId: number },
     loggedInAccount: IAccount
   ): void {
@@ -153,8 +153,8 @@ export class AuthService {
     }
   }
 
-  async verifyTravelAgencyHasAccessToShippingLineRestrictedEntity(
-    shippingLineRestrictedEntity: { shippingLineId: number },
+  async verifyTravelAgencyCanBookForShippingLine(
+    booking: IBooking,
     loggedInAccount?: IAccount
   ): Promise<void> {
     if (!loggedInAccount?.travelAgencyId) {
@@ -172,8 +172,7 @@ export class AuthService {
       });
 
     const isPartneredWithShippingLineOfBooking = partnerShippingLineIds.some(
-      ({ shippingLineId }) =>
-        shippingLineId === shippingLineRestrictedEntity.shippingLineId
+      ({ shippingLineId }) => shippingLineId === booking.shippingLineId
     );
 
     if (!isPartneredWithShippingLineOfBooking) {
@@ -181,7 +180,7 @@ export class AuthService {
     }
   }
 
-  verifyLoggedInAccountHasAccessToTravelAgencyRestrictedEntity(
+  verifyAccountHasAccessToTravelAgencyRestrictedEntity(
     travelAgencyRestrictedEntity: { travelAgencyId: number },
     loggedInAccount: IAccount
   ): void {

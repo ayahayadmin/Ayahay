@@ -50,6 +50,11 @@ const ProfitAndLossStatement = forwardRef(function (
         totalRefund: 0,
         totalNetSales: 0,
       },
+      RoundTrip: {
+        totalSales: 0,
+        totalRefund: 0,
+        totalNetSales: 0,
+      },
     },
     vehicle: {
       OTC: {
@@ -68,6 +73,11 @@ const ProfitAndLossStatement = forwardRef(function (
         totalNetSales: 0,
       },
       Online: {
+        totalSales: 0,
+        totalRefund: 0,
+        totalNetSales: 0,
+      },
+      RoundTrip: {
         totalSales: 0,
         totalRefund: 0,
         totalNetSales: 0,
@@ -105,6 +115,10 @@ const ProfitAndLossStatement = forwardRef(function (
       breakdown.passenger.Collect.totalSales += passenger.discountAmount;
       breakdown.passenger.Collect.totalRefund += passenger.refundAmount;
       breakdown.passenger.Collect.totalNetSales += passenger.ticketCost;
+    } else if (paymentStatus === 'Round Trip') {
+      breakdown.passenger.RoundTrip.totalSales += passenger.ticketSale;
+      breakdown.passenger.RoundTrip.totalRefund += passenger.refundAmount;
+      breakdown.passenger.RoundTrip.totalNetSales += passenger.ticketCost;
     } else {
       breakdown.passenger.OTC.totalSales += passenger.ticketSale;
       breakdown.passenger.OTC.totalRefund += passenger.refundAmount;
@@ -132,6 +146,10 @@ const ProfitAndLossStatement = forwardRef(function (
       breakdown.vehicle.Collect.totalSales += vehicle.discountAmount;
       breakdown.vehicle.Collect.totalRefund += vehicle.refundAmount;
       breakdown.vehicle.Collect.totalNetSales += vehicle.ticketCost;
+    } else if (paymentStatus === 'Round Trip') {
+      breakdown.vehicle.RoundTrip.totalSales += vehicle.ticketSale;
+      breakdown.vehicle.RoundTrip.totalRefund += vehicle.refundAmount;
+      breakdown.vehicle.RoundTrip.totalNetSales += vehicle.ticketCost;
     } else {
       breakdown.vehicle.OTC.totalSales += vehicle.ticketSale;
       breakdown.vehicle.OTC.totalRefund += vehicle.refundAmount;
@@ -139,7 +157,7 @@ const ProfitAndLossStatement = forwardRef(function (
     }
   });
 
-  const paymentMethods = ['OTC', 'Online', 'Agency', 'Collect'];
+  const paymentMethods = ['OTC', 'Online', 'Agency', 'Collect', 'RoundTrip'];
 
   return (
     <div ref={ref}>
@@ -243,6 +261,8 @@ const ProfitAndLossStatement = forwardRef(function (
                           ? breakdown.passenger.Agency.totalSales
                           : paymentMethod === 'Collect'
                           ? breakdown.passenger.Collect.totalSales
+                          : paymentMethod === 'RoundTrip'
+                          ? breakdown.passenger.RoundTrip.totalSales
                           : breakdown.passenger.Online.totalSales
                       )}
                     </td>
@@ -255,6 +275,8 @@ const ProfitAndLossStatement = forwardRef(function (
                           ? breakdown.passenger.Agency.totalRefund
                           : paymentMethod === 'Collect'
                           ? breakdown.passenger.Collect.totalRefund
+                          : paymentMethod === 'RoundTrip'
+                          ? breakdown.passenger.RoundTrip.totalRefund
                           : breakdown.passenger.Online.totalRefund
                       )}
                     </td>
@@ -267,6 +289,8 @@ const ProfitAndLossStatement = forwardRef(function (
                           ? breakdown.passenger.Agency.totalNetSales
                           : paymentMethod === 'Collect'
                           ? breakdown.passenger.Collect.totalNetSales
+                          : paymentMethod === 'RoundTrip'
+                          ? breakdown.passenger.RoundTrip.totalNetSales
                           : breakdown.passenger.Online.totalNetSales
                       )}
                     </td>
@@ -285,6 +309,8 @@ const ProfitAndLossStatement = forwardRef(function (
                           ? breakdown.vehicle.Agency.totalSales
                           : paymentMethod === 'Collect'
                           ? breakdown.vehicle.Collect.totalSales
+                          : paymentMethod === 'RoundTrip'
+                          ? breakdown.vehicle.RoundTrip.totalSales
                           : breakdown.vehicle.Online.totalSales
                       )}
                     </td>
@@ -297,6 +323,8 @@ const ProfitAndLossStatement = forwardRef(function (
                           ? breakdown.vehicle.Agency.totalRefund
                           : paymentMethod === 'Collect'
                           ? breakdown.vehicle.Collect.totalRefund
+                          : paymentMethod === 'RoundTrip'
+                          ? breakdown.vehicle.RoundTrip.totalRefund
                           : breakdown.vehicle.Online.totalRefund
                       )}
                     </td>
@@ -309,6 +337,8 @@ const ProfitAndLossStatement = forwardRef(function (
                           ? breakdown.vehicle.Agency.totalNetSales
                           : paymentMethod === 'Collect'
                           ? breakdown.vehicle.Collect.totalNetSales
+                          : paymentMethod === 'RoundTrip'
+                          ? breakdown.vehicle.RoundTrip.totalNetSales
                           : breakdown.vehicle.Online.totalNetSales
                       )}
                     </td>
@@ -329,6 +359,9 @@ const ProfitAndLossStatement = forwardRef(function (
                           : paymentMethod === 'Collect'
                           ? breakdown.passenger.Collect.totalSales +
                             breakdown.vehicle.Collect.totalSales
+                          : paymentMethod === 'RoundTrip'
+                          ? breakdown.passenger.RoundTrip.totalSales +
+                            breakdown.vehicle.RoundTrip.totalSales
                           : breakdown.passenger.Online.totalSales +
                             breakdown.vehicle.Online.totalSales
                       )}
@@ -345,6 +378,9 @@ const ProfitAndLossStatement = forwardRef(function (
                           : paymentMethod === 'Collect'
                           ? breakdown.passenger.Collect.totalRefund +
                             breakdown.vehicle.Collect.totalRefund
+                          : paymentMethod === 'RoundTrip'
+                          ? breakdown.passenger.RoundTrip.totalRefund +
+                            breakdown.vehicle.RoundTrip.totalRefund
                           : breakdown.passenger.Online.totalRefund +
                             breakdown.vehicle.Online.totalRefund
                       )}
@@ -361,6 +397,9 @@ const ProfitAndLossStatement = forwardRef(function (
                           : paymentMethod === 'Collect'
                           ? breakdown.passenger.Collect.totalNetSales +
                             breakdown.vehicle.Collect.totalNetSales
+                          : paymentMethod === 'RoundTrip'
+                          ? breakdown.passenger.RoundTrip.totalNetSales +
+                            breakdown.vehicle.RoundTrip.totalNetSales
                           : breakdown.passenger.Online.totalNetSales +
                             breakdown.vehicle.Online.totalNetSales
                       )}
@@ -473,6 +512,9 @@ const ProfitAndLossStatement = forwardRef(function (
                           : paymentMethod === 'Collect'
                           ? breakdown.passenger.Collect.totalSales +
                             breakdown.vehicle.Collect.totalSales
+                          : paymentMethod === 'RoundTrip'
+                          ? breakdown.passenger.RoundTrip.totalSales +
+                            breakdown.vehicle.RoundTrip.totalSales
                           : breakdown.passenger.Online.totalSales +
                             breakdown.vehicle.Online.totalSales
                       )}

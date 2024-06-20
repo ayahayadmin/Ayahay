@@ -63,9 +63,9 @@ export default function PassengersSummary({
           passenger?.firstName
         } ${passenger?.lastName}`,
         discountType:
-          passenger?.discountType === undefined
+          bookingPassenger.discountType === undefined
             ? 'Adult'
-            : DISCOUNT_TYPE[passenger.discountType],
+            : DISCOUNT_TYPE[bookingPassenger.discountType],
         cabinTypeName: bookingPassenger.cabin?.cabinType?.name ?? '',
         checkInDate: bookingPassenger.checkInDate,
       }))

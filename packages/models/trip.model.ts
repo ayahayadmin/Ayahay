@@ -2,9 +2,9 @@ import { IShippingLine } from './shipping-line.model';
 import { IPort } from './port.model';
 import { IShip } from './ship.model';
 import { ITripCabin } from './trip-cabin.model';
-import { ITripVehicleType } from './trip-vehicle-type.model';
 import { IVoyage } from './voyage.model';
 import { TRIP_STATUS } from '@ayahay/constants/enum';
+import { IRateTable } from './rate-table.model';
 
 export interface ITrip {
   id: number;
@@ -18,6 +18,8 @@ export interface ITrip {
   destPortId: number;
   destPort?: IPort;
   voyage?: IVoyage;
+  rateTableId: number;
+  rateTable?: IRateTable;
 
   status: keyof typeof TRIP_STATUS;
   departureDateIso: string;
@@ -29,8 +31,6 @@ export interface ITrip {
   cancellationReason?: string;
 
   availableCabins: ITripCabin[];
-  availableVehicleTypes: ITripVehicleType[];
-
   availableSeatTypes: string[];
   meals: string[];
 }

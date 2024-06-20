@@ -15,6 +15,7 @@ import { NotificationMapper } from './notification/notification.mapper';
 import { DisbursementMapper } from './disbursement/disbursement.mapper';
 import { VoucherMapper } from './voucher/voucher.mapper';
 import { WebhookMapper } from '@/webhook/webhook.mapper';
+import { RateTableMapper } from '@/rate-table/rate-table.mapper';
 
 @Module({
   providers: [
@@ -34,6 +35,7 @@ import { WebhookMapper } from '@/webhook/webhook.mapper';
     DisbursementMapper,
     VoucherMapper,
     WebhookMapper,
+    RateTableMapper,
   ],
   exports: [
     TripMapper,
@@ -52,6 +54,7 @@ import { WebhookMapper } from '@/webhook/webhook.mapper';
     DisbursementMapper,
     VoucherMapper,
     WebhookMapper,
+    RateTableMapper,
   ],
 })
 export class MapperModule {}

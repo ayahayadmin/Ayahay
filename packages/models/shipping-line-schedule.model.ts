@@ -1,7 +1,7 @@
 import { IPort } from './port.model';
 import { IShippingLine } from './shipping-line.model';
 import { IShip } from './ship.model';
-import { IShippingLineScheduleRate } from './shipping-line-schedule-rate.model';
+import { IRateTable } from './rate-table.model';
 
 export interface IShippingLineSchedule {
   id: number;
@@ -13,12 +13,12 @@ export interface IShippingLineSchedule {
   destPort?: IPort;
   shipId: number;
   ship?: IShip;
+  rateTableId: number;
+  rateTable?: IRateTable;
 
   name: string;
   departureHour: number;
   departureMinute: number;
   daysBeforeBookingStart: number;
   daysBeforeBookingCutOff: number;
-
-  rates?: IShippingLineScheduleRate[];
 }

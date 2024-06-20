@@ -35,6 +35,9 @@ export interface MOPBreakdown {
   Collect: {
     aggFare: number;
   };
+  RoundTrip: {
+    aggFare: number;
+  };
 }
 
 const SummarySalesPerVessel = forwardRef(function (
@@ -59,6 +62,12 @@ const SummarySalesPerVessel = forwardRef(function (
       aggFare: 0,
     },
     Online: {
+      aggFare: 0,
+    },
+    Collect: {
+      aggFare: 0,
+    },
+    RoundTrip: {
       aggFare: 0,
     },
   };
@@ -169,12 +178,18 @@ const SummarySalesPerVessel = forwardRef(function (
                   return;
                 }
 
+                let bookedCount = 0;
+
                 shipData.passengers.map((passenger: any) => {
                   totalPaxFare += passenger.ticketCost;
                   if (passenger.paymentStatus === 'Online') {
                     mopBreakdown.Online.aggFare += passenger.ticketCost;
                   } else if (passenger.paymentStatus === 'Agency') {
                     mopBreakdown.Agency.aggFare += passenger.ticketCost;
+                  } else if (passenger.paymentStatus === 'Collect') {
+                    mopBreakdown.Collect.aggFare += passenger.discountAmount;
+                  } else if (passenger.paymentStatus === 'Round Trip') {
+                    mopBreakdown.RoundTrip.aggFare += passenger.ticketCost;
                   } else {
                     mopBreakdown.OTC.aggFare += passenger.ticketCost;
                   }
@@ -193,6 +208,7 @@ const SummarySalesPerVessel = forwardRef(function (
                   shipData.passengerDiscountsBreakdown?.map(
                     (passengerDiscount, idx) => {
                       paxSales += passengerDiscount.totalSales;
+                      bookedCount += passengerDiscount.totalBooked;
                       return (
                         <tr>
                           {idx === 0 ? (
@@ -233,7 +249,7 @@ const SummarySalesPerVessel = forwardRef(function (
                   </tr>
                 );
 
-                totalPaxBooked += shipData.totalPassengers;
+                totalPaxBooked += bookedCount;
                 totalPaxSales += paxSales;
 
                 return [...discountTypeBreakdown, subTotalRow];
@@ -283,6 +299,8 @@ const SummarySalesPerVessel = forwardRef(function (
                   return;
                 }
 
+                let bookedCount = 0;
+
                 shipData.vehicles.map((vehicle: any) => {
                   totalVehicleFare += vehicle.ticketCost;
                   if (vehicle.paymentStatus === 'Online') {
@@ -305,6 +323,7 @@ const SummarySalesPerVessel = forwardRef(function (
                 const vehicleTypeBreakdown: any =
                   shipData.vehicleTypesBreakdown?.map((vehicle, idx) => {
                     vehicleSales += vehicle.totalSales;
+                    bookedCount += vehicle.totalBooked;
                     return (
                       <tr>
                         {idx === 0 ? (
@@ -344,7 +363,7 @@ const SummarySalesPerVessel = forwardRef(function (
                   </tr>
                 );
 
-                totalVehicleBooked += shipData.totalVehicles;
+                totalVehicleBooked += bookedCount;
                 totalVehicleSales += vehicleSales;
 
                 return [...vehicleTypeBreakdown, subTotalRow];

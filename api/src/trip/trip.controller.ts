@@ -24,7 +24,6 @@ import {
   PaginatedResponse,
   PortsAndDateRangeSearch,
   SearchAvailableTrips,
-  TripSearchByDateRange,
   UpdateTripCapacityRequest,
   VehicleBookings,
 } from '@ayahay/http';
