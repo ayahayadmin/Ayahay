@@ -33,6 +33,8 @@ export default function DownloadBookings() {
   );
 
   const onFinish = async (formValues: any) => {
+    // TODO: re-implement this when download bookings is optimized
+    return;
     const monthIso = formValues.month;
     const requestedMonthDate = new Date(monthIso);
     const requestedMonth = requestedMonthDate.getMonth();

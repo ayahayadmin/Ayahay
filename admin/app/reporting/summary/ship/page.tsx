@@ -31,9 +31,14 @@ export default function ReportingPage() {
 
   const handleDownloadSummarySalesPerVessel = async () => {
     const doc = new jsPDF('l', 'pt', 'a4', true);
+    const fileName =
+      params.reportType === undefined
+        ? 'summary-sales-per-trip'
+        : 'summary-sales-per-vessel';
+
     doc.html(summarySalesPerVesselRef.current, {
       async callback(doc) {
-        await doc.save('summary-sales-per-vessel');
+        await doc.save(fileName);
       },
       margin: [25, 0, 25, 0],
     });

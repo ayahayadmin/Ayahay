@@ -59,8 +59,8 @@ const TRIP_AVAILABLE_QUERY_FROM = Prisma.sql`
   FROM ayahay.trip t
     INNER JOIN ayahay.trip_cabin tc ON t.id = tc.trip_id
     INNER JOIN ayahay.cabin c ON tc.cabin_id = c.id
-    INNER JOIN ayahay.rate_table_row rtr ON tc.cabin_id = rtr.cabin_id
     INNER JOIN ayahay.cabin_type ct ON c.cabin_type_id = ct.id
+    INNER JOIN ayahay.rate_table_row rtr ON t.rate_table_id = rtr.rate_table_id AND tc.cabin_id = rtr.cabin_id
 `;
 
 @Injectable()
@@ -145,6 +145,7 @@ export class TripService {
         AND t.src_port_id = ${Number(srcPortId)}
         AND t.dest_port_id = ${Number(destPortId)}
         AND t.status = 'Awaiting'
+        AND t.rate_table_id = rtr.rate_table_id
         ${
           isEmpty(cabinIds)
             ? Prisma.empty

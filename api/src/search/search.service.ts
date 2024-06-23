@@ -178,8 +178,9 @@ export class SearchService {
           STRING_AGG(tc.available_passenger_capacity::TEXT, '|') AS "pipeSeparatedCabinAvailableCapacities",
           STRING_AGG(tc.passenger_capacity::TEXT, '|') AS "pipeSeparatedCabinCapacities"
         FROM ayahay.trip_cabin tc
+          INNER JOIN ayahay.trip t ON tc.trip_id = t.id
           INNER JOIN ayahay.cabin c ON tc.cabin_id = c.id
-          INNER JOIN ayahay.rate_table_row rtr ON tc.cabin_id = rtr.cabin_id
+          INNER JOIN ayahay.rate_table_row rtr ON t.rate_table_id = rtr.rate_table_id AND tc.cabin_id = rtr.cabin_id
         WHERE tc.trip_id IN (SELECT id FROM trips_matching_query)
         GROUP BY tc.trip_id 
       ), vehicle_rates_per_trip AS (
