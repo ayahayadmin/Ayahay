@@ -374,9 +374,6 @@ export default function PassengerInformationForm({
                     rules={[
                       ({ getFieldValue }) => ({
                         async validator(_, value) {
-                          if (!value) {
-                            return Promise.resolve();
-                          }
                           const passengerId = getFieldValue([
                             'bookingTrips',
                             0,
@@ -387,13 +384,24 @@ export default function PassengerInformationForm({
                           ]);
                           const drivesSameVehicle = passengers.find(
                             ({ drivesVehicleId, passenger }) =>
+                              value &&
                               drivesVehicleId === value &&
                               passenger.id !== passengerId
+                          );
+                          const allVehiclesDriven = vehicles.every(
+                            ({ vehicleId }) =>
+                              passengers.some(
+                                ({ drivesVehicleId }) =>
+                                  drivesVehicleId === vehicleId
+                              )
                           );
                           if (drivesSameVehicle) {
                             return Promise.reject(
                               'A vehicle can only be driven by one passenger.'
                             );
+                          }
+                          if (!value && !allVehiclesDriven) {
+                            return Promise.reject('Please select a vehicle.');
                           }
                         },
                       }),

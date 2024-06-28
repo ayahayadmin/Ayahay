@@ -218,6 +218,7 @@ export class BookingMapper {
         voucherCode: booking.voucherCode ?? null,
 
         totalPrice: booking.totalPrice,
+        priceWithoutMarkup: booking.priceWithoutMarkup ?? 0,
         bookingType: booking.bookingType,
         createdAt: new Date(booking.createdAtIso),
         isBookingRequest: booking.isBookingRequest,
@@ -245,6 +246,7 @@ export class BookingMapper {
       bookingStatus: undefined,
       paymentStatus: undefined,
       totalPrice: tempBooking.totalPrice,
+      priceWithoutMarkup: tempBooking.priceWithoutMarkup,
       bookingType: tempBooking.bookingType as any,
       contactEmail: tempBooking.contactEmail,
       contactMobile: tempBooking.contactMobile,
@@ -283,6 +285,7 @@ export class BookingMapper {
           seatId: bookingTripPassenger.seatId ?? null,
           cabinId: bookingTripPassenger.cabinId,
           totalPrice: bookingTripPassenger.totalPrice ?? 0,
+          priceWithoutMarkup: bookingTripPassenger.priceWithoutMarkup ?? 0,
           discountType: bookingTripPassenger.discountType ?? null,
         });
         bookingTripPassenger.bookingPaymentItems.forEach((paymentItem) =>
@@ -301,6 +304,7 @@ export class BookingMapper {
           tripId: bookingTripVehicle.tripId,
           vehicleId: bookingTripVehicle.vehicleId,
           totalPrice: bookingTripVehicle.totalPrice ?? 0,
+          priceWithoutMarkup: bookingTripVehicle.priceWithoutMarkup ?? 0,
         });
         bookingTripVehicle.bookingPaymentItems.forEach((paymentItem) =>
           bookingPaymentItems.push({
@@ -326,6 +330,7 @@ export class BookingMapper {
         bookingStatus: booking.bookingStatus,
         paymentStatus: booking.paymentStatus,
         totalPrice: booking.totalPrice,
+        priceWithoutMarkup: booking.priceWithoutMarkup ?? 0,
         bookingType: booking.bookingType,
         contactEmail: booking.contactEmail,
         contactMobile: booking.contactMobile,

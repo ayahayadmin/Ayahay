@@ -8,7 +8,7 @@ import admin from 'firebase-admin';
 import { AccountMapper } from '@/account/account.mapper';
 import { CryptoService } from '@/crypto/crypto.service';
 import { UtilityService } from '@/utility.service';
-import { IAccount, IBooking } from '@ayahay/models';
+import { IAccount } from '@ayahay/models';
 import { PrismaService } from '@/prisma.service';
 
 @Injectable()
@@ -138,6 +138,15 @@ export class AuthService {
     }
   }
 
+  /**
+   * This function does not check if the account is a third-party
+   * account and if this third-party is partnered with the shipping line,
+   * because in general, third-party partners only have access
+   * to a select number of shipping line restricted entities
+   *
+   * to check if a third-party is partnered with the shipping line,
+   * use the verifyThirdPartyIsPartneredWithShippingLine method.
+   */
   verifyAccountHasAccessToShippingLineRestrictedEntity(
     shippingLineRestrictedEntity: { shippingLineId: number },
     loggedInAccount: IAccount
@@ -153,28 +162,36 @@ export class AuthService {
     }
   }
 
-  async verifyTravelAgencyCanBookForShippingLine(
-    booking: IBooking,
-    loggedInAccount?: IAccount
+  async verifyThirdPartyIsPartneredWithShippingLine(
+    thirdPartyAccount: IAccount,
+    shippingLineId: number
   ): Promise<void> {
-    if (!loggedInAccount?.travelAgencyId) {
-      throw new ForbiddenException();
+    if (this.isTravelAgencyAccount(thirdPartyAccount)) {
+      return this.verifyTravelAgencyIsPartneredWithShippingLine(
+        thirdPartyAccount.travelAgencyId,
+        shippingLineId
+      );
+    } else if (this.isClientAccount(thirdPartyAccount)) {
+      // TODO: add clientShippingLine table
+      return;
     }
+  }
 
+  async verifyTravelAgencyIsPartneredWithShippingLine(
+    travelAgencyId: number,
+    shippingLineId: number
+  ): Promise<void> {
     const partnerShippingLineIds =
       await this.prisma.travelAgencyShippingLine.findMany({
-        where: {
-          travelAgencyId: loggedInAccount.travelAgencyId,
-        },
+        where: { travelAgencyId },
         select: {
           shippingLineId: true,
         },
       });
 
     const isPartneredWithShippingLineOfBooking = partnerShippingLineIds.some(
-      ({ shippingLineId }) => shippingLineId === booking.shippingLineId
+      (partner) => partner.shippingLineId === shippingLineId
     );
-
     if (!isPartneredWithShippingLineOfBooking) {
       throw new ForbiddenException();
     }
@@ -217,11 +234,25 @@ export class AuthService {
     );
   }
 
+  isClientAccount(loggedInAccount?: IAccount): boolean {
+    return (
+      loggedInAccount?.role === 'ClientStaff' ||
+      loggedInAccount?.role === 'ClientAdmin'
+    );
+  }
+
   isShippingLineAccount(loggedInAccount?: IAccount): boolean {
     return (
       loggedInAccount?.role === 'ShippingLineScanner' ||
       loggedInAccount?.role === 'ShippingLineStaff' ||
       loggedInAccount?.role === 'ShippingLineAdmin'
+    );
+  }
+
+  isThirdPartyAccount(loggedInAccount?: IAccount): boolean {
+    return (
+      this.isTravelAgencyAccount(loggedInAccount) ||
+      this.isClientAccount(loggedInAccount)
     );
   }
 }

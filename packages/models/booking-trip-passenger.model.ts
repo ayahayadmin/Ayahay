@@ -42,6 +42,7 @@ export interface IBookingTripPassenger {
 
   meal?: string;
   totalPrice?: number;
+  priceWithoutMarkup?: number;
   checkInDate?: string;
   /**
    * has a value if passenger is removed from the booking

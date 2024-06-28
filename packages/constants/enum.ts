@@ -31,6 +31,7 @@ export enum ACCOUNT_ROLE {
   TravelAgencyStaff = 'TravelAgencyStaff',
   TravelAgencyAdmin = 'TravelAgencyAdmin',
   ClientStaff = 'ClientStaff',
+  ClientAdmin = 'ClientAdmin',
   SuperAdmin = 'SuperAdmin',
 }
 
@@ -74,8 +75,9 @@ export enum PAYMENT_STATUS {
 
 export enum BOOKING_PAYMENT_ITEM_TYPE {
   Fare = 'Fare',
-  ServiceCharge = 'Service Charge',
+  AyahayMarkup = 'Ayahay Markup',
   VoucherDiscount = 'Voucher Discount',
+  ThirdPartyMarkup = 'Third-Party Markup',
   CancellationRefund = 'Cancellation Refund',
   Miscellaneous = 'Miscellaneous',
 }

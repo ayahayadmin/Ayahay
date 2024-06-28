@@ -8,6 +8,7 @@ import {
   IVoucher,
   IBookingTripVehicle,
   IRateTable,
+  IRateTableMarkup,
 } from '@ayahay/models';
 import { BOOKING_CANCELLATION_TYPE } from '@ayahay/constants';
 import {
@@ -58,7 +59,7 @@ export class BookingPricingService {
         );
       });
     });
-    booking.totalPrice = this.calculateTotalPriceOfBooking(booking);
+    this.assignTotalPriceOfBooking(booking);
     booking.bookingPaymentItems = [];
   }
 
@@ -109,26 +110,46 @@ export class BookingPricingService {
       });
     }
 
-    const serviceCharge = this.calculateServiceChargeForPassenger(
+    const ayahayMarkup = this.calculateAyahayMarkupForPassenger(
       bookingTripPassenger,
       roundedTicketPrice,
       loggedInAccount
     );
-    if (serviceCharge > 0) {
+    if (ayahayMarkup > 0) {
       bookingPaymentItems.push({
         id: -1,
         bookingId: '',
         tripId: bookingTripPassenger.tripId,
         passengerId: bookingTripPassenger.passengerId,
-        price: serviceCharge,
+        price: ayahayMarkup,
         description: `${passengerType} Service Charge (${tripCabin.cabin.name})`,
-        type: 'ServiceCharge',
+        type: 'AyahayMarkup',
+      });
+    }
+
+    const thirdPartyMarkup = this.calculateThirdPartyMarkupForPassenger(
+      bookingTripPassenger,
+      roundedTicketPrice,
+      rateTable,
+      loggedInAccount
+    );
+    if (thirdPartyMarkup > 0) {
+      bookingPaymentItems.push({
+        id: -1,
+        bookingId: '',
+        tripId: bookingTripPassenger.tripId,
+        passengerId: bookingTripPassenger.passengerId,
+        price: thirdPartyMarkup,
+        description: `${passengerType} Service Charge (${tripCabin.cabin.name})`,
+        type: 'ThirdPartyMarkup',
       });
     }
 
     bookingTripPassenger.bookingPaymentItems = bookingPaymentItems;
     bookingTripPassenger.totalPrice =
       this.calculateTotalPriceOfPaymentItems(bookingPaymentItems);
+    bookingTripPassenger.priceWithoutMarkup =
+      bookingTripPassenger.totalPrice - thirdPartyMarkup;
   }
 
   private calculateTicketPriceForBookingTripPassenger(
@@ -163,6 +184,10 @@ export class BookingPricingService {
     }
   }
 
+  /**
+   * Some shipping lines want their prices to be a multiple of 5
+   * for an easier time to count change when customer pays OTC
+   */
   private roundPassengerPriceBasedOnShippingLine(
     originalPrice: number,
     shippingLine: IShippingLine
@@ -178,6 +203,48 @@ export class BookingPricingService {
       return wholePrice + (50 - (wholePrice % 50));
     }
     return originalPrice;
+  }
+
+  private calculateThirdPartyMarkupForPassenger(
+    bookingTripPassenger: IBookingTripPassenger,
+    ticketPrice: number,
+    rateTable: IRateTable,
+    loggedInAccount?: IAccount
+  ): number {
+    if (!this.isPayingPassenger(bookingTripPassenger)) {
+      return 0;
+    }
+
+    return this.calculateThirdPartyMarkup(
+      ticketPrice,
+      rateTable,
+      loggedInAccount
+    );
+  }
+
+  private calculateThirdPartyMarkup(
+    ticketPrice: number,
+    rateTable: IRateTable,
+    loggedInAccount?: IAccount
+  ) {
+    if (!this.authService.isTravelAgencyAccount(loggedInAccount)) {
+      return 0;
+    }
+
+    let rateTableMarkup: IRateTableMarkup = undefined;
+    if (this.authService.isTravelAgencyAccount(loggedInAccount)) {
+      rateTableMarkup = rateTable.markups?.find(
+        (markup) => markup.travelAgencyId === loggedInAccount?.travelAgencyId
+      );
+    }
+
+    if (rateTableMarkup === undefined) {
+      return 0;
+    }
+
+    const tentativeMarkup =
+      ticketPrice * rateTableMarkup.markupPercent + rateTableMarkup.markupFlat;
+    return Math.min(rateTableMarkup.markupMaxFlat, tentativeMarkup);
   }
 
   private assignBookingTripVehiclePricing(
@@ -220,25 +287,44 @@ export class BookingPricingService {
       });
     }
 
-    const serviceCharge = this.calculateServiceChargeForVehicle(
+    const ayahayMarkup = this.calculateAyahayMarkupForVehicle(
       ticketPrice,
       loggedInAccount
     );
-    if (serviceCharge > 0) {
+    if (ayahayMarkup > 0) {
       bookingPaymentItems.push({
         id: -1,
         bookingId: '',
         tripId: bookingTripVehicle.tripId,
         vehicleId: bookingTripVehicle.vehicleId,
-        price: serviceCharge,
+        price: ayahayMarkup,
         description: `Vehicle Service Charge (${vehicle.vehicleType.name})`,
-        type: 'ServiceCharge',
+        type: 'AyahayMarkup',
+      });
+    }
+
+    const thirdPartyMarkup = this.calculateThirdPartyMarkup(
+      ticketPrice,
+      rateTable,
+      loggedInAccount
+    );
+    if (thirdPartyMarkup > 0) {
+      bookingPaymentItems.push({
+        id: -1,
+        bookingId: '',
+        tripId: bookingTripVehicle.tripId,
+        vehicleId: bookingTripVehicle.vehicleId,
+        price: thirdPartyMarkup,
+        description: `Vehicle Service Charge (${vehicle.vehicleType.name})`,
+        type: 'ThirdPartyMarkup',
       });
     }
 
     bookingTripVehicle.bookingPaymentItems = bookingPaymentItems;
     bookingTripVehicle.totalPrice =
       this.calculateTotalPriceOfPaymentItems(bookingPaymentItems);
+    bookingTripVehicle.priceWithoutMarkup =
+      bookingTripVehicle.totalPrice - thirdPartyMarkup;
   }
 
   private calculateTicketPriceForBookingTripVehicle(
@@ -265,7 +351,7 @@ export class BookingPricingService {
     );
   }
 
-  private calculateServiceChargeForPassenger(
+  private calculateAyahayMarkupForPassenger(
     bookingTripPassenger: IBookingTripPassenger,
     chargeablePrice: number,
     bookingCreator?: IAccount
@@ -283,7 +369,7 @@ export class BookingPricingService {
     );
   }
 
-  private calculateServiceChargeForVehicle(
+  private calculateAyahayMarkupForVehicle(
     chargeablePrice: number,
     bookingCreator?: IAccount
   ): number {
@@ -330,21 +416,22 @@ export class BookingPricingService {
       .reduce((itemAPrice, itemBPrice) => itemAPrice + itemBPrice, 0);
   }
 
-  private calculateTotalPriceOfBooking(booking: IBooking): number {
-    let bookingTotalPrice = 0;
+  private assignTotalPriceOfBooking(booking: IBooking): void {
+    booking.totalPrice = 0;
+    booking.priceWithoutMarkup = 0;
 
     const { bookingTripPassengers, bookingTripVehicles } =
       this.utilityService.combineAllBookingTripEntities(booking.bookingTrips);
 
     bookingTripPassengers.forEach((bookingPassenger) => {
-      bookingTotalPrice += bookingPassenger.totalPrice;
+      booking.totalPrice += bookingPassenger.totalPrice;
+      booking.priceWithoutMarkup += bookingPassenger.priceWithoutMarkup;
     });
 
     bookingTripVehicles.forEach((bookingVehicle) => {
-      bookingTotalPrice += bookingVehicle.totalPrice;
+      booking.totalPrice += bookingVehicle.totalPrice;
+      booking.priceWithoutMarkup += bookingVehicle.priceWithoutMarkup;
     });
-
-    return bookingTotalPrice;
   }
 
   private calculateVoucherDiscountForVehicle(

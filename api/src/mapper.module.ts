@@ -1,4 +1,4 @@
-import { Global, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ShippingLineMapper } from './shipping-line/shipping-line.mapper';
 import { PortMapper } from './port/port.mapper';
 import { TripMapper } from './trip/trip.mapper';
@@ -16,6 +16,7 @@ import { DisbursementMapper } from './disbursement/disbursement.mapper';
 import { VoucherMapper } from './voucher/voucher.mapper';
 import { WebhookMapper } from '@/webhook/webhook.mapper';
 import { RateTableMapper } from '@/rate-table/rate-table.mapper';
+import { TravelAgencyMapper } from '@/travel-agency/travel-agency.mapper';
 
 @Module({
   providers: [
@@ -36,6 +37,7 @@ import { RateTableMapper } from '@/rate-table/rate-table.mapper';
     VoucherMapper,
     WebhookMapper,
     RateTableMapper,
+    TravelAgencyMapper,
   ],
   exports: [
     TripMapper,
@@ -55,6 +57,7 @@ import { RateTableMapper } from '@/rate-table/rate-table.mapper';
     VoucherMapper,
     WebhookMapper,
     RateTableMapper,
+    TravelAgencyMapper,
   ],
 })
 export class MapperModule {}

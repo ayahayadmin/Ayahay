@@ -51,6 +51,10 @@ const adminLinks = [
       },
     ],
   },
+  {
+    label: 'Rates',
+    key: 'rate-tables',
+  },
 ];
 
 export const webLinks: {
@@ -116,8 +120,8 @@ export const webLinks: {
   ],
   TravelAgencyAdmin: [
     {
-      label: 'Trips',
-      key: 'trips',
+      label: 'Rates',
+      key: 'rate-tables',
     },
   ],
   ShippingLineAdmin: adminLinks,

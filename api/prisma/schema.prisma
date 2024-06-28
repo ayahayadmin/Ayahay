@@ -244,6 +244,7 @@ model Booking {
   bookingStatus String @map("booking_status")
   paymentStatus String @map("payment_status")
   totalPrice Float @map("total_price")
+  priceWithoutMarkup Float @map("price_without_markup")
   bookingType String @map("booking_type")
   contactEmail String? @map("contact_email")
   contactMobile String? @map("contact_mobile")
@@ -297,6 +298,7 @@ model BookingTripPassenger {
 
   meal String?
   totalPrice Float @map("total_price")
+  priceWithoutMarkup Float @map("price_without_markup")
   checkInDate DateTime? @map("check_in_date")
   removedReason String? @map("removed_reason")
   removedReasonType String? @map("removed_reason_type")
@@ -320,6 +322,7 @@ model BookingTripVehicle {
   passengerDriver BookingTripPassenger?
 
   totalPrice Float @map("total_price")
+  priceWithoutMarkup Float @map("price_without_markup")
   checkInDate DateTime? @map("check_in_date")
   removedReason String? @map("removed_reason")
   removedReasonType String? @map("removed_reason_type")
@@ -342,6 +345,7 @@ model TempBooking {
   voucher Voucher? @relation(fields: [voucherCode], references: [code])
 
   totalPrice Float @map("total_price")
+  priceWithoutMarkup Float @map("price_without_markup")
   bookingType String @map("booking_type")
   paymentReference String? @map("payment_reference")
   contactEmail String? @map("contact_email")

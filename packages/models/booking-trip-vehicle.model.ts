@@ -13,6 +13,7 @@ export interface IBookingTripVehicle {
   vehicle?: IVehicle;
 
   totalPrice?: number;
+  priceWithoutMarkup?: number;
   checkInDate?: string;
   removedReason?: string;
   removedReasonType?: keyof typeof BOOKING_CANCELLATION_TYPE;
