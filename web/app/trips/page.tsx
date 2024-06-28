@@ -112,6 +112,10 @@ export default function Trips() {
       trips[index] = trip;
     }
     setSelectedTrips(trips);
+
+    if (activeSearchIndex === 0) {
+      setActiveSearchIndex(1);
+    }
   };
 
   const validateSelectedTrips = () => {
