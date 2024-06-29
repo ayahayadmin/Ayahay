@@ -6,7 +6,14 @@ export class TravelAgencyMapper {
   constructor() {}
 
   convertTravelAgencyToDto(travelAgency: any): ITravelAgency {
-    return null;
+    if (!travelAgency) {
+      return undefined;
+    }
+
+    return {
+      id: travelAgency.id,
+      name: travelAgency.name,
+    };
   }
 
   convertTravelAgencyToEntity(travelAgency: ITravelAgency): any {

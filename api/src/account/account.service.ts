@@ -38,6 +38,8 @@ export class AccountService {
             buddies: true,
           },
         },
+        shippingLine: true,
+        travelAgency: true,
         vehicles: true,
       },
     });

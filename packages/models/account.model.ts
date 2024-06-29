@@ -5,6 +5,19 @@ import { IShippingLine } from './shipping-line.model';
 import { ITravelAgency } from './travel-agency.model';
 import { IClient } from './client.model';
 
+/**
+ * An account can only be *one* of the following:
+ * - a passenger
+ * - part of a shipping line
+ * - part of a travel agency
+ * - part of a client
+ *
+ * of which the corresponding ID will not be null
+ *
+ * partnerships between travel agencies and clients
+ * with shipping lines are modeled in their separate
+ * tables/models (e.g. TravelAgencyShippingLine)
+ */
 export interface IAccount {
   // firebase user ID
   id: string;

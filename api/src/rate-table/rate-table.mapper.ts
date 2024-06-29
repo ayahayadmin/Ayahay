@@ -2,13 +2,26 @@ import { Injectable } from '@nestjs/common';
 import { IRateTable, IRateTableRow, IRateTableMarkup } from '@ayahay/models';
 import { VehicleMapper } from '@/vehicle/vehicle.mapper';
 import { CabinMapper } from '@/cabin/cabin.mapper';
+import { Prisma } from '@prisma/client';
+import { TravelAgencyMapper } from '@/travel-agency/travel-agency.mapper';
 
 @Injectable()
 export class RateTableMapper {
   constructor(
     private readonly cabinMapper: CabinMapper,
-    private readonly vehicleMapper: VehicleMapper
+    private readonly vehicleMapper: VehicleMapper,
+    private readonly travelAgencyMapper: TravelAgencyMapper
   ) {}
+
+  convertRateTableSimpleDto(rateTable: any): IRateTable {
+    return {
+      id: rateTable.id,
+      shippingLineId: rateTable.shippingLineId,
+      name: rateTable.name,
+      rows: [],
+      markups: [],
+    };
+  }
 
   convertRateTableToPublicDto(rateTable: any): IRateTable {
     return {
@@ -56,7 +69,39 @@ export class RateTableMapper {
       id: rateTableMarkup.id,
       rateTableId: rateTableMarkup.rateTableId,
       travelAgencyId: rateTableMarkup.travelAgencyId ?? undefined,
+      travelAgency: this.travelAgencyMapper.convertTravelAgencyToDto(
+        rateTableMarkup.travelAgency
+      ),
       clientId: rateTableMarkup.clientId ?? undefined,
+      markupFlat: rateTableMarkup.markupFlat,
+      markupPercent: rateTableMarkup.markupPercent,
+      markupMaxFlat: rateTableMarkup.markupMaxFlat,
+    };
+  }
+
+  convertRateTableMarkupToEntityForCreation(
+    rateTableMarkup: IRateTableMarkup
+  ): Prisma.RateTableMarkupCreateInput {
+    return {
+      rateTable: {
+        connect: {
+          id: rateTableMarkup.rateTableId,
+        },
+      },
+      travelAgency: rateTableMarkup.travelAgencyId
+        ? {
+            connect: {
+              id: rateTableMarkup.travelAgencyId,
+            },
+          }
+        : undefined,
+      client: rateTableMarkup.clientId
+        ? {
+            connect: {
+              id: rateTableMarkup.clientId,
+            },
+          }
+        : undefined,
       markupFlat: rateTableMarkup.markupFlat,
       markupPercent: rateTableMarkup.markupPercent,
       markupMaxFlat: rateTableMarkup.markupMaxFlat,

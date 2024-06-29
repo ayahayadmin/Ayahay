@@ -90,18 +90,13 @@ export class BookingValidator {
    */
   private async validateTravelAgencyBooking(
     booking: IBooking,
-    loggedInAccount?: IAccount
+    loggedInAccount: IAccount
   ): Promise<FieldError[]> {
     const errorMessages: FieldError[] = [];
-    if (booking.voucher === undefined) {
-      errorMessages.push({
-        fieldName: ['voucherCode'],
-        message: 'Vouchers are required for travel agencies.',
-      });
-    }
-    await this.authService.verifyTravelAgencyCanBookForShippingLine(
-      booking,
-      loggedInAccount
+
+    await this.authService.verifyTravelAgencyIsPartneredWithShippingLine(
+      loggedInAccount.travelAgencyId,
+      booking.shippingLineId
     );
     return errorMessages;
   }

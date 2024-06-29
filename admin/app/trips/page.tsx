@@ -92,7 +92,9 @@ export default function Schedules() {
       return;
     }
 
-    const _hasAdminPrivileges = loggedInAccount?.role !== 'ShippingLineStaff';
+    const _hasAdminPrivileges =
+      loggedInAccount?.role === 'ShippingLineAdmin' ||
+      loggedInAccount?.role === 'SuperAdmin';
     setHasAdminPrivileges(_hasAdminPrivileges);
 
     if (!_hasAdminPrivileges) {

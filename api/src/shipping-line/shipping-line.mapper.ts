@@ -19,6 +19,10 @@ export class ShippingLineMapper {
   ) {}
 
   convertShippingLineToDto(shippingLine: ShippingLine): IShippingLine {
+    if (!shippingLine) {
+      return undefined;
+    }
+
     return {
       id: shippingLine.id,
       name: shippingLine.name,

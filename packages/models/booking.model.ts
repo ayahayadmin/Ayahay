@@ -32,6 +32,7 @@ export interface IBooking {
   bookingStatus: keyof typeof BOOKING_STATUS;
   paymentStatus: keyof typeof PAYMENT_STATUS;
   totalPrice: number;
+  priceWithoutMarkup?: number;
   bookingType: keyof typeof BOOKING_TYPE;
   /**
    * The primary email where booking updates
