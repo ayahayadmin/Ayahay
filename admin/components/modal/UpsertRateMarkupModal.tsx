@@ -1,7 +1,7 @@
 import { Form, InputNumber, Modal, ModalProps, Typography } from 'antd';
 import { useForm } from 'antd/es/form/Form';
 import { IAccount, IRateTableMarkup } from '@ayahay/models';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { buildRateTableMarkupFromForm } from '@ayahay/services/rate-table.service';
 import { InfoCircleOutlined } from '@ant-design/icons';
 
@@ -24,6 +24,18 @@ export default function UpsertRateMarkupModal({
 }: UpsertRateMarkupModalProps & ModalProps) {
   const [form] = useForm();
 
+  useEffect(() => {
+    form.setFieldsValue({
+      id: originalMarkup.id,
+      rateTableId: originalMarkup.rateTableId,
+      travelAgencyId: originalMarkup.travelAgencyId,
+      clientId: originalMarkup.clientId,
+      markupFlat: originalMarkup.markupFlat,
+      markupPercent: originalMarkup.markupPercent * 100,
+      markupMaxFlat: originalMarkup.markupMaxFlat,
+    });
+  }, [originalMarkup]);
+
   const onOkModal = async () => {
     try {
       await form.validateFields();
@@ -42,19 +54,7 @@ export default function UpsertRateMarkupModal({
       <Title level={2} style={{ fontSize: '20px', marginBottom: '20px' }}>
         Update Markup for {originalMarkup.travelAgency?.name}
       </Title>
-      <Form
-        form={form}
-        initialValues={{
-          id: originalMarkup.id,
-          rateTableId: originalMarkup.rateTableId,
-          travelAgencyId: originalMarkup.travelAgencyId,
-          clientId: originalMarkup.clientId,
-          markupFlat: originalMarkup.markupFlat,
-          markupPercent: originalMarkup.markupPercent * 100,
-          markupMaxFlat: originalMarkup.markupMaxFlat,
-        }}
-        layout='vertical'
-      >
+      <Form form={form} layout='vertical'>
         <Form.Item
           label='Flat Markup'
           name='markupFlat'
