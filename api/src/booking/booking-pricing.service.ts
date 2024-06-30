@@ -442,12 +442,17 @@ export class BookingPricingService {
   }
 
   async refundTripPassenger(
-    { bookingId, tripId, passengerId, totalPrice }: BookingTripPassenger,
+    {
+      bookingId,
+      tripId,
+      passengerId,
+      priceWithoutMarkup,
+    }: BookingTripPassenger,
     removedReasonType: keyof typeof BOOKING_CANCELLATION_TYPE,
     transactionContext: PrismaClient
   ): Promise<number> {
     const totalRefund = this.calculateRefundOnBookingCancellation(
-      totalPrice,
+      priceWithoutMarkup,
       removedReasonType
     );
 
@@ -480,12 +485,12 @@ export class BookingPricingService {
   }
 
   async refundTripVehicle(
-    { bookingId, tripId, vehicleId, totalPrice }: BookingTripVehicle,
+    { bookingId, tripId, vehicleId, priceWithoutMarkup }: BookingTripVehicle,
     removedReasonType: keyof typeof BOOKING_CANCELLATION_TYPE,
     transactionContext: PrismaClient
   ): Promise<number> {
     const totalRefund = this.calculateRefundOnBookingCancellation(
-      totalPrice,
+      priceWithoutMarkup,
       removedReasonType
     );
 

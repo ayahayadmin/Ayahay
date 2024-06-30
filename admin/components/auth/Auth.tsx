@@ -1,33 +1,29 @@
 'use client';
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Button, Form, Input, Modal, Spin, message } from 'antd';
+import { Button, Form, Input, Modal, message } from 'antd';
 import { LoginForm } from '@ayahay/models';
 import styles from './Auth.module.scss';
-import { useAuthState } from '@/hooks/auth';
 import { useRouter } from 'next/navigation';
-import { firebase } from '@/utils/initFirebase';
 
 export default function Login() {
-  const { pending, isSignedIn } = useAuthState();
-  const { resetPassword, signIn } = useAuth();
+  const { loggedInAccount, resetPassword, signIn } = useAuth();
   const router = useRouter();
   const [error, setError] = useState('');
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
 
-  if (pending) {
-    return <Spin size='large' className={styles['spinner']} />;
-  }
-
-  if (isSignedIn) {
-    router.push('/trips');
+  if (loggedInAccount) {
+    if (loggedInAccount.role === 'TravelAgencyAdmin') {
+      router.push('/rate-tables');
+    } else {
+      router.push('/trips');
+    }
   }
 
   const onFinishLogin = async (values: LoginForm) => {
     const { email, password } = values;
     try {
       await signIn(email, password);
-      router.push('/trips');
     } catch (error) {
       message.error({
         type: 'error',
