@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { Avatar, Button, Dropdown, MenuProps } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 import { useAuth } from '@/contexts/AuthContext';
-import { useAuthState } from '@/hooks/auth';
 import Link from 'next/link';
 
 interface LogoutProps {
@@ -12,7 +11,6 @@ interface LogoutProps {
 
 export default function Logout({ roleSpecificMenuItems }: LogoutProps) {
   const { currentUser, loggedInAccount, logout } = useAuth();
-  const { pending } = useAuthState();
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const logOut = () => {
@@ -42,7 +40,7 @@ export default function Logout({ roleSpecificMenuItems }: LogoutProps) {
     },
   ];
 
-  const label = !pending
+  const label = loggedInAccount
     ? `Welcome, ${
         loggedInAccount?.passenger?.firstName ??
         loggedInAccount?.email.split('@')[0]

@@ -1,19 +1,8 @@
 'use client';
-import { useAuthState } from '@/hooks/auth';
-import { Spin } from 'antd';
-import { redirect } from 'next/navigation';
-import styles from './page.module.scss';
+import { useAuthGuard } from '@/hooks/auth';
 
 export default function Unauthorized() {
-  const { pending, isSignedIn } = useAuthState();
-
-  if (pending) {
-    return <Spin size='large' className={styles['spinner']} />;
-  }
-
-  if (!isSignedIn) {
-    redirect('/');
-  }
+  useAuthGuard();
 
   return (
     <div>

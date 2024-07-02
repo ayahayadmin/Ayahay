@@ -2,30 +2,16 @@
 import styles from './page.module.scss';
 import { InboxOutlined, DownloadOutlined } from '@ant-design/icons';
 import React from 'react';
-import { message, Button, Upload, Typography, Spin } from 'antd';
+import { message, Button, Upload, Typography } from 'antd';
 import { processBookingCsv } from '@/services/csv.service';
 import { IBooking } from '@ayahay/models';
-import { useAuthState } from '@/hooks/auth';
-import { redirect } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthGuard } from '@/hooks/auth';
 
 const { Title } = Typography;
 const { Dragger } = Upload;
 
 export default function UploadBookings() {
-  const { loggedInAccount } = useAuth();
-  const { pending, isSignedIn, user, auth } = useAuthState();
-
-  if (pending) {
-    return <Spin size='large' className={styles['spinner']} />;
-  }
-
-  const allowedRoles = ['SuperAdmin', 'ShippingLineAdmin'];
-  if (!isSignedIn) {
-    redirect('/');
-  } else if (loggedInAccount && !allowedRoles.includes(loggedInAccount.role)) {
-    redirect('/403');
-  }
+  useAuthGuard(['SuperAdmin', 'ShippingLineAdmin']);
 
   const onUpload = (options: any) => {
     const { file, onProgress, onSuccess } = options;

@@ -2,11 +2,9 @@
 import React, { useEffect, useState } from 'react';
 import { IShippingLineSchedule } from '@ayahay/models';
 import { getSchedulesOfShippingLine } from '@/services/shipping-line.service';
-import { Spin, Typography } from 'antd';
+import { Typography } from 'antd';
 import CreateTripsFromScheduleForm from './createTripsFromScheduleForm';
-import { useAuthGuard, useAuthState } from '@/hooks/auth';
-import styles from './page.module.scss';
-import { redirect } from 'next/navigation';
+import { useAuthGuard } from '@/hooks/auth';
 import { useAuth } from '@/contexts/AuthContext';
 
 const { Title } = Typography;

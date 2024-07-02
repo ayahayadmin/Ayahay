@@ -1,31 +1,6 @@
-import { useEffect, useState } from 'react';
-import { User } from 'firebase/auth';
-import { firebase } from '@/utils/initFirebase';
+import { useEffect } from 'react';
 import { redirect } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-
-interface IAuth {
-  isSignedIn: boolean;
-  pending: boolean;
-  user: User | null;
-}
-
-export function useAuthState() {
-  const [authState, setAuthState] = useState<IAuth>({
-    isSignedIn: false,
-    pending: true,
-    user: null,
-  });
-
-  useEffect(() => {
-    const unregisterAuthObserver = firebase.onAuthStateChanged((user) =>
-      setAuthState({ user, pending: false, isSignedIn: !!user })
-    );
-    return () => unregisterAuthObserver();
-  }, []);
-
-  return { firebase, ...authState };
-}
 
 export function useAuthGuard(roles?: string[]) {
   const { loggedInAccount } = useAuth();
@@ -35,7 +10,11 @@ export function useAuthGuard(roles?: string[]) {
       return;
     }
 
-    if (loggedInAccount === undefined || loggedInAccount.role === 'Passenger') {
+    if (
+      loggedInAccount === undefined ||
+      loggedInAccount.role === 'Passenger' ||
+      loggedInAccount.role === 'TravelAgencyStaff'
+    ) {
       redirect('/');
     } else if (roles && !roles.includes(loggedInAccount.role)) {
       redirect('/403');
