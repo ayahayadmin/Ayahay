@@ -197,10 +197,10 @@ export class BookingPricingService {
       return wholePrice - (wholePrice % 5);
     } else if (shippingLine.name === 'Jomalia Shipping Corporation') {
       const wholePrice = Math.floor(originalPrice);
-      if (wholePrice % 50 === 0) {
+      if (wholePrice % 100 === 0) {
         return wholePrice;
       }
-      return wholePrice + (50 - (wholePrice % 50));
+      return wholePrice + (100 - (wholePrice % 100));
     }
     return originalPrice;
   }
