@@ -7,10 +7,10 @@ export const webLinks = [
     label: 'My Bookings',
     key: 'bookings/mine',
   },
-  {
-    label: 'About',
-    key: 'about',
-  },
+  // {
+  //   label: 'About',
+  //   key: 'about',
+  // },
   {
     label: 'Contact',
     key: 'contact',
