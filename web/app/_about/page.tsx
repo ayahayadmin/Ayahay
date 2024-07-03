@@ -6,7 +6,6 @@ import ProfileCard from '@/components/about/ProfileCard';
 const { Title } = Typography;
 
 export default function AboutUs() {
-  use
   return (
     <div className={styles['main-container']}>
       <Title level={1} style={{ fontSize: 30 }}>
