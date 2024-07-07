@@ -22,11 +22,11 @@ export default function Partners() {
               src='/assets/shipping-line-logos/E.B. Aznar Shipping Corporation.png'
             />
           </a>
-          <a href='#' target='_blank'>
+          <a href='https://jomaliashipping.com/' target='_blank'>
             <img
               className={styles['image']}
-              alt='placeholder'
-              src='/assets/logo-placeholder.png'
+              alt='jomalia'
+              src='/assets/shipping-line-logos/Jomalia Shipping Corporation.png'
             />
           </a>
           <a href='#' target='_blank'>

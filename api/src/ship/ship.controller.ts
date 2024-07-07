@@ -13,8 +13,10 @@ import { IDryDock, IShip, IVoyage } from '@ayahay/models';
 import { PaginatedRequest, PaginatedResponse } from '@ayahay/http';
 import { Roles } from '@/decorator/roles.decorator';
 import { AuthGuard } from '@/auth/auth.guard';
+import { ApiExcludeController } from '@nestjs/swagger';
 
 @Controller('ships')
+@ApiExcludeController()
 export class ShipController {
   constructor(private shipService: ShipService) {}
 

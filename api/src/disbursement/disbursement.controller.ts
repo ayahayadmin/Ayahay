@@ -12,10 +12,12 @@ import { DisbursementService } from './disbursement.service';
 import { AuthGuard } from '@/auth/auth.guard';
 import { Roles } from '@/decorator/roles.decorator';
 import { Prisma } from '@prisma/client';
+import { ApiExcludeController } from '@nestjs/swagger';
 
 @Controller('disbursement')
 @UseGuards(AuthGuard)
 @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
+@ApiExcludeController()
 export class DisbursementController {
   constructor(private disbursementService: DisbursementService) {}
 

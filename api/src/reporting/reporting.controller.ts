@@ -25,8 +25,10 @@ import {
   CollectTripBooking,
 } from '@ayahay/http';
 import { BookingService } from '@/booking/booking.service';
+import { ApiExcludeController } from '@nestjs/swagger';
 
 @Controller('reporting')
+@ApiExcludeController()
 export class ReportingController {
   constructor(
     private reportingService: ReportingService,

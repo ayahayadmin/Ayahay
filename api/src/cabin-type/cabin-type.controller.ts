@@ -10,8 +10,10 @@ import {
 } from '@nestjs/common';
 import { CabinTypeService } from './cabin-type.service';
 import { ICabinType } from '@ayahay/models';
+import { ApiExcludeController } from '@nestjs/swagger';
 
 @Controller('cabin-types')
+@ApiExcludeController()
 export class CabinTypeController {
   constructor(private cabinTypeService: CabinTypeService) {}
 

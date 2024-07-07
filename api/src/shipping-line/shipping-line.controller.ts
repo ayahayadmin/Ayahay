@@ -3,8 +3,10 @@ import { ShippingLineService } from './shipping-line.service';
 import { IShippingLine, IShippingLineSchedule } from '@ayahay/models';
 import { AuthGuard } from '@/auth/auth.guard';
 import { Roles } from '@/decorator/roles.decorator';
+import { ApiExcludeController } from '@nestjs/swagger';
 
 @Controller('shipping-lines')
+@ApiExcludeController()
 export class ShippingLineController {
   constructor(private shippingLineService: ShippingLineService) {}
 

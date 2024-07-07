@@ -566,7 +566,7 @@ export default function PassengerInformationForm({
 
             {canBookVehicles && (
               <Button type='dashed' onClick={() => addNewVehicle(add)} block>
-                Add Vehicle
+                Add Vehicle/Cargo
               </Button>
             )}
             {loggedInAccount &&

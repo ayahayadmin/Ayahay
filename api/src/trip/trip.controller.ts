@@ -27,8 +27,18 @@ import {
   UpdateTripCapacityRequest,
   VehicleBookings,
 } from '@ayahay/http';
+import {
+  ApiBearerAuth,
+  ApiExcludeEndpoint,
+  ApiOkResponse,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
+import { GetTripsQuery, Trip } from '@/specs/trip.specs';
 
+@ApiTags('Trips')
 @Controller('trips')
+@ApiBearerAuth()
 export class TripController {
   constructor(
     private readonly tripService: TripService,
@@ -36,6 +46,7 @@ export class TripController {
   ) {}
 
   @Get()
+  @ApiExcludeEndpoint()
   async getTrips(
     @Query('tripIds', new ParseArrayPipe({ items: Number })) tripIds: number[]
   ): Promise<ITrip[]> {
@@ -43,6 +54,11 @@ export class TripController {
   }
 
   @Get('available')
+  @ApiQuery({ type: GetTripsQuery })
+  @ApiOkResponse({
+    description: 'The list of available trips that matches the query.',
+    type: [Trip],
+  })
   async getAvailableTrips(
     @Query()
     query: SearchAvailableTrips
@@ -53,6 +69,7 @@ export class TripController {
   @Get(':tripId')
   @UseGuards(AuthGuard)
   @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
+  @ApiExcludeEndpoint()
   async getTripById(
     @Param('tripId') tripId: string,
     @Request() req
@@ -80,6 +97,7 @@ export class TripController {
     'TravelAgencyAdmin',
     'SuperAdmin'
   )
+  @ApiExcludeEndpoint()
   async getAvailableTripsByDateRange(
     @Query() pagination: PaginatedRequest,
     @Query('shippingLineId') shippingLineId: number,
@@ -101,6 +119,7 @@ export class TripController {
   @Get('collect')
   @UseGuards(AuthGuard)
   @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
+  @ApiExcludeEndpoint()
   async getTripsForCollectBooking(
     @Query() query: PortsAndDateRangeSearch,
     @Request() req
@@ -111,6 +130,7 @@ export class TripController {
   @Get('cancelled-trips')
   @UseGuards(AuthGuard)
   @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
+  @ApiExcludeEndpoint()
   async getCancelledTrips(
     @Query() pagination: PaginatedRequest,
     @Query('shippingLineId') shippingLineId: number,
@@ -128,6 +148,7 @@ export class TripController {
   @Get(':tripId/bookings')
   @UseGuards(AuthGuard)
   @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
+  @ApiExcludeEndpoint()
   async getBookingsOfTrip(
     @Query() pagination: PaginatedRequest,
     @Param('tripId') tripId: number,
@@ -139,6 +160,7 @@ export class TripController {
   @Post()
   @UseGuards(AuthGuard)
   @Roles('ShippingLineAdmin', 'SuperAdmin')
+  @ApiExcludeEndpoint()
   async createTrip(@Body() data: Prisma.TripCreateInput) {
     return await this.tripService.createTrip(data);
   }
@@ -146,6 +168,7 @@ export class TripController {
   @Post('from-schedules')
   @UseGuards(AuthGuard)
   @Roles('ShippingLineAdmin', 'SuperAdmin')
+  @ApiExcludeEndpoint()
   async createTripsFromSchedules(
     @Body() createTripsFromSchedulesRequest: CreateTripsFromSchedulesRequest,
     @Request() req
@@ -159,6 +182,7 @@ export class TripController {
   @Patch(':tripId/capacity')
   @UseGuards(AuthGuard)
   @Roles('ShippingLineAdmin', 'SuperAdmin')
+  @ApiExcludeEndpoint()
   async updateTripCabinCapacity(
     @Param('tripId') tripId: number,
     @Body() updateTripCapacityRequest: UpdateTripCapacityRequest,
@@ -174,6 +198,7 @@ export class TripController {
   @Patch(':tripId/cancel')
   @UseGuards(AuthGuard)
   @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
+  @ApiExcludeEndpoint()
   async cancelTrip(
     @Param('tripId') tripId: number,
     @Body('reason') reason: string,
@@ -185,6 +210,7 @@ export class TripController {
   @Patch(':tripId/arrived')
   @UseGuards(AuthGuard)
   @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
+  @ApiExcludeEndpoint()
   async setTripAsArrived(
     @Param('tripId') tripId: number,
     @Request() req

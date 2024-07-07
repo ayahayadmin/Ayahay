@@ -27,8 +27,25 @@ import { AllowUnauthenticated } from '@/decorator/authenticated.decorator';
 import { AccountService } from '@/account/account.service';
 import { BookingRequestService } from '@/booking/booking-request.service';
 import { BOOKING_CANCELLATION_TYPE } from '@ayahay/constants';
+import {
+  ApiBadRequestResponse,
+  ApiBearerAuth,
+  ApiBody,
+  ApiCreatedResponse,
+  ApiExcludeEndpoint,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import {
+  CreateBookingError,
+  CreateBookingRequest,
+  CreateBookingResponse,
+} from '@/specs/booking.specs';
 
+@ApiTags('Bookings')
 @Controller('bookings')
+@ApiBearerAuth()
 export class BookingController {
   constructor(
     private readonly bookingService: BookingService,
@@ -39,6 +56,7 @@ export class BookingController {
   @Get('passenger/download')
   @UseGuards(AuthGuard)
   @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
+  @ApiExcludeEndpoint()
   async getBookingPassengersToDownload(
     @Query() dates: TripSearchByDateRange,
     @Request() req
@@ -49,6 +67,7 @@ export class BookingController {
   @Get('vehicle/download')
   @UseGuards(AuthGuard)
   @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
+  @ApiExcludeEndpoint()
   async getBookingVehiclesToDownload(
     @Query() dates: TripSearchByDateRange,
     @Request() req
@@ -57,6 +76,7 @@ export class BookingController {
   }
 
   @Get('public')
+  @ApiExcludeEndpoint()
   async getPublicBookings(
     @Query('ids') commaSeparatedBookingIds: string
   ): Promise<IBooking[]> {
@@ -66,6 +86,7 @@ export class BookingController {
 
   @Get('mine')
   @UseGuards(AuthGuard)
+  @ApiExcludeEndpoint()
   async getMyBookings(
     @Request() req,
     @Query() pagination: PaginatedRequest
@@ -76,6 +97,7 @@ export class BookingController {
   @Get('for-approval')
   @UseGuards(AuthGuard)
   @Roles('ShippingLineAdmin', 'SuperAdmin')
+  @ApiExcludeEndpoint()
   async getBookingRequestsForApproval(
     @Request() req: any,
     @Query() pagination: PaginatedRequest
@@ -89,6 +111,7 @@ export class BookingController {
   @Get(':id')
   @UseGuards(AuthGuard)
   @AllowUnauthenticated()
+  @ApiExcludeEndpoint()
   async getBookingSummaryById(
     @Request() req,
     @Param('id') id: string
@@ -99,6 +122,7 @@ export class BookingController {
   @Get('requests/:tempBookingId')
   @UseGuards(AuthGuard)
   @AllowUnauthenticated()
+  @ApiExcludeEndpoint()
   async getBookingRequestById(
     @Request() req,
     @Param('tempBookingId') tempBookingId: number
@@ -112,6 +136,7 @@ export class BookingController {
   @Get('search/passengers')
   @UseGuards(AuthGuard)
   @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
+  @ApiExcludeEndpoint()
   async searchPassengerBookings(
     @Query('q') searchQuery,
     @Query() pagination: PaginatedRequest,
@@ -127,6 +152,7 @@ export class BookingController {
   @Get(':bookingId/trips/:tripId/passengers/:passengerId')
   @UseGuards(AuthGuard)
   @AllowUnauthenticated()
+  @ApiExcludeEndpoint()
   async getBookingTripPassenger(
     @Param('bookingId') bookingId: string,
     @Param('tripId') tripId: number,
@@ -144,6 +170,7 @@ export class BookingController {
   @Get(':bookingId/trips/:tripId/vehicles/:vehicleId')
   @UseGuards(AuthGuard)
   @AllowUnauthenticated()
+  @ApiExcludeEndpoint()
   async getBookingTripVehicle(
     @Param('bookingId') bookingId: string,
     @Param('tripId') tripId: number,
@@ -161,6 +188,15 @@ export class BookingController {
   @Post()
   @UseGuards(AuthGuard)
   @AllowUnauthenticated()
+  @ApiBody({ type: CreateBookingRequest })
+  @ApiCreatedResponse({
+    description: 'A quotation has been successfully created.',
+    type: CreateBookingResponse,
+  })
+  @ApiBadRequestResponse({
+    description: 'One or more fields in the request is invalid',
+    type: [CreateBookingError],
+  })
   async createTemporaryBooking(
     @Request() req,
     @Body() booking: IBooking
@@ -180,6 +216,15 @@ export class BookingController {
     'ShippingLineAdmin',
     'SuperAdmin'
   )
+  @ApiOkResponse({
+    description: 'The passenger has been successfully checked in.',
+  })
+  @ApiBadRequestResponse({
+    description: 'The passenger is already checked in.',
+  })
+  @ApiNotFoundResponse({
+    description: 'The booking, trip, or passenger does not exist.',
+  })
   async checkInPassenger(
     @Request() req,
     @Param('bookingId') bookingId: string,
@@ -202,6 +247,15 @@ export class BookingController {
     'ShippingLineAdmin',
     'SuperAdmin'
   )
+  @ApiOkResponse({
+    description: 'The vehicle has been successfully checked in.',
+  })
+  @ApiBadRequestResponse({
+    description: 'The vehicle is already checked in.',
+  })
+  @ApiNotFoundResponse({
+    description: 'The booking, trip, or vehicle does not exist.',
+  })
   async checkInVehicle(
     @Request() req,
     @Param('bookingId') bookingId: string,
@@ -219,6 +273,7 @@ export class BookingController {
   @Patch(':bookingId/cancel')
   @UseGuards(AuthGuard)
   @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
+  @ApiExcludeEndpoint()
   async cancelBooking(
     @Request() req,
     @Param('bookingId') bookingId: string,
@@ -236,6 +291,7 @@ export class BookingController {
   @Patch('requests/:tempBookingId/create')
   @UseGuards(AuthGuard)
   @AllowUnauthenticated()
+  @ApiExcludeEndpoint()
   async createBookingRequest(
     @Request() req,
     @Param('tempBookingId') tempBookingId: number,
@@ -251,6 +307,7 @@ export class BookingController {
   @Patch('requests/:tempBookingId/approve')
   @UseGuards(AuthGuard)
   @Roles('ShippingLineAdmin', 'SuperAdmin')
+  @ApiExcludeEndpoint()
   async approveBookingRequest(
     @Request() req,
     @Param('tempBookingId') tempBookingId: number
@@ -264,6 +321,7 @@ export class BookingController {
   @Patch('requests/:tempBookingId/reject')
   @UseGuards(AuthGuard)
   @Roles('ShippingLineAdmin', 'SuperAdmin')
+  @ApiExcludeEndpoint()
   async rejectBookingRequest(
     @Request() req,
     @Param('tempBookingId') tempBookingId: number
@@ -276,6 +334,7 @@ export class BookingController {
   @Patch(':bookingId/trips/:tripId/passengers/:passengerId/remove')
   @UseGuards(AuthGuard)
   @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
+  @ApiExcludeEndpoint()
   async removeTripPassenger(
     @Request() req,
     @Param('bookingId') bookingId: string,
@@ -297,6 +356,7 @@ export class BookingController {
   @Patch(':bookingId/trips/:tripId/vehicles/:vehicleId/remove')
   @UseGuards(AuthGuard)
   @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
+  @ApiExcludeEndpoint()
   async removeTripVehicle(
     @Request() req,
     @Param('bookingId') bookingId: string,
