@@ -13,8 +13,10 @@ import { AuthGuard } from '@/auth/auth.guard';
 import { PaginatedRequest } from '@ayahay/http';
 import { INotification } from '@ayahay/models';
 import { Roles } from '@/decorator/roles.decorator';
+import { ApiExcludeController } from '@nestjs/swagger';
 
 @Controller('notifications')
+@ApiExcludeController()
 export class NotificationController {
   constructor(private notificationService: NotificationService) {}
 

@@ -14,10 +14,12 @@ import { WebhookService } from './webhook.service';
 import { IWebhook } from '@ayahay/models';
 import { AuthGuard } from '@/auth/auth.guard';
 import { Roles } from '@/decorator/roles.decorator';
+import { ApiExcludeController } from '@nestjs/swagger';
 
 @Controller('webhooks')
 @UseGuards(AuthGuard)
 @Roles('ShippingLineAdmin', 'TravelAgencyAdmin', 'SuperAdmin')
+@ApiExcludeController()
 export class WebhookController {
   constructor(private webhookService: WebhookService) {}
 

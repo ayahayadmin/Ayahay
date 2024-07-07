@@ -13,9 +13,11 @@ import { AuthGuard } from '@/auth/auth.guard';
 import { Prisma } from '@prisma/client';
 import { Roles } from '@/decorator/roles.decorator';
 import { AllowUnverified } from '@/decorator/verified.decorator';
+import { ApiExcludeController } from '@nestjs/swagger';
 
 @Controller('accounts')
 @UseGuards(AuthGuard)
+@ApiExcludeController()
 export class AccountController {
   constructor(private accountService: AccountService) {}
 

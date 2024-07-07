@@ -13,8 +13,10 @@ import { IRateTable, IRateTableMarkup } from '@ayahay/models';
 import { AllowUnauthenticated } from '@/decorator/authenticated.decorator';
 import { AuthGuard } from '@/auth/auth.guard';
 import { Roles } from '@/decorator/roles.decorator';
+import { ApiExcludeController } from '@nestjs/swagger';
 
 @Controller('rate-tables')
+@ApiExcludeController()
 export class RateTableController {
   constructor(private rateTableService: RateTableService) {}
 

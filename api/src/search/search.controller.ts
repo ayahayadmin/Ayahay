@@ -8,9 +8,11 @@ import {
   PaginatedRequest,
   PaginatedResponse,
 } from '@ayahay/http';
+import { ApiExcludeController } from '@nestjs/swagger';
 
 @Controller('search')
 @UseGuards(AuthGuard)
+@ApiExcludeController()
 export class SearchController {
   constructor(private searchService: SearchService) {}
 

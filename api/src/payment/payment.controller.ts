@@ -19,17 +19,34 @@ import {
 import { AllowUnauthenticated } from '@/decorator/authenticated.decorator';
 import { AuthGuard } from '@/auth/auth.guard';
 import { PayMongoCheckoutPaidPostbackRequest } from './payment.types';
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiExcludeEndpoint,
+  ApiParam,
+  ApiTags,
+} from '@nestjs/swagger';
+import { ConfirmBookingResponse } from '@/specs/booking.specs';
 
 @Controller('pay')
+@ApiTags('Payments')
+@ApiBearerAuth()
 export class PaymentController {
   constructor(private paymentService: PaymentService) {}
 
   @Post('bookings/:tempBookingId')
   @UseGuards(AuthGuard)
   @AllowUnauthenticated()
+  @ApiCreatedResponse({ type: ConfirmBookingResponse })
+  @ApiParam({
+    schema: { type: 'number' },
+    name: 'tempBookingId',
+    description: 'The temporary ID of the booking created from POST /bookings.',
+  })
   async payBooking(
     @Request() req,
-    @Param('tempBookingId') tempBookingId: number,
+    @Param('tempBookingId')
+    tempBookingId: number,
     @Body() body: PaymentInitiationRequest = {}
   ): Promise<PaymentInitiationResponse> {
     return this.paymentService.startPaymentFlow(tempBookingId, body, req.user);
@@ -38,6 +55,7 @@ export class PaymentController {
   @Post('bookings/requests/:bookingId')
   @UseGuards(AuthGuard)
   @AllowUnauthenticated()
+  @ApiExcludeEndpoint()
   async payBookingRequest(
     @Param('bookingId') bookingId: string
   ): Promise<PaymentInitiationResponse> {
@@ -45,6 +63,7 @@ export class PaymentController {
   }
 
   @Post('postback/dpay')
+  @ApiExcludeEndpoint()
   async dragonpayPostback(
     @Body('txnid') transactionId: string,
     @Body('refno') referenceNo: string,
@@ -68,6 +87,7 @@ export class PaymentController {
   }
 
   @Post('postback/paymongo/checkout-paid')
+  @ApiExcludeEndpoint()
   async payMongoCheckoutPaidPostback(
     @Req() request: RawBodyRequest<FastifyRequest>,
     @Headers() headers: Record<string, string>,
