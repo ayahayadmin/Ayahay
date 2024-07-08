@@ -227,7 +227,7 @@ export class ReportingService {
           );
       } else {
         bookingTripPassenger.forEach((passenger) => {
-          const collect = passenger.booking.voucherCode === 'AZNAR_COLLECT';
+          const collect = passenger.booking.voucherCode === 'COLLECT_BOOKING';
           const isBookingCancelled =
             passenger.booking.cancellationType === 'PassengersFault';
           const passengerFare = passenger.bookingPaymentItems.find(
@@ -351,7 +351,7 @@ export class ReportingService {
           );
       } else {
         bookingTripVehicle.forEach((vehicle) => {
-          const collect = vehicle.booking.voucherCode === 'AZNAR_COLLECT';
+          const collect = vehicle.booking.voucherCode === 'COLLECT_BOOKING';
           const isBookingCancelled =
             vehicle.booking.cancellationType === 'PassengersFault';
           const vehicleFare = vehicle.bookingPaymentItems.find(
@@ -893,7 +893,7 @@ export class ReportingService {
             { cancellationType: null },
             { cancellationType: 'PassengersFault' },
           ],
-          voucherCode: 'AZNAR_COLLECT',
+          voucherCode: 'COLLECT_BOOKING',
         },
         trip: {
           shippingLineId: loggedInAccount.shippingLineId,

@@ -48,6 +48,7 @@ export class BookingMapper {
       contactMobile: booking.contactMobile,
       createdAtIso: booking.createdAt.toISOString(),
       isBookingRequest: booking.isBookingRequest,
+      remarks: booking.remarks,
 
       bookingTrips: booking.bookingTrips?.map((bookingTrip) => {
         return {
@@ -79,6 +80,7 @@ export class BookingMapper {
       contactMobile: booking.contactMobile,
       createdAtIso: booking.createdAt.toISOString(),
       isBookingRequest: booking.isBookingRequest,
+      remarks: booking.remarks,
 
       bookingTrips: booking.bookingTrips.map((bookingTrip) =>
         this.convertBookingTripToSummary(bookingTrip)
@@ -225,7 +227,11 @@ export class BookingMapper {
         priceWithoutMarkup: booking.priceWithoutMarkup ?? 0,
         bookingType: booking.bookingType,
         createdAt: new Date(booking.createdAtIso),
+        contactEmail: booking.contactEmail,
+        contactMobile: booking.contactMobile,
+        consigneeName: booking.consigneeName,
         isBookingRequest: booking.isBookingRequest,
+        remarks: booking.remarks,
 
         bookingTripsJson,
         bookingPaymentItemsJson,
@@ -258,6 +264,7 @@ export class BookingMapper {
       isBookingRequest: tempBooking.isBookingRequest,
       consigneeName: tempBooking.consigneeName ?? undefined,
       firstTripId: bookingTrips.length > 1 ? bookingTrips[0].tripId : null,
+      remarks: tempBooking.remarks,
 
       bookingTrips,
       bookingPaymentItems,
@@ -342,6 +349,7 @@ export class BookingMapper {
         isBookingRequest: booking.isBookingRequest,
         consigneeName: booking.consigneeName,
         firstTripId: booking.firstTripId,
+        remarks: booking.remarks,
 
         bookingTrips: {
           createMany: {

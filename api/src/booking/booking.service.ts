@@ -645,6 +645,14 @@ export class BookingService {
     booking.createdAtIso = new Date().toISOString();
     booking.isBookingRequest = false;
 
+    if (this.authService.hasPrivilegedAccess(loggedInAccount)) {
+      // don't save email/mobile if staff/admin
+      booking.contactEmail = booking.contactMobile = undefined;
+    } else if (loggedInAccount !== undefined) {
+      // override email with booking creator's email
+      booking.contactEmail = loggedInAccount.email;
+    }
+
     return await this.saveTempBooking(booking);
   }
 

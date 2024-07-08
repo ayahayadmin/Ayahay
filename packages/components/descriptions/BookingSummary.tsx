@@ -173,9 +173,14 @@ export default function BookingSummary({
                 {booking.referenceNo}
               </Descriptions.Item>
               {hasPrivilegedAccess && (
-                <Descriptions.Item label='Contact Number'>
-                  {booking.contactMobile}
-                </Descriptions.Item>
+                <>
+                  <Descriptions.Item label='Contact Number'>
+                    {booking.contactMobile}
+                  </Descriptions.Item>
+                  <Descriptions.Item label='Remarks'>
+                    {booking.remarks}
+                  </Descriptions.Item>
+                </>
               )}
             </Descriptions>
             {bookingActions}

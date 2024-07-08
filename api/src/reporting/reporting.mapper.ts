@@ -242,7 +242,7 @@ export class ReportingMapper {
             ? passenger.cabin.cabinType.name
             : null,
           discount: passenger.discountType ?? 'Adult',
-          collect: passenger.booking.voucherCode === 'AZNAR_COLLECT',
+          collect: passenger.booking.voucherCode === 'COLLECT_BOOKING',
           isBookingCancelled: passengerRecordToRetrieve
             ? passenger.booking.cancellationType === 'PassengersFault'
             : null,
@@ -318,7 +318,7 @@ export class ReportingMapper {
           freightRateReceipt: vehicle.booking.freightRateReceipt,
           typeOfVehicle: vehicle.vehicle.vehicleType.description,
           plateNo: vehicle.vehicle.plateNo,
-          collect: vehicle.booking.voucherCode === 'AZNAR_COLLECT',
+          collect: vehicle.booking.voucherCode === 'COLLECT_BOOKING',
           isBookingCancelled: vehicleRecordToRetrieve
             ? vehicle.booking.cancellationType === 'PassengersFault'
             : null,
@@ -375,7 +375,7 @@ export class ReportingMapper {
       booking.bookingTripVehicles[0].trip.departureDate.toISOString();
     const voyageNumber = booking.bookingTripVehicles[0].trip.voyage?.number;
 
-    const isCollectBooking = booking.voucherCode === 'AZNAR_COLLECT';
+    const isCollectBooking = booking.voucherCode === 'COLLECT_BOOKING';
     const vehicles = booking.bookingTripVehicles.map((vehicle) => {
       const fare = isCollectBooking
         ? booking.bookingPaymentItems.find(

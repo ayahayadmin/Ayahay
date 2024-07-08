@@ -255,6 +255,7 @@ model Booking {
   consigneeName String? @map("consignee_name")
   freightRateReceipt String? @map("freight_rate_receipt")
   firstTripId Int? @map("first_trip_id")
+  remarks String?
 
   bookingTrips BookingTrip[]
   bookingTripPassengers BookingTripPassenger[]
@@ -354,6 +355,7 @@ model TempBooking {
   isBookingRequest Boolean @map("is_booking_request")
   failureCancellationRemarks String? @map("failure_cancellation_remarks")
   consigneeName String? @map("consignee_name")
+  remarks String?
 
   bookingTripsJson Json @map("booking_trips_json")
   bookingPaymentItemsJson Json @map("booking_payment_items_json")

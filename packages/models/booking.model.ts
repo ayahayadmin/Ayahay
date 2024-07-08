@@ -69,6 +69,7 @@ export interface IBooking {
    * a single trip, this field will be null
    */
   firstTripId?: number;
+  remarks?: string;
 
   bookingTrips?: IBookingTrip[];
   bookingPaymentItems?: IBookingPaymentItem[];
