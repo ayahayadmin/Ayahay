@@ -7,62 +7,58 @@ import { useServerPagination } from '@ayahay/hooks';
 import {
   PaginatedRequest,
   PaginatedResponse,
-  PassengerBookingSearchResponse,
+  VehicleBookingSearchResponse,
 } from '@ayahay/http';
-import { searchPassengerBookings } from '@/services/booking.service';
-import { DISCOUNT_TYPE } from '@ayahay/constants';
+import { searchVehicleBookings } from '@/services/booking.service';
 
 const relativeTime = require('dayjs/plugin/relativeTime');
 dayjs.extend(relativeTime);
 
-interface BookingPassengerResultsProps {
+interface BookingVehicleResultsProps {
   query: string;
 }
 
-export default function BookingPassengerResults({
+export default function BookingVehicleResults({
   query,
-}: BookingPassengerResultsProps) {
+}: BookingVehicleResultsProps) {
   const fetchSearchResults = async (
     pagination: PaginatedRequest
-  ): Promise<PaginatedResponse<PassengerBookingSearchResponse>> => {
+  ): Promise<PaginatedResponse<VehicleBookingSearchResponse>> => {
     if (query.trim().length < 2) {
       return { data: [], total: 0 };
     }
-    return searchPassengerBookings(query.trim(), pagination);
+    return searchVehicleBookings(query.trim(), pagination);
   };
 
   const { dataInPage, antdPagination, antdOnChange, resetData } =
-    useServerPagination<PassengerBookingSearchResponse>(
-      fetchSearchResults,
-      true
-    );
+    useServerPagination<VehicleBookingSearchResponse>(fetchSearchResults, true);
 
   useEffect(() => resetData(), [query]);
 
-  const columns: ColumnsType<PassengerBookingSearchResponse> = [
+  const columns: ColumnsType<VehicleBookingSearchResponse> = [
     {
       key: 'trip',
       title: 'Trip',
-      render: (_, passengerBooking) => (
+      render: (_, vehicleBooking) => (
         <div>
-          {passengerBooking.tripSrcPortName} -&gt;&nbsp;
-          {passengerBooking.tripDestPortName}
+          {vehicleBooking.tripSrcPortName} -&gt;&nbsp;
+          {vehicleBooking.tripDestPortName}
           <br />
-          {dayjs(passengerBooking.tripDepartureDateIso).format(
+          {dayjs(vehicleBooking.tripDepartureDateIso).format(
             'MM/DD/YYYY hh:mm'
           )}
         </div>
       ),
     },
     {
-      key: 'passengerName',
-      title: 'Passenger',
-      render: (_, passengerBooking) => (
-        <>
-          {passengerBooking.firstName} {passengerBooking.lastName}
+      key: 'vehicleName',
+      title: 'Vehicle',
+      render: (_, vehicleBooking) => (
+        <div>
+          {vehicleBooking.plateNo}
           <br />
-          {DISCOUNT_TYPE[passengerBooking.discountType] ?? 'Adult'}
-        </>
+          {vehicleBooking.modelName} {vehicleBooking.modelYear}
+        </div>
       ),
     },
     {
@@ -72,12 +68,12 @@ export default function BookingPassengerResults({
     },
     {
       key: 'status',
-      title: 'Booking Status',
-      render: (_, passengerBooking) => {
-        if (passengerBooking.bookingStatus === 'Cancelled') {
+      title: 'Status',
+      render: (_, vehicleBooking) => {
+        if (vehicleBooking.bookingStatus === 'Cancelled') {
           return <Badge status='error' text='Cancelled' />;
         }
-        if (passengerBooking.checkInDateIso === undefined) {
+        if (vehicleBooking.checkInDateIso === undefined) {
           return (
             <>
               <Badge status='success' text='Confirmed' /> <br />
@@ -86,7 +82,7 @@ export default function BookingPassengerResults({
           );
         }
         const checkInDateFromNow = dayjs(
-          passengerBooking.checkInDateIso
+          vehicleBooking.checkInDateIso
         ).fromNow();
 
         return (
@@ -99,11 +95,11 @@ export default function BookingPassengerResults({
     },
     {
       title: 'Actions',
-      render: (_, passengerBooking) => {
+      render: (_, vehicleBooking) => {
         return (
           <Button
             type='primary'
-            href={`${process.env.NEXT_PUBLIC_WEB_URL}/bookings/${passengerBooking.bookingId}`}
+            href={`${process.env.NEXT_PUBLIC_WEB_URL}/bookings/${vehicleBooking.bookingId}`}
             target='_blank'
           >
             View Booking

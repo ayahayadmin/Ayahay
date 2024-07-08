@@ -4,6 +4,7 @@ import {
   PaginatedResponse,
   PassengerBookingSearchResponse,
 } from '@ayahay/http';
+import { VehicleBookingSearchResponse } from '@ayahay/http/booking';
 import { IBooking } from '@ayahay/models';
 import axios from '@ayahay/services/axios';
 import dayjs from 'dayjs';
@@ -70,6 +71,22 @@ export async function searchPassengerBookings(
   const { data: bookings } = await axios.get<
     PaginatedResponse<PassengerBookingSearchResponse>
   >(`${BOOKING_API}/search/passengers?${query}`);
+
+  return bookings;
+}
+
+export async function searchVehicleBookings(
+  searchQuery: string,
+  pagination: PaginatedRequest
+): Promise<PaginatedResponse<VehicleBookingSearchResponse>> {
+  const query = new URLSearchParams({
+    q: searchQuery,
+    ...pagination,
+  } as any).toString();
+
+  const { data: bookings } = await axios.get<
+    PaginatedResponse<VehicleBookingSearchResponse>
+  >(`${BOOKING_API}/search/vehicles?${query}`);
 
   return bookings;
 }

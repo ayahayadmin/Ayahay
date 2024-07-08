@@ -3,15 +3,16 @@ import styles from './page.module.scss';
 import React, { useEffect, useState } from 'react';
 import { Tabs, TabsProps, Typography, Input, Empty } from 'antd';
 import { useSearchParams } from 'next/navigation';
-import BookingPassengerResults from '@/app/search/bookingPassengerResults';
+import BookingPassengerResults from './bookingPassengerResults';
+import BookingVehicleResults from './bookingVehicleResults';
 import { useAuthGuard } from '@/hooks/auth';
 
 const { Title } = Typography;
 const { Search } = Input;
 
 enum SearchModel {
-  BookingPassenger = 'Bookings',
-  Trip = 'Trips',
+  Passenger = 'Passenger',
+  Vehicle = 'Vehicle',
 }
 
 const minQueryLength = 2;
@@ -22,7 +23,7 @@ export default function SearchPage() {
   const [query, setQuery] = useState('');
   const [resultsQuery, setResultsQuery] = useState('');
   const [searchModel, setSearchModel] =
-    useState<keyof typeof SearchModel>('BookingPassenger');
+    useState<keyof typeof SearchModel>('Passenger');
 
   const onPageLoad = () => {
     const params = Object.fromEntries(searchParams.entries());
@@ -59,9 +60,14 @@ export default function SearchPage() {
 
   const tabs: TabsProps['items'] = [
     {
-      key: 'BookingPassenger',
-      label: 'Bookings',
+      key: 'Passenger',
+      label: 'Passengers',
       children: <BookingPassengerResults query={resultsQuery} />,
+    },
+    {
+      key: 'Vehicle',
+      label: 'Vehicles',
+      children: <BookingVehicleResults query={resultsQuery} />,
     },
   ];
 
@@ -85,11 +91,7 @@ export default function SearchPage() {
         }}
       >
         <Title level={1}>Search Results for &quot;{resultsQuery}&quot;</Title>
-        <Tabs
-          defaultActiveKey='BookingPassenger'
-          items={tabs}
-          onChange={onChangeTab}
-        />
+        <Tabs activeKey={searchModel} items={tabs} onChange={onChangeTab} />
       </div>
     </div>
   );

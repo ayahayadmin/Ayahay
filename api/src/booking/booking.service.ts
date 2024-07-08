@@ -18,6 +18,7 @@ import {
   PaginatedResponse,
   PassengerBookingSearchResponse,
   TripSearchByDateRange,
+  VehicleBookingSearchResponse,
 } from '@ayahay/http';
 import { TripService } from '@/trip/trip.service';
 import { BookingMapper } from './booking.mapper';
@@ -339,9 +340,11 @@ export class BookingService {
         where,
         select: {
           checkInDate: true,
+          discountType: true,
           booking: {
             select: {
               id: true,
+              bookingStatus: true,
               referenceNo: true,
             },
           },
@@ -387,6 +390,106 @@ export class BookingService {
       total: passengersMatchingQueryCount,
       data: passengersMatchingQuery.map((passenger) =>
         this.bookingMapper.convertBookingToPassengerSearchResponse(passenger)
+      ),
+    };
+  }
+
+  async searchVehicleBookings(
+    searchQuery: string,
+    pagination: PaginatedRequest,
+    loggedInAccount: IAccount
+  ): Promise<PaginatedResponse<VehicleBookingSearchResponse>> {
+    const itemsPerPage = 10;
+    const skip = (pagination.page - 1) * itemsPerPage;
+
+    const where: Prisma.BookingTripVehicleWhereInput = {
+      OR: [
+        {
+          vehicle: {
+            plateNo: {
+              contains: searchQuery,
+              mode: 'insensitive',
+            },
+          },
+        },
+        {
+          vehicle: {
+            modelName: {
+              contains: searchQuery,
+              mode: 'insensitive',
+            },
+          },
+        },
+        {
+          booking: {
+            referenceNo: {
+              contains: searchQuery,
+              mode: 'insensitive',
+            },
+          },
+        },
+      ],
+      trip: {
+        shippingLineId: loggedInAccount.shippingLineId,
+      },
+    };
+
+    const vehiclesMatchingQuery = await this.prisma.bookingTripVehicle.findMany(
+      {
+        where,
+        select: {
+          checkInDate: true,
+          booking: {
+            select: {
+              id: true,
+              bookingStatus: true,
+              referenceNo: true,
+            },
+          },
+          trip: {
+            select: {
+              id: true,
+              departureDate: true,
+              srcPort: {
+                select: {
+                  name: true,
+                },
+              },
+              destPort: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          },
+          vehicle: {
+            select: {
+              id: true,
+              plateNo: true,
+              modelName: true,
+              modelYear: true,
+            },
+          },
+        },
+        orderBy: {
+          booking: {
+            createdAt: 'desc',
+          },
+        },
+        take: itemsPerPage,
+        skip,
+      }
+    );
+
+    const vehiclesMatchingQueryCount =
+      await this.prisma.bookingTripVehicle.count({
+        where,
+      });
+
+    return {
+      total: vehiclesMatchingQueryCount,
+      data: vehiclesMatchingQuery.map((vehicle) =>
+        this.bookingMapper.convertBookingToVehicleSearchResponse(vehicle)
       ),
     };
   }

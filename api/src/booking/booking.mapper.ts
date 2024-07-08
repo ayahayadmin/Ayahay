@@ -12,7 +12,11 @@ import { PassengerMapper } from '@/passenger/passenger.mapper';
 import { CabinMapper } from '@/cabin/cabin.mapper';
 import { VehicleMapper } from '@/vehicle/vehicle.mapper';
 import { PaymentMapper } from '@/payment/payment.mapper';
-import { VehicleBookings, PassengerBookingSearchResponse } from '@ayahay/http';
+import {
+  VehicleBookings,
+  PassengerBookingSearchResponse,
+  VehicleBookingSearchResponse,
+} from '@ayahay/http';
 
 @Injectable()
 export class BookingMapper {
@@ -370,6 +374,7 @@ export class BookingMapper {
       bookingId: bookingTripPassenger.booking.id,
       tripId: bookingTripPassenger.trip.id,
       passengerId: bookingTripPassenger.passenger.id,
+      bookingStatus: bookingTripPassenger.booking.bookingStatus,
       tripDepartureDateIso:
         bookingTripPassenger.trip.departureDate.toISOString(),
       tripSrcPortName: bookingTripPassenger.trip.srcPort.name,
@@ -378,7 +383,28 @@ export class BookingMapper {
       lastName: bookingTripPassenger.passenger.lastName,
       checkInDateIso:
         bookingTripPassenger.checkInDate?.toISOString() ?? undefined,
+      discountType: bookingTripPassenger.discountType,
       referenceNo: bookingTripPassenger.booking.referenceNo,
+    };
+  }
+
+  convertBookingToVehicleSearchResponse(
+    bookingTripVehicle: any
+  ): VehicleBookingSearchResponse {
+    return {
+      bookingId: bookingTripVehicle.booking.id,
+      tripId: bookingTripVehicle.trip.id,
+      vehicleId: bookingTripVehicle.vehicle.id,
+      bookingStatus: bookingTripVehicle.booking.bookingStatus,
+      tripDepartureDateIso: bookingTripVehicle.trip.departureDate.toISOString(),
+      tripSrcPortName: bookingTripVehicle.trip.srcPort.name,
+      tripDestPortName: bookingTripVehicle.trip.destPort.name,
+      modelName: bookingTripVehicle.vehicle.modelName,
+      plateNo: bookingTripVehicle.vehicle.plateNo,
+      modelYear: bookingTripVehicle.vehicle.modelYear,
+      checkInDateIso:
+        bookingTripVehicle.checkInDate?.toISOString() ?? undefined,
+      referenceNo: bookingTripVehicle.booking.referenceNo,
     };
   }
 }
