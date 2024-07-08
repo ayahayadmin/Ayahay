@@ -2,8 +2,6 @@ import { IBooking } from '@ayahay/models/booking.model';
 import React from 'react';
 import BookingSummary from '@ayahay/components/descriptions/BookingSummary';
 import { Button, Form, Input, Radio, Typography } from 'antd';
-import { useAuth } from '@/contexts/AuthContext';
-import { InfoCircleOutlined } from '@ant-design/icons';
 
 const { Title } = Typography;
 
@@ -23,16 +21,6 @@ export default function BookingConfirmation({
   onStartPayment,
 }: BookingConfirmationProps) {
   const form = Form.useFormInstance();
-
-  const passengers = Form.useWatch(
-    ['bookingTrips', 0, 'bookingTripPassengers'],
-    form
-  );
-  const vehicles = Form.useWatch(
-    ['bookingTrips', 0, 'bookingTripVehicles'],
-    form
-  );
-  const { loggedInAccount } = useAuth();
 
   const isBookingRequestFlow = false;
 
@@ -87,72 +75,6 @@ export default function BookingConfirmation({
           </p>
         )}
       </div>
-      {!loggedInAccount && (
-        <div>
-          <Title level={3} style={{ marginBottom: '24px' }}>
-            Contact Information
-          </Title>
-          <Form.Item
-            name='contactEmail'
-            label='Email Address'
-            tooltip={{
-              title:
-                'We will send booking updates to this email (e.g. payment confirmation, cancellation, etc.)',
-              icon: <InfoCircleOutlined />,
-            }}
-            colon={false}
-            rules={[
-              { required: true, type: 'email', message: 'Missing email' },
-            ]}
-          >
-            <Input
-              placeholder='john@example.com'
-              type='email'
-              style={{ width: 256 }}
-            />
-          </Form.Item>
-          <Form.Item
-            name='contactMobile'
-            label='Mobile Number'
-            tooltip={{
-              title:
-                'We will send booking updates to this number (e.g. payment confirmation, cancellation, etc.)',
-              icon: <InfoCircleOutlined />,
-            }}
-            colon={false}
-            rules={[{ required: true, message: 'Missing mobile number' }]}
-          >
-            <Input
-              placeholder='09171234567'
-              type='tel'
-              style={{ width: 256 }}
-            />
-          </Form.Item>
-        </div>
-      )}
-      {vehicles?.length > 0 && (
-        <div>
-          <Form.Item
-            name='consigneeName'
-            label='Consignee'
-            colon={false}
-            rules={[{ required: true, message: 'Missing consignee' }]}
-          >
-            {passengers.length > 0 && (
-              <Radio.Group>
-                {passengers.map(({ passenger }: any) => (
-                  <Radio
-                    value={`${passenger?.firstName} ${passenger?.lastName}`}
-                  >{`${passenger?.firstName} ${passenger?.lastName}`}</Radio>
-                ))}
-              </Radio.Group>
-            )}
-            {passengers.length === 0 && (
-              <Input type='text' style={{ width: 256 }} />
-            )}
-          </Form.Item>
-        </div>
-      )}
       {!hasPrivilegedAccess && !isBookingRequestFlow && (
         <div>
           <Form.Item name='paymentGateway' label='Payment Method' colon={false}>

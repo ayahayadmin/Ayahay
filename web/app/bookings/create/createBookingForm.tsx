@@ -10,7 +10,7 @@ import {
 } from 'antd';
 import styles from './createBookingForm.module.scss';
 import { IBooking, IBookingTrip } from '@ayahay/models';
-import PassengerInformationForm from '@/components/booking/PassengerInformationForm';
+import BookingInformationForm from '@/components/booking/BookingInformationForm';
 import React, { useState } from 'react';
 import { DISCOUNT_TYPE } from '@ayahay/constants/enum';
 import {
@@ -35,10 +35,7 @@ interface CreateBookingFormProps {
   onComplete: (booking: IBooking) => void;
 }
 
-const steps = [
-  { title: 'Passenger Information' },
-  { title: 'Confirm Booking' },
-];
+const steps = [{ title: 'Booking Information' }, { title: 'Confirm Booking' }];
 
 export default function CreateBookingForm({
   onComplete,
@@ -383,12 +380,12 @@ export default function CreateBookingForm({
         <div
           style={{
             display:
-              steps[currentStep].title === 'Passenger Information'
+              steps[currentStep].title === 'Booking Information'
                 ? 'block'
                 : 'none',
           }}
         >
-          <PassengerInformationForm
+          <BookingInformationForm
             trip={trip}
             onNextStep={createTempBooking}
             onPreviousStep={previousStep}
@@ -402,7 +399,7 @@ export default function CreateBookingForm({
         >
           <BookingConfirmation
             tentativeBooking={bookingPreview}
-            hasPrivilegedAccess={hasPrivilegedAccess}
+            hasPrivilegedAccess={true}
             onPreviousStep={previousStep}
             onRequestBooking={requestBooking}
             onStartPayment={payBooking}

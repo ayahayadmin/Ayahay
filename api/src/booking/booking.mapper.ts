@@ -12,7 +12,11 @@ import { PassengerMapper } from '@/passenger/passenger.mapper';
 import { CabinMapper } from '@/cabin/cabin.mapper';
 import { VehicleMapper } from '@/vehicle/vehicle.mapper';
 import { PaymentMapper } from '@/payment/payment.mapper';
-import { VehicleBookings, PassengerBookingSearchResponse } from '@ayahay/http';
+import {
+  VehicleBookings,
+  PassengerBookingSearchResponse,
+  VehicleBookingSearchResponse,
+} from '@ayahay/http';
 
 @Injectable()
 export class BookingMapper {
@@ -44,6 +48,7 @@ export class BookingMapper {
       contactMobile: booking.contactMobile,
       createdAtIso: booking.createdAt.toISOString(),
       isBookingRequest: booking.isBookingRequest,
+      remarks: booking.remarks,
 
       bookingTrips: booking.bookingTrips?.map((bookingTrip) => {
         return {
@@ -75,6 +80,7 @@ export class BookingMapper {
       contactMobile: booking.contactMobile,
       createdAtIso: booking.createdAt.toISOString(),
       isBookingRequest: booking.isBookingRequest,
+      remarks: booking.remarks,
 
       bookingTrips: booking.bookingTrips.map((bookingTrip) =>
         this.convertBookingTripToSummary(bookingTrip)
@@ -221,7 +227,11 @@ export class BookingMapper {
         priceWithoutMarkup: booking.priceWithoutMarkup ?? 0,
         bookingType: booking.bookingType,
         createdAt: new Date(booking.createdAtIso),
+        contactEmail: booking.contactEmail,
+        contactMobile: booking.contactMobile,
+        consigneeName: booking.consigneeName,
         isBookingRequest: booking.isBookingRequest,
+        remarks: booking.remarks,
 
         bookingTripsJson,
         bookingPaymentItemsJson,
@@ -254,6 +264,7 @@ export class BookingMapper {
       isBookingRequest: tempBooking.isBookingRequest,
       consigneeName: tempBooking.consigneeName ?? undefined,
       firstTripId: bookingTrips.length > 1 ? bookingTrips[0].tripId : null,
+      remarks: tempBooking.remarks,
 
       bookingTrips,
       bookingPaymentItems,
@@ -338,6 +349,7 @@ export class BookingMapper {
         isBookingRequest: booking.isBookingRequest,
         consigneeName: booking.consigneeName,
         firstTripId: booking.firstTripId,
+        remarks: booking.remarks,
 
         bookingTrips: {
           createMany: {
@@ -370,6 +382,7 @@ export class BookingMapper {
       bookingId: bookingTripPassenger.booking.id,
       tripId: bookingTripPassenger.trip.id,
       passengerId: bookingTripPassenger.passenger.id,
+      bookingStatus: bookingTripPassenger.booking.bookingStatus,
       tripDepartureDateIso:
         bookingTripPassenger.trip.departureDate.toISOString(),
       tripSrcPortName: bookingTripPassenger.trip.srcPort.name,
@@ -378,7 +391,28 @@ export class BookingMapper {
       lastName: bookingTripPassenger.passenger.lastName,
       checkInDateIso:
         bookingTripPassenger.checkInDate?.toISOString() ?? undefined,
+      discountType: bookingTripPassenger.discountType,
       referenceNo: bookingTripPassenger.booking.referenceNo,
+    };
+  }
+
+  convertBookingToVehicleSearchResponse(
+    bookingTripVehicle: any
+  ): VehicleBookingSearchResponse {
+    return {
+      bookingId: bookingTripVehicle.booking.id,
+      tripId: bookingTripVehicle.trip.id,
+      vehicleId: bookingTripVehicle.vehicle.id,
+      bookingStatus: bookingTripVehicle.booking.bookingStatus,
+      tripDepartureDateIso: bookingTripVehicle.trip.departureDate.toISOString(),
+      tripSrcPortName: bookingTripVehicle.trip.srcPort.name,
+      tripDestPortName: bookingTripVehicle.trip.destPort.name,
+      modelName: bookingTripVehicle.vehicle.modelName,
+      plateNo: bookingTripVehicle.vehicle.plateNo,
+      modelYear: bookingTripVehicle.vehicle.modelYear,
+      checkInDateIso:
+        bookingTripVehicle.checkInDate?.toISOString() ?? undefined,
+      referenceNo: bookingTripVehicle.booking.referenceNo,
     };
   }
 }

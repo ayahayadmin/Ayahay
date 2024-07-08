@@ -24,20 +24,22 @@ import { useAuth } from '@/contexts/AuthContext';
 import { DATE_FORMAT_LIST, DATE_PLACEHOLDER } from '@ayahay/constants';
 import dayjs from 'dayjs';
 import { RangePickerProps } from 'antd/es/date-picker';
+import { InfoCircleOutlined } from '@ant-design/icons';
 
 const { Text, Title } = Typography;
+const { TextArea } = Input;
 
-interface PassengerInformationFormProps {
+interface BookingInformationFormProps {
   trip: ITrip;
   onNextStep?: () => void;
   onPreviousStep?: () => void;
 }
 
-export default function PassengerInformationForm({
+export default function BookingInformationForm({
   trip,
   onNextStep,
   onPreviousStep,
-}: PassengerInformationFormProps) {
+}: BookingInformationFormProps) {
   const { loggedInAccount, hasPrivilegedAccess } = useAuth();
   const form = Form.useFormInstance();
   const passengers = Form.useWatch(
@@ -229,7 +231,7 @@ export default function PassengerInformationForm({
 
   return (
     <>
-      <Title level={2}>Passenger Information</Title>
+      <Title level={2}>Booking Information</Title>
       {loggedInAccount === undefined && (
         <Button
           type='link'
@@ -594,17 +596,83 @@ export default function PassengerInformationForm({
         )}
       </Form.List>
       <div style={{ marginTop: '24px' }}>
-        {hasPrivilegedAccess && loggedInAccount?.shippingLineId === 1 && (
+        {!loggedInAccount && (
+          <div>
+            <Divider>Contact Information</Divider>
+            <Form.Item
+              name='contactEmail'
+              label='Email Address'
+              colon={false}
+              rules={[
+                { required: true, type: 'email', message: 'Missing email' },
+              ]}
+            >
+              <Input
+                placeholder='john@example.com'
+                type='email'
+                style={{ width: 256 }}
+              />
+            </Form.Item>
+            <Form.Item
+              name='contactMobile'
+              label='Mobile Number'
+              colon={false}
+              rules={[{ required: true, message: 'Missing mobile number' }]}
+            >
+              <Input
+                placeholder='09171234567'
+                type='tel'
+                style={{ width: 256 }}
+              />
+            </Form.Item>
+          </div>
+        )}
+        <Divider>Other Information</Divider>
+
+        {vehicles?.length > 0 && (
+          <div>
+            <Form.Item
+              name='consigneeName'
+              label='Consignee'
+              colon={false}
+              rules={[{ required: true, message: 'Missing consignee' }]}
+            >
+              {passengers.length > 0 && (
+                <Radio.Group>
+                  {passengers.map(({ passenger }: any) => (
+                    <Radio
+                      value={`${passenger?.firstName} ${passenger?.lastName}`}
+                    >{`${passenger?.firstName} ${passenger?.lastName}`}</Radio>
+                  ))}
+                </Radio.Group>
+              )}
+              {passengers.length === 0 && (
+                <Input type='text' style={{ width: 256 }} />
+              )}
+            </Form.Item>
+          </div>
+        )}
+        {hasPrivilegedAccess && (
           <Form.Item name='voucherCode' label='Special Voucher' colon={false}>
             <Radio.Group>
               <Radio value=''>None</Radio>
-              <Radio value='AZNAR_COLLECT'>Collect Voucher</Radio>
+              <Radio value='COLLECT_BOOKING'>Collect Voucher</Radio>
             </Radio.Group>
           </Form.Item>
         )}
+
         <Form.Item label='Voucher Code' name='voucherCode' colon={false}>
           <Input />
         </Form.Item>
+
+        {hasPrivilegedAccess && (
+          <div>
+            <Form.Item name='remarks' label='Remarks' colon={false}>
+              <TextArea rows={3} />
+            </Form.Item>
+          </div>
+        )}
+
         <Button type='primary' onClick={() => validateFieldsInCurrentStep()}>
           Next
         </Button>

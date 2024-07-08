@@ -20,6 +20,7 @@ import {
   PaginatedResponse,
   TripSearchByDateRange,
   PassengerBookingSearchResponse,
+  VehicleBookingSearchResponse,
 } from '@ayahay/http';
 import { AuthGuard } from '@/auth/auth.guard';
 import { Roles } from '@/decorator/roles.decorator';
@@ -143,6 +144,21 @@ export class BookingController {
     @Request() req
   ): Promise<PaginatedResponse<PassengerBookingSearchResponse>> {
     return this.bookingService.searchPassengerBookings(
+      searchQuery,
+      pagination,
+      req.user
+    );
+  }
+
+  @Get('search/vehicles')
+  @UseGuards(AuthGuard)
+  @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
+  async searchVehicleBookings(
+    @Query('q') searchQuery,
+    @Query() pagination: PaginatedRequest,
+    @Request() req
+  ): Promise<PaginatedResponse<VehicleBookingSearchResponse>> {
+    return this.bookingService.searchVehicleBookings(
       searchQuery,
       pagination,
       req.user
