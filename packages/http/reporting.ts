@@ -1,6 +1,6 @@
-import { IPort, IShip, IShippingLine } from '@ayahay/models';
+import { IDisbursement, IPort, IShip, IShippingLine } from '@ayahay/models';
 
-export interface TripReport {
+export interface TripBasicInfo {
   id: number;
   shippingLine: IShippingLine;
   srcPort: IPort;
@@ -8,7 +8,9 @@ export interface TripReport {
   shipName: string;
   departureDate: string;
   voyageNumber?: number;
+}
 
+export interface TripReport extends TripBasicInfo {
   passengers: {
     passengerName: string;
     teller: string;
@@ -31,11 +33,7 @@ export interface TripReport {
     roundTripFare: number;
   }[];
 
-  passengerDiscountsBreakdown?: {
-    typeOfDiscount: string;
-    totalBooked: number;
-    totalSales: number;
-  }[];
+  passengerDiscountsBreakdown?: PaxBreakdown[];
 
   vehicles: {
     teller: string;
@@ -60,15 +58,47 @@ export interface TripReport {
     roundTripFare: number;
   }[];
 
-  vehicleTypesBreakdown?: {
-    typeOfVehicle: string;
-    totalBooked: number;
-    totalSales: number;
-  }[];
+  vehicleTypesBreakdown?: VehicleBreakdown[];
 }
 
 export interface PerVesselReport extends TripReport {
   totalDisbursements: number;
+}
+
+export interface PaxBreakdown {
+  typeOfDiscount: string;
+  cabinName: string;
+  totalBooked: number;
+  totalSales: number;
+}
+
+export interface VehicleBreakdown {
+  typeOfVehicle: string;
+  totalBooked: number;
+  totalSales: number;
+}
+
+export interface SalesPerTellerReport {
+  bookingTripsBreakdown: BookingTripsBreakdown[];
+
+  disbursements: {
+    [tripId: number]: DisbursementsPerTeller[];
+  };
+}
+
+export interface BookingTripsBreakdown extends TripBasicInfo {
+  passengerBreakdown: PaxBreakdown[];
+  passengerRefundBreakdown: PaxBreakdown[];
+
+  vehicleBreakdown: VehicleBreakdown[];
+  vehicleRefundBreakdown: VehicleBreakdown[];
+}
+
+export interface DisbursementsPerTeller extends IDisbursement {
+  tripId: number;
+  srcPortCode: string;
+  destPortCode: string;
+  departureDateIso: string;
 }
 
 export interface TripManifest {
@@ -113,7 +143,7 @@ export interface PortsByShip {
   destPort?: IPort;
   shipId: number;
   ship?: IShip;
-  shippingLine: IShippingLine;
+  shippingLine?: IShippingLine;
   startDate?: string;
   endDate?: string;
 }

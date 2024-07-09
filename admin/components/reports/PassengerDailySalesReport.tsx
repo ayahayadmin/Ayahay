@@ -351,6 +351,7 @@ const PassengerDailySalesReport = forwardRef(function (
                 >
                   Discount Type
                 </th>
+                <th className={styles['header-border']}>Accommodation</th>
                 <th className={styles['header-border']}>Total</th>
                 <th className={styles['header-border']}>Amount</th>
               </tr>
@@ -364,6 +365,9 @@ const PassengerDailySalesReport = forwardRef(function (
                       style={{ borderLeft: '0.001px solid black' }}
                     >
                       {discountType.typeOfDiscount}
+                    </td>
+                    <td className={styles['cell-border']}>
+                      {discountType.cabinName}
                     </td>
                     <td className={styles['cell-border']}>
                       {discountType.totalBooked}

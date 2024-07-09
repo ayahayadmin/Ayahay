@@ -3,7 +3,7 @@ import { IDisbursement } from '@ayahay/models';
 import axios from '@ayahay/services/axios';
 import dayjs from 'dayjs';
 
-export async function getDisbursements(
+export async function getDisbursementsByTrip(
   tripId: number
 ): Promise<IDisbursement[] | undefined> {
   const { data } = await axios.get(`${DISBURSEMENT_API}`, {

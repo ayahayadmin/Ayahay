@@ -5,5 +5,6 @@ import { DisbursementController } from './disbursement.controller';
 @Module({
   controllers: [DisbursementController],
   providers: [DisbursementService],
+  exports: [DisbursementService],
 })
 export class DisbursementModule {}

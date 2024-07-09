@@ -11,6 +11,7 @@ import {
   VoidBookings,
   PaginatedResponse,
   CollectTripBooking,
+  SalesPerTellerReport,
 } from '@ayahay/http';
 import { ReportingMapper } from './reporting.mapper';
 import { Prisma } from '@prisma/client';
@@ -19,6 +20,7 @@ import { IAccount } from '@ayahay/models';
 import { ShipService } from '@/ship/ship.service';
 import { AuthService } from '@/auth/auth.service';
 import { groupBy, isEmpty, sortBy } from 'lodash';
+import { DisbursementService } from '@/disbursement/disbursement.service';
 
 const BOOKING_TRIP_PAX_VEHICLE_WHERE = {
   OR: [{ removedReasonType: null }, { removedReasonType: 'PassengersFault' }],
@@ -40,6 +42,7 @@ export class ReportingService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly authService: AuthService,
+    private readonly disbursementService: DisbursementService,
     private readonly shipService: ShipService,
     private readonly reportingMapper: ReportingMapper,
     private readonly tripMapper: TripMapper
@@ -227,6 +230,7 @@ export class ReportingService {
           );
       } else {
         bookingTripPassenger.forEach((passenger) => {
+          const cabinName = passenger.cabin.cabinType.name;
           const collect = passenger.booking.voucherCode === 'COLLECT_BOOKING';
           const isBookingCancelled =
             passenger.booking.cancellationType === 'PassengersFault';
@@ -275,6 +279,7 @@ export class ReportingService {
           const passengerDiscountsBreakdownArr =
             this.reportingMapper.convertTripPassengersToPassengerBreakdown(
               passenger.discountType ?? 'Adult',
+              cabinName,
               collect,
               isBookingCancelled,
               passengerFare,
@@ -310,6 +315,7 @@ export class ReportingService {
           const passengerDiscountsBreakdownArr =
             this.reportingMapper.convertTripPassengersToPassengerBreakdown(
               roundTripPassenger.discount,
+              roundTripPassenger.accommodation,
               roundTripPassenger.collect,
               roundTripPassenger.isBookingCancelled,
               roundTripPassenger.passengerFare,
@@ -668,6 +674,309 @@ export class ReportingService {
     }
 
     return tripsByShip;
+  }
+
+  async getSalesPerTeller(
+    { startDate, endDate }: TripSearchByDateRange,
+    loggedInAccount: IAccount
+  ): Promise<SalesPerTellerReport> {
+    const bookingTrips = await this.prisma.bookingTrip.findMany({
+      where: {
+        booking: {
+          createdAt: {
+            gte: new Date(startDate).toISOString(),
+            lte: new Date(endDate).toISOString(),
+          },
+          createdByAccountId: loggedInAccount.id,
+          shippingLineId: loggedInAccount.shippingLineId,
+        },
+      },
+      select: {
+        bookingId: true,
+        trip: {
+          select: {
+            id: true,
+            srcPort: {
+              select: {
+                name: true,
+                code: true,
+              },
+            },
+            destPort: {
+              select: {
+                name: true,
+                code: true,
+              },
+            },
+            ship: {
+              select: {
+                name: true,
+              },
+            },
+            shippingLineId: true,
+            shippingLine: {
+              select: {
+                name: true,
+              },
+            },
+            departureDate: true,
+            voyage: {
+              select: {
+                number: true,
+              },
+            },
+            disbursements: {
+              select: {
+                amount: true,
+              },
+            },
+          },
+        },
+        booking: {
+          select: {
+            id: true,
+            cancellationType: true,
+            voucherCode: true,
+            bookingTripPassengers: {
+              where: BOOKING_TRIP_PAX_VEHICLE_WHERE,
+              include: {
+                trip: {
+                  select: {
+                    id: true,
+                    srcPort: {
+                      select: {
+                        name: true,
+                        code: true,
+                      },
+                    },
+                    destPort: {
+                      select: {
+                        name: true,
+                        code: true,
+                      },
+                    },
+                    ship: {
+                      select: {
+                        name: true,
+                      },
+                    },
+                    shippingLineId: true,
+                    shippingLine: {
+                      select: {
+                        name: true,
+                      },
+                    },
+                    departureDate: true,
+                    voyage: {
+                      select: {
+                        number: true,
+                      },
+                    },
+                  },
+                },
+                bookingPaymentItems: true,
+                cabin: {
+                  select: {
+                    cabinType: {
+                      select: {
+                        name: true,
+                      },
+                    },
+                  },
+                },
+                passenger: true,
+              },
+            },
+            bookingTripVehicles: {
+              where: BOOKING_TRIP_PAX_VEHICLE_WHERE,
+              include: {
+                trip: {
+                  select: {
+                    id: true,
+                    srcPort: {
+                      select: {
+                        name: true,
+                        code: true,
+                      },
+                    },
+                    destPort: {
+                      select: {
+                        name: true,
+                        code: true,
+                      },
+                    },
+                    ship: {
+                      select: {
+                        name: true,
+                      },
+                    },
+                    shippingLineId: true,
+                    shippingLine: {
+                      select: {
+                        name: true,
+                      },
+                    },
+                    departureDate: true,
+                    voyage: {
+                      select: {
+                        number: true,
+                      },
+                    },
+                  },
+                },
+                bookingPaymentItems: true,
+                vehicle: {
+                  select: {
+                    vehicleType: {
+                      select: {
+                        description: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        }
+      },
+    });
+    
+    const disbursements =
+      await this.disbursementService.getDisbursementsByAccount(
+        { startDate, endDate },
+        loggedInAccount
+      );
+
+    if (bookingTrips.length === 0 && disbursements.length === 0) {
+      return;
+    }
+
+    const bookingTripGroupByTrip = groupBy(
+      bookingTrips,
+      (bookingTrip) => bookingTrip.trip.id
+    );
+
+    const disbursementsGroupByTrip = groupBy(
+      disbursements,
+      (disbursement) => disbursement.tripId
+    );
+
+    const bookingTripsBreakdown = [];
+
+    for (const [_tripId, bookingTrips] of Object.entries(
+      bookingTripGroupByTrip
+    ) as any) {
+      let passengerBreakdown = [];
+      let vehicleBreakdown = [];
+      let passengerRefundBreakdown = [];
+      let vehicleRefundBreakdown = [];
+
+      bookingTrips.forEach((booking) => {
+        const collect = booking.booking.voucherCode === 'COLLECT_BOOKING';
+
+        booking.booking.bookingTripPassengers.forEach((passenger) => {
+          const cabinName = passenger.cabin.cabinType.name;
+          const isPassengerCancelled =
+            passenger.removedReasonType === 'PassengersFault';
+          const passengerFare = passenger.bookingPaymentItems.find(
+            ({ type }) => type === 'Fare'
+          )?.price;
+          const discountAmount =
+            passenger.bookingPaymentItems.find(
+              ({ type }) => type === 'VoucherDiscount'
+            )?.price ?? 0;
+          const partialRefundAmount =
+            passenger.bookingPaymentItems.find(
+              ({ type }) => type === 'CancellationRefund'
+            )?.price ?? 0;
+
+          if (!isPassengerCancelled) {
+            const passengerBreakdownArr =
+              this.reportingMapper.convertTripPassengersToPassengerBreakdown(
+                passenger.discountType ?? 'Adult',
+                cabinName,
+                collect,
+                isPassengerCancelled,
+                passengerFare,
+                discountAmount,
+                partialRefundAmount,
+                passengerBreakdown
+              );
+            passengerBreakdown = passengerBreakdownArr;
+          } else {
+            const passengerRefundBreakdownArr =
+              this.reportingMapper.convertTripPassengersToRefundTripPassengers(
+                passenger.discountType ?? 'Adult',
+                cabinName,
+                collect,
+                isPassengerCancelled,
+                passengerFare,
+                discountAmount,
+                partialRefundAmount,
+                passengerRefundBreakdown
+              );
+            passengerRefundBreakdown = passengerRefundBreakdownArr;
+          }
+        });
+
+        booking.booking.bookingTripVehicles.forEach((vehicle) => {
+          const isVehicleCancelled =
+            vehicle.removedReasonType === 'PassengersFault';
+          const vehicleFare = vehicle.bookingPaymentItems.find(
+            ({ type }) => type === 'Fare'
+          )?.price;
+          const discountAmount =
+            vehicle.bookingPaymentItems.find(
+              ({ type }) => type === 'VoucherDiscount'
+            )?.price ?? 0;
+          const partialRefundAmount =
+            vehicle.bookingPaymentItems.find(
+              ({ type }) => type === 'CancellationRefund'
+            )?.price ?? 0;
+
+          if (!isVehicleCancelled) {
+            const vehicleBreakdownArr =
+              this.reportingMapper.convertTripVehiclesToVehicleBreakdown(
+                vehicle.vehicle.vehicleType.description,
+                collect,
+                isVehicleCancelled,
+                vehicleFare,
+                discountAmount,
+                partialRefundAmount,
+                vehicleBreakdown
+              );
+            vehicleBreakdown = vehicleBreakdownArr;
+          } else {
+            const vehicleRefundBreakdownArr =
+              this.reportingMapper.convertTripVehiclesToRefundTripVehicles(
+                vehicle.vehicle.vehicleType.description,
+                collect,
+                isVehicleCancelled,
+                vehicleFare,
+                discountAmount,
+                partialRefundAmount,
+                vehicleRefundBreakdown
+              );
+            vehicleRefundBreakdown = vehicleRefundBreakdownArr;
+          }
+        });
+      });
+
+      const tripData = bookingTrips[0].trip;
+
+      bookingTripsBreakdown.push({
+        ...this.reportingMapper.convertTripsForReporting(tripData),
+        passengerBreakdown,
+        vehicleBreakdown,
+        passengerRefundBreakdown,
+        vehicleRefundBreakdown,
+      });
+    }
+
+    return {
+      bookingTripsBreakdown,
+      disbursements: disbursementsGroupByTrip,
+    };
   }
 
   async getTripManifest(
