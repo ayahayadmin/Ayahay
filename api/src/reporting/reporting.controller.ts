@@ -23,6 +23,7 @@ import {
   VoidBookings,
   PaginatedResponse,
   CollectTripBooking,
+  SalesPerTellerReport,
 } from '@ayahay/http';
 import { BookingService } from '@/booking/booking.service';
 import { ApiExcludeController } from '@nestjs/swagger';
@@ -63,6 +64,16 @@ export class ReportingController {
     @Request() req
   ): Promise<PerVesselReport[]> {
     return this.reportingService.getTripsByShip(data, req.user);
+  }
+
+  @Get('sales-per-teller')
+  @UseGuards(AuthGuard)
+  @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
+  async getSalesPerTeller(
+    @Query() data: TripSearchByDateRange,
+    @Request() req
+  ): Promise<SalesPerTellerReport> {
+    return this.reportingService.getSalesPerTeller(data, req.user);
   }
 
   @Get('trips/:id/manifest')

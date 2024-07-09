@@ -3,6 +3,7 @@ import { PrismaService } from '@/prisma.service';
 import { IAccount, IDisbursement } from '@ayahay/models';
 import { DisbursementMapper } from './disbursement.mapper';
 import { Prisma } from '@prisma/client';
+import { DisbursementsPerTeller, TripSearchByDateRange } from '@ayahay/http';
 
 @Injectable()
 export class DisbursementService {
@@ -11,8 +12,8 @@ export class DisbursementService {
     private readonly disbursementMapper: DisbursementMapper
   ) {}
 
-  async getDisbursements(
-    { tripId },
+  async getDisbursementsByTrip(
+    tripId: number,
     loggedInAccount: IAccount
   ): Promise<IDisbursement[]> {
     const disbursements = await this.prisma.disbursement.findMany({
@@ -36,11 +37,66 @@ export class DisbursementService {
     );
   }
 
+  async getDisbursementsByAccount(
+    { startDate, endDate }: TripSearchByDateRange,
+    loggedInAccount: IAccount
+  ): Promise<DisbursementsPerTeller[]> {
+    const disbursements = await this.prisma.disbursement.findMany({
+      where: {
+        createdByAccountId: loggedInAccount.id,
+        createdAt: {
+          gte: new Date(startDate).toISOString(),
+          lte: new Date(endDate).toISOString(),
+        },
+        trip: {
+          shippingLineId: loggedInAccount.shippingLineId,
+        },
+      },
+      select: {
+        amount: true,
+        date: true,
+        description: true,
+        officialReceipt: true,
+        paidTo: true,
+        purpose: true,
+        trip: {
+          select: {
+            id: true,
+            srcPort: {
+              select: {
+                code: true,
+              },
+            },
+            destPort: {
+              select: {
+                code: true,
+              },
+            },
+            departureDate: true,
+          },
+        },
+      },
+    });
+
+    return disbursements.map((disbursement) =>
+      this.disbursementMapper.convertDisbursementToDisbursementsPerTeller(
+        disbursement
+      )
+    );
+  }
+
   async createDisbursements(
-    disbursementData: Prisma.DisbursementCreateManyInput[]
+    disbursementData: Prisma.DisbursementCreateManyInput[],
+    loggedInAccount: IAccount
   ): Promise<void> {
+    const disbursementDataWithCreateInfo = disbursementData.map((data) => ({
+      ...data,
+      createdByAccountId: loggedInAccount.id,
+      createdAt: new Date(),
+    }));
+
     await this.prisma.disbursement.createMany({
-      data: disbursementData,
+      data: disbursementDataWithCreateInfo,
     });
   }
 }

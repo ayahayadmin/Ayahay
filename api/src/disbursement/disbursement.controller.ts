@@ -22,17 +22,18 @@ export class DisbursementController {
   constructor(private disbursementService: DisbursementService) {}
 
   @Get()
-  async getDisbursements(
-    @Query() data: any,
+  async getDisbursementsByTrip(
+    @Query('tripId') tripId: number,
     @Request() req
   ): Promise<IDisbursement[]> {
-    return this.disbursementService.getDisbursements(data, req.user);
+    return this.disbursementService.getDisbursementsByTrip(tripId, req.user);
   }
 
   @Post()
   async createDisbursements(
-    @Body() data: Prisma.DisbursementCreateManyInput[]
+    @Body() data: Prisma.DisbursementCreateManyInput[],
+    @Request() req
   ): Promise<void> {
-    return this.disbursementService.createDisbursements(data);
+    return this.disbursementService.createDisbursements(data, req.user);
   }
 }

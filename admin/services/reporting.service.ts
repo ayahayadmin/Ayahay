@@ -9,10 +9,13 @@ import {
   PaginatedResponse,
   VoidBookings,
   CollectTripBooking,
+  TripSearchByDateRange,
+  SalesPerTellerReport,
 } from '@ayahay/http';
 import axios from '@ayahay/services/axios';
 import { getPort, getPorts } from '@ayahay/services/port.service';
 import { getShip, getShips } from '@ayahay/services/ship.service';
+import { isEmpty } from 'lodash';
 
 export async function getTripsReporting(
   tripId: number
@@ -111,6 +114,24 @@ export async function getCollectTripBookings(
     return data;
   } catch (e) {
     console.error(e);
+  }
+}
+
+export async function getSalesPerTeller(
+  dates: TripSearchByDateRange | undefined
+): Promise<SalesPerTellerReport | undefined> {
+  if (isEmpty(dates)) {
+    return;
+  }
+
+  try {
+    const { data } = await axios.get(`${REPORTING_API}/sales-per-teller`, {
+      params: { ...dates },
+    });
+    return data;
+  } catch (e) {
+    console.error(e);
+    return undefined;
   }
 }
 

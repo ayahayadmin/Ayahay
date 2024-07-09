@@ -108,21 +108,24 @@ export class ReportingMapper {
 
   convertTripPassengersToPassengerBreakdown(
     discountType,
+    cabinName,
     collect,
-    isBookingCancelled,
+    isCancelled,
     passengerFare,
     discountAmount,
     refundAmount,
     passengerDiscountsBreakdown
   ) {
     const discountedPassengerFare =
-      collect && isBookingCancelled
+      collect && isCancelled
         ? discountAmount * -1 * 0.2
         : collect
         ? discountAmount * -1 + refundAmount
         : passengerFare + discountAmount + refundAmount;
     const index = passengerDiscountsBreakdown.findIndex(
-      (passengerBreakdown) => passengerBreakdown.typeOfDiscount === discountType
+      (passengerBreakdown) =>
+        passengerBreakdown.typeOfDiscount === discountType &&
+        passengerBreakdown.cabinName === cabinName
     );
 
     if (index !== -1) {
@@ -136,6 +139,7 @@ export class ReportingMapper {
     } else {
       passengerDiscountsBreakdown.push({
         typeOfDiscount: discountType,
+        cabinName,
         totalBooked: 1,
         totalSales: discountedPassengerFare,
       });
@@ -147,14 +151,14 @@ export class ReportingMapper {
   convertTripVehiclesToVehicleBreakdown(
     vehicleDescription,
     collect,
-    isBookingCancelled,
+    isCancelled,
     vehicleFare,
     discountAmount,
     refundAmount,
     vehicleTypesBreakdown
   ) {
     const discountedVehicleFare =
-      collect && isBookingCancelled
+      collect && isCancelled
         ? discountAmount * -1 * 0.2
         : collect
         ? discountAmount * -1 + refundAmount
@@ -180,6 +184,82 @@ export class ReportingMapper {
     }
 
     return vehicleTypesBreakdown;
+  }
+
+  convertTripPassengersToRefundTripPassengers(
+    discountType,
+    cabinName,
+    collect,
+    isCancelled,
+    passengerFare,
+    discountAmount,
+    refundAmount,
+    passengerDiscountsRefundBreakdown
+  ) {
+    const discountedPassengerFare =
+      collect && isCancelled
+        ? discountAmount * -1 * 0.2
+        : passengerFare + discountAmount + refundAmount;
+    const index = passengerDiscountsRefundBreakdown.findIndex(
+      (passengerBreakdown) =>
+        passengerBreakdown.typeOfDiscount === discountType &&
+        passengerBreakdown.cabinName === cabinName
+    );
+
+    if (index !== -1) {
+      passengerDiscountsRefundBreakdown[index] = {
+        ...passengerDiscountsRefundBreakdown[index],
+        totalBooked: passengerDiscountsRefundBreakdown[index].totalBooked + 1,
+        totalSales:
+          passengerDiscountsRefundBreakdown[index].totalSales +
+          discountedPassengerFare,
+      };
+    } else {
+      passengerDiscountsRefundBreakdown.push({
+        typeOfDiscount: discountType,
+        cabinName,
+        totalBooked: 1,
+        totalSales: discountedPassengerFare,
+      });
+    }
+
+    return passengerDiscountsRefundBreakdown;
+  }
+
+  convertTripVehiclesToRefundTripVehicles(
+    vehicleDescription,
+    collect,
+    isCancelled,
+    vehicleFare,
+    discountAmount,
+    refundAmount,
+    vehicleTypesRefundBreakdown
+  ) {
+    const discountedVehicleFare =
+      collect && isCancelled
+        ? discountAmount * -1 * 0.2
+        : vehicleFare + discountAmount + refundAmount;
+    const index = vehicleTypesRefundBreakdown.findIndex(
+      (vehicleBreakdown) =>
+        vehicleBreakdown.typeOfVehicle === vehicleDescription
+    );
+
+    if (index !== -1) {
+      vehicleTypesRefundBreakdown[index] = {
+        ...vehicleTypesRefundBreakdown[index],
+        totalBooked: vehicleTypesRefundBreakdown[index].totalBooked + 1,
+        totalSales:
+          vehicleTypesRefundBreakdown[index].totalSales + discountedVehicleFare,
+      };
+    } else {
+      vehicleTypesRefundBreakdown.push({
+        typeOfVehicle: vehicleDescription,
+        totalBooked: 1,
+        totalSales: discountedVehicleFare,
+      });
+    }
+
+    return vehicleTypesRefundBreakdown;
   }
 
   convertTripPassengersToRoundTripPassengers(

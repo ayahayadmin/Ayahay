@@ -15,7 +15,7 @@ import SummarySalesPerVoyage from '@/components/reports/SummarySalesPerVoyage';
 import ProfitAndLossStatement from '@/components/reports/ProfitAndLossStatement';
 import CargoDailySalesReport from '@/components/reports/CargoDailySalesReport';
 import { IDisbursement } from '@ayahay/models';
-import { getDisbursements } from '@/services/disbursement.service';
+import { getDisbursementsByTrip } from '@/services/disbursement.service';
 import { getAxiosError } from '@ayahay/services/error.service';
 import styles from './page.module.scss';
 
@@ -66,7 +66,7 @@ export default function TripReportingPage({ params }: any) {
   };
 
   const fetchDisbursements = async (tripId: number) => {
-    const disbursements = await getDisbursements(tripId);
+    const disbursements = await getDisbursementsByTrip(tripId);
     const computedExpenses = computeExpenses(disbursements);
     setExpenses(computedExpenses);
     setDisbursements(disbursements);

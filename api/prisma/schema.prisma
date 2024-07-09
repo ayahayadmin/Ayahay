@@ -385,6 +385,7 @@ model Account {
   vehicles Vehicle[]
   notifications AccountNotification[]
   myVouchers Voucher[]
+  disbursements Disbursement[]
 
   @@map("account")
 }
@@ -499,6 +500,10 @@ model Disbursement {
   id Int @default(autoincrement()) @id
   tripId Int @map("trip_id")
   trip Trip? @relation(fields: [tripId], references: [id])
+  createdByAccountId String   @map("created_by_account_id")
+  createdByAccount   Account  @relation(fields: [createdByAccountId], references: [id])
+  createdAt DateTime @map("created_at")
+  
   date DateTime
   officialReceipt String? @map("official_receipt")
   paidTo String @map("paid_to")
