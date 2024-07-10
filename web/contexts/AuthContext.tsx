@@ -83,7 +83,7 @@ export default function AuthContextProvider({ children }: any) {
 
         const token = await user.getIdToken();
 
-        const mappedPassenger = mapPassengerToDto(user.uid, values);
+        const mappedPassenger = mapPassengerToDto(values);
         await createPassengerAccount(token, mappedPassenger);
 
         sendEmailVerification(user);

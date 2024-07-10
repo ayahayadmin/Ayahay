@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '@/prisma.service';
 import { TripCancelEmailRequest } from '@ayahay/http';
 import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
-import { PrismaClient } from '@prisma/client';
+import { INotification } from '@ayahay/models';
 
 @Injectable()
 export class EmailService {
@@ -20,18 +20,26 @@ export class EmailService {
 
   private readonly sesClient = new SESClient(this.SES_CONFIG);
 
-  async prepareTripCancelledEmail(
-    { tripId, reason }: TripCancelEmailRequest,
-    transactionContext?: PrismaClient
-  ): Promise<void> {
-    transactionContext ??= this.prisma;
-    const trip = await transactionContext.trip.findUnique({
+  async prepareTripCancelledEmail({
+    tripId,
+    reason,
+  }: TripCancelEmailRequest): Promise<void> {
+    const trip = await this.prisma.trip.findUnique({
       where: {
         id: tripId,
       },
-      include: {
-        srcPort: true,
-        destPort: true,
+      select: {
+        departureDate: true,
+        srcPort: {
+          select: {
+            name: true,
+          },
+        },
+        destPort: {
+          select: {
+            name: true,
+          },
+        },
       },
     });
 
@@ -41,22 +49,22 @@ export class EmailService {
       timeZone: 'Asia/Shanghai',
     })})`;
 
-    const accounts = await transactionContext.bookingTripPassenger.findMany({
+    const accounts = await this.prisma.account.findMany({
       where: {
-        tripId,
-      },
-      select: {
-        booking: {
-          select: {
-            contactEmail: true,
-            createdByAccount: {
-              select: {
-                email: true,
-                role: true,
+        bookingsCreated: {
+          some: {
+            bookingTrips: {
+              some: {
+                tripId,
               },
             },
           },
         },
+        role: 'Passenger',
+        emailConsent: true,
+      },
+      select: {
+        email: true,
       },
     });
 
@@ -64,18 +72,10 @@ export class EmailService {
       return;
     }
 
-    const passengerWithAccEmail = accounts
-      .filter(
-        (account) => account.booking.createdByAccount?.role === 'Passenger'
-      )
-      .map((account) => account.booking.createdByAccount.email);
-
-    const passengerWithoutAccEmail = accounts
-      .filter((account) => account.booking.contactEmail !== null)
-      .map((account) => account.booking.contactEmail);
+    const emails = accounts.map(({ email }) => email);
 
     await this.sendTripCancelledEmail({
-      recipients: [...passengerWithAccEmail, ...passengerWithoutAccEmail],
+      recipients: emails,
       subject: tripDetail,
       reason,
     });
@@ -89,7 +89,7 @@ export class EmailService {
     let params = {
       Source: process.env.AWS_SES_SENDER,
       Destination: {
-        ToAddresses: ['it@ayahay.com'], //[...recipients], // TO DO: use recipients, it@ayahay.com for now since we're using AWS SES sandbox
+        ToAddresses: recipients,
       },
       ReplyToAddresses: [],
       Message: {
@@ -100,7 +100,7 @@ export class EmailService {
         Body: {
           Html: {
             Charset: 'UTF-8',
-            Data: `<h1>Trip Cancelled</h1><br><p>To all passengers who booked a trip from ${subject}, your trip is unfortunately <strong>cancelled</strong> due to ${reason}. You may re-book again at <a href='https://www.ayahay.com'>ayahay.com</a>.</p><br><p>Thank you!</p>`,
+            Data: `<h1>Trip Cancelled</h1><br><p>To all passengers who booked a trip from ${subject}, your trip is unfortunately <strong>cancelled</strong> due to ${reason}. You may re-book again at <a href='https://www.ayahay.com'>ayahay.com</a>.</p><br><p>Thank you!</p><br><p>If you wish to unsubscribe from our subscription list, you may click <a href='${process.env.WEB_URL}/account/unsubscribe'>here</a></p>`,
           },
         },
       },
@@ -121,7 +121,7 @@ export class EmailService {
     let params = {
       Source: process.env.AWS_SES_SENDER,
       Destination: {
-        ToAddresses: ['it@ayahay.com'], //[recipient], // TO DO: use recipient, it@ayahay.com for now since we're using AWS SES sandbox
+        ToAddresses: [recipient],
       },
       ReplyToAddresses: [],
       Message: {
@@ -132,7 +132,53 @@ export class EmailService {
         Body: {
           Html: {
             Charset: 'UTF-8',
-            Data: `<h1>Booking Confirmed</h1><br><p>Dear passenger, your booking (${bookingId}) and payment was a <strong>success</strong>! You may click the link to view your <a href='https://www.ayahay.com/bookings/${bookingId}'>booking summary</a>.</p><br><p>Have a safe trip! Kay ang pagsakay dapat, ayahay!</p>`,
+            Data: `<h1>Booking Confirmed</h1><br><p>Dear passenger, your booking (${bookingId}) and payment was a <strong>success</strong>! You may click the link to view your <a href='https://www.ayahay.com/bookings/${bookingId}'>booking summary</a>.</p><br><p>Have a safe trip! Kay ang pagsakay dapat, ayahay!</p><br><p>If you wish to unsubscribe from our subscription list, you may click <a href='${process.env.WEB_URL}/account/unsubscribe'>here</a></p>`,
+          },
+        },
+      },
+    };
+
+    try {
+      const sendEmailCommand = new SendEmailCommand(params);
+      await this.sesClient.send(sendEmailCommand);
+    } catch (e) {
+      this.logger.error(e);
+    }
+  }
+
+  async sendNotificationsEmail(
+    notification: INotification,
+    accountIds: string[]
+  ): Promise<void> {
+    const accountEmailsWithConsent = await this.prisma.account.findMany({
+      where: {
+        id: {
+          in: accountIds,
+        },
+        emailConsent: true,
+      },
+      select: {
+        email: true,
+      },
+    });
+
+    const emails = accountEmailsWithConsent.map(({ email }) => email);
+
+    let params = {
+      Source: process.env.AWS_SES_SENDER,
+      Destination: {
+        ToAddresses: emails,
+      },
+      ReplyToAddresses: [],
+      Message: {
+        Subject: {
+          Charset: 'UTF-8',
+          Data: notification.subject,
+        },
+        Body: {
+          Html: {
+            Charset: 'UTF-8',
+            Data: `<h1>New update</h1><br><p>${notification.body}</p><br><p>If you wish to unsubscribe from our subscription list, you may click <a href='${process.env.WEB_URL}/account/unsubscribe'>here</a></p>`,
           },
         },
       },

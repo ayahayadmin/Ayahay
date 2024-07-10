@@ -20,6 +20,7 @@ export class AccountMapper {
     return {
       id: account.id,
       email: account.email,
+      emailConsent: account.emailConsent,
       passengerId: account.passengerId ?? undefined,
       passenger: account.passenger
         ? this.passengerMapper.convertPassengerToDto(account.passenger, true)

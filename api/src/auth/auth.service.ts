@@ -7,7 +7,6 @@ import {
 import admin from 'firebase-admin';
 import { AccountMapper } from '@/account/account.mapper';
 import { CryptoService } from '@/crypto/crypto.service';
-import { UtilityService } from '@/utility.service';
 import { IAccount } from '@ayahay/models';
 import { PrismaService } from '@/prisma.service';
 
@@ -18,13 +17,13 @@ export class AuthService {
   constructor(
     private readonly accountMapper: AccountMapper,
     private readonly cryptoService: CryptoService,
-    private readonly utilityService: UtilityService,
     private readonly prisma: PrismaService
   ) {}
 
   async setUserClaims({
     token,
     role,
+    emailConsent,
     shippingLineId,
     travelAgencyId,
   }): Promise<void> {
@@ -36,6 +35,7 @@ export class AuthService {
         .auth()
         .setCustomUserClaims(claims.sub, {
           role,
+          emailConsent,
           shippingLineId,
           travelAgencyId,
         })
@@ -100,9 +100,10 @@ export class AuthService {
       id: decoded.uid,
       role: decoded.role,
       email: decoded.email,
+      emailConsent: decoded.emailConsent,
       shippingLineId: decoded.shippingLineId,
       travelAgencyId: decoded.travelAgencyId,
-      isEmailVerified: decoded.isEmailVerified,
+      isEmailVerified: decoded.email_verified,
     };
   }
 

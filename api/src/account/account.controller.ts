@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Param,
+  Patch,
   Post,
   Request,
   UseGuards,
@@ -66,5 +67,17 @@ export class AccountController {
   @Roles('ShippingLineAdmin', 'TravelAgencyAdmin', 'SuperAdmin')
   async generateApiKeyForAccount(@Request() req): Promise<string> {
     return this.accountService.generateApiKeyForAccount(req.user);
+  }
+
+  @Post('unsubscribe')
+  @Roles('Passenger', 'SuperAdmin')
+  async unsubscribeEmail(@Request() req): Promise<void> {
+    return await this.accountService.unsubscribeEmail(req.user);
+  }
+
+  @Patch()
+  @Roles('Passenger')
+  async updateAccount(@Request() req, @Body() data: any): Promise<void> {
+    return await this.accountService.updateAccount(req.user, data);
   }
 }
