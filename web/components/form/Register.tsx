@@ -1,6 +1,13 @@
-import { Button, Checkbox, DatePicker, Form, Input, Steps } from 'antd';
+import {
+  Button,
+  Checkbox,
+  DatePicker,
+  Form,
+  Input,
+  Steps,
+} from 'antd';
 import EnumSelect from '@ayahay/components/form/EnumSelect';
-import { CIVIL_STATUS, OCCUPATION, SEX } from '@ayahay/constants';
+import { SEX } from '@ayahay/constants';
 import { buttonStyle } from './Login';
 import { useState } from 'react';
 import { InfoCircleOutlined, UserOutlined } from '@ant-design/icons';
@@ -30,7 +37,13 @@ export default function Register({
 
   const checkValues = async () => {
     try {
-      await form.validateFields(['email', 'password', 'confirm', 'agreement']);
+      await form.validateFields([
+        'email',
+        'confirmEmail',
+        'password',
+        'confirmPassword',
+        'agreement',
+      ]);
       nextStep();
     } catch (e) {
       console.error(e);
@@ -62,22 +75,50 @@ export default function Register({
           rules={[
             {
               type: 'email',
-              message: 'The input is not valid E-mail!',
+              message: 'The input is not valid e-mail',
             },
             {
               required: true,
-              message: 'Please input your E-mail!',
+              message: 'Please input your e-mail',
             },
           ]}
           validateTrigger='onBlur'
         >
-          <Input placeholder='Enter email' />
+          <Input placeholder='Enter e-mail' />
+        </Form.Item>
+        <Form.Item
+          label='Confirm e-mail:'
+          name='confirmEmail'
+          dependencies={['email']}
+          rules={[
+            {
+              type: 'email',
+              message: 'The input is not valid e-mail',
+            },
+            {
+              required: true,
+              message: 'Please confirm your e-mail',
+            },
+            ({ getFieldValue }) => ({
+              validator(_, value) {
+                if (!value || getFieldValue('email') === value) {
+                  return Promise.resolve();
+                }
+                return Promise.reject(
+                  new Error('The two e-mails that you entered do not match!')
+                );
+              },
+            }),
+          ]}
+          validateTrigger='onBlur'
+        >
+          <Input placeholder='Re-enter e-mail' />
         </Form.Item>
         <Form.Item
           label='Password:'
           name='password'
           rules={[
-            { required: true, message: 'Please input your Password!' },
+            { required: true, message: 'Please input your password' },
             {
               min: 8,
               message: 'Password cannot be less than 8 characters',
@@ -88,13 +129,13 @@ export default function Register({
           <Input.Password type='password' placeholder='Enter password' />
         </Form.Item>
         <Form.Item
-          name='confirm'
-          label='Confirm Password'
+          label='Confirm password'
+          name='confirmPassword'
           dependencies={['password']}
           rules={[
             {
               required: true,
-              message: 'Please confirm your password!',
+              message: 'Please confirm your password',
             },
             ({ getFieldValue }) => ({
               validator(_, value) {
@@ -137,6 +178,7 @@ export default function Register({
           </Button>
         </Form.Item>
       </div>
+
       <div style={{ display: currentStep === 1 ? 'block' : 'none' }}>
         <Form.Item
           label='First Name:'
@@ -163,18 +205,6 @@ export default function Register({
           <Input placeholder='Enter last name' />
         </Form.Item>
         <EnumSelect
-          _enum={OCCUPATION}
-          disabled={false}
-          label='Occupation:'
-          name='occupation'
-          rules={[
-            {
-              required: true,
-              message: 'Please choose your occupation',
-            },
-          ]}
-        />
-        <EnumSelect
           _enum={SEX}
           disabled={false}
           label='Sex:'
@@ -183,18 +213,6 @@ export default function Register({
             {
               required: true,
               message: 'Please choose your sex',
-            },
-          ]}
-        />
-        <EnumSelect
-          _enum={CIVIL_STATUS}
-          disabled={false}
-          label='Civil Status:'
-          name='civilStatus'
-          rules={[
-            {
-              required: true,
-              message: 'Please choose your civil status',
             },
           ]}
         />

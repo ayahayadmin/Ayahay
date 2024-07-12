@@ -7,14 +7,13 @@ import {
   UserOutlined,
 } from '@ant-design/icons';
 import { LoginForm, RegisterForm } from '@ayahay/models';
-import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { User } from 'firebase/auth';
 import Register from '../form/Register';
 import Login from '../form/Login';
 import ForgotPassword from '../form/ForgotPassword';
-import { firebase } from '@/app/utils/initFirebase';
 import styles from './AuthForm.module.scss';
+import MyProfileModal from './MyProfileModal';
 
 export default function AuthForm() {
   const {
@@ -210,11 +209,9 @@ export default function AuthForm() {
 
   const label = loading
     ? 'Loading...'
-    : currentUser
+    : currentUser && loggedInAccount
     ? `Welcome, ${
-        currentUser.displayName ??
-        loggedInAccount?.passenger?.firstName ??
-        currentUser.email?.split('@')[0]
+        loggedInAccount.passenger?.firstName ?? currentUser.email?.split('@')[0]
       }`
     : 'Log In';
   return (
@@ -279,32 +276,13 @@ export default function AuthForm() {
           onClickBack={onClickBack}
         />
       </Modal>
-      <Modal
-        title='My Profile'
+      <MyProfileModal
         open={isProfileModalOpen}
         onCancel={onClickCancel}
-        footer={null}
-        destroyOnClose={true}
-      >
-        {firebase.currentUser?.emailVerified ? (
-          <div>
-            <span>{firebase.currentUser?.email} is verified</span>
-          </div>
-        ) : (
-          <div>
-            <span>
-              {firebase.currentUser?.email} is not yet verified, please{' '}
-              <Link
-                href='/'
-                onClick={() => verifyEmail(firebase.currentUser!)}
-                style={{ textDecoration: 'underline' }}
-              >
-                verify email now
-              </Link>
-            </span>
-          </div>
-        )}
-      </Modal>
+        currentUser={currentUser}
+        loggedInAccount={loggedInAccount}
+        verifyEmail={verifyEmail}
+      />
     </div>
   );
 }

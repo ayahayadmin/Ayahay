@@ -249,6 +249,7 @@ export class BookingMapper {
       id: tempBooking.id.toString(),
       shippingLineId: tempBooking.shippingLineId,
       createdByAccountId: tempBooking.createdByAccountId ?? undefined,
+      createdByAccount: tempBooking.createdByAccount,
       approvedByAccountId: tempBooking.approvedByAccountId ?? undefined,
       voucherCode: tempBooking.voucherCode ?? undefined,
 

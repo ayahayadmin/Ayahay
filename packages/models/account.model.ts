@@ -31,6 +31,7 @@ export interface IAccount {
   client?: IClient;
 
   email: string;
+  emailConsent: boolean;
   role: keyof typeof ACCOUNT_ROLE;
   // TODO: properly save isEmailVerified from Firebase next time
   isEmailVerified?: boolean;
@@ -58,4 +59,5 @@ export interface RegisterForm {
   birthday: string;
   address: string;
   nationality: string;
+  emailConsent: boolean;
 }

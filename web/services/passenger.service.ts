@@ -2,10 +2,7 @@ import { PASSENGER_API } from '@ayahay/constants';
 import { IPassenger, RegisterForm } from '@ayahay/models';
 import axios from '@ayahay/services/axios';
 
-export function mapPassengerToDto(
-  uid: string,
-  values: RegisterForm
-): IPassenger {
+export function mapPassengerToDto(values: RegisterForm): IPassenger {
   const {
     firstName,
     lastName,
@@ -28,4 +25,17 @@ export function mapPassengerToDto(
     address,
     nationality,
   };
+}
+
+export async function getPassenger(
+  passengerId: number
+): Promise<IPassenger | undefined> {
+  try {
+    const { data: passenger } = await axios.get<IPassenger>(
+      `${PASSENGER_API}/${passengerId}`
+    );
+    return passenger;
+  } catch (e) {
+    console.error(e);
+  }
 }

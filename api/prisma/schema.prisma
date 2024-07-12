@@ -375,6 +375,7 @@ model Account {
   client Client? @relation(fields: [clientId], references: [id])
 
   email String
+  emailConsent Boolean @map("email_consent") @default(false)
   role String
   apiKey String? @map("api_key")
 

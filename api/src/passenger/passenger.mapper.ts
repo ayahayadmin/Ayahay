@@ -20,7 +20,7 @@ export class PassengerMapper {
       discountType: passenger.discountType ?? undefined,
 
       companions: withBuddies
-        ? passenger.buddies.map((companion) =>
+        ? passenger.buddies?.map((companion) =>
             this.convertPassengerToDto(companion, false)
           )
         : [],

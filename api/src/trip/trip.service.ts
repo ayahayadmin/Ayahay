@@ -786,9 +786,8 @@ export class TripService {
         });
       }
 
-      await this.emailService.prepareTripCancelledEmail(
+      this.emailService.prepareTripCancelledEmail(
         { tripId, reason },
-        transactionContext as any
       );
     });
   }

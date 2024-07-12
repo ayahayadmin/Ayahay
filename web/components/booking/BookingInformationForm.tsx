@@ -72,7 +72,7 @@ export default function BookingInformationForm({
   const tripNamePath = ['bookingTrips', 0];
 
   const insertPassengerAtFirstIndex = (passenger?: IPassenger) => {
-    if (passenger === undefined) {
+    if (passenger === undefined || passengers === undefined) {
       return;
     }
 

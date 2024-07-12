@@ -750,6 +750,14 @@ export class BookingService {
       where: {
         paymentReference,
       },
+      include: {
+        createdByAccount: {
+          select: {
+            email: true,
+            emailConsent: true,
+          },
+        },
+      },
     });
 
     if (tempBooking === null) {

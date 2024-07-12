@@ -3,11 +3,13 @@ import { PrismaService } from '@/prisma.service';
 import { INotification } from '@ayahay/models';
 import { PaginatedRequest } from '@ayahay/http';
 import { NotificationMapper } from './notification.mapper';
+import { EmailService } from '@/email/email.service';
 
 @Injectable()
 export class NotificationService {
   constructor(
     private readonly prisma: PrismaService,
+    private readonly emailService: EmailService,
     private readonly notificationMapper: NotificationMapper
   ) {}
 
@@ -75,5 +77,7 @@ export class NotificationService {
       );
 
     await this.prisma.notification.create({ data: notificationEntity });
+
+    this.emailService.sendNotificationsEmail(notification, allAccountIds);
   }
 }

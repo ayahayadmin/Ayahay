@@ -59,6 +59,11 @@ export class AccountService {
       loggedInAccountId
     );
     const myAccountEntityRole = myAccountEntity?.role ?? 'Passenger';
+    const myAccountEntityEmailConsent = myAccountEntity?.emailConsent ?? false;
+    const myAccountEntityShippingLineId =
+      myAccountEntity?.shippingLineId ?? null;
+    const myAccountEntityTravelAgencyId =
+      myAccountEntity?.travelAgencyId ?? null;
 
     // Set user claims if userClaims is empty OR if there is a mismatch between
     // useClaims and account table role (i.e. a Passenger might have been
@@ -68,15 +73,16 @@ export class AccountService {
       token &&
       (isEmpty(userClaims) ||
         userClaims.role !== myAccountEntityRole ||
-        userClaims.shippingLineId !== myAccountEntity.shippingLineId ||
-        userClaims.travelAgencyId !== myAccountEntity.travelAgencyId)
+        userClaims.shippingLineId !== myAccountEntityShippingLineId ||
+        userClaims.travelAgencyId !== myAccountEntityTravelAgencyId)
     ) {
       // TODO: user claims for Clients
       await this.authService.setUserClaims({
         token,
+        emailConsent: myAccountEntityEmailConsent,
         role: myAccountEntityRole,
-        shippingLineId: myAccountEntity.shippingLineId,
-        travelAgencyId: myAccountEntity.travelAgencyId,
+        shippingLineId: myAccountEntityShippingLineId,
+        travelAgencyId: myAccountEntityTravelAgencyId,
       });
     }
 
@@ -98,6 +104,10 @@ export class AccountService {
     return accountEntity
       ? this.accountMapper.convertAccountToDto(accountEntity)
       : null;
+  }
+
+  async unsubscribeEmail(user): Promise<void> {        
+    await this.prisma.account.update({ where: { id: user.id }, data: { emailConsent: false }});
   }
 
   async createAccount(data: Prisma.AccountCreateInput): Promise<IAccount> {
@@ -178,5 +188,22 @@ export class AccountService {
       },
     });
     return apiKey;
+  }
+
+  /**
+   * This method will just update emailConsent for now.
+   * Update this method if we want to update other account fields
+   */
+  async updateAccount({ id }: IAccount, data: any): Promise<void> {
+    const { emailConsent } = data;
+
+    const where: Prisma.AccountWhereUniqueInput = { id };
+    const account = await this.prisma.account.findUnique({ where });
+
+    if (account === null) {
+      throw new NotFoundException();
+    }
+
+    await this.prisma.account.update({ where, data: { emailConsent } });
   }
 }
