@@ -25,7 +25,7 @@ const adminLinks = [
       },
       {
         label: 'Sales Per Teller',
-        key: 'reporting/sales-per-teller'
+        key: 'reporting/sales-per-teller',
       },
       {
         label: 'Summary Sales',
@@ -94,6 +94,10 @@ export const webLinks: {
         {
           label: 'Collect Bookings',
           key: 'reporting/collect-bookings',
+        },
+        {
+          label: 'Sales Per Teller',
+          key: 'reporting/sales-per-teller',
         },
         {
           label: 'Summary Sales',
