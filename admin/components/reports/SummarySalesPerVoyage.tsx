@@ -47,12 +47,12 @@ const SummarySalesPerVoyage = forwardRef(function (
     },
   };
 
-  let totalPassengers = data.passengers.length;
+  let totalPassengers = data.passengers?.length;
   let totalPassengerSales = 0;
   let totalPassengerRefund = 0;
   let totalPassengerNetSales = 0;
 
-  data.passengers.map((passenger) => {
+  data.passengers?.map((passenger) => {
     const paymentStatus = passenger.paymentStatus;
     totalPassengerSales += passenger.collect
       ? passenger.discountAmount

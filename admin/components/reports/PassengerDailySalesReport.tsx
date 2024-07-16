@@ -56,7 +56,7 @@ const PassengerDailySalesReport = forwardRef(function (
     },
   };
 
-  let totalPassengers = data.passengers.length;
+  let totalPassengers = data.passengers?.length;
   let totalTicketSale = 0;
   let totalRefundAmount = 0;
   let totalCollectTicketSale = 0;
@@ -151,7 +151,7 @@ const PassengerDailySalesReport = forwardRef(function (
               </tr>
             </thead>
             <tbody>
-              {data.passengers.map((passenger, idx) => {
+              {data.passengers?.map((passenger, idx) => {
                 const collect = passenger.collect;
                 const roundTrip = passenger.roundTrip;
                 totalTicketSale += roundTrip ? 0 : passenger.ticketSale;

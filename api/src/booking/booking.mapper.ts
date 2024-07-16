@@ -307,6 +307,8 @@ export class BookingMapper {
             price: paymentItem.price,
             description: paymentItem.description,
             type: paymentItem.type,
+            createdByAccountId: booking.createdByAccountId ?? null,
+            createdAt: new Date(),
           })
         );
       });
@@ -325,6 +327,8 @@ export class BookingMapper {
             price: paymentItem.price,
             description: paymentItem.description,
             type: paymentItem.type,
+            createdByAccountId: booking.createdByAccountId ?? null,
+            createdAt: new Date(),
           })
         );
       });

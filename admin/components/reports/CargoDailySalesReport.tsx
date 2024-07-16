@@ -138,7 +138,7 @@ const CargoDailySalesReport = forwardRef(function (
               </tr>
             </thead>
             <tbody>
-              {data.vehicles.map((vehicle) => {
+              {data.vehicles?.map((vehicle) => {
                 const collect = vehicle.collect;
                 const roundTrip = vehicle.roundTrip;
                 totalTicketSale += roundTrip ? 0 : vehicle.ticketSale;

@@ -1,3 +1,4 @@
+import { IAccount } from './account.model';
 import { IBookingTripPassenger } from './booking-trip-passenger.model';
 import { IBookingTripVehicle } from './booking-trip-vehicle.model';
 import { IBooking } from './booking.model';
@@ -8,6 +9,8 @@ export interface IBookingPaymentItem {
   id: number;
   bookingId: string;
   booking?: IBooking;
+  createdByAccountId?: string;
+  createdByAccount?: IAccount;
   tripId?: number;
   trip?: ITrip;
   passengerId?: number;

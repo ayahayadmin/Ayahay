@@ -449,7 +449,8 @@ export class BookingPricingService {
       priceWithoutMarkup,
     }: BookingTripPassenger,
     removedReasonType: keyof typeof BOOKING_CANCELLATION_TYPE,
-    transactionContext: PrismaClient
+    transactionContext: PrismaClient,
+    loggedInAccount?: IAccount
   ): Promise<number> {
     const totalRefund = this.calculateRefundOnBookingCancellation(
       priceWithoutMarkup,
@@ -464,6 +465,8 @@ export class BookingPricingService {
         price: -totalRefund,
         description: 'Cancellation Refund',
         type: 'CancellationRefund',
+        createdByAccountId: loggedInAccount.id,
+        createdAt: new Date(),
       },
     });
 
@@ -487,7 +490,8 @@ export class BookingPricingService {
   async refundTripVehicle(
     { bookingId, tripId, vehicleId, priceWithoutMarkup }: BookingTripVehicle,
     removedReasonType: keyof typeof BOOKING_CANCELLATION_TYPE,
-    transactionContext: PrismaClient
+    transactionContext: PrismaClient,
+    loggedInAccount?: IAccount
   ): Promise<number> {
     const totalRefund = this.calculateRefundOnBookingCancellation(
       priceWithoutMarkup,
@@ -502,6 +506,8 @@ export class BookingPricingService {
         price: -totalRefund,
         description: 'Cancellation Refund',
         type: 'CancellationRefund',
+        createdByAccountId: loggedInAccount.id,
+        createdAt: new Date(),
       },
     });
 

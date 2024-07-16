@@ -11,7 +11,7 @@ export interface TripBasicInfo {
 }
 
 export interface TripReport extends TripBasicInfo {
-  passengers: {
+  passengers?: {
     passengerName: string;
     teller: string;
     accommodation: string;
@@ -35,7 +35,7 @@ export interface TripReport extends TripBasicInfo {
 
   passengerDiscountsBreakdown?: PaxBreakdown[];
 
-  vehicles: {
+  vehicles?: {
     teller: string;
     freightRateReceipt: string;
     referenceNo: string;

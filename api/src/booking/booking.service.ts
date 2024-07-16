@@ -949,13 +949,15 @@ export class BookingService {
         await this.updateAllTripPassengersOnBookingCancellation(
           booking,
           reasonType,
-          transactionContext as any
+          transactionContext as any,
+          loggedInAccount
         );
       const vehiclesRefundAmount =
         await this.updateAllTripVehiclesOnBookingCancellation(
           booking,
           reasonType,
-          transactionContext as any
+          transactionContext as any,
+          loggedInAccount
         );
       const totalRefundAmount = passengersRefundAmount + vehiclesRefundAmount;
 
@@ -984,7 +986,8 @@ export class BookingService {
   private async updateAllTripPassengersOnBookingCancellation(
     booking: any,
     reasonType: keyof typeof BOOKING_CANCELLATION_TYPE,
-    transactionContext: PrismaClient
+    transactionContext: PrismaClient,
+    loggedInAccount?: IAccount
   ): Promise<number> {
     let totalRefund = 0;
 
@@ -998,7 +1001,8 @@ export class BookingService {
           await this.bookingPricingService.refundTripPassenger(
             bookingTripPassenger as any,
             reasonType,
-            transactionContext
+            transactionContext,
+            loggedInAccount
           );
 
         await transactionContext.bookingTripPassenger.update({
@@ -1026,7 +1030,8 @@ export class BookingService {
   private async updateAllTripVehiclesOnBookingCancellation(
     booking: any,
     reasonType: keyof typeof BOOKING_CANCELLATION_TYPE,
-    transactionContext: PrismaClient
+    transactionContext: PrismaClient,
+    loggedInAccount?: IAccount
   ): Promise<number> {
     let totalRefund = 0;
 
@@ -1040,7 +1045,8 @@ export class BookingService {
           await this.bookingPricingService.refundTripVehicle(
             bookingTripVehicle as any,
             reasonType,
-            transactionContext
+            transactionContext,
+            loggedInAccount
           );
 
         await transactionContext.bookingTripVehicle.update({
@@ -1107,7 +1113,8 @@ export class BookingService {
         await this.bookingPricingService.refundTripPassenger(
           bookingTripPassenger as any,
           reasonType,
-          transactionContext as any
+          transactionContext as any,
+          loggedInAccount
         );
 
       await transactionContext.booking.update({
@@ -1174,7 +1181,8 @@ export class BookingService {
       const refundedAmount = await this.bookingPricingService.refundTripVehicle(
         bookingTripVehicle as any,
         reasonType,
-        transactionContext as any
+        transactionContext as any,
+        loggedInAccount
       );
 
       await transactionContext.booking.update({

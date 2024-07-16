@@ -12,6 +12,7 @@ import {
   PaginatedResponse,
   CollectTripBooking,
   SalesPerTellerReport,
+  TripBasicInfo,
 } from '@ayahay/http';
 import { ReportingMapper } from './reporting.mapper';
 import { Prisma } from '@prisma/client';
@@ -52,55 +53,57 @@ export class ReportingService {
     tripId: number,
     loggedInAccount: IAccount
   ): Promise<TripReport> {
-    const tripCount = await this.prisma.trip.count({ where: { id: tripId } });
-    if (tripCount === 0) {
-      throw new NotFoundException();
-    }
-
-    const bookingTrips = await this.prisma.bookingTrip.findMany({
-      where: { tripId },
+    const trip = await this.prisma.trip.findUnique({
+      where: { id: tripId },
       select: {
-        bookingId: true,
-        trip: {
+        id: true,
+        srcPort: {
           select: {
-            id: true,
-            srcPort: {
-              select: {
-                name: true,
-                code: true,
-              },
-            },
-            destPort: {
-              select: {
-                name: true,
-                code: true,
-              },
-            },
-            ship: {
-              select: {
-                name: true,
-              },
-            },
-            shippingLineId: true,
-            shippingLine: {
-              select: {
-                name: true,
-              },
-            },
-            departureDate: true,
-            voyage: {
-              select: {
-                number: true,
-              },
-            },
+            name: true,
+            code: true,
+          },
+        },
+        destPort: {
+          select: {
+            name: true,
+            code: true,
+          },
+        },
+        ship: {
+          select: {
+            name: true,
+          },
+        },
+        shippingLineId: true,
+        shippingLine: {
+          select: {
+            name: true,
+          },
+        },
+        departureDate: true,
+        voyage: {
+          select: {
+            number: true,
           },
         },
       },
     });
 
+    if (trip === null) {
+      throw new NotFoundException();
+    }
+
+    const tripBasicInfo: TripBasicInfo =
+      this.reportingMapper.convertTripsForReporting(trip);
+
+    const bookingTrips = await this.prisma.bookingTrip.findMany({
+      where: { tripId },
+      select: { bookingId: true },
+    });
+
     if (bookingTrips.length === 0) {
       // no bookings in this trip yet
-      return;
+      return tripBasicInfo;
     }
 
     const bookingIds = bookingTrips.map(({ bookingId }) => bookingId);
@@ -170,7 +173,6 @@ export class ReportingService {
       },
     });
 
-    const trip = bookingTrips[0]?.trip;
     const bookingTripPassengersGroupByBookingId = groupBy(
       bookingTripPassengers,
       (passenger) => passenger.bookingId
@@ -201,7 +203,7 @@ export class ReportingService {
     );
 
     return {
-      ...this.reportingMapper.convertTripsForReporting(trip),
+      ...tripBasicInfo,
       passengers,
       vehicles,
       passengerDiscountsBreakdown,
@@ -234,17 +236,6 @@ export class ReportingService {
           const collect = passenger.booking.voucherCode === 'COLLECT_BOOKING';
           const isBookingCancelled =
             passenger.booking.cancellationType === 'PassengersFault';
-          const passengerFare = passenger.bookingPaymentItems.find(
-            ({ type }) => type === 'Fare'
-          )?.price;
-          const discountAmount =
-            passenger.bookingPaymentItems.find(
-              ({ type }) => type === 'VoucherDiscount'
-            )?.price ?? 0;
-          const partialRefundAmount =
-            passenger.bookingPaymentItems.find(
-              ({ type }) => type === 'CancellationRefund'
-            )?.price ?? 0;
           const paymentStatus = collect
             ? 'Collect'
             : this.authService.isShippingLineAccount(
@@ -256,6 +247,19 @@ export class ReportingService {
               )
             ? 'Agency'
             : 'Online';
+
+          let passengerFare = 0;
+          let discountAmount = 0;
+          let partialRefundAmount = 0;
+          passenger.bookingPaymentItems.forEach((paymentItem) => {
+            if (paymentItem.type === 'Fare') {
+              passengerFare = paymentItem.price;
+            } else if (paymentItem.type === 'VoucherDiscount') {
+              discountAmount = paymentItem.price;
+            } else if (paymentItem.type === 'CancellationRefund') {
+              partialRefundAmount = paymentItem.price;
+            }
+          });
 
           passengers.push(
             this.reportingMapper.convertTripPassengersForReporting(
@@ -360,17 +364,6 @@ export class ReportingService {
           const collect = vehicle.booking.voucherCode === 'COLLECT_BOOKING';
           const isBookingCancelled =
             vehicle.booking.cancellationType === 'PassengersFault';
-          const vehicleFare = vehicle.bookingPaymentItems.find(
-            ({ type }) => type === 'Fare'
-          )?.price;
-          const discountAmount =
-            vehicle.bookingPaymentItems.find(
-              ({ type }) => type === 'VoucherDiscount'
-            )?.price ?? 0;
-          const partialRefundAmount =
-            vehicle.bookingPaymentItems.find(
-              ({ type }) => type === 'CancellationRefund'
-            )?.price ?? 0;
           const paymentStatus = collect
             ? 'Collect'
             : this.authService.isShippingLineAccount(
@@ -382,6 +375,19 @@ export class ReportingService {
               )
             ? 'Agency'
             : 'Online';
+
+          let vehicleFare = 0;
+          let discountAmount = 0;
+          let partialRefundAmount = 0;
+          vehicle.bookingPaymentItems.forEach((paymentItem) => {
+            if (paymentItem.type === 'Fare') {
+              vehicleFare = paymentItem.price;
+            } else if (paymentItem.type === 'VoucherDiscount') {
+              discountAmount = paymentItem.price;
+            } else if (paymentItem.type === 'CancellationRefund') {
+              partialRefundAmount = paymentItem.price;
+            }
+          });
 
           vehicles.push(
             this.reportingMapper.convertTripVehiclesForReporting(
@@ -680,58 +686,19 @@ export class ReportingService {
     { startDate, endDate }: TripSearchByDateRange,
     loggedInAccount: IAccount
   ): Promise<SalesPerTellerReport> {
-    const bookingTrips = await this.prisma.bookingTrip.findMany({
+    const bookings = await this.prisma.bookingPaymentItem.findMany({
       where: {
+        createdAt: {
+          gte: new Date(startDate).toISOString(),
+          lte: new Date(endDate).toISOString(),
+        },
+        createdByAccountId: loggedInAccount.id,
         booking: {
-          createdAt: {
-            gte: new Date(startDate).toISOString(),
-            lte: new Date(endDate).toISOString(),
-          },
-          createdByAccountId: loggedInAccount.id,
           shippingLineId: loggedInAccount.shippingLineId,
         },
       },
       select: {
-        bookingId: true,
-        trip: {
-          select: {
-            id: true,
-            srcPort: {
-              select: {
-                name: true,
-                code: true,
-              },
-            },
-            destPort: {
-              select: {
-                name: true,
-                code: true,
-              },
-            },
-            ship: {
-              select: {
-                name: true,
-              },
-            },
-            shippingLineId: true,
-            shippingLine: {
-              select: {
-                name: true,
-              },
-            },
-            departureDate: true,
-            voyage: {
-              select: {
-                number: true,
-              },
-            },
-            disbursements: {
-              select: {
-                amount: true,
-              },
-            },
-          },
-        },
+        tripId: true,
         booking: {
           select: {
             id: true,
@@ -774,7 +741,11 @@ export class ReportingService {
                     },
                   },
                 },
-                bookingPaymentItems: true,
+                bookingPaymentItems: {
+                  where: {
+                    createdByAccountId: loggedInAccount.id,
+                  },
+                },
                 cabin: {
                   select: {
                     cabinType: {
@@ -824,7 +795,11 @@ export class ReportingService {
                     },
                   },
                 },
-                bookingPaymentItems: true,
+                bookingPaymentItems: {
+                  where: {
+                    createdByAccountId: loggedInAccount.id,
+                  },
+                },
                 vehicle: {
                   select: {
                     vehicleType: {
@@ -837,24 +812,22 @@ export class ReportingService {
               },
             },
           },
-        }
+        },
       },
+      distinct: ['bookingId'],
     });
-    
+
     const disbursements =
       await this.disbursementService.getDisbursementsByAccount(
         { startDate, endDate },
         loggedInAccount
       );
 
-    if (bookingTrips.length === 0 && disbursements.length === 0) {
+    if (bookings.length === 0 && disbursements.length === 0) {
       return;
     }
 
-    const bookingTripGroupByTrip = groupBy(
-      bookingTrips,
-      (bookingTrip) => bookingTrip.trip.id
-    );
+    const bookingsGroupByTrip = groupBy(bookings, (booking) => booking.tripId);
 
     const disbursementsGroupByTrip = groupBy(
       disbursements,
@@ -863,32 +836,33 @@ export class ReportingService {
 
     const bookingTripsBreakdown = [];
 
-    for (const [_tripId, bookingTrips] of Object.entries(
-      bookingTripGroupByTrip
+    for (const [_tripId, groupedBookings] of Object.entries(
+      bookingsGroupByTrip
     ) as any) {
       let passengerBreakdown = [];
       let vehicleBreakdown = [];
       let passengerRefundBreakdown = [];
       let vehicleRefundBreakdown = [];
 
-      bookingTrips.forEach((booking) => {
+      groupedBookings.forEach((booking) => {
         const collect = booking.booking.voucherCode === 'COLLECT_BOOKING';
 
         booking.booking.bookingTripPassengers.forEach((passenger) => {
           const cabinName = passenger.cabin.cabinType.name;
-          const isPassengerCancelled =
-            passenger.removedReasonType === 'PassengersFault';
-          const passengerFare = passenger.bookingPaymentItems.find(
-            ({ type }) => type === 'Fare'
-          )?.price;
-          const discountAmount =
-            passenger.bookingPaymentItems.find(
-              ({ type }) => type === 'VoucherDiscount'
-            )?.price ?? 0;
-          const partialRefundAmount =
-            passenger.bookingPaymentItems.find(
-              ({ type }) => type === 'CancellationRefund'
-            )?.price ?? 0;
+          let passengerFare = 0;
+          let discountAmount = 0;
+          let partialRefundAmount = 0;
+          let isPassengerCancelled = false;
+          passenger.bookingPaymentItems.forEach((paymentItem) => {
+            if (paymentItem.type === 'Fare') {
+              passengerFare = paymentItem.price;
+            } else if (paymentItem.type === 'VoucherDiscount') {
+              discountAmount = paymentItem.price;
+            } else if (paymentItem.type === 'CancellationRefund') {
+              partialRefundAmount = paymentItem.price;
+              isPassengerCancelled = true;
+            }
+          });
 
           if (!isPassengerCancelled) {
             const passengerBreakdownArr =
@@ -920,19 +894,20 @@ export class ReportingService {
         });
 
         booking.booking.bookingTripVehicles.forEach((vehicle) => {
-          const isVehicleCancelled =
-            vehicle.removedReasonType === 'PassengersFault';
-          const vehicleFare = vehicle.bookingPaymentItems.find(
-            ({ type }) => type === 'Fare'
-          )?.price;
-          const discountAmount =
-            vehicle.bookingPaymentItems.find(
-              ({ type }) => type === 'VoucherDiscount'
-            )?.price ?? 0;
-          const partialRefundAmount =
-            vehicle.bookingPaymentItems.find(
-              ({ type }) => type === 'CancellationRefund'
-            )?.price ?? 0;
+          let vehicleFare = 0;
+          let discountAmount = 0;
+          let partialRefundAmount = 0;
+          let isVehicleCancelled = false;
+          vehicle.bookingPaymentItems.forEach((paymentItem) => {
+            if (paymentItem.type === 'Fare') {
+              vehicleFare = paymentItem.price;
+            } else if (paymentItem.type === 'VoucherDiscount') {
+              discountAmount = paymentItem.price;
+            } else if (paymentItem.type === 'CancellationRefund') {
+              partialRefundAmount = paymentItem.price;
+              isVehicleCancelled = true;
+            }
+          });
 
           if (!isVehicleCancelled) {
             const vehicleBreakdownArr =
@@ -962,7 +937,10 @@ export class ReportingService {
         });
       });
 
-      const tripData = bookingTrips[0].trip;
+      const tripData =
+        bookings[0].booking.bookingTripPassengers.length > 0
+          ? bookings[0].booking.bookingTripPassengers[0].trip
+          : bookings[0].booking.bookingTripVehicles[0].trip;
 
       bookingTripsBreakdown.push({
         ...this.reportingMapper.convertTripsForReporting(tripData),
