@@ -21,6 +21,7 @@ import BookingCancellationModal from '../modals/BookingCancellationModal';
 import BookingTripSummary from './BookingTripSummary';
 import { combineBookingPaymentItems } from '@ayahay/services/booking.service';
 import { useBookingControls } from '@ayahay/hooks/booking';
+import { IPassenger, IVehicle } from '@ayahay/models';
 
 const { useBreakpoint } = Grid;
 const { Title } = Typography;
@@ -36,7 +37,17 @@ interface BookingSummaryProps {
     reasonType: keyof typeof BOOKING_CANCELLATION_TYPE
   ) => Promise<void>;
   onCheckInPassenger?: (tripId: number, passengerId: number) => Promise<void>;
+  onUpdatePassenger?: (
+    tripId: number,
+    passengerId: number,
+    passenger: IPassenger
+  ) => Promise<void>;
   onCheckInVehicle?: (tripId: number, vehicleId: number) => Promise<void>;
+  onUpdateVehicle?: (
+    tripId: number,
+    vehicleId: number,
+    vehicle: IVehicle
+  ) => Promise<void>;
 }
 
 export default function BookingSummary({
@@ -47,7 +58,9 @@ export default function BookingSummary({
   onPayBooking,
   onCancelBooking,
   onCheckInPassenger,
+  onUpdatePassenger,
   onCheckInVehicle,
+  onUpdateVehicle,
 }: BookingSummaryProps) {
   const screens = useBreakpoint();
 
@@ -205,7 +218,9 @@ export default function BookingSummary({
           titleLevel={titleLevel}
           canCheckIn={canCheckIn}
           onCheckInPassenger={onCheckInPassenger}
+          onUpdatePassenger={onUpdatePassenger}
           onCheckInVehicle={onCheckInVehicle}
+          onUpdateVehicle={onUpdateVehicle}
         />
       )}
       {bookingPaymentItems.length > 0 && (

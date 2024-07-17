@@ -1,11 +1,4 @@
-import {
-  Button,
-  Checkbox,
-  DatePicker,
-  Form,
-  Input,
-  Steps,
-} from 'antd';
+import { Button, Checkbox, DatePicker, Form, Input, Steps } from 'antd';
 import EnumSelect from '@ayahay/components/form/EnumSelect';
 import { SEX } from '@ayahay/constants';
 import { buttonStyle } from './Login';
@@ -13,6 +6,7 @@ import { useState } from 'react';
 import { InfoCircleOutlined, UserOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { RangePickerProps } from 'antd/es/date-picker';
+import PassengerFields from '@/components/form/PassengerFields';
 
 interface RegisterProps {
   onFinishRegister: (values: any) => Promise<void>;
@@ -178,80 +172,8 @@ export default function Register({
           </Button>
         </Form.Item>
       </div>
-
       <div style={{ display: currentStep === 1 ? 'block' : 'none' }}>
-        <Form.Item
-          label='First Name:'
-          name='firstName'
-          rules={[
-            {
-              required: true,
-              message: 'Please input your first name',
-            },
-          ]}
-        >
-          <Input placeholder='Enter first name' />
-        </Form.Item>
-        <Form.Item
-          label='Last Name:'
-          name='lastName'
-          rules={[
-            {
-              required: true,
-              message: 'Please input your last name',
-            },
-          ]}
-        >
-          <Input placeholder='Enter last name' />
-        </Form.Item>
-        <EnumSelect
-          _enum={SEX}
-          disabled={false}
-          label='Sex:'
-          name='sex'
-          rules={[
-            {
-              required: true,
-              message: 'Please choose your sex',
-            },
-          ]}
-        />
-        <Form.Item
-          label='Birthday:'
-          name='birthday'
-          rules={[
-            {
-              required: true,
-              message: 'Please input your birthday',
-            },
-          ]}
-        >
-          <DatePicker style={{ width: '100%' }} disabledDate={disabledDate} />
-        </Form.Item>
-        <Form.Item
-          label='Address:'
-          name='address'
-          rules={[
-            {
-              required: true,
-              message: 'Please input your address',
-            },
-          ]}
-        >
-          <Input placeholder='Enter address' />
-        </Form.Item>
-        <Form.Item
-          label='Nationality:'
-          name='nationality'
-          rules={[
-            {
-              required: true,
-              message: 'Please input your nationality',
-            },
-          ]}
-        >
-          <Input placeholder='Enter nationality' />
-        </Form.Item>
+        <PassengerFields />
         <Form.Item>
           <Button key='back' onClick={previousStep} style={buttonStyle}>
             Back

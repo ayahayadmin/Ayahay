@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
 import {
   IPassenger,
   ITrip,
@@ -403,5 +407,31 @@ export class BookingValidator {
       booking,
       loggedInAccount
     );
+  }
+
+  verifyLoggedInUserHasAccessToBooking(loggedInAccount, booking): void {
+    // allow if account is the booking's creator
+    if (
+      loggedInAccount !== undefined &&
+      booking.createdByAccountId === loggedInAccount.id
+    ) {
+      return;
+    }
+
+    // allow if booking was created anonymously
+    if (booking.createdByAccountId === null) {
+      return;
+    }
+
+    try {
+      this.authService.verifyAccountHasAccessToShippingLineRestrictedEntity(
+        booking,
+        loggedInAccount
+      );
+      // allow if account has access to booking's shipping line
+      return;
+    } catch {}
+
+    throw new ForbiddenException();
   }
 }

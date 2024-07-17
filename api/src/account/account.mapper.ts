@@ -17,25 +17,29 @@ export class AccountMapper {
   ) {}
 
   convertAccountToDto(account: any): IAccount {
+    if (!account) {
+      return undefined;
+    }
+
     return {
       id: account.id,
       email: account.email,
       emailConsent: account.emailConsent,
       passengerId: account.passengerId ?? undefined,
-      passenger: account.passenger
-        ? this.passengerMapper.convertPassengerToDto(account.passenger, true)
-        : undefined,
+      passenger: this.passengerMapper.convertPassengerToDto(
+        account.passenger,
+        true
+      ),
       role: account.role as ACCOUNT_ROLE,
-      shippingLineId: account.shippingLineId,
+      shippingLineId: account.shippingLineId ?? undefined,
       shippingLine: this.shippingLineMapper.convertShippingLineToDto(
         account.shippingLine
       ),
-      travelAgencyId: account.travelAgencyId,
+      travelAgencyId: account.travelAgencyId ?? undefined,
       travelAgency: this.travelAgencyMapper.convertTravelAgencyToDto(
         account.travelAgency
       ),
-      clientId: account.clientId,
-
+      clientId: account.clientId ?? undefined,
       vehicles: account.vehicles?.map((vehicle) =>
         this.vehicleMapper.convertVehicleToDto(vehicle)
       ),

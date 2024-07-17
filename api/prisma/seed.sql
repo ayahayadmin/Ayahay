@@ -327,5 +327,3 @@ INSERT INTO ayahay.travel_agency_shipping_line (travel_agency_id, shipping_line_
     (SELECT id FROM ayahay.shipping_line WHERE "name" = 'E.B. Aznar Shipping Corporation'),
     (SELECT id FROM ayahay.travel_agency WHERE "name" = 'Ayahay Travel Agency')
 );
-
-INSERT INTO ayahay.voucher ("code")

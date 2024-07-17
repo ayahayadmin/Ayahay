@@ -56,9 +56,6 @@ export default function CreateBookingForm({
   const [currentStep, setCurrentStep] = useState(0);
 
   const nextStep = () => {
-    if (currentStep === 0) {
-      setFirstPassengerAsConsignee();
-    }
     setCurrentStep(currentStep + 1);
   };
 
@@ -185,14 +182,8 @@ export default function CreateBookingForm({
   const payBooking = async (tentativeBookingId: number): Promise<void> => {
     setLoadingMessage('Initiating payment...');
 
-    const contactEmail = form.getFieldValue('contactEmail');
-    const contactMobile = form.getFieldValue('contactMobile');
-    const consigneeName = form.getFieldValue('consigneeName');
     const response = await startPaymentForBooking(tentativeBookingId, {
       paymentGateway,
-      contactEmail,
-      contactMobile,
-      consigneeName,
     });
 
     setLoadingMessage('');
@@ -287,6 +278,16 @@ export default function CreateBookingForm({
     );
     if (changedAgeField !== undefined) {
       onAgeChange(changedAgeField);
+    }
+
+    const changedNameField = changedFields.find(
+      (field) =>
+        field.name.length > 4 &&
+        field.name[3] === 0 &&
+        (field.name.includes('firstName') || field.name.includes('lastName'))
+    );
+    if (changedNameField && !form.isFieldTouched('consigneeName')) {
+      setFirstPassengerAsConsignee();
     }
   };
 

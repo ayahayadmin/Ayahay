@@ -5,6 +5,10 @@ import { Prisma } from '@prisma/client';
 @Injectable()
 export class PassengerMapper {
   convertPassengerToDto(passenger: any, withBuddies?: boolean): IPassenger {
+    if (!passenger) {
+      return undefined;
+    }
+
     return {
       id: passenger.id,
       buddyId: passenger.buddyId,

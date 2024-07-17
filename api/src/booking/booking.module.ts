@@ -13,6 +13,8 @@ import { VoucherModule } from '@/voucher/voucher.module';
 import { BookingRequestService } from '@/booking/booking-request.service';
 import { BookingWebhookService } from '@/booking/booking-webhook.service';
 import { WebhookModule } from '@/webhook/webhook.module';
+import { BookingVehicleService } from './booking-vehicle.service';
+import { BookingPassengerService } from './booking-passenger.service';
 
 @Module({
   imports: [
@@ -32,6 +34,8 @@ import { WebhookModule } from '@/webhook/webhook.module';
     BookingReservationService,
     BookingPricingService,
     BookingWebhookService,
+    BookingPassengerService,
+    BookingVehicleService,
   ],
   exports: [
     BookingService,

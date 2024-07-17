@@ -1,4 +1,4 @@
-import { IBooking, IBookingTripPassenger } from '@ayahay/models';
+import { IBookingTripPassenger } from '@ayahay/models';
 
 export function getBookingPassengersByTripId(
   tripId: number

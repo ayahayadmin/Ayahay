@@ -1,6 +1,13 @@
-import { IBooking, IBookingPaymentItem, IBookingTrip } from '@ayahay/models';
+import {
+  IBooking,
+  IBookingPaymentItem,
+  IBookingTrip,
+  IPassenger,
+  IVehicle,
+} from '@ayahay/models';
 import axios from './axios';
 import { BOOKING_API, BOOKING_CANCELLATION_TYPE } from '@ayahay/constants';
+import { FormInstance } from 'antd';
 
 export async function cancelBooking(
   bookingId: string,
@@ -103,4 +110,54 @@ export function combineBookingPaymentItems(
   });
   bookingPaymentItems.push(...(booking.bookingPaymentItems ?? []));
   return bookingPaymentItems;
+}
+
+export function buildPassengerFromForm(form: FormInstance): IPassenger {
+  return {
+    id: -1,
+    firstName: form.getFieldValue('firstName'),
+    lastName: form.getFieldValue('lastName'),
+    sex: form.getFieldValue('sex'),
+    birthdayIso: form.getFieldValue('birthdayIso').toISOString(),
+    address: form.getFieldValue('address'),
+    nationality: form.getFieldValue('nationality'),
+    occupation: form.getFieldValue('occupation'),
+    civilStatus: form.getFieldValue('civilStatus'),
+  };
+}
+
+export function buildVehicleFromForm(form: FormInstance): IVehicle {
+  return {
+    id: -1,
+    plateNo: form.getFieldValue('plateNo'),
+    modelName: form.getFieldValue('modelName'),
+    modelYear: -1,
+    vehicleTypeId: -1,
+    officialReceiptUrl: '',
+    certificateOfRegistrationUrl: '',
+  };
+}
+
+export async function updateTripPassenger(
+  bookingId: string,
+  tripId: number,
+  passengerId: number,
+  passenger: IPassenger
+): Promise<void> {
+  return axios.patch(
+    `${BOOKING_API}/${bookingId}/trips/${tripId}/passengers/${passengerId}/information`,
+    passenger
+  );
+}
+
+export async function updateTripVehicle(
+  bookingId: string,
+  tripId: number,
+  vehicleId: number,
+  vehicle: IVehicle
+): Promise<void> {
+  return axios.patch(
+    `${BOOKING_API}/${bookingId}/trips/${tripId}/vehicles/${vehicleId}/information`,
+    vehicle
+  );
 }
