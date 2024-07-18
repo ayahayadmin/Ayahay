@@ -178,9 +178,7 @@ export default function TripReportingPage({ params }: any) {
           <Button
             type='primary'
             htmlType='submit'
-            loading={
-              tripsReporting === undefined || disbursements === undefined
-            }
+            loading={tripsReporting === undefined}
             onClick={handleDownloadSummarySalesPerVoyage}
             className={styles['download-btn']}
           >
@@ -202,10 +200,7 @@ export default function TripReportingPage({ params }: any) {
           <Button
             type='primary'
             htmlType='submit'
-            loading={
-              tripsReporting === undefined ||
-              (disbursements === undefined && expenses === undefined)
-            }
+            loading={tripsReporting === undefined}
             onClick={handleDownloadProfitAndLossStatement}
             className={styles['download-btn']}
           >

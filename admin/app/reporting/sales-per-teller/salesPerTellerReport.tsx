@@ -7,9 +7,8 @@ import {
   SalesPerTellerReport as ISalesPerTeller,
   TripSearchByDateRange,
 } from '@ayahay/http';
-import { Button } from 'antd';
+import { App, Button } from 'antd';
 import jsPDF from 'jspdf';
-import { useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
 interface SalesPerTellerReportProps {
@@ -20,29 +19,35 @@ export default function SalesPerTellerReport({
   searchQuery,
 }: SalesPerTellerReportProps) {
   const { loggedInAccount } = useAuth();
+  const { notification } = App.useApp();
   const [data, setData] = useState<ISalesPerTeller | undefined>();
-  const searchParams = useSearchParams();
-  const params = Object.fromEntries(searchParams.entries());
   const salesPerTellerRef = useRef();
 
   useEffect(() => {
     fetchSalesPerTellerData();
-  }, [loggedInAccount, searchQuery]);
+  }, [searchQuery]);
 
   const fetchSalesPerTellerData = async () => {
     setData(await getSalesPerTeller(searchQuery));
   };
 
   const handleDownloadSalesPerTeller = async () => {
-    const doc = new jsPDF('l', 'pt', 'a4', true);
-    const fileName = 'sales-per-teller';
+    if (!salesPerTellerRef.current) {
+      notification.error({
+        message: 'Download failed',
+        description: 'No booking/s or disbursement/s inputted.',
+      });
+    } else {
+      const doc = new jsPDF('l', 'pt', 'a4', true);
+      const fileName = 'sales-per-account';
 
-    doc.html(salesPerTellerRef.current, {
-      async callback(doc) {
-        await doc.save(fileName);
-      },
-      margin: [25, 0, 25, 0],
-    });
+      doc.html(salesPerTellerRef.current, {
+        async callback(doc) {
+          await doc.save(fileName);
+        },
+        margin: [25, 0, 25, 0],
+      });
+    }
   };
 
   return (
@@ -50,17 +55,17 @@ export default function SalesPerTellerReport({
       <Button
         type='primary'
         htmlType='submit'
-        loading={!data}
+        loading={data === undefined}
         onClick={handleDownloadSalesPerTeller}
       >
         <DownloadOutlined /> Download
       </Button>
       <div style={{ display: 'none' }}>
-        {data && (
+        {data && searchQuery && (
           <SalesPerTeller
             data={data}
-            startDate={params.startDate}
-            endDate={params.endDate}
+            startDate={searchQuery.startDate}
+            endDate={searchQuery.endDate}
             ref={salesPerTellerRef}
           />
         )}

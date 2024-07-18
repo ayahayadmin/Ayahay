@@ -1,32 +1,38 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Badge } from 'antd';
-import { IBookingTripVehicle } from '@ayahay/models';
+import { Button, Badge, Flex } from 'antd';
+import { IBookingTripVehicle, IVehicle } from '@ayahay/models';
 import Table, { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
-import { ExportOutlined } from '@ant-design/icons';
+import { EditOutlined, ExportOutlined } from '@ant-design/icons';
+import UpdateTripVehicleModal from '../modals/UpdateTripVehicleModal';
 
 interface VehiclesSummaryProps {
   vehicles?: IBookingTripVehicle[];
   canCheckIn?: boolean;
   onCheckInVehicle?: (tripId: number, vehicleId: number) => Promise<void>;
+  onUpdateVehicle?: (
+    tripId: number,
+    vehicleId: number,
+    vehicle: IVehicle
+  ) => Promise<void>;
 }
 
-const vehicleColumnsWithoutActions: ColumnsType<VehicleInformation> = [
+const vehicleColumnsWithoutActions: ColumnsType<IBookingTripVehicle> = [
   {
     title: 'Name',
-    render: (_, vehicle) => {
+    render: (_, { vehicle }) => {
       return (
         <div>
-          <strong>{vehicle.plateNo}</strong>
-          <p>{vehicle.model}</p>
+          <strong>{vehicle?.plateNo}</strong>
+          <p>{vehicle?.modelName}</p>
         </div>
       );
     },
   },
   {
     title: 'Type',
-    dataIndex: 'vehicleTypeName',
     key: 'vehicleTypeName',
+    render: (_, { vehicle }) => vehicle?.vehicleType?.name,
   },
 ];
 
@@ -34,30 +40,20 @@ export default function VehiclesSummary({
   vehicles,
   canCheckIn,
   onCheckInVehicle,
+  onUpdateVehicle,
 }: VehiclesSummaryProps) {
+  const [vehicleModalOpen, setVehicleModalOpen] = useState<boolean>(false);
+  const [selectedTripVehicle, setSelectedTripVehicle] = useState<
+    IBookingTripVehicle | undefined
+  >();
   const [vehicleColumns, setVehicleColumns] = useState<
-    ColumnsType<VehicleInformation>
+    ColumnsType<IBookingTripVehicle>
   >(vehicleColumnsWithoutActions);
-  const [vehicleRows, setVehicleRows] = useState<VehicleInformation[]>([]);
 
   const initializeData = () => {
     if (vehicles === undefined) {
-      setVehicleRows([]);
       return;
     }
-
-    setVehicleRows(
-      vehicles.map(({ vehicle, ...bookingVehicle }, index) => ({
-        key: index,
-        bookingId: bookingVehicle.bookingId,
-        tripId: bookingVehicle.tripId,
-        vehicleId: bookingVehicle.vehicleId,
-        plateNo: vehicle?.plateNo ?? '',
-        model: vehicle?.modelName ?? '',
-        vehicleTypeName: vehicle?.vehicleType?.name ?? '',
-        checkInDate: bookingVehicle.checkInDate,
-      }))
-    );
 
     if (onCheckInVehicle === undefined || !canCheckIn) {
       return;
@@ -90,12 +86,24 @@ export default function VehiclesSummary({
       {
         title: 'Actions',
         render: (_, vehicle) => (
-          <Button
-            type='default'
-            href={`/bookings/${vehicle.bookingId}/trips/${vehicle.tripId}/vehicles/${vehicle.vehicleId}`}
-            target='_blank'
-            icon={<ExportOutlined />}
-          />
+          <Flex gap={8}>
+            {onUpdateVehicle && (
+              <Button
+                type='primary'
+                onClick={() => {
+                  setSelectedTripVehicle(vehicle);
+                  setVehicleModalOpen(true);
+                }}
+                icon={<EditOutlined />}
+              />
+            )}
+            <Button
+              type='default'
+              href={`/bookings/${vehicle.bookingId}/trips/${vehicle.tripId}/vehicles/${vehicle.vehicleId}`}
+              target='_blank'
+              icon={<ExportOutlined />}
+            />
+          </Flex>
         ),
       },
     ]);
@@ -105,24 +113,36 @@ export default function VehiclesSummary({
     initializeData();
   }, [vehicles]);
 
-  return (
-    <Table
-      columns={vehicleColumns}
-      dataSource={vehicleRows}
-      pagination={false}
-      loading={vehicles === undefined}
-      tableLayout='fixed'
-    ></Table>
-  );
-}
+  const updateTripVehicle = async (vehicle: IVehicle): Promise<void> => {
+    if (!selectedTripVehicle || !onUpdateVehicle) {
+      return;
+    }
+    await onUpdateVehicle(
+      selectedTripVehicle.tripId,
+      selectedTripVehicle.vehicleId,
+      vehicle
+    );
+    setVehicleModalOpen(false);
+  };
 
-interface VehicleInformation {
-  key: number;
-  bookingId: string;
-  tripId: number;
-  vehicleId: number;
-  plateNo: string;
-  model: string;
-  vehicleTypeName: string;
-  checkInDate?: string;
+  return (
+    <>
+      <Table
+        columns={vehicleColumns}
+        dataSource={vehicles}
+        pagination={false}
+        loading={vehicles === undefined}
+        tableLayout='fixed'
+      ></Table>
+      {onUpdateVehicle && (
+        <UpdateTripVehicleModal
+          open={vehicleModalOpen}
+          originalTripVehicle={selectedTripVehicle}
+          onUpdateVehicle={(vehicle) => updateTripVehicle(vehicle)}
+          onCancel={() => setVehicleModalOpen(false)}
+          width={300}
+        />
+      )}
+    </>
+  );
 }

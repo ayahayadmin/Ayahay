@@ -9,12 +9,15 @@ import {
   cancelBooking,
   checkInPassenger,
   checkInVehicle,
+  updateTripPassenger,
+  updateTripVehicle,
 } from '@ayahay/services/booking.service';
 import { getAxiosError } from '@ayahay/services/error.service';
 import { useAuth } from '@/contexts/AuthContext';
 import { startPaymentForBookingRequest } from '@/services/payment.service';
 import { InfoCircleOutlined } from '@ant-design/icons';
 import { BOOKING_CANCELLATION_TYPE } from '@ayahay/constants';
+import { IPassenger, IVehicle } from '@ayahay/models';
 
 const { Title } = Typography;
 
@@ -181,6 +184,47 @@ export default function BookingSummaryPage({ params }) {
     }
   };
 
+  const updatePassenger = async (
+    tripId: number,
+    PassengerId: number,
+    Passenger: IPassenger
+  ) => {
+    if (booking === undefined) {
+      return;
+    }
+
+    try {
+      await updateTripPassenger(booking.id, tripId, PassengerId, Passenger);
+      api.success({
+        message: 'Update Success',
+        description: 'Passenger has been updated successfully.',
+      });
+      loadBooking();
+    } catch (e) {
+      handleAxiosError(e, 'Update Failed');
+    }
+  };
+
+  const updateVehicle = async (
+    tripId: number,
+    VehicleId: number,
+    Vehicle: IVehicle
+  ) => {
+    if (booking === undefined) {
+      return;
+    }
+
+    try {
+      await updateTripVehicle(booking.id, tripId, VehicleId, Vehicle);
+      api.success({
+        message: 'Update Success',
+        description: 'Vehicle has been updated successfully.',
+      });
+      loadBooking();
+    } catch (e) {
+      handleAxiosError(e, 'Update Failed');
+    }
+  };
   return (
     <div className={styles['main-container']}>
       {errorCode === undefined && (
@@ -197,7 +241,9 @@ export default function BookingSummaryPage({ params }) {
             onPayBooking={payBooking}
             onCancelBooking={onCancelBooking}
             onCheckInPassenger={checkInBookingPassenger}
+            onUpdatePassenger={updatePassenger}
             onCheckInVehicle={checkInBookingVehicle}
+            onUpdateVehicle={updateVehicle}
           />
         </>
       )}

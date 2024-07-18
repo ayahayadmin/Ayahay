@@ -642,7 +642,12 @@ export default function BookingInformationForm({
                   {passengers.map(({ passenger }: any) => (
                     <Radio
                       value={`${passenger?.firstName} ${passenger?.lastName}`}
-                    >{`${passenger?.firstName} ${passenger?.lastName}`}</Radio>
+                    >
+                      {`
+                        ${passenger?.firstName ?? ''} 
+                        ${passenger?.lastName ?? ''}
+                      `}
+                    </Radio>
                   ))}
                 </Radio.Group>
               )}

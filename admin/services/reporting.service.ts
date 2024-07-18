@@ -17,13 +17,11 @@ import { getPort, getPorts } from '@ayahay/services/port.service';
 import { getShip, getShips } from '@ayahay/services/ship.service';
 import { isEmpty } from 'lodash';
 
-export async function getTripsReporting(
-  tripId: number
-): Promise<TripReport | undefined> {
+export async function getTripsReporting(tripId: number): Promise<TripReport> {
   const { data } = await axios.get(
     `${REPORTING_API}/trips/${tripId}/reporting`
   );
-  return data || undefined;
+  return data;
 }
 
 export async function getPortsByShip(

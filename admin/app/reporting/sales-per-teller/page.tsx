@@ -57,7 +57,7 @@ export default function SalesPerTellerPage() {
   return (
     <div className={styles['main-container']}>
       <Title level={1} style={{ fontSize: 25 }}>
-        Sales Per Teller
+        Sales Per Account
       </Title>
       <Form
         form={form}

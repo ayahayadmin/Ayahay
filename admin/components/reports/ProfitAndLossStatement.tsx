@@ -95,7 +95,7 @@ const ProfitAndLossStatement = forwardRef(function (
 
   let totalExpenses = 0;
 
-  data.passengers.map((passenger) => {
+  data.passengers?.map((passenger) => {
     const paymentStatus = passenger.paymentStatus;
     totalPassengerSales += passenger.collect
       ? passenger.discountAmount
@@ -126,7 +126,7 @@ const ProfitAndLossStatement = forwardRef(function (
     }
   });
 
-  data.vehicles.map((vehicle) => {
+  data.vehicles?.map((vehicle) => {
     const paymentStatus = vehicle.paymentStatus;
     totalVehicleSales += vehicle.collect
       ? vehicle.discountAmount
@@ -250,7 +250,7 @@ const ProfitAndLossStatement = forwardRef(function (
                   <tr>
                     <td>{data.shipName}</td>
                     {/* will still discuss what if there are more than 1 teller in a trip */}
-                    <td>{data.passengers[0]?.teller}</td>
+                    <td>{data.passengers && data.passengers[0]?.teller}</td>
                     <td>PAX INCOME</td>
                     <td style={{ textAlign: 'left' }}>
                       PHP&nbsp;
@@ -298,7 +298,7 @@ const ProfitAndLossStatement = forwardRef(function (
                   <tr>
                     <td>{data.shipName}</td>
                     {/* will still discuss what if there are more than 1 teller in a trip */}
-                    <td>{data.passengers[0]?.teller}</td>
+                    <td>{data.passengers && data.passengers[0]?.teller}</td>
                     <td>CARGO INCOME</td>
                     <td style={{ textAlign: 'left' }}>
                       PHP&nbsp;
@@ -443,7 +443,7 @@ const ProfitAndLossStatement = forwardRef(function (
                   <tr>
                     <td>{getFullDate(disbursement.date)}</td>
                     {/* TODO: will still discuss what if there are more than 1 teller in a trip */}
-                    <td>{data.passengers[0]?.teller}</td>
+                    <td>{data.passengers && data.passengers[0]?.teller}</td>
                     <td className={styles['td-text-wrap']}>
                       {disbursement.officialReceipt}
                     </td>

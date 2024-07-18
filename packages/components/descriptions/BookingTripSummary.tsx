@@ -1,4 +1,4 @@
-import { IBookingTrip } from '@ayahay/models';
+import { IBookingTrip, IPassenger, IVehicle } from '@ayahay/models';
 import { Typography } from 'antd';
 import React from 'react';
 import TripSummary from './TripSummary';
@@ -12,7 +12,17 @@ interface BookingTripSummaryProps {
   titleLevel: 1 | 2 | 3 | 4 | 5;
   canCheckIn?: boolean;
   onCheckInPassenger?: (tripId: number, passengerId: number) => Promise<void>;
+  onUpdatePassenger?: (
+    tripId: number,
+    passengerId: number,
+    passenger: IPassenger
+  ) => Promise<void>;
   onCheckInVehicle?: (tripId: number, vehicleId: number) => Promise<void>;
+  onUpdateVehicle?: (
+    tripId: number,
+    vehicleId: number,
+    vehicle: IVehicle
+  ) => Promise<void>;
 }
 
 export default function BookingTripSummary({
@@ -20,7 +30,9 @@ export default function BookingTripSummary({
   titleLevel,
   canCheckIn,
   onCheckInPassenger,
+  onUpdatePassenger,
   onCheckInVehicle,
+  onUpdateVehicle,
 }: BookingTripSummaryProps) {
   return (
     <>
@@ -36,6 +48,7 @@ export default function BookingTripSummary({
               passengers={bookingTrip.bookingTripPassengers}
               canCheckIn={canCheckIn}
               onCheckInPassenger={onCheckInPassenger}
+              onUpdatePassenger={onUpdatePassenger}
             />
           </section>
         )}
@@ -47,6 +60,7 @@ export default function BookingTripSummary({
               vehicles={bookingTrip.bookingTripVehicles}
               canCheckIn={canCheckIn}
               onCheckInVehicle={onCheckInVehicle}
+              onUpdateVehicle={onUpdateVehicle}
             />
           </section>
         )}

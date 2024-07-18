@@ -14,6 +14,8 @@ import {
   IBooking,
   IBookingTripPassenger,
   IBookingTripVehicle,
+  IPassenger,
+  IVehicle,
 } from '@ayahay/models';
 import {
   PaginatedRequest,
@@ -43,6 +45,8 @@ import {
   CreateBookingRequest,
   CreateBookingResponse,
 } from '@/specs/booking.specs';
+import { BookingPassengerService } from './booking-passenger.service';
+import { BookingVehicleService } from './booking-vehicle.service';
 
 @ApiTags('Bookings')
 @Controller('bookings')
@@ -51,6 +55,8 @@ export class BookingController {
   constructor(
     private readonly bookingService: BookingService,
     private readonly bookingRequestService: BookingRequestService,
+    private readonly bookingPassengerService: BookingPassengerService,
+    private readonly bookingVehicleService: BookingVehicleService,
     private readonly accountService: AccountService
   ) {}
 
@@ -143,7 +149,7 @@ export class BookingController {
     @Query() pagination: PaginatedRequest,
     @Request() req
   ): Promise<PaginatedResponse<PassengerBookingSearchResponse>> {
-    return this.bookingService.searchPassengerBookings(
+    return this.bookingPassengerService.searchPassengerBookings(
       searchQuery,
       pagination,
       req.user
@@ -158,7 +164,7 @@ export class BookingController {
     @Query() pagination: PaginatedRequest,
     @Request() req
   ): Promise<PaginatedResponse<VehicleBookingSearchResponse>> {
-    return this.bookingService.searchVehicleBookings(
+    return this.bookingVehicleService.searchVehicleBookings(
       searchQuery,
       pagination,
       req.user
@@ -175,7 +181,7 @@ export class BookingController {
     @Param('passengerId') passengerId: number,
     @Request() req
   ): Promise<IBookingTripPassenger> {
-    return this.bookingService.getBookingTripPassenger(
+    return this.bookingPassengerService.getBookingTripPassenger(
       bookingId,
       tripId,
       passengerId,
@@ -193,7 +199,7 @@ export class BookingController {
     @Param('vehicleId') vehicleId: number,
     @Request() req
   ): Promise<IBookingTripVehicle> {
-    return this.bookingService.getBookingTripVehicle(
+    return this.bookingVehicleService.getBookingTripVehicle(
       bookingId,
       tripId,
       vehicleId,
@@ -247,7 +253,7 @@ export class BookingController {
     @Param('tripId') tripId: number,
     @Param('passengerId') passengerId: number
   ): Promise<void> {
-    return this.bookingService.checkInPassenger(
+    return this.bookingPassengerService.checkInPassenger(
       bookingId,
       tripId,
       passengerId,
@@ -278,7 +284,7 @@ export class BookingController {
     @Param('tripId') tripId: number,
     @Param('vehicleId') vehicleId: number
   ): Promise<void> {
-    return this.bookingService.checkInVehicle(
+    return this.bookingVehicleService.checkInVehicle(
       bookingId,
       tripId,
       vehicleId,
@@ -359,7 +365,7 @@ export class BookingController {
     @Body('removedReason') removedReason: string,
     @Body('reasonType') reasonType: keyof typeof BOOKING_CANCELLATION_TYPE
   ): Promise<void> {
-    return this.bookingService.removeTripPassenger(
+    return this.bookingPassengerService.removeTripPassenger(
       bookingId,
       tripId,
       passengerId,
@@ -381,12 +387,50 @@ export class BookingController {
     @Body('removedReason') removedReason: string,
     @Body('reasonType') reasonType: keyof typeof BOOKING_CANCELLATION_TYPE
   ): Promise<void> {
-    return this.bookingService.removeTripVehicle(
+    return this.bookingVehicleService.removeTripVehicle(
       bookingId,
       tripId,
       vehicleId,
       removedReason,
       reasonType,
+      req.user
+    );
+  }
+
+  @Patch(':bookingId/trips/:tripId/passengers/:passengerId/information')
+  @UseGuards(AuthGuard)
+  @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
+  async editTripPassengerInformation(
+    @Param('bookingId') bookingId: string,
+    @Param('tripId') tripId: number,
+    @Param('passengerId') passengerId: number,
+    @Body() passenger: IPassenger,
+    @Request() req: any
+  ): Promise<void> {
+    return this.bookingPassengerService.editPassengerInformation(
+      bookingId,
+      tripId,
+      passengerId,
+      passenger,
+      req.user
+    );
+  }
+
+  @Patch(':bookingId/trips/:tripId/vehicles/:vehicleId/information')
+  @UseGuards(AuthGuard)
+  @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
+  async editTripVehicleInformation(
+    @Param('bookingId') bookingId: string,
+    @Param('tripId') tripId: number,
+    @Param('vehicleId') vehicleId: number,
+    @Body() vehicle: IVehicle,
+    @Request() req: any
+  ): Promise<void> {
+    return this.bookingVehicleService.editVehicleInformation(
+      bookingId,
+      tripId,
+      vehicleId,
+      vehicle,
       req.user
     );
   }

@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Badge } from 'antd';
-import { IBookingTripPassenger } from '@ayahay/models';
+import { Button, Badge, Flex } from 'antd';
+import { IBookingTripPassenger, IPassenger } from '@ayahay/models';
 import { DISCOUNT_TYPE } from '@ayahay/constants/enum';
 import Table, { ColumnsType } from 'antd/es/table';
-import { ExportOutlined } from '@ant-design/icons';
+import { ExportOutlined, EditOutlined } from '@ant-design/icons';
+import UpdateTripPassengerModal from '../modals/UpdateTripPassengerModal';
 import dayjs from 'dayjs';
 import 'dayjs/plugin/relativeTime';
 
@@ -14,24 +15,34 @@ interface PassengersSummaryProps {
   passengers?: IBookingTripPassenger[];
   canCheckIn?: boolean;
   onCheckInPassenger?: (tripId: number, passengerId: number) => Promise<void>;
+  onUpdatePassenger?: (
+    tripId: number,
+    passengerId: number,
+    passenger: IPassenger
+  ) => Promise<void>;
 }
 
-const passengerColumnsWithoutActions: ColumnsType<PassengerInformation> = [
+const passengerColumnsWithoutActions: ColumnsType<IBookingTripPassenger> = [
   {
     title: 'Name',
-    render: (_, passenger) => {
+    render: (_, { passenger, discountType }) => {
+      const name = `${passenger?.sex === 'Male' ? 'MR' : 'MS'} ${
+        passenger?.firstName
+      } ${passenger?.lastName}`;
+
       return (
         <div>
-          <strong>{passenger.name}</strong>
-          <p>{passenger.discountType}</p>
+          <strong>{name}</strong>
+          <p>{discountType ? DISCOUNT_TYPE[discountType] : 'Adult'}</p>
         </div>
       );
     },
   },
   {
     title: 'Cabin',
-    dataIndex: 'cabinTypeName',
     key: 'cabinTypeName',
+    render: (_, bookingTripPassenger) =>
+      bookingTripPassenger.cabin?.cabinType?.name ?? '',
   },
 ];
 
@@ -39,38 +50,17 @@ export default function PassengersSummary({
   passengers,
   canCheckIn,
   onCheckInPassenger,
+  onUpdatePassenger,
 }: PassengersSummaryProps) {
+  const [passengerModalOpen, setPassengerModalOpen] = useState<boolean>(false);
+  const [selectedTripPassenger, setSelectedTripPassenger] = useState<
+    IBookingTripPassenger | undefined
+  >();
   const [passengerColumns, setPassengerColumns] = useState<
-    ColumnsType<PassengerInformation>
+    ColumnsType<IBookingTripPassenger>
   >(passengerColumnsWithoutActions);
-  const [passengerRows, setPassengerRows] = useState<PassengerInformation[]>(
-    []
-  );
 
   useEffect(() => {
-    if (passengers === undefined) {
-      setPassengerRows([]);
-      return;
-    }
-
-    setPassengerRows(
-      passengers.map(({ passenger, ...bookingPassenger }, index) => ({
-        key: index,
-        bookingId: bookingPassenger.bookingId,
-        tripId: bookingPassenger.tripId,
-        passengerId: bookingPassenger.passengerId,
-        name: `${passenger?.sex === 'Male' ? 'MR' : 'MS'} ${
-          passenger?.firstName
-        } ${passenger?.lastName}`,
-        discountType:
-          bookingPassenger.discountType === undefined
-            ? 'Adult'
-            : DISCOUNT_TYPE[bookingPassenger.discountType],
-        cabinTypeName: bookingPassenger.cabin?.cabinType?.name ?? '',
-        checkInDate: bookingPassenger.checkInDate,
-      }))
-    );
-
     if (onCheckInPassenger === undefined || !canCheckIn) {
       return;
     }
@@ -102,35 +92,59 @@ export default function PassengersSummary({
       {
         title: 'Actions',
         render: (_, passenger) => (
-          <Button
-            type='default'
-            href={`/bookings/${passenger.bookingId}/trips/${passenger.tripId}/passengers/${passenger.passengerId}`}
-            target='_blank'
-            icon={<ExportOutlined />}
-          />
+          <Flex gap={8}>
+            {onUpdatePassenger && (
+              <Button
+                type='primary'
+                onClick={() => {
+                  setSelectedTripPassenger(passenger);
+                  setPassengerModalOpen(true);
+                }}
+                icon={<EditOutlined />}
+              />
+            )}
+            <Button
+              type='default'
+              href={`/bookings/${passenger.bookingId}/trips/${passenger.tripId}/passengers/${passenger.passengerId}`}
+              target='_blank'
+              icon={<ExportOutlined />}
+            />
+          </Flex>
         ),
       },
     ]);
   }, [passengers]);
 
-  return (
-    <Table
-      columns={passengerColumns}
-      dataSource={passengerRows}
-      pagination={false}
-      loading={passengers === undefined}
-      tableLayout='fixed'
-    ></Table>
-  );
-}
+  const updateTripPassenger = async (passenger: IPassenger): Promise<void> => {
+    if (!selectedTripPassenger || !onUpdatePassenger) {
+      return;
+    }
+    await onUpdatePassenger(
+      selectedTripPassenger.tripId,
+      selectedTripPassenger.passengerId,
+      passenger
+    );
+    setPassengerModalOpen(false);
+  };
 
-interface PassengerInformation {
-  key: number;
-  bookingId: string;
-  tripId: number;
-  passengerId: number;
-  name: string;
-  discountType: DISCOUNT_TYPE | 'Adult';
-  cabinTypeName: string;
-  checkInDate?: string;
+  return (
+    <>
+      <Table
+        columns={passengerColumns}
+        dataSource={passengers}
+        pagination={false}
+        loading={passengers === undefined}
+        tableLayout='fixed'
+      ></Table>
+      {onUpdatePassenger && (
+        <UpdateTripPassengerModal
+          open={passengerModalOpen}
+          originalTripPassenger={selectedTripPassenger}
+          onUpdatePassenger={(passenger) => updateTripPassenger(passenger)}
+          onCancel={() => setPassengerModalOpen(false)}
+          width={300}
+        />
+      )}
+    </>
+  );
 }

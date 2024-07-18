@@ -14,8 +14,7 @@ import { RateTableMapper } from '@/rate-table/rate-table.mapper';
 export class ShippingLineMapper {
   constructor(
     private readonly shipMapper: ShipMapper,
-    private readonly portMapper: PortMapper,
-    private readonly rateTableMapper: RateTableMapper
+    private readonly portMapper: PortMapper
   ) {}
 
   convertShippingLineToDto(shippingLine: ShippingLine): IShippingLine {
