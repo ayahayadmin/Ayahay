@@ -48,7 +48,6 @@ export default function BillOfLadingPage({ params }: any) {
         className='hide-on-print'
         type='primary'
         onClick={() => window.print()}
-        tooltip='Print'
         icon={<PrinterOutlined height={72} width={72} />}
       ></FloatButton>
     </div>

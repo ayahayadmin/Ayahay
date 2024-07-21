@@ -351,7 +351,7 @@ interface BlankUnderlineProps {
   width: string;
 }
 
-function BlankUnderline({ width }: BlankUnderlineProps) {
+export function BlankUnderline({ width }: BlankUnderlineProps) {
   return (
     <span
       style={{

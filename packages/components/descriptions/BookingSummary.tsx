@@ -13,7 +13,7 @@ import {
   BOOKING_STATUS,
   PAYMENT_STATUS,
 } from '@ayahay/constants';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import dayjs from 'dayjs';
 import PaymentSummary from './PaymentSummary';
 import { PrinterOutlined } from '@ant-design/icons';
@@ -21,6 +21,7 @@ import BookingCancellationModal from '../modals/BookingCancellationModal';
 import BookingTripSummary from './BookingTripSummary';
 import { combineBookingPaymentItems } from '@ayahay/services/booking.service';
 import { useBookingControls } from '@ayahay/hooks/booking';
+import BookingReminders from './BookingReminders';
 import { IPassenger, IVehicle } from '@ayahay/models';
 
 const { useBreakpoint } = Grid;
@@ -66,6 +67,7 @@ export default function BookingSummary({
 
   const [isCancellationModalOpen, setIsCancellationModalOpen] = useState(false);
   const [selectedTripIndex, setSelectedTripIndex] = useState(0);
+  const [issuedBy, setIssuedBy] = useState('');
 
   const bookingTrip = booking?.bookingTrips?.[selectedTripIndex];
   const trip = bookingTrip?.trip;
@@ -73,9 +75,26 @@ export default function BookingSummary({
     ? combineBookingPaymentItems(booking)
     : [];
 
+  useEffect(() => {
+    if (
+      !booking?.createdByAccount ||
+      booking.createdByAccount.role === 'Passenger'
+    ) {
+      setIssuedBy('Ayahay');
+      return;
+    }
+    const { email, travelAgency, shippingLine } = booking.createdByAccount;
+    const emailWithoutDomain = email.split('@')[0];
+    if (travelAgency) {
+      setIssuedBy(`${emailWithoutDomain} @ ${travelAgency.name}`);
+    }
+    if (shippingLine) {
+      setIssuedBy(`${emailWithoutDomain} @ ${shippingLine.name}`);
+    }
+  }, [booking]);
   const {
-    isPrinting,
-    onClickPrint,
+    isThermalPrinting,
+    setIsThermalPrinting,
     showQrCode,
     showCancelBookingButton,
     getUserAction,
@@ -111,10 +130,24 @@ export default function BookingSummary({
           Pay
         </Button>
       )}
-      <Button type='primary' onClick={() => onClickPrint()}>
-        <PrinterOutlined />
-        Print Ticket
-      </Button>
+      {hasPrivilegedAccess && (
+        <Button type='primary' onClick={() => setIsThermalPrinting(true)}>
+          <PrinterOutlined />
+          Print Receipt
+        </Button>
+      )}
+      {bookingTrip &&
+        bookingTrip.bookingTripPassengers &&
+        bookingTrip.bookingTripPassengers?.length > 0 && (
+          <Button
+            type='primary'
+            href={`/bookings/${booking?.id}/itinerary`}
+            target='_blank'
+          >
+            <PrinterOutlined />
+            Print Itinerary
+          </Button>
+        )}
       {bookingTrip &&
         bookingTrip.bookingTripVehicles &&
         bookingTrip.bookingTripVehicles.length > 0 && (
@@ -173,6 +206,15 @@ export default function BookingSummary({
               column={1}
               style={{ marginBottom: 40 }}
             >
+              <Descriptions.Item label='Booking ID'>
+                {booking.id.toUpperCase()}
+              </Descriptions.Item>
+              <Descriptions.Item label='Booking Reference No'>
+                {booking.referenceNo}
+              </Descriptions.Item>
+              <Descriptions.Item label='Issued By'>
+                {issuedBy}
+              </Descriptions.Item>
               <Descriptions.Item label='Booking Status'>
                 {BOOKING_STATUS[booking.bookingStatus]}
               </Descriptions.Item>
@@ -185,15 +227,16 @@ export default function BookingSummary({
               <Descriptions.Item label='Booking Reference No'>
                 {booking.referenceNo}
               </Descriptions.Item>
-              {hasPrivilegedAccess && (
-                <>
-                  <Descriptions.Item label='Contact Number'>
-                    {booking.contactMobile}
-                  </Descriptions.Item>
-                  <Descriptions.Item label='Remarks'>
-                    {booking.remarks}
-                  </Descriptions.Item>
-                </>
+
+              {booking.contactMobile && (
+                <Descriptions.Item label='Contact Number'>
+                  {booking.contactMobile}
+                </Descriptions.Item>
+              )}
+              {booking.contactEmail && (
+                <Descriptions.Item label='Email Address'>
+                  {booking.contactEmail}
+                </Descriptions.Item>
               )}
             </Descriptions>
             {bookingActions}
@@ -229,6 +272,10 @@ export default function BookingSummary({
           <PaymentSummary paymentItems={bookingPaymentItems} />
         </section>
       )}
+      <BookingReminders
+        shippingLineName={trip?.shippingLine?.name}
+        titleLevel={titleLevel}
+      />
     </div>
   );
 
@@ -331,8 +378,8 @@ export default function BookingSummary({
 
   return (
     <Skeleton loading={booking === undefined} active>
-      {isPrinting && minimalBookingSummary}
-      {!isPrinting && completeBookingSummary}
+      {isThermalPrinting && minimalBookingSummary}
+      {!isThermalPrinting && completeBookingSummary}
     </Skeleton>
   );
 }

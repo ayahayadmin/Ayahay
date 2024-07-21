@@ -212,6 +212,14 @@ export class BookingService {
         id,
       },
       include: {
+        shippingLine: true,
+        createdByAccount: {
+          include: {
+            shippingLine: true,
+            travelAgency: true,
+            client: true,
+          },
+        },
         bookingTrips: {
           include: {
             trip: {
