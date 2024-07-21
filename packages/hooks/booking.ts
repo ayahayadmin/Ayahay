@@ -6,14 +6,14 @@ export function useBookingControls(
   trip: ITrip | undefined,
   hasPrivilegedAccess: boolean | undefined
 ) {
-  const [isPrinting, setIsPrinting] = useState(false);
+  const [isThermalPrinting, setIsThermalPrinting] = useState(false);
 
   useEffect(() => {
-    if (isPrinting) {
+    if (isThermalPrinting) {
       window.print();
-      setIsPrinting(false);
+      setIsThermalPrinting(false);
     }
-  }, [isPrinting]);
+  }, [isThermalPrinting]);
 
   const showQrCode =
     booking?.bookingStatus === 'Confirmed' &&
@@ -22,15 +22,6 @@ export function useBookingControls(
 
   const showCancelBookingButton =
     booking?.bookingStatus === 'Confirmed' && hasPrivilegedAccess;
-
-  const onClickPrint = () => {
-    if (hasPrivilegedAccess) {
-      // swap component to minimal view, then print (for thermal printer)
-      setIsPrinting(true);
-    } else {
-      window.print();
-    }
-  };
 
   const getUserAction = () => {
     if (booking === undefined) {
@@ -47,8 +38,8 @@ export function useBookingControls(
   };
 
   return {
-    isPrinting,
-    onClickPrint,
+    isThermalPrinting,
+    setIsThermalPrinting,
     showQrCode,
     showCancelBookingButton,
     getUserAction,

@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import BookingSummary from '@ayahay/components/descriptions/BookingSummary';
 import { getBookingById } from '@/services/booking.service';
 import { IBooking } from '@ayahay/models/booking.model';
-import { Button, Modal, notification, Typography } from 'antd';
+import { App, Button, Modal, notification, Typography } from 'antd';
 import {
   cancelBooking,
   checkInPassenger,
@@ -25,8 +25,7 @@ const textCenter = { textAlign: 'center' };
 const noPadding = { padding: '0' };
 
 export default function BookingSummaryPage({ params }) {
-  const [api, notificationContext] = notification.useNotification();
-  const [modal, modalContext] = Modal.useModal();
+  const {notification, modal} = App.useApp();
   const { loggedInAccount, hasPrivilegedAccess } = useAuth();
   const [booking, setBooking] = useState<IBooking | undefined>();
   const [errorCode, setErrorCode] = useState<number | undefined>();
@@ -125,7 +124,7 @@ export default function BookingSummaryPage({ params }) {
 
     try {
       await cancelBooking(booking.id, remarks, reasonType);
-      api.success({
+      notification.success({
         message: 'Booking Cancellation Success',
         description: 'The booking has been cancelled successfully.',
       });
@@ -141,7 +140,7 @@ export default function BookingSummaryPage({ params }) {
     const errorMessage = axiosError
       ? axiosError.message
       : 'Something went wrong.';
-    api.error({
+      notification.error({
       message: errorTitle,
       description: errorMessage,
     });
@@ -157,7 +156,7 @@ export default function BookingSummaryPage({ params }) {
 
     try {
       await checkInPassenger(booking.id, tripId, passengerId);
-      api.success({
+      notification.success({
         message: 'Check In Success',
         description: 'The selected passenger has checked in successfully.',
       });
@@ -174,7 +173,7 @@ export default function BookingSummaryPage({ params }) {
 
     try {
       await checkInVehicle(booking.id, tripId, vehicleId);
-      api.success({
+      notification.success({
         message: 'Check In Success',
         description: 'The selected vehicle has checked in successfully.',
       });
@@ -274,8 +273,6 @@ export default function BookingSummaryPage({ params }) {
         </p>
       )}
       {errorCode === 500 && <p style={textCenter}>Something went wrong.</p>}
-      {notificationContext}
-      {modalContext}
     </div>
   );
 }

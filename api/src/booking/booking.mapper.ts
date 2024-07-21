@@ -17,6 +17,8 @@ import {
   PassengerBookingSearchResponse,
   VehicleBookingSearchResponse,
 } from '@ayahay/http';
+import { AccountMapper } from '@/account/account.mapper';
+import { ShippingLineMapper } from '@/shipping-line/shipping-line.mapper';
 
 @Injectable()
 export class BookingMapper {
@@ -25,7 +27,9 @@ export class BookingMapper {
     private readonly passengerMapper: PassengerMapper,
     private readonly cabinMapper: CabinMapper,
     private readonly paymentMapper: PaymentMapper,
-    private readonly vehicleMapper: VehicleMapper
+    private readonly vehicleMapper: VehicleMapper,
+    private readonly accountMapper: AccountMapper,
+    private readonly shippingLineMapper: ShippingLineMapper
   ) {}
 
   // TO DO: improve conversion booking to DTO
@@ -67,7 +71,13 @@ export class BookingMapper {
     return {
       id: booking.id,
       shippingLineId: booking.shippingLineId,
+      shippingLine: this.shippingLineMapper.convertShippingLineToDto(
+        booking.shippingLine
+      ),
       createdByAccountId: booking.createdByAccountId ?? undefined,
+      createdByAccount: this.accountMapper.convertAccountToDto(
+        booking.createdByAccount
+      ),
       approvedByAccountId: booking.approvedByAccountId ?? undefined,
       voucherCode: booking.voucherCode,
 
