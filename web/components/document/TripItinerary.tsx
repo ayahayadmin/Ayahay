@@ -15,7 +15,7 @@ export default function TripItinerary({ booking }: TripItineraryProps) {
       {bookingTripPassengers?.map((tripPassenger, index) => (
         <div
           key={tripPassenger.tripId + '' + tripPassenger.passengerId}
-          style={{ breakBefore: index === 0 ? 'auto' : 'page' }}
+          style={{ breakBefore: 'page' }}
         >
           <ItineraryContent
             booking={booking}
@@ -31,8 +31,11 @@ export default function TripItinerary({ booking }: TripItineraryProps) {
           </div>
           <span
             style={{
-              padding: '0 280px',
+              width: '100%',
+              display: 'inline-block',
               borderBottom: '1px dashed black',
+              textAlign: 'center',
+              fontSize: 8,
             }}
           >
             CUT THIS AREA (VESSEL COPY)
@@ -168,7 +171,7 @@ function ItineraryContent({
           <span>DO NOT FOLD THIS IMAGE</span>
           <QRCode
             value={`${process.env.NEXT_PUBLIC_WEB_URL}/bookings/${booking.id}/trips/${tripPassenger.tripId}/passengers/${tripPassenger.passengerId}`}
-            size={140}
+            size={160}
             viewBox={`0 0 256 256`}
             type='svg'
           />
