@@ -356,21 +356,23 @@ export default function BookingInformationForm({
                     ))}
                   </Radio.Group>
                 </Form.Item>
-                <Form.Item
-                  {...restField}
-                  name={[name, 'preferredSeatTypeId']}
-                  label='Preferred Seat'
-                  colon={false}
-                >
-                  <Radio.Group>
-                    <Radio value={undefined}>Any</Radio>
-                    {trip?.availableSeatTypes?.map((seatType) => (
-                      <Radio value={seatType?.id} key={seatType?.id}>
-                        {seatType?.name}
-                      </Radio>
-                    ))}
-                  </Radio.Group>
-                </Form.Item>
+                {trip?.availableSeatTypes?.length && (
+                  <Form.Item
+                    {...restField}
+                    name={[name, 'preferredSeatTypeId']}
+                    label='Preferred Seat'
+                    colon={false}
+                  >
+                    <Radio.Group>
+                      <Radio value={undefined}>Any</Radio>
+                      {trip?.availableSeatTypes?.map((seatType) => (
+                        <Radio value={seatType?.id} key={seatType?.id}>
+                          {seatType?.name}
+                        </Radio>
+                      ))}
+                    </Radio.Group>
+                  </Form.Item>
+                )}
                 {hasPrivilegedAccess && (
                   <EnumRadio
                     _enum={DISCOUNT_TYPE}
