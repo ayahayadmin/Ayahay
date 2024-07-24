@@ -26,7 +26,7 @@ export default function TripItinerary({ booking }: TripItineraryProps) {
             <BookingReminders
               shippingLineName={trip?.shippingLine?.name}
               titleLevel={5}
-              fontSize={12}
+              fontSize={10}
             />
           </div>
           <span
@@ -61,6 +61,16 @@ function ItineraryContent({
   trip,
   tripPassenger,
 }: ItineraryContentProps) {
+  const ticketPriceOfPax =
+    booking.voucherCode === 'COLLECT_BOOKING'
+      ? tripPassenger.bookingPaymentItems?.find(
+          (paymentItem) => paymentItem.type === 'Fare'
+        )?.price
+      : tripPassenger.bookingPaymentItems?.reduce(
+          (sum, curr) => sum + curr.price,
+          0
+        );
+
   return (
     <>
       <Flex justify='space-between'>
@@ -88,13 +98,18 @@ function ItineraryContent({
           className='trip-details'
           style={{
             display: 'flex',
-            alignItems: 'end',
-            flexDirection: 'column',
-            justifyContent: 'center',
+            alignItems: 'center',
             fontWeight: 'bold',
           }}
         >
           <img src={`/assets/ayahay-logo.png`} alt='Logo' height={80} />
+          <span
+            style={{
+              fontWeight: 'bold',
+            }}
+          >
+            Ayahay Technology Corp
+          </span>
         </section>
       </Flex>
       <BlankUnderline width='100%' />
@@ -114,12 +129,15 @@ function ItineraryContent({
           </span>
           <span>
             <strong>Accommodation:</strong>&nbsp;
-            {tripPassenger.cabin?.cabinType?.name}
+            {tripPassenger.cabin?.cabinType?.name ?? ''}
           </span>
-          <span>
-            <strong>Seat:</strong>&nbsp;
-            {tripPassenger.seat?.name}
-          </span>
+          {tripPassenger.seat?.name && (
+            <span>
+              <strong>Seat:</strong>&nbsp;
+              {tripPassenger.seat?.name}&nbsp;(
+              {tripPassenger.seat?.seatType?.name ?? ''})
+            </span>
+          )}
         </section>
         <section
           className='booking-details'
@@ -134,12 +152,12 @@ function ItineraryContent({
             {trip?.destPort?.name}&nbsp;
           </span>
           <span>
-            <strong>Departure Date:</strong>&nbsp;
-            {dayjs(trip?.departureDateIso).format('MMM D, YYYY [at] h:mm A')}
-          </span>
-          <span>
             <strong>Reference No.:</strong>&nbsp;
             {booking.referenceNo}
+          </span>
+          <span>
+            <strong>Departure Date:</strong>&nbsp;
+            {dayjs(trip?.departureDateIso).format('MMM D, YYYY [at] h:mm A')}
           </span>
           <span>
             <strong>Booking Date:</strong>&nbsp;
@@ -149,13 +167,13 @@ function ItineraryContent({
         <section className='qr-code'>
           <span>DO NOT FOLD THIS IMAGE</span>
           <QRCode
-            value={`${process.env.NEXT_PUBLIC_WEB_URL}/bookings/${booking.id}`}
-            size={125}
+            value={`${process.env.NEXT_PUBLIC_WEB_URL}/bookings/${booking.id}/trips/${tripPassenger.tripId}/passengers/${tripPassenger.passengerId}`}
+            size={140}
             viewBox={`0 0 256 256`}
             type='svg'
           />
           <span>
-            <strong>Ticket Price:</strong> {booking.totalPrice}
+            <strong>Ticket Price:</strong> {ticketPriceOfPax}
           </span>
         </section>
       </Flex>
