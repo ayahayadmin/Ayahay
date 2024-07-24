@@ -13,6 +13,7 @@ dayjs.extend(relativeTime);
 
 interface PassengersSummaryProps {
   passengers?: IBookingTripPassenger[];
+  showAssignedSeats?: boolean;
   canCheckIn?: boolean;
   onCheckInPassenger?: (tripId: number, passengerId: number) => Promise<void>;
   onUpdatePassenger?: (
@@ -39,10 +40,23 @@ const passengerColumnsWithoutActions: ColumnsType<IBookingTripPassenger> = [
     },
   },
   {
-    title: 'Cabin',
-    key: 'cabinTypeName',
-    render: (_, bookingTripPassenger) =>
-      bookingTripPassenger.cabin?.cabinType?.name ?? '',
+    title: 'Accommodation',
+    key: 'accommodation',
+    render: (_, bookingTripPassenger) => (
+      <>
+        <span>
+          {bookingTripPassenger.cabin?.name ?? ''} (
+          {bookingTripPassenger.cabin?.cabinType?.name ?? ''})
+        </span>
+        <br />
+        {bookingTripPassenger.seatId && (
+          <span>
+            {bookingTripPassenger.seat?.name ?? ''} (
+            {bookingTripPassenger.seat?.seatType?.name ?? ''})
+          </span>
+        )}
+      </>
+    ),
   },
 ];
 
@@ -61,13 +75,14 @@ export default function PassengersSummary({
   >(passengerColumnsWithoutActions);
 
   useEffect(() => {
-    if (onCheckInPassenger === undefined || !canCheckIn) {
-      return;
-    }
+    updatePassengerColumns();
+  }, [passengers]);
 
-    setPassengerColumns([
-      ...passengerColumnsWithoutActions,
-      {
+  const updatePassengerColumns = () => {
+    const columns = [...passengerColumnsWithoutActions];
+
+    if (onCheckInPassenger !== undefined && !canCheckIn) {
+      columns.push({
         title: 'Check-In Status',
         render: (_, passenger) => {
           if (passenger.checkInDate === undefined) {
@@ -88,32 +103,35 @@ export default function PassengersSummary({
             <Badge status='success' text={`Checked in ${checkInDateFromNow}`} />
           );
         },
-      },
-      {
-        title: 'Actions',
-        render: (_, passenger) => (
-          <Flex gap={8}>
-            {onUpdatePassenger && (
-              <Button
-                type='primary'
-                onClick={() => {
-                  setSelectedTripPassenger(passenger);
-                  setPassengerModalOpen(true);
-                }}
-                icon={<EditOutlined />}
-              />
-            )}
+      });
+    }
+
+    columns.push({
+      title: 'Actions',
+      render: (_, passenger) => (
+        <Flex gap={8}>
+          {onUpdatePassenger && (
             <Button
-              type='default'
-              href={`/bookings/${passenger.bookingId}/trips/${passenger.tripId}/passengers/${passenger.passengerId}`}
-              target='_blank'
-              icon={<ExportOutlined />}
+              type='primary'
+              onClick={() => {
+                setSelectedTripPassenger(passenger);
+                setPassengerModalOpen(true);
+              }}
+              icon={<EditOutlined />}
             />
-          </Flex>
-        ),
-      },
-    ]);
-  }, [passengers]);
+          )}
+          <Button
+            type='default'
+            href={`/bookings/${passenger.bookingId}/trips/${passenger.tripId}/passengers/${passenger.passengerId}`}
+            target='_blank'
+            icon={<ExportOutlined />}
+          />
+        </Flex>
+      ),
+    });
+
+    setPassengerColumns(columns);
+  };
 
   const updateTripPassenger = async (passenger: IPassenger): Promise<void> => {
     if (!selectedTripPassenger || !onUpdatePassenger) {

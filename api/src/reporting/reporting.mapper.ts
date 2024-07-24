@@ -19,7 +19,7 @@ export class ReportingMapper {
   convertTripsForReporting(trip) {
     return {
       id: trip.id,
-      shippingLine: this.shippingLineMapper.convertShippingLineToDto(
+      shippingLine: this.shippingLineMapper.convertShippingLineToSimpleDto(
         trip.shippingLine
       ),
       srcPort: this.portMapper.convertPortToDto(trip.srcPort),
@@ -498,7 +498,7 @@ export class ReportingMapper {
       srcPortId: data.srcPortId,
       destPortId: data.destPortId,
       shipId: data.shipId,
-      shippingLine: this.shippingLineMapper.convertShippingLineToDto(
+      shippingLine: this.shippingLineMapper.convertShippingLineToSimpleDto(
         data.shippingLine
       ),
     };

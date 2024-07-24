@@ -5,6 +5,7 @@ import { ITripCabin } from './trip-cabin.model';
 import { IVoyage } from './voyage.model';
 import { TRIP_STATUS } from '@ayahay/constants/enum';
 import { IRateTable } from './rate-table.model';
+import { ISeatType } from './seat-type.model';
 
 export interface ITrip {
   id: number;
@@ -31,6 +32,6 @@ export interface ITrip {
   cancellationReason?: string;
 
   availableCabins: ITripCabin[];
-  availableSeatTypes: string[];
+  availableSeatTypes: ISeatType[];
   meals: string[];
 }

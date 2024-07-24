@@ -1,14 +1,13 @@
-import { ICabin } from './cabin.model';
 import { ISeatType } from './seat-type.model';
+import { ISeatPlan } from './seat-plan.model';
 
 export interface ISeat {
   id: number;
-  cabinId: number;
-  cabin?: ICabin;
+  seatPlanId: number;
+  seatPlan?: ISeatPlan;
   seatTypeId: number;
   /**
-   * TODO: refactor Seat Type; have it like Cabin Type wherein it's Company specific
-   * also add Trip Seat Type for trip-specific rate for each seat type
+   * TODO: also add Trip Seat Type for trip-specific rate for each seat type
    * also add Seat Type for schedule rate
    */
   seatType?: ISeatType;

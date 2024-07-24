@@ -35,7 +35,7 @@ export class TripMapper {
       shipId: trip.shipId,
       ship: trip.ship ? this.shipMapper.convertShipToDto(trip.ship) : undefined,
       shippingLineId: trip.shippingLineId,
-      shippingLine: this.shippingLineMapper.convertShippingLineToDto(
+      shippingLine: this.shippingLineMapper.convertShippingLineToSimpleDto(
         trip.shippingLine
       ),
       srcPortId: trip.srcPortId,
@@ -63,7 +63,7 @@ export class TripMapper {
       ...trip,
       srcPort: this.portMapper.convertPortToDto(trip.srcPort),
       destPort: this.portMapper.convertPortToDto(trip.destPort),
-      shippingLine: this.shippingLineMapper.convertShippingLineToDto(
+      shippingLine: this.shippingLineMapper.convertShippingLineToSimpleDto(
         trip.shippingLine
       ),
       availableCabins: trip.availableCabins?.map((tripCabin) =>
@@ -81,7 +81,7 @@ export class TripMapper {
       ...trip,
       srcPort: this.portMapper.convertPortToDto(trip.srcPort),
       destPort: this.portMapper.convertPortToDto(trip.destPort),
-      shippingLine: this.shippingLineMapper.convertShippingLineToDto(
+      shippingLine: this.shippingLineMapper.convertShippingLineToSimpleDto(
         trip.shippingLine
       ),
       rateTable: this.rateTableMapper.convertRateTableToPrivilegedDto(
@@ -290,6 +290,7 @@ export class TripMapper {
     return {
       tripId: -1,
       cabinId: tripCabin.cabinId,
+      seatPlanId: tripCabin.seatPlanId ?? null,
       availablePassengerCapacity: tripCabin.passengerCapacity,
       passengerCapacity: tripCabin.passengerCapacity,
     };

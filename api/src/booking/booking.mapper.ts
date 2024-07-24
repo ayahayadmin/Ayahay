@@ -19,6 +19,7 @@ import {
 } from '@ayahay/http';
 import { AccountMapper } from '@/account/account.mapper';
 import { ShippingLineMapper } from '@/shipping-line/shipping-line.mapper';
+import { SeatPlanMapper } from '@/seat-plan/seat-plan.mapper';
 
 @Injectable()
 export class BookingMapper {
@@ -26,6 +27,7 @@ export class BookingMapper {
     private readonly tripMapper: TripMapper,
     private readonly passengerMapper: PassengerMapper,
     private readonly cabinMapper: CabinMapper,
+    private readonly seatPlanMapper: SeatPlanMapper,
     private readonly paymentMapper: PaymentMapper,
     private readonly vehicleMapper: VehicleMapper,
     private readonly accountMapper: AccountMapper,
@@ -71,7 +73,7 @@ export class BookingMapper {
     return {
       id: booking.id,
       shippingLineId: booking.shippingLineId,
-      shippingLine: this.shippingLineMapper.convertShippingLineToDto(
+      shippingLine: this.shippingLineMapper.convertShippingLineToSimpleDto(
         booking.shippingLine
       ),
       createdByAccountId: booking.createdByAccountId ?? undefined,
@@ -151,6 +153,7 @@ export class BookingMapper {
       cabinId: bookingTripPassenger.cabinId,
       cabin: this.cabinMapper.convertCabinToDto(bookingTripPassenger.cabin),
       seatId: bookingTripPassenger.seatId,
+      seat: this.seatPlanMapper.convertSeatToDto(bookingTripPassenger.seat),
 
       meal: bookingTripPassenger.meal,
       totalPrice: bookingTripPassenger.totalPrice ?? undefined,

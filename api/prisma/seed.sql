@@ -143,43 +143,132 @@ INSERT INTO ayahay.ship
     ('Melrivic 7', (SELECT id FROM ayahay.shipping_line WHERE "name" = 'E.B. Aznar Shipping Corporation'), 5)
 ;
 
-INSERT INTO ayahay.cabin
-    ("name", recommended_passenger_capacity, ship_id, cabin_type_id)
+INSERT INTO ayahay.seat_plan
+    ("name", row_count, column_count, shipping_line_id)
     VALUES
-    ('Melrivic 2 Aircon Cabin', 150, (SELECT id FROM ayahay.ship WHERE "name" = 'Melrivic 2'), (SELECT id from ayahay.cabin_type WHERE "name" = 'Aircon')),
-    ('Melrivic 2 Non-Aircon Cabin', 100, (SELECT id FROM ayahay.ship WHERE "name" = 'Melrivic 2'), (SELECT id from ayahay.cabin_type WHERE "name" = 'Non-Aircon')),
-    ('Melrivic 7 Non-Aircon Cabin', 339, (SELECT id FROM ayahay.ship WHERE "name" = 'Melrivic 7'), (SELECT id from ayahay.cabin_type WHERE "name" = 'Non-Aircon'))
+    ('Seat Plan', 5, 6, (SELECT id FROM ayahay.shipping_line WHERE "name" = 'E.B. Aznar Shipping Corporation'))
 ;
 
--- INSERT INTO ayahay.seat_plan
---     ("name", row_count, column_count, shipping_line_id)
---     VALUES
---     ("Seat Plan", 5, 6, (SELECT id FROM ayahay.shipping_line WHERE "name" = 'E.B. Aznar Shipping Corporation'))
--- ;
---
--- INSERT INTO ayahay.seat
---     ("name", "type", "row", "column", seat_plan_id)
---     SELECT
---         CONCAT(
---             -- map row to letter: 0 -> A, 1 -> B, etc.
---             CHR(r + ASCII('A')),
---             (c + 1)::TEXT
---         ) AS "name",
---         -- seats in first column are window seats, second column aisle, etc.
---         (ARRAY['Window', 'Aisle', 'SingleBed', 'LowerBunkBed', 'UpperBunkBed', 'Window'])
---             [c + 1] AS "type",
---         r AS "row",
---         c AS "column",
---         seat_plan.id AS seat_plan_id
---     FROM ayahay.seat_plan seat_plan
---     CROSS JOIN generate_series(0, 4) r
---     CROSS JOIN generate_series(0, 5) c
--- ;
+INSERT INTO ayahay.seat_type
+    ("name", "description", shipping_line_id)
+    VALUES
+    ('Window', 'Window', (SELECT id FROM ayahay.shipping_line WHERE "name" = 'E.B. Aznar Shipping Corporation')),
+    ('Aisle', 'Aisle', (SELECT id FROM ayahay.shipping_line WHERE "name" = 'E.B. Aznar Shipping Corporation')),
+    ('Lower Bunk Bed', 'Lower Bunk Bed', (SELECT id FROM ayahay.shipping_line WHERE "name" = 'E.B. Aznar Shipping Corporation')),
+    ('Upper Bunk Bed', 'Upper Bunk Bed', (SELECT id FROM ayahay.shipping_line WHERE "name" = 'E.B. Aznar Shipping Corporation'))
+;
+
+INSERT INTO ayahay.seat
+    ("name", "seat_type_id", "row", "column", seat_plan_id)
+    SELECT
+        CONCAT(
+            -- map row to letter: 0 -> A, 1 -> B, etc.
+            CHR(r + ASCII('A')),
+            (c + 1)::TEXT
+        ) AS "name",
+        -- seats in first column are window seats, second column aisle, etc.
+        (ARRAY[1, 2, 3, 4])[c + 1] AS "type",
+        r AS "row",
+        c AS "column",
+        seat_plan.id AS seat_plan_id
+    FROM ayahay.seat_plan seat_plan
+    CROSS JOIN generate_series(0, 1) r
+    CROSS JOIN generate_series(0, 3) c
+;
+
+INSERT INTO ayahay.cabin
+    ("name", recommended_passenger_capacity, ship_id, cabin_type_id, default_seat_plan_id)
+    VALUES
+    ('Melrivic 2 Aircon Cabin', 10, (SELECT id FROM ayahay.ship WHERE "name" = 'Melrivic 2'), (SELECT id from ayahay.cabin_type WHERE "name" = 'Aircon'), (SELECT id FROM ayahay.seat_plan WHERE "name" = 'Seat Plan')),
+    ('Melrivic 2 Non-Aircon Cabin', 10, (SELECT id FROM ayahay.ship WHERE "name" = 'Melrivic 2'), (SELECT id from ayahay.cabin_type WHERE "name" = 'Non-Aircon'), NULL),
+    ('Melrivic 7 Non-Aircon Cabin', 10, (SELECT id FROM ayahay.ship WHERE "name" = 'Melrivic 7'), (SELECT id from ayahay.cabin_type WHERE "name" = 'Non-Aircon'), NULL)
+;
 
 INSERT INTO ayahay.rate_table ("name", shipping_line_id)
-    VALUES (
-        'Bogo <-> Palompon Rate Table',
+    VALUES
+    (
+        'Bogo <-> Palompon Melrivic 2 Rate Table',
         (SELECT id FROM ayahay.shipping_line WHERE "name" = 'E.B. Aznar Shipping Corporation')
+    ),
+    (
+        'Bogo <-> Palompon Melrivic 7 Rate Table',
+        (SELECT id FROM ayahay.shipping_line WHERE "name" = 'E.B. Aznar Shipping Corporation')
+    )
+;
+
+INSERT INTO ayahay.rate_table_row
+    (
+        rate_table_id,
+        cabin_id,
+        vehicle_type_id,
+        fare,
+        can_book_online
+    )
+    (
+        SELECT rates.id, rate.cabin_id, rate.vehicle_type_id, rate.fare, TRUE
+        FROM ayahay.rate_table rates
+        LEFT JOIN (
+            VALUES
+                ((SELECT id FROM ayahay.cabin WHERE "name" = 'Melrivic 2 Non-Aircon Cabin'), NULL, 410),
+                ((SELECT id FROM ayahay.cabin WHERE "name" = 'Melrivic 2 Aircon Cabin'), NULL, 820),
+                (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = 'Bicycle'), 130),
+                (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = 'Trisikad'), 345),
+                (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = 'Motorcycle'), 1150),
+                (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = 'Tricycle'), 1440),
+                (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = 'Motorcycle Big Bike'), 1440),
+
+                (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = 'Big Bus'), 5250),
+                (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = 'Mini Bus'), 3965),
+                (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = 'Jeep Owner Type'), 2490),
+
+                (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = '4-Wheeler Automobile/Multicab/Pickup'), 2750),
+                (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = '4-Wheeler Van'), 3320),
+                (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = '4-Wheeler Light Van Canter/Elf'), 3320),
+                (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = '4-Wheeler Light Van Canter/Elf Loaded'), 3780),
+
+                (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = '6-Wheeler Light Van Canter/Elf'), 3450),
+                (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = '6-Wheeler Light Van Canter/Elf Loaded'), 4930),
+                (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = '6-Wheeler Light Van Forward/Fighter'), 4610),
+                (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = '6-Wheeler Light Van Forward/Fighter Loaded'), 6310),
+                (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = '6-Wheeler Big Van'), 4610),
+                (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = '6-Wheeler Big Van Loaded'), 6310),
+                (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = '6-Wheeler Dump Truck'), 3450),
+                (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = '6-Wheeler Dump Truck Loaded'), 4930),
+                (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = '6-Wheeler Forward/Fighter Extended'), 7185),
+                (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = '6-Wheeler Forward/Fighter Extended Loaded'), 9070),
+
+                (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = 'Forklift 5 tons down'), 5750),
+                (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = 'Forklift 5-20 tons'), 8050),
+                (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = 'Forklift 20 tons'), 10350),
+                (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = 'Mixer Truck Small'), 11500),
+                (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = 'Mixer Truck Medium'), 14950),
+                (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = 'Mixer Truck Large'), 18400),
+                (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = 'Road Roller 5 tons down'), 8050),
+                (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = 'Road Roller 5-20 tons'), 10350),
+                (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = 'Road Roller 20 tons up'), 13800),
+                (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = 'Farm Tractor 5 tons down'), 4600),
+                (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = 'Farm Tractor 5 tons up'), 6900),
+                (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = 'Bulldozer Small'), 10350),
+                (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = 'Bulldozer Medium'), 13800),
+                (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = 'Bulldozer Large'), 17250),
+                (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = 'Grader Small'), 10350),
+                (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = 'Grader Medium'), 13800),
+                (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = 'Grader Large'), 17250),
+                (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = 'Payloader Small'), 6900),
+                (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = 'Payloader Medium'), 9200),
+                (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = 'Payloader Large'), 11500),
+                (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = 'Crane Small'), 11500),
+                (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = 'Crane Medium'), 17250),
+                (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = 'Crane Large'), 23000),
+                (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = 'Excavator Small'), 11500),
+                (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = 'Excavator Medium'), 17250),
+                (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = 'Excavator Large'), 23000)
+--                 (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = 'Sedan'), 2650),
+--                 (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = 'SUV'), 2650),
+--                 (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = 'Multicab'), 2650),
+--                 (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = 'Pickup'), 2650)
+        ) AS rate(cabin_id, vehicle_type_id, fare) ON true = true
+        WHERE rates.name = 'Bogo <-> Palompon Melrivic 2 Rate Table'
     )
 ;
 
@@ -254,6 +343,7 @@ INSERT INTO ayahay.rate_table_row
 --                 (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = 'Multicab'), 2650),
 --                 (NULL, (SELECT id FROM ayahay.vehicle_type WHERE "name" = 'Pickup'), 2650)
         ) AS rate(cabin_id, vehicle_type_id, fare) ON true = true
+        WHERE rates.name = 'Bogo <-> Palompon Melrivic 7 Rate Table'
     )
 ;
 
@@ -277,11 +367,11 @@ INSERT INTO ayahay.shipping_line_schedule
         30,
         60,
         7,
-        (SELECT id FROM ayahay.ship WHERE "name" = 'Melrivic 7'),
+        (SELECT id FROM ayahay.ship WHERE "name" = 'Melrivic 2'),
         (SELECT id FROM ayahay.shipping_line WHERE "name" = 'E.B. Aznar Shipping Corporation'),
         (SELECT id FROM ayahay.port WHERE "name" = 'Bogo'),
         (SELECT id FROM ayahay.port WHERE "name" = 'Palompon'),
-        (SELECT id FROM ayahay.rate_table WHERE "name" = 'Bogo <-> Palompon Rate Table')
+        (SELECT id FROM ayahay.rate_table WHERE "name" = 'Bogo <-> Palompon Melrivic 2 Rate Table')
     ),
     (
         'Bogo -> Palompon 11:00 PM',
@@ -293,7 +383,7 @@ INSERT INTO ayahay.shipping_line_schedule
         (SELECT id FROM ayahay.shipping_line WHERE "name" = 'E.B. Aznar Shipping Corporation'),
         (SELECT id FROM ayahay.port WHERE "name" = 'Bogo'),
         (SELECT id FROM ayahay.port WHERE "name" = 'Palompon'),
-        (SELECT id FROM ayahay.rate_table WHERE "name" = 'Bogo <-> Palompon Rate Table')
+        (SELECT id FROM ayahay.rate_table WHERE "name" = 'Bogo <-> Palompon Melrivic 7 Rate Table')
     ),
     (
         'Palompon -> Bogo 3:30 PM',
@@ -301,11 +391,11 @@ INSERT INTO ayahay.shipping_line_schedule
         30,
         60,
         7,
-        (SELECT id FROM ayahay.ship WHERE "name" = 'Melrivic 7'),
+        (SELECT id FROM ayahay.ship WHERE "name" = 'Melrivic 2'),
         (SELECT id FROM ayahay.shipping_line WHERE "name" = 'E.B. Aznar Shipping Corporation'),
         (SELECT id FROM ayahay.port WHERE "name" = 'Palompon'),
         (SELECT id FROM ayahay.port WHERE "name" = 'Bogo'),
-        (SELECT id FROM ayahay.rate_table WHERE "name" = 'Bogo <-> Palompon Rate Table')
+        (SELECT id FROM ayahay.rate_table WHERE "name" = 'Bogo <-> Palompon Melrivic 2 Rate Table')
     ),
     (
         'Palompon -> Bogo 6:30 AM',
@@ -317,7 +407,7 @@ INSERT INTO ayahay.shipping_line_schedule
         (SELECT id FROM ayahay.shipping_line WHERE "name" = 'E.B. Aznar Shipping Corporation'),
         (SELECT id FROM ayahay.port WHERE "name" = 'Palompon'),
         (SELECT id FROM ayahay.port WHERE "name" = 'Bogo'),
-        (SELECT id FROM ayahay.rate_table WHERE "name" = 'Bogo <-> Palompon Rate Table')
+        (SELECT id FROM ayahay.rate_table WHERE "name" = 'Bogo <-> Palompon Melrivic 7 Rate Table')
     )
 ;
 

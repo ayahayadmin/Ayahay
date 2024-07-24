@@ -9,15 +9,30 @@ import {
 import { ShipMapper } from '@/ship/ship.mapper';
 import { PortMapper } from '@/port/port.mapper';
 import { RateTableMapper } from '@/rate-table/rate-table.mapper';
+import { SeatPlanMapper } from '@/seat-plan/seat-plan.mapper';
 
 @Injectable()
 export class ShippingLineMapper {
   constructor(
     private readonly shipMapper: ShipMapper,
-    private readonly portMapper: PortMapper
+    private readonly portMapper: PortMapper,
+    private readonly seatPlanMapper: SeatPlanMapper
   ) {}
 
-  convertShippingLineToDto(shippingLine: ShippingLine): IShippingLine {
+  convertShippingLineToFullDto(shippingLine: any): IShippingLine {
+    if (!shippingLine) {
+      return undefined;
+    }
+
+    return {
+      id: shippingLine.id,
+      name: shippingLine.name,
+      seatTypes: shippingLine.seatTypes?.map((seatType) =>
+        this.seatPlanMapper.convertSeatTypeToDto(seatType)
+      ),
+    };
+  }
+  convertShippingLineToSimpleDto(shippingLine: ShippingLine): IShippingLine {
     if (!shippingLine) {
       return undefined;
     }
@@ -58,6 +73,7 @@ export class ShippingLineMapper {
       .map((cabin) => ({
         tripId: -1,
         cabinId: cabin.id,
+        seatPlanId: cabin.defaultSeatPlanId ?? undefined,
         availablePassengerCapacity: cabin.recommendedPassengerCapacity,
         passengerCapacity: cabin.recommendedPassengerCapacity,
       }));

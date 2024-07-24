@@ -90,7 +90,7 @@ export class BookingPricingService {
       tripId: bookingTripPassenger.tripId,
       passengerId: bookingTripPassenger.passengerId,
       price: roundedTicketPrice,
-      description: `${passengerType} Fare (${tripCabin.cabin.name})`,
+      description: `${passengerType} Fare (${bookingTripPassenger.cabin.name})`,
       type: 'Fare',
     });
 
@@ -105,7 +105,7 @@ export class BookingPricingService {
         tripId: bookingTripPassenger.tripId,
         passengerId: bookingTripPassenger.passengerId,
         price: -voucherDiscount,
-        description: `${passengerType} Discount (${tripCabin.cabin.name})`,
+        description: `${passengerType} Discount (${bookingTripPassenger.cabin.name})`,
         type: 'VoucherDiscount',
       });
     }
@@ -122,7 +122,7 @@ export class BookingPricingService {
         tripId: bookingTripPassenger.tripId,
         passengerId: bookingTripPassenger.passengerId,
         price: ayahayMarkup,
-        description: `${passengerType} Service Charge (${tripCabin.cabin.name})`,
+        description: `${passengerType} Service Charge (${bookingTripPassenger.cabin.name})`,
         type: 'AyahayMarkup',
       });
     }
@@ -140,7 +140,7 @@ export class BookingPricingService {
         tripId: bookingTripPassenger.tripId,
         passengerId: bookingTripPassenger.passengerId,
         price: thirdPartyMarkup,
-        description: `${passengerType} Service Charge (${tripCabin.cabin.name})`,
+        description: `${passengerType} Service Charge (${bookingTripPassenger.cabin.name})`,
         type: 'ThirdPartyMarkup',
       });
     }
