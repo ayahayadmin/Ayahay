@@ -9,9 +9,15 @@ export class DisbursementMapper {
 
   convertDisbursementToDto(disbursement: any): IDisbursement {
     return {
-      ...disbursement,
-      date: disbursement.date.toISOString(),
+      id: disbursement.id,
+      createdByAccountId: disbursement.createdByAccountId,
+      createdByAccount: disbursement.createdByAccount,
+      dateIso: disbursement.date.toISOString(),
       description: disbursement.description as OPERATION_COSTS,
+      officialReceipt: disbursement.officialReceipt,
+      paidTo: disbursement.paidTo,
+      purpose: disbursement.purpose,
+      amount: disbursement.amount,
     };
   }
 
@@ -19,8 +25,9 @@ export class DisbursementMapper {
     disbursement: any
   ): DisbursementsPerTeller {
     return {
+      id: disbursement.id,
       amount: disbursement.amount,
-      date: disbursement.date.toISOString(),
+      dateIso: disbursement.date.toISOString(),
       description: disbursement.description as OPERATION_COSTS,
       officialReceipt: disbursement.officialReceipt,
       paidTo: disbursement.paidTo,

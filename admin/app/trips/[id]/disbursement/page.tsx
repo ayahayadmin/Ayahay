@@ -1,35 +1,49 @@
 'use client';
-import { Button, Form, Spin, Typography, notification } from 'antd';
+import { Button, Flex, Spin, Typography } from 'antd';
 import styles from './page.module.scss';
 import dayjs from 'dayjs';
-import Disbursements from '@/components/form/Disbursements';
-import { createDisbursements } from '@/services/disbursement.service';
+import { getDisbursementsByTrip } from '@/services/disbursement.service';
 import { useAuthGuard } from '@/hooks/auth';
 import { useEffect, useState } from 'react';
-import { ITrip } from '@ayahay/models';
+import { IDisbursement, ITrip } from '@ayahay/models';
 import { getTripDetails } from '@/services/trip.service';
 import { useAuth } from '@/contexts/AuthContext';
 import { getAxiosError } from '@ayahay/services/error.service';
+import Table, { ColumnsType } from 'antd/es/table';
+import { useServerPagination } from '@ayahay/hooks';
+import { PaginatedRequest } from '@ayahay/http';
+import { EditOutlined, PlusCircleOutlined } from '@ant-design/icons';
+import DisbursementModal from '@/components/modal/DisbursementModal';
 
 const { Title } = Typography;
 
 export default function DisbursementPage({ params }: any) {
   useAuthGuard(['ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin']);
   const { loggedInAccount } = useAuth();
-  const [form] = Form.useForm();
+  const [hasAdminPrivileges, setHasAdminPrivileges] = useState(false);
   const [trip, setTrip] = useState<ITrip | undefined>();
+  const [disbursementModalOpen, setDisbursementModalOpen] = useState(false);
+  const [editDisbursement, setEditDisbursement] = useState<
+    IDisbursement | undefined
+  >();
+  const [isEdit, setIsEdit] = useState(false);
   const [errorCode, setErrorCode] = useState<number | undefined>();
-  const [api, contextHolder] = notification.useNotification();
   const tripId = params.id;
 
   useEffect(() => {
     if (loggedInAccount === null) {
       return;
     }
-    fetchTrip(tripId);
+
+    const _hasAdminPrivileges =
+      loggedInAccount?.role === 'ShippingLineAdmin' ||
+      loggedInAccount?.role === 'SuperAdmin';
+    setHasAdminPrivileges(_hasAdminPrivileges);
+
+    fetchTrip();
   }, [loggedInAccount]);
 
-  const fetchTrip = async (tripId: number): Promise<void> => {
+  const fetchTrip = async (): Promise<void> => {
     try {
       setTrip(await getTripDetails(Number(tripId)));
     } catch (e) {
@@ -42,24 +56,85 @@ export default function DisbursementPage({ params }: any) {
     }
   };
 
-  const handleDisbursementSubmit = async (values: any) => {
-    if (values.disbursement.length === 0) {
-      return;
-    }
-    try {
-      await createDisbursements(tripId, values.disbursement);
-      form.resetFields();
-      api.success({
-        message: 'Success',
-        description: 'Disbursements saved successfully.',
-      });
-    } catch {
-      api.error({
-        message: 'Failed',
-        description: 'Something went wrong.',
-      });
-    }
+  const fetchDisbursements = async (pagination: PaginatedRequest) => {
+    return getDisbursementsByTrip(tripId, pagination);
   };
+
+  const {
+    dataInPage: disbursements,
+    antdPagination,
+    antdOnChange,
+    resetData,
+  } = useServerPagination<IDisbursement>(
+    fetchDisbursements,
+    loggedInAccount !== null && loggedInAccount !== undefined
+  );
+
+  const columns: ColumnsType<IDisbursement> = [
+    {
+      title: 'Date',
+      key: 'date',
+      render: (_, { dateIso }) => (
+        <span>{dayjs(dateIso).format('MM/DD/YYYY')}</span>
+      ),
+      align: 'center',
+      responsive: ['md'],
+    },
+    {
+      title: 'Official Receipt',
+      key: 'officialReceipt',
+      dataIndex: 'officialReceipt',
+      align: 'center',
+      responsive: ['sm'],
+    },
+    {
+      title: 'Paid To',
+      key: 'paidTo',
+      dataIndex: 'paidTo',
+      align: 'center',
+      responsive: ['sm'],
+    },
+    {
+      title: 'Description',
+      key: 'description',
+      dataIndex: 'description',
+      align: 'center',
+      responsive: ['sm'],
+    },
+    {
+      title: 'Purpose',
+      key: 'purpose',
+      dataIndex: 'purpose',
+      align: 'center',
+      responsive: ['sm'],
+    },
+    {
+      title: 'Amount',
+      key: 'amount',
+      dataIndex: 'amount',
+      align: 'center',
+      responsive: ['sm'],
+    },
+  ];
+
+  const adminOnlyColumns = [
+    {
+      title: 'Actions',
+      key: 'actions',
+      render: (_: any, record: IDisbursement) => (
+        <Button
+          icon={<EditOutlined />}
+          onClick={() => {
+            setDisbursementModalOpen(true);
+            setEditDisbursement(record);
+            setIsEdit(true);
+          }}
+        >
+          Edit
+        </Button>
+      ),
+    },
+  ];
 
   return (
     <div className={styles['main-container']}>
@@ -75,39 +150,56 @@ export default function DisbursementPage({ params }: any) {
           />
           {trip && (
             <div>
-              <div>
-                <strong>Trip:</strong>&nbsp;{trip.srcPort?.name}&nbsp;to&nbsp;
-                {trip.destPort?.name}
-              </div>
-              <div>
-                <strong>Departure Date:</strong>&nbsp;
-                {dayjs(trip.departureDateIso).format('MM/DD/YYYY h:mm A')}
-              </div>
-              <div>
-                <strong>Voyage #:</strong>&nbsp;
-                {trip.voyage?.number}
-              </div>
-
-              <Form
-                form={form}
-                initialValues={{
-                  disbursement: [{ date: dayjs(trip.departureDateIso) }],
-                }}
-                onFinish={handleDisbursementSubmit}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                  }
-                }}
-              >
-                {contextHolder}
-                <Disbursements tripDate={trip.departureDateIso} />
-                <div>
-                  <Button type='primary' htmlType='submit'>
-                    Submit
+              <Flex justify='space-between'>
+                <section>
+                  <div>
+                    <strong>Trip:</strong>&nbsp;{trip.srcPort?.name}
+                    &nbsp;to&nbsp;
+                    {trip.destPort?.name}
+                  </div>
+                  <div>
+                    <strong>Departure Date:</strong>&nbsp;
+                    {dayjs(trip.departureDateIso).format('MM/DD/YYYY h:mm A')}
+                  </div>
+                  <div>
+                    <strong>Voyage #:</strong>&nbsp;
+                    {trip.voyage?.number}
+                  </div>
+                </section>
+                <section>
+                  <Button
+                    type='primary'
+                    icon={<PlusCircleOutlined />}
+                    onClick={() => {
+                      setDisbursementModalOpen(true);
+                      setIsEdit(false);
+                    }}
+                  >
+                    Add Disbursements
                   </Button>
-                </div>
-              </Form>
+                </section>
+              </Flex>
+
+              <Table
+                dataSource={disbursements}
+                columns={hasAdminPrivileges ? [...columns, ...adminOnlyColumns] : columns}
+                pagination={antdPagination}
+                onChange={antdOnChange}
+                loading={disbursements === undefined}
+                tableLayout='fixed'
+                rowKey={(disbursement) => disbursement.id}
+              />
+
+              <DisbursementModal
+                tripId={tripId}
+                trip={trip}
+                editDisbursement={editDisbursement}
+                isEdit={isEdit}
+                setDisbursementModalOpen={setDisbursementModalOpen}
+                resetData={resetData}
+                open={disbursementModalOpen}
+                width={1000}
+              />
             </div>
           )}
         </>

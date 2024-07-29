@@ -66,10 +66,10 @@ export default function TripReportingPage({ params }: any) {
   };
 
   const fetchDisbursements = async (tripId: number) => {
-    const disbursements = await getDisbursementsByTrip(tripId);
-    const computedExpenses = computeExpenses(disbursements);
+    const { data } = await getDisbursementsByTrip(tripId);
+    const computedExpenses = computeExpenses(data);
     setExpenses(computedExpenses);
-    setDisbursements(disbursements);
+    setDisbursements(data);
   };
 
   const handleStatusChange = (value: string) => {

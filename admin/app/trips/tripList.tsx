@@ -61,7 +61,7 @@ const tripActions = (trip: ITrip): any[] => {
     {
       label: (
         <a href={`/trips/${trip.id}/disbursement`} target='_blank'>
-          Input disbursements
+          Disbursements
         </a>
       ),
       key: 'input-disbursements',

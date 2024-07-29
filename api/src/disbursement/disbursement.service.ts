@@ -3,38 +3,67 @@ import { PrismaService } from '@/prisma.service';
 import { IAccount, IDisbursement } from '@ayahay/models';
 import { DisbursementMapper } from './disbursement.mapper';
 import { Prisma } from '@prisma/client';
-import { DisbursementsPerTeller, TripSearchByDateRange } from '@ayahay/http';
+import {
+  DisbursementsPerTeller,
+  PaginatedRequest,
+  PaginatedResponse,
+  TripSearchByDateRange,
+} from '@ayahay/http';
+import { AuthService } from '@/auth/auth.service';
 
 @Injectable()
 export class DisbursementService {
   constructor(
     private prisma: PrismaService,
+    private readonly authService: AuthService,
     private readonly disbursementMapper: DisbursementMapper
   ) {}
 
   async getDisbursementsByTrip(
     tripId: number,
-    loggedInAccount: IAccount
-  ): Promise<IDisbursement[]> {
-    const disbursements = await this.prisma.disbursement.findMany({
-      where: {
-        tripId: Number(tripId),
-        trip: {
-          shippingLineId: loggedInAccount.shippingLineId,
-        },
+    loggedInAccount: IAccount,
+    pagination?: PaginatedRequest
+  ): Promise<PaginatedResponse<IDisbursement>> {
+    const itemsPerPage = pagination.page ? 10 : undefined;
+    const skip = pagination.page
+      ? (pagination.page - 1) * itemsPerPage
+      : undefined;
+
+    const where: Prisma.DisbursementWhereInput = {
+      tripId: Number(tripId),
+      trip: {
+        shippingLineId: loggedInAccount.shippingLineId,
       },
+    };
+
+    const disbursements = await this.prisma.disbursement.findMany({
+      where,
       include: {
-        trip: {
+        createdByAccount: {
           select: {
-            shippingLineId: true,
+            email: true,
           },
         },
       },
+      take: itemsPerPage,
+      skip,
+      orderBy: {
+        date: 'desc',
+      },
     });
 
-    return disbursements.map((disbursement) =>
-      this.disbursementMapper.convertDisbursementToDto(disbursement)
-    );
+    const disbursementsCount = pagination.page
+      ? await this.prisma.disbursement.count({
+          where,
+        })
+      : -1;
+
+    return {
+      total: disbursementsCount,
+      data: disbursements.map((disbursement) =>
+        this.disbursementMapper.convertDisbursementToDto(disbursement)
+      ),
+    };
   }
 
   async getDisbursementsByAccount(
@@ -98,5 +127,67 @@ export class DisbursementService {
     await this.prisma.disbursement.createMany({
       data: disbursementDataWithCreateInfo,
     });
+  }
+
+  async updateDisbursement(
+    disbursementId: number,
+    data: Prisma.DisbursementUpdateInput,
+    loggedInAccount: IAccount
+  ): Promise<void> {
+    const disbursement = await this.prisma.disbursement.findUnique({
+      where: { id: disbursementId },
+      select: {
+        trip: {
+          select: {
+            shippingLineId: true,
+          },
+        },
+      },
+    });
+
+    this.verifyAccessToDisbursement(
+      disbursement.trip.shippingLineId,
+      loggedInAccount
+    );
+
+    await this.prisma.disbursement.update({
+      where: { id: disbursementId },
+      data,
+    });
+  }
+
+  async deleteDisbursement(
+    disbursementId: number,
+    loggedInAccount: IAccount
+  ): Promise<void> {
+    const disbursement = await this.prisma.disbursement.findUnique({
+      where: { id: disbursementId },
+      select: {
+        trip: {
+          select: {
+            shippingLineId: true,
+          },
+        },
+      },
+    });
+
+    this.verifyAccessToDisbursement(
+      disbursement.trip.shippingLineId,
+      loggedInAccount
+    );
+
+    await this.prisma.disbursement.delete({
+      where: { id: disbursementId },
+    });
+  }
+
+  private verifyAccessToDisbursement(
+    shippingLineId: number,
+    loggedInAccount: IAccount
+  ): void {
+    this.authService.verifyAccountHasAccessToShippingLineRestrictedEntity(
+      { shippingLineId },
+      loggedInAccount
+    );
   }
 }
