@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import BookingSummary from '@ayahay/components/descriptions/BookingSummary';
 import { getBookingById } from '@/services/booking.service';
 import { IBooking } from '@ayahay/models/booking.model';
-import { App, Button, Modal, notification, Typography } from 'antd';
+import { App, Button, Typography } from 'antd';
 import {
   cancelBooking,
   checkInPassenger,
@@ -25,7 +25,7 @@ const textCenter = { textAlign: 'center' };
 const noPadding = { padding: '0' };
 
 export default function BookingSummaryPage({ params }) {
-  const {notification, modal} = App.useApp();
+  const { notification, modal } = App.useApp();
   const { loggedInAccount, hasPrivilegedAccess } = useAuth();
   const [booking, setBooking] = useState<IBooking | undefined>();
   const [errorCode, setErrorCode] = useState<number | undefined>();
@@ -140,7 +140,7 @@ export default function BookingSummaryPage({ params }) {
     const errorMessage = axiosError
       ? axiosError.message
       : 'Something went wrong.';
-      notification.error({
+    notification.error({
       message: errorTitle,
       description: errorMessage,
     });
@@ -194,7 +194,7 @@ export default function BookingSummaryPage({ params }) {
 
     try {
       await updateTripPassenger(booking.id, tripId, PassengerId, Passenger);
-      api.success({
+      notification.success({
         message: 'Update Success',
         description: 'Passenger has been updated successfully.',
       });
@@ -215,7 +215,7 @@ export default function BookingSummaryPage({ params }) {
 
     try {
       await updateTripVehicle(booking.id, tripId, VehicleId, Vehicle);
-      api.success({
+      notification.success({
         message: 'Update Success',
         description: 'Vehicle has been updated successfully.',
       });
