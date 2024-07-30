@@ -124,8 +124,8 @@ model Seat {
   seatType SeatType @relation(fields: [seatTypeId], references: [id])
 
   name String
-  row Int
-  column Int
+  rowNumber Int @map("row_number")
+  columnNumber Int @map("column_number")
 
   bookingTripPassengers BookingTripPassenger[]
 

@@ -20,3 +20,4 @@ export const VEHICLE_TYPES_API = `${BASE_URL}/vehicle-types`;
 export const VOUCHERS_API = `${BASE_URL}/vouchers`;
 export const WEBHOOKS_API = `${BASE_URL}/webhooks`;
 export const RATE_TABLES_API = `${BASE_URL}/rate-tables`;
+export const SEAT_PLAN_API = `${BASE_URL}/seat-plans`;

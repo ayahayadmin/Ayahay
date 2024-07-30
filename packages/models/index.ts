@@ -28,3 +28,4 @@ export * from './webhook.model';
 export * from './rate-table.model';
 export * from './rate-table-row.model';
 export * from './rate-table-markup.model';
+export * from './seat-plan.model';

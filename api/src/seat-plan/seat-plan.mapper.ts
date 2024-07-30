@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { ISeat, ISeatType } from '@ayahay/models';
+import { ISeat, ISeatPlan, ISeatType } from '@ayahay/models';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class SeatPlanMapper {
@@ -31,6 +32,29 @@ export class SeatPlanMapper {
       shippingLineId: seatType.shippingLineId,
       name: seatType.name,
       description: seatType.description,
+    };
+  }
+
+  convertSeatPlanToEntityForCreation(
+    seatPlan: ISeatPlan
+  ): Prisma.SeatPlanCreateArgs {
+    return {
+      data: {
+        shippingLineId: seatPlan.shippingLineId,
+        name: seatPlan.name,
+        rowCount: seatPlan.rowCount,
+        columnCount: seatPlan.columnCount,
+        seats: {
+          createMany: {
+            data: seatPlan.seats.map((seat) => ({
+              seatTypeId: seat.seatTypeId,
+              name: seat.name,
+              rowNumber: seat.rowNumber,
+              columnNumber: seat.columnNumber,
+            })),
+          },
+        },
+      },
     };
   }
 }
