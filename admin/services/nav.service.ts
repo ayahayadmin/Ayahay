@@ -10,6 +10,16 @@ const adminLinks = [
   {
     label: 'Vessels',
     key: 'ships',
+    children: [
+      {
+        label: 'Vessel List',
+        key: 'ships',
+      },
+      {
+        label: 'Upload Vessel Map',
+        key: 'upload/seat-plans',
+      },
+    ],
   },
   {
     label: 'Reporting',

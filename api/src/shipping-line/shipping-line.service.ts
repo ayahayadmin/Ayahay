@@ -21,7 +21,14 @@ export class ShippingLineService {
   ) {}
 
   async getShippingLines(): Promise<IShippingLine[]> {
-    return await this.prisma.shippingLine.findMany({});
+    const shippingLines = await this.prisma.shippingLine.findMany({
+      include: {
+        seatTypes: true,
+      },
+    });
+    return shippingLines.map((shippingLine) =>
+      this.shippingLineMapper.convertShippingLineToFullDto(shippingLine)
+    );
   }
 
   async getSchedulesOfShippingLine(

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import TripSummary from './TripSummary';
 import {
   Badge,
@@ -22,6 +22,8 @@ import {
 } from '@ayahay/constants';
 import PaymentSummary from './PaymentSummary';
 import useBreakpoint from 'antd/es/grid/hooks/useBreakpoint';
+import { ItineraryContent } from '@/components/document/TripItinerary';
+import BookingReminders from './BookingReminders';
 
 const relativeTime = require('dayjs/plugin/relativeTime');
 dayjs.extend(relativeTime);
@@ -48,18 +50,26 @@ export default function BookingTripPassengerSummary({
 }: BookingTripPassengerSummaryProps) {
   const screens = useBreakpoint();
   const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
+  const [isItineraryPrinting, setIsItineraryPrinting] = useState(false);
   const booking = bookingTripPassenger?.booking;
   const trip = bookingTripPassenger?.trip;
   const passenger = bookingTripPassenger?.passenger;
   const bookingPaymentItems = bookingTripPassenger?.bookingPaymentItems;
 
   const {
-    isPrinting,
-    onClickPrint,
+    isThermalPrinting,
+    setIsThermalPrinting,
     showQrCode,
     showCancelBookingButton,
     getUserAction,
   } = useBookingControls(booking, trip, hasPrivilegedAccess);
+
+  useEffect(() => {
+    if (isItineraryPrinting) {
+      window.print();
+      setIsItineraryPrinting(false);
+    }
+  }, [isItineraryPrinting]);
 
   const onClickRemove = (
     remarks: string,
@@ -71,9 +81,13 @@ export default function BookingTripPassengerSummary({
 
   const bookingActions = (
     <div style={{ display: 'flex', gap: '8px' }} className='hide-on-print'>
-      <Button type='primary' onClick={() => onClickPrint()}>
+      <Button type='primary' onClick={() => setIsThermalPrinting(true)}>
         <PrinterOutlined />
-        Print Ticket
+        Print Receipt
+      </Button>
+      <Button type='primary' onClick={() => setIsItineraryPrinting(true)}>
+        <PrinterOutlined />
+        Print Itinerary
       </Button>
       {canCheckIn && bookingTripPassenger?.checkInDate === undefined && (
         <Button type='primary' onClick={() => onCheckInPassenger()}>
@@ -219,10 +233,46 @@ export default function BookingTripPassengerSummary({
     </div>
   );
 
+  const paxItinerary = booking && (
+    <div>
+      <ItineraryContent
+        booking={booking}
+        trip={trip}
+        tripPassenger={bookingTripPassenger}
+      />
+      <div style={{ marginTop: 10 }}>
+        <BookingReminders
+          shippingLineName={trip?.shippingLine?.name}
+          titleLevel={5}
+          fontSize={10}
+        />
+      </div>
+      <span
+        style={{
+          width: '100%',
+          display: 'inline-block',
+          borderBottom: '1px dashed black',
+          textAlign: 'center',
+          fontSize: 8,
+        }}
+      >
+        CUT THIS AREA (VESSEL COPY)
+      </span>
+      <div style={{ marginTop: 10 }}>
+        <ItineraryContent
+          booking={booking}
+          trip={trip}
+          tripPassenger={bookingTripPassenger}
+        />
+      </div>
+    </div>
+  );
+
   return (
     <Skeleton loading={bookingTripPassenger === undefined} active>
-      {isPrinting && minimalSummary}
-      {!isPrinting && completeSummary}
+      {isThermalPrinting && minimalSummary}
+      {isItineraryPrinting && paxItinerary}
+      {!isThermalPrinting && !isItineraryPrinting && completeSummary}
     </Skeleton>
   );
 }

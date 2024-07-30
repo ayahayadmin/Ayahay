@@ -32,7 +32,7 @@ export class AccountMapper {
       ),
       role: account.role as ACCOUNT_ROLE,
       shippingLineId: account.shippingLineId ?? undefined,
-      shippingLine: this.shippingLineMapper.convertShippingLineToDto(
+      shippingLine: this.shippingLineMapper.convertShippingLineToSimpleDto(
         account.shippingLine
       ),
       travelAgencyId: account.travelAgencyId ?? undefined,

@@ -23,6 +23,7 @@ import { EmailModule } from './email/email.module';
 import { VoucherModule } from './voucher/voucher.module';
 import { WebhookModule } from '@/webhook/webhook.module';
 import { RateTableModule } from '@/rate-table/rate-table.module';
+import { SeatPlanModule } from '@/seat-plan/seat-plan.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { RateTableModule } from '@/rate-table/rate-table.module';
     VoucherModule,
     WebhookModule,
     RateTableModule,
+    SeatPlanModule,
   ],
 })
 export class AppModule {}

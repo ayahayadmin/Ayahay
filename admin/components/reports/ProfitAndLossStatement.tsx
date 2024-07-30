@@ -441,9 +441,9 @@ const ProfitAndLossStatement = forwardRef(function (
                 totalExpenses += disbursement.amount;
                 return (
                   <tr>
-                    <td>{getFullDate(disbursement.date)}</td>
+                    <td>{getFullDate(disbursement.dateIso)}</td>
                     {/* TODO: will still discuss what if there are more than 1 teller in a trip */}
-                    <td>{data.passengers && data.passengers[0]?.teller}</td>
+                    <td>{disbursement.createdByAccount?.email}</td>
                     <td className={styles['td-text-wrap']}>
                       {disbursement.officialReceipt}
                     </td>

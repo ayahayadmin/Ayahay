@@ -237,6 +237,11 @@ export class BookingService {
                     cabinType: true,
                   },
                 },
+                seat: {
+                  include: {
+                    seatType: true,
+                  },
+                },
                 bookingPaymentItems: true,
               },
               where: {

@@ -9,9 +9,9 @@ import {
   App,
 } from 'antd';
 import styles from './createBookingForm.module.scss';
-import { IBooking, IBookingTrip } from '@ayahay/models';
+import { IBooking, IBookingTrip, ITrip } from '@ayahay/models';
 import BookingInformationForm from '@/components/booking/BookingInformationForm';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { DISCOUNT_TYPE } from '@ayahay/constants/enum';
 import {
   createTentativeBooking,
@@ -28,6 +28,7 @@ import { FieldError } from '@ayahay/http';
 import { getInitialPassengerFormValue } from '@ayahay/services/form.service';
 import { computeAge, computeBirthday } from '@ayahay/services/date.service';
 import dayjs from 'dayjs';
+import { getShippingLines } from '@ayahay/services/shipping-line.service';
 
 const { useBreakpoint } = Grid;
 
@@ -43,7 +44,6 @@ export default function CreateBookingForm({
   const { loggedInAccount, hasPrivilegedAccess } = useAuth();
   const { tripIds, trips } = useTripFromSearchParams();
   const { modal } = App.useApp();
-  const trip = trips?.[0];
   const screens = useBreakpoint();
   const [form] = Form.useForm();
   const vehicles = Form.useWatch(
@@ -51,9 +51,27 @@ export default function CreateBookingForm({
     form
   );
   const paymentGateway = Form.useWatch('paymentGateway', form);
+  const [firstTrip, setFirstTrip] = useState<ITrip>();
   const [loadingMessage, setLoadingMessage] = useState<string>('');
   const [bookingPreview, setBookingPreview] = useState<IBooking>();
   const [currentStep, setCurrentStep] = useState(0);
+
+  useEffect(() => {
+    loadFirstTrip();
+  }, [trips]);
+
+  const loadFirstTrip = async () => {
+    const trip = trips?.[0];
+    if (trip === undefined) {
+      return;
+    }
+    const shippingLines = await getShippingLines();
+    const tripShippingLine = shippingLines?.find(
+      ({ id }) => trip.shippingLineId === id
+    );
+    trip.availableSeatTypes = tripShippingLine?.seatTypes ?? [];
+    setFirstTrip(trip);
+  };
 
   const nextStep = () => {
     setCurrentStep(currentStep + 1);
@@ -68,7 +86,7 @@ export default function CreateBookingForm({
       'Looking for available seats that match your preferences...'
     );
 
-    if (trip === undefined || trips === undefined) {
+    if (trips === undefined) {
       onBookError('Trip is not defined');
       return;
     }
@@ -152,7 +170,8 @@ export default function CreateBookingForm({
 
   const informBookingRequested = (bookingId: string) => {
     const redirectUrl = `/bookings/requests/${bookingId}`;
-    const partnerName = trip?.shippingLine?.name ?? 'our partner shipping line';
+    const partnerName =
+      firstTrip?.shippingLine?.name ?? 'our partner shipping line';
 
     modal.info({
       width: 'min(90vw, 512px)',
@@ -387,7 +406,7 @@ export default function CreateBookingForm({
           }}
         >
           <BookingInformationForm
-            trip={trip}
+            trip={firstTrip}
             onNextStep={createTempBooking}
             onPreviousStep={previousStep}
           />

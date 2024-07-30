@@ -10,6 +10,7 @@ export class PaymentMapper {
 
       price: paymentItem.price,
       description: paymentItem.description,
+      type: paymentItem.type,
     };
   }
 }

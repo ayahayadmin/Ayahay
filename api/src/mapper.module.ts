@@ -17,6 +17,7 @@ import { VoucherMapper } from './voucher/voucher.mapper';
 import { WebhookMapper } from '@/webhook/webhook.mapper';
 import { RateTableMapper } from '@/rate-table/rate-table.mapper';
 import { TravelAgencyMapper } from '@/travel-agency/travel-agency.mapper';
+import { SeatPlanMapper } from '@/seat-plan/seat-plan.mapper';
 
 @Module({
   providers: [
@@ -38,6 +39,7 @@ import { TravelAgencyMapper } from '@/travel-agency/travel-agency.mapper';
     WebhookMapper,
     RateTableMapper,
     TravelAgencyMapper,
+    SeatPlanMapper,
   ],
   exports: [
     TripMapper,
@@ -58,6 +60,7 @@ import { TravelAgencyMapper } from '@/travel-agency/travel-agency.mapper';
     WebhookMapper,
     RateTableMapper,
     TravelAgencyMapper,
+    SeatPlanMapper,
   ],
 })
 export class MapperModule {}

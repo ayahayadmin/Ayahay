@@ -24,7 +24,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { DATE_FORMAT_LIST, DATE_PLACEHOLDER } from '@ayahay/constants';
 import dayjs from 'dayjs';
 import { RangePickerProps } from 'antd/es/date-picker';
-import { InfoCircleOutlined } from '@ant-design/icons';
 
 const { Text, Title } = Typography;
 const { TextArea } = Input;
@@ -345,7 +344,7 @@ export default function BookingInformationForm({
                 <Form.Item
                   {...restField}
                   name={[name, 'preferredCabinId']}
-                  label='Accommodation'
+                  label='Preferred Cabin'
                   colon={false}
                 >
                   <Radio.Group>
@@ -357,6 +356,23 @@ export default function BookingInformationForm({
                     ))}
                   </Radio.Group>
                 </Form.Item>
+                {trip?.availableSeatTypes?.length && (
+                  <Form.Item
+                    {...restField}
+                    name={[name, 'preferredSeatTypeId']}
+                    label='Preferred Seat'
+                    colon={false}
+                  >
+                    <Radio.Group>
+                      <Radio value={undefined}>Any</Radio>
+                      {trip?.availableSeatTypes?.map((seatType) => (
+                        <Radio value={seatType?.id} key={seatType?.id}>
+                          {seatType?.name}
+                        </Radio>
+                      ))}
+                    </Radio.Group>
+                  </Form.Item>
+                )}
                 {hasPrivilegedAccess && (
                   <EnumRadio
                     _enum={DISCOUNT_TYPE}

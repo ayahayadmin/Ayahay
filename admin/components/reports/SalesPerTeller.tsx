@@ -548,7 +548,7 @@ const SalesPerTeller = forwardRef(function (
                             <td></td>
                           )}
                           <td></td>
-                          <td>{getFullDate(disbursement.date)}</td>
+                          <td>{getFullDate(disbursement.dateIso)}</td>
                           {/* TODO: will still discuss what if there are more than 1 teller in a trip */}
                           <td>{user}</td>
                           <td className={styles['td-text-wrap']}>

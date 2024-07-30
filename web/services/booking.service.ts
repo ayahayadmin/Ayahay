@@ -5,6 +5,7 @@ import {
 } from '@ayahay/models';
 import { PaginatedRequest, PaginatedResponse } from '@ayahay/http';
 import axios from '@ayahay/services/axios';
+import { getShippingLines } from '@ayahay/services/shipping-line.service';
 import { BOOKING_API } from '@ayahay/constants/api';
 import { getVehicleType } from '@ayahay/services/vehicle-type.service';
 import { cacheItem, fetchItem } from '@ayahay/services/cache.service';
@@ -51,6 +52,20 @@ export async function createTentativeBooking(
     tempBooking
   );
 
+  const shippingLines = await getShippingLines();
+  const shippingLine = shippingLines?.find(
+    ({ id }) => booking.shippingLineId === id
+  );
+  booking.bookingTrips?.forEach(({ bookingTripPassengers }) =>
+    bookingTripPassengers?.forEach((tripPassenger) => {
+      if (!tripPassenger?.seat) {
+        return;
+      }
+      tripPassenger.seat.seatType = shippingLine?.seatTypes?.find(
+        ({ id }) => tripPassenger.seat?.seatTypeId === id
+      );
+    })
+  );
   return booking;
 }
 

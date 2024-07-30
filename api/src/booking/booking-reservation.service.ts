@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { Prisma, PrismaClient } from '@prisma/client';
 import { PrismaService } from '@/prisma.service';
 import {
@@ -6,6 +10,7 @@ import {
   IBookingTrip,
   IBookingTripPassenger,
   IBookingTripVehicle,
+  ICabinType,
   IPassenger,
   ITripCabin,
   IVehicle,
@@ -24,8 +29,9 @@ import { AccountService } from '@/account/account.service';
 export class BookingReservationService {
   // if one seat has preferred cabin and another has preferred seat type,
   // we want to prioritize cabin preference
-  private readonly CABIN_WEIGHT = 10;
-  private readonly SEAT_TYPE_WEIGHT = 1;
+  private readonly CORRECT_CABIN_WEIGHT = 100;
+  private readonly CORRECT_SEAT_TYPE_WEIGHT = 10;
+  private readonly HAS_SEAT_WEIGHT = 1;
 
   constructor(
     private readonly prisma: PrismaService,
@@ -35,8 +41,7 @@ export class BookingReservationService {
     private readonly passengerService: PassengerService,
     private readonly vehicleService: VehicleService,
     private readonly utilityService: UtilityService,
-    private readonly bookingWebhookService: BookingWebhookService,
-    private readonly accountService: AccountService
+    private readonly bookingWebhookService: BookingWebhookService
   ) {}
 
   /**
@@ -47,11 +52,13 @@ export class BookingReservationService {
   async assignCabinsAndSeatsToPassengers(
     bookingTrips: IBookingTrip[]
   ): Promise<void> {
-    const tripsWithSeatSelection = bookingTrips.filter(
-      (bookingTrip) => bookingTrip.trip.seatSelection === true
+    const tripsWithSeatSelection = bookingTrips.filter((bookingTrip) =>
+      bookingTrip.trip.availableCabins.some((tripCabin) => tripCabin.seatPlanId)
     );
-    const tripsWithoutSeatSelection = bookingTrips.filter(
-      (bookingTrip) => bookingTrip.trip.seatSelection === false
+    const tripsWithoutSeatSelection = bookingTrips.filter((bookingTrip) =>
+      bookingTrip.trip.availableCabins.every(
+        (tripCabin) => !tripCabin.seatPlanId
+      )
     );
 
     tripsWithoutSeatSelection.forEach((bookingTrip) =>
@@ -69,48 +76,54 @@ export class BookingReservationService {
     // TODO: sort cabins
 
     bookingTrip.bookingTripPassengers.forEach((bookingTripPassenger) => {
-      const assignedCabinIndex = this.getAssignedCabinIndexToPassenger(
-        bookingTrip.trip.availableCabins,
+      const bestBooking = this.getBestBooking(
+        this.getAvailableCabinBookings(bookingTrip),
         bookingTripPassenger
       );
-
-      if (assignedCabinIndex === -1) {
+      if (bestBooking === undefined) {
         throw new BadRequestException('No available bookings');
       }
+      const assignedCabinIndex = bookingTrip.trip.availableCabins.findIndex(
+        ({ tripId, cabinId }) =>
+          bestBooking.tripId === tripId && bestBooking.cabinId === cabinId
+      );
 
-      const assignedCabin =
-        bookingTrip.trip.availableCabins[assignedCabinIndex];
-
-      bookingTripPassenger.cabinId = assignedCabin.cabinId;
-      bookingTripPassenger.cabin = assignedCabin.cabin;
-      bookingTripPassenger.tripCabin = assignedCabin;
-
-      bookingTrip.trip.availableCabins[assignedCabinIndex]
-        .availablePassengerCapacity--;
+      this.assignCabinToPassenger(
+        bookingTrip,
+        bookingTripPassenger,
+        assignedCabinIndex
+      );
     });
   }
 
-  private getAssignedCabinIndexToPassenger(
-    availableCabins: ITripCabin[],
-    bookingTripPassenger: IBookingTripPassenger
-  ): number {
-    let cabinIndex = availableCabins.findIndex(
-      (tripCabin) => tripCabin.availablePassengerCapacity > 0
-    );
-    const preferredCabinId = bookingTripPassenger.preferredCabinId;
-    if (preferredCabinId !== undefined) {
-      const preferredCabinIndex = availableCabins.findIndex(
-        (tripCabin) =>
-          tripCabin.cabin.id === preferredCabinId &&
-          tripCabin.availablePassengerCapacity > 0
+  private getAvailableCabinBookings(
+    bookingTrip: IBookingTrip
+  ): AvailableBooking[] {
+    return bookingTrip.trip.availableCabins
+      .filter((tripCabin) => tripCabin.availablePassengerCapacity > 0)
+      .map(
+        ({ tripId, cabinId, availablePassengerCapacity }) =>
+          ({
+            tripId,
+            cabinId,
+            availablePassengerCapacity,
+          } as AvailableBooking)
       );
+  }
 
-      if (preferredCabinIndex !== -1) {
-        cabinIndex = preferredCabinIndex;
-      }
-    }
+  private assignCabinToPassenger(
+    // we pass bookingTrip because we mutate its trip.availableCabins property
+    bookingTrip: IBookingTrip,
+    bookingTripPassenger: IBookingTripPassenger,
+    assignedCabinIndex: number
+  ): void {
+    const assignedCabin = bookingTrip.trip.availableCabins[assignedCabinIndex];
 
-    return cabinIndex;
+    bookingTripPassenger.cabinId = assignedCabin.cabinId;
+    bookingTripPassenger.cabin = assignedCabin.cabin;
+
+    bookingTrip.trip.availableCabins[assignedCabinIndex]
+      .availablePassengerCapacity--;
   }
 
   private async assignCabinsAndSeatsToPassengersInTripsWithSeatSelection(
@@ -120,148 +133,155 @@ export class BookingReservationService {
       return;
     }
 
-    const availableBookings =
-      await this.getAvailableBookingsInTripsWithSeatSelection(bookingTrips);
+    const availableSeatBookings = await this.getAvailableSeatBookings(
+      bookingTrips
+    );
 
     bookingTrips.forEach((bookingTrip) => {
+      const availableSeatBookingsInThisTrip = availableSeatBookings.filter(
+        (seat) => seat.tripId === bookingTrip.tripId
+      );
       bookingTrip.bookingTripPassengers.forEach((bookingTripPassenger) => {
-        const bestBookingIndex = this.getBestBookingIndex(
-          availableBookings,
+        const availableCabinBookings =
+          this.getAvailableCabinBookings(bookingTrip);
+        const availableCabinIds = availableCabinBookings.map(
+          ({ cabinId }) => cabinId
+        );
+        const availableSeatBookingsInAvailableCabins =
+          availableSeatBookingsInThisTrip.filter((booking) =>
+            availableCabinIds.includes(booking.cabinId)
+          );
+
+        const availableBookingsInThisTrip = [
+          ...availableCabinBookings,
+          ...availableSeatBookingsInAvailableCabins,
+        ];
+
+        const bestBooking = this.getBestBooking(
+          availableBookingsInThisTrip,
           bookingTripPassenger
         );
-
-        if (bestBookingIndex === -1) {
-          throw new BadRequestException('No available booking');
+        if (bestBooking === undefined) {
+          throw new BadRequestException();
         }
 
-        const bestBooking = availableBookings[bestBookingIndex];
+        const assignedCabinIndex = bookingTrip.trip.availableCabins.findIndex(
+          (tripCabin) => tripCabin.cabinId === bestBooking.cabinId
+        );
+        this.assignCabinToPassenger(
+          bookingTrip,
+          bookingTripPassenger,
+          assignedCabinIndex
+        );
 
-        bookingTripPassenger.cabinId = bestBooking.cabinId;
-        bookingTripPassenger.cabin = {
-          id: bestBooking.cabinId,
-          cabinTypeId: bestBooking.cabinTypeId,
-          cabinType: {
-            id: bestBooking.cabinTypeId,
-            shippingLineId: bestBooking.cabinTypeShippingLineId,
-            name: bestBooking.cabinTypeName,
-            description: bestBooking.cabinTypeDescription,
-          },
-          name: bestBooking.cabinName,
-        } as any;
-        bookingTripPassenger.tripCabin = {
-          adultFare: bestBooking.cabinAdultFare,
-        } as any;
-        bookingTripPassenger.seatId = bestBooking.seatId;
-        bookingTripPassenger.seat = {
-          id: bestBooking.seatId,
-          cabinId: bestBooking.cabinId,
-          seatTypeId: bestBooking.seatTypeId,
-          name: bestBooking.seatName,
-        } as any;
+        if (bestBooking.seatId) {
+          bookingTripPassenger.seatId = bestBooking.seatId;
+          bookingTripPassenger.seat = {
+            id: bestBooking.seatId,
+            seatTypeId: bestBooking.seatTypeId,
+            name: bestBooking.seatName,
+          } as any;
 
-        availableBookings.splice(bestBookingIndex, 1);
+          const bestSeatBookingIndex =
+            availableSeatBookingsInThisTrip.findIndex(
+              ({ cabinId, seatId }) =>
+                bestBooking.cabinId === cabinId && bestBooking.seatId === seatId
+            );
+          // if seat booking, remove seat from the available seats for next passengers
+          availableSeatBookingsInThisTrip.splice(bestSeatBookingIndex, 1);
+        }
       });
     });
   }
 
-  private async getAvailableBookingsInTripsWithSeatSelection(
+  /**
+   * if we have 5 passengers in one booking for one trip, we get 5
+   * available seats for each seat type (e.g. get 5 window seats,
+   * 5 aisle seats, etc). this way, we handle the worst case scenario
+   * (all 5 passengers want the same seat type)
+   */
+  private async getAvailableSeatBookings(
     bookingTrips: IBookingTrip[]
   ): Promise<AvailableBooking[]> {
-    const { bookingTripPassengers } =
-      this.utilityService.combineAllBookingTripEntities(bookingTrips);
+    let maxPassengerCount = 0;
+    bookingTrips.forEach((bookingTrip) => {
+      if (bookingTrip.bookingTripPassengers.length > maxPassengerCount) {
+        maxPassengerCount = bookingTrip.bookingTripPassengers.length;
+      }
+    });
 
     const tripIds = bookingTrips.map((bookingTrip) => bookingTrip.tripId);
-    const preferredCabinTypes = bookingTripPassengers.map(
-      (bookingTripPassenger) => bookingTripPassenger.cabinId
-    );
-    const preferredSeatTypes = bookingTripPassengers.map(
-      (bookingTripPassenger) => bookingTripPassenger.preferredSeatTypeId
-    );
 
-    // TODO: update seat check after schema update
     return this.prisma.$queryRaw<AvailableBooking[]>`
-SELECT "tripId", "cabinId", "cabinName", "cabinType", "seatId", "seatName", "seatType"
+SELECT "tripId", "cabinId", "seatId", "seatName", "seatTypeId"
 FROM (
   SELECT 
-    trip.id AS "tripId",
-    cabin.id AS "cabinId",
-    cabin."name" AS "cabinName",
-    cabin."type" AS "cabinType",
-    seat.id AS "seatId",
-    seat."name" AS "seatName",
-    seat."type" AS "seatType",
+    tc.trip_id AS "tripId",
+    tc.cabin_id AS "cabinId",
+    s.id AS "seatId",
+    s."name" AS "seatName",
+    s.seat_type_id AS "seatTypeId",
     ROW_NUMBER() OVER (
-      PARTITION BY trip.id, cabin."type", seat."type" 
+      PARTITION BY t.id, tc.cabin_id, s.seat_type_id
+      ORDER BY s."name"
     ) AS row
-  FROM ayahay.trip trip
-  INNER JOIN ayahay.cabin cabin ON cabin.ship_id = trip.ship_id
-  LEFT JOIN ayahay.seat seat ON trip.seat_selection = TRUE AND seat.cabin_id = cabin.id
+  FROM ayahay.trip t
+  LEFT JOIN ayahay.trip_cabin tc ON t.id = tc.trip_id
+  INNER JOIN ayahay.seat_plan sp ON tc.seat_plan_id = sp.id
+  LEFT JOIN ayahay.seat s ON sp.id = s.seat_plan_id
   WHERE ( 
-    trip.id IN (${Prisma.join(tripIds)})
-    AND cabin."type" IN (${Prisma.join(preferredCabinTypes)})
-    AND seat."type" IN (${Prisma.join(preferredSeatTypes)})
+    tc.trip_id IN (${Prisma.join(tripIds)})
+    AND tc.seat_plan_id IS NOT NULL
     AND NOT EXISTS (
       SELECT 1 
-      FROM ayahay.booking_passenger bookingPassenger
+      FROM ayahay.booking_trip_passenger btp 
       WHERE 
-        bookingPassenger.trip_id = trip.id
-        AND bookingPassenger.seat_id = seat.id
+        btp.trip_id = tc.trip_id
+        AND btp.cabin_id = tc.cabin_id
+        AND btp.seat_id = s.id
     )
-  ) 
+  )
+  ORDER BY s."name"
 ) partitioned_results
-WHERE row <= ${bookingTripPassengers.length}
+WHERE row <= ${maxPassengerCount}
 ;
 `;
   }
 
-  getBestBookingIndex(
+  private getBestBooking(
     availableBookings: AvailableBooking[],
     bookingTripPassenger: IBookingTripPassenger
-  ): number {
+  ): AvailableBooking | undefined {
     if (availableBookings.length === 0) {
       return undefined;
     }
 
-    const { cabinId: preferredCabinId, preferredSeatTypeId } =
-      bookingTripPassenger;
-
-    let seatsInPreferredCabin = availableBookings;
-    let seatsWithPreferredSeatType = availableBookings;
-    seatsInPreferredCabin = seatsInPreferredCabin.filter(
-      (seat) => seat.cabinId === preferredCabinId
-    );
-    if (preferredSeatTypeId !== undefined) {
-      seatsWithPreferredSeatType = seatsWithPreferredSeatType.filter(
-        (seat) => seat.seatTypeId === preferredSeatTypeId
-      );
-    }
-
     // score that determines how "preferred" a seat is; the higher, the more preferred
     let bestScore = -1;
-    let bestSeatIndex = -1;
+    let bestBooking: AvailableBooking;
 
-    const idsOfSeatsInPreferredCabin = new Set<number>();
-    const idsOfSeatsWithPreferredSeatType = new Set<number>();
-    seatsInPreferredCabin
-      .map((seat) => seat.seatId)
-      .forEach((id) => idsOfSeatsInPreferredCabin.add(id));
-    seatsWithPreferredSeatType
-      .map((seat) => seat.seatId)
-      .forEach((id) => idsOfSeatsWithPreferredSeatType.add(id));
-    availableBookings.forEach((seat, index) => {
+    availableBookings.forEach((booking) => {
       let currentSeatScore = 0;
-      if (idsOfSeatsInPreferredCabin.has(seat.seatId)) {
-        currentSeatScore += this.CABIN_WEIGHT;
+      if (booking.cabinId === bookingTripPassenger.preferredCabinId) {
+        currentSeatScore += this.CORRECT_CABIN_WEIGHT;
       }
-      if (idsOfSeatsWithPreferredSeatType.has(seat.seatId)) {
-        currentSeatScore += this.SEAT_TYPE_WEIGHT;
+      if (
+        bookingTripPassenger.preferredSeatTypeId !== undefined &&
+        booking.seatTypeId === bookingTripPassenger.preferredSeatTypeId
+      ) {
+        currentSeatScore += this.CORRECT_SEAT_TYPE_WEIGHT;
       }
+      if (booking.seatId !== undefined) {
+        currentSeatScore += this.HAS_SEAT_WEIGHT;
+      }
+
       if (currentSeatScore > bestScore) {
         bestScore = currentSeatScore;
-        bestSeatIndex = index;
+        bestBooking = booking;
       }
     });
-    return bestSeatIndex;
+
+    return bestBooking;
   }
 
   async saveConfirmedBooking(
