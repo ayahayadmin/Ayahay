@@ -12,7 +12,7 @@ interface TripItineraryProps {
 export default function TripItinerary({ booking }: TripItineraryProps) {
   return booking.bookingTrips?.map(({ trip, bookingTripPassengers }) => (
     <>
-      {bookingTripPassengers?.map((tripPassenger, index) => (
+      {bookingTripPassengers?.map((tripPassenger) => (
         <div
           key={tripPassenger.tripId + '' + tripPassenger.passengerId}
           style={{ breakBefore: 'page' }}
@@ -59,7 +59,7 @@ interface ItineraryContentProps {
   tripPassenger: IBookingTripPassenger;
 }
 
-function ItineraryContent({
+export function ItineraryContent({
   booking,
   trip,
   tripPassenger,
@@ -85,7 +85,7 @@ function ItineraryContent({
           }}
         >
           <img
-            src={`/assets/shipping-line-logos/${booking.shippingLine?.name}.png`}
+            src={`/assets/shipping-line-logos/${trip?.shippingLine?.name}.png`}
             alt='Logo'
             height={80}
           />
@@ -94,7 +94,7 @@ function ItineraryContent({
               fontWeight: 'bold',
             }}
           >
-            {booking.shippingLine?.name}
+            {trip?.shippingLine?.name}
           </span>
         </section>
         <section

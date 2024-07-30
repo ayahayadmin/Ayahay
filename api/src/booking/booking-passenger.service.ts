@@ -155,6 +155,11 @@ export class BookingPassengerService {
               cabinType: true,
             },
           },
+          seat: {
+            include: {
+              seatType: true,
+            },
+          },
           bookingPaymentItems: true,
         },
       });
