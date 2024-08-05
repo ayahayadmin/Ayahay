@@ -29,13 +29,17 @@ const SalesPerTeller = forwardRef(function (
   const date = getFullDate(new Date().toString(), true);
 
   let totalPaxSales = 0;
+  let totalPaxCollectSales = 0;
   let totalPaxBooked = 0;
   let totalPaxRefunds = 0;
+  let totalPaxCollectRefunds = 0;
   let totalPaxRefundsBooked = 0;
 
   let totalVehicleSales = 0;
+  let totalVehicleCollectSales = 0;
   let totalVehicleBooked = 0;
   let totalVehicleRefunds = 0;
+  let totalVehicleCollectRefunds = 0;
   let totalVehicleRefundBooked = 0;
 
   let totalDisbursements = 0;
@@ -120,7 +124,8 @@ const SalesPerTeller = forwardRef(function (
                 <th>Accommodation</th>
                 <th>Discounts</th>
                 <th style={{ textAlign: 'left' }}>Count</th>
-                <th style={{ textAlign: 'left' }}>Total</th>
+                <th style={{ textAlign: 'left' }}>Total Cash</th>
+                <th style={{ textAlign: 'left' }}>Total Collect</th>
               </tr>
             </thead>
             <tbody>
@@ -130,7 +135,6 @@ const SalesPerTeller = forwardRef(function (
                 }
 
                 let bookedCount = 0;
-                // totalDisbursements += tripData.totalDisbursements;
                 const voyage = `${getFullDate(
                   tripData.departureDate,
                   true
@@ -138,10 +142,12 @@ const SalesPerTeller = forwardRef(function (
                   tripData.voyageNumber ?? '__'
                 })`;
                 let paxSales = 0;
+                let paxCollectSales = 0;
 
                 const passengerBreakdown: any = tripData.passengerBreakdown.map(
                   (passengerDiscount, idx) => {
                     paxSales += passengerDiscount.totalSales;
+                    paxCollectSales += passengerDiscount.totalCollectSales ?? 0;
                     bookedCount += passengerDiscount.totalBooked;
                     return (
                       <tr>
@@ -162,6 +168,12 @@ const SalesPerTeller = forwardRef(function (
                             passengerDiscount.totalSales
                           )}
                         </td>
+                        <td style={{ textAlign: 'left' }}>
+                          PHP&nbsp;
+                          {roundToTwoDecimalPlacesAndAddCommas(
+                            passengerDiscount.totalCollectSales ?? 0
+                          )}
+                        </td>
                       </tr>
                     );
                   }
@@ -178,11 +190,16 @@ const SalesPerTeller = forwardRef(function (
                       PHP&nbsp;
                       {roundToTwoDecimalPlacesAndAddCommas(paxSales)}
                     </td>
+                    <td style={{ textAlign: 'left' }}>
+                      PHP&nbsp;
+                      {roundToTwoDecimalPlacesAndAddCommas(paxCollectSales)}
+                    </td>
                   </tr>
                 );
 
                 totalPaxBooked += bookedCount;
                 totalPaxSales += paxSales;
+                totalPaxCollectSales += paxCollectSales;
 
                 return [...passengerBreakdown, subTotalRow];
               })}
@@ -194,6 +211,10 @@ const SalesPerTeller = forwardRef(function (
                 <td style={{ textAlign: 'left' }}>
                   PHP&nbsp;
                   {roundToTwoDecimalPlacesAndAddCommas(totalPaxSales)}
+                </td>
+                <td style={{ textAlign: 'left' }}>
+                  PHP&nbsp;
+                  {roundToTwoDecimalPlacesAndAddCommas(totalPaxCollectSales)}
                 </td>
               </tr>
             </tfoot>
@@ -220,7 +241,8 @@ const SalesPerTeller = forwardRef(function (
                 <th>Accommodation</th>
                 <th>Discounts</th>
                 <th style={{ textAlign: 'left' }}>Count</th>
-                <th style={{ textAlign: 'left' }}>Total</th>
+                <th style={{ textAlign: 'left' }}>Total Cash</th>
+                <th style={{ textAlign: 'left' }}>Total Collect</th>
               </tr>
             </thead>
             <tbody>
@@ -230,7 +252,6 @@ const SalesPerTeller = forwardRef(function (
                 }
 
                 let refundCount = 0;
-                // totalDisbursements += tripData.totalDisbursements;
                 const voyage = `${getFullDate(
                   tripData.departureDate,
                   true
@@ -238,11 +259,14 @@ const SalesPerTeller = forwardRef(function (
                   tripData.voyageNumber ?? '__'
                 })`;
                 let paxRefunds = 0;
+                let paxCollectRefunds = 0;
 
                 const passengerRefundBreakdown: any =
                   tripData.passengerRefundBreakdown.map(
                     (passengerDiscount, idx) => {
                       paxRefunds += passengerDiscount.totalSales;
+                      paxCollectRefunds +=
+                        passengerDiscount.totalCollectSales ?? 0;
                       refundCount += passengerDiscount.totalBooked;
                       return (
                         <tr>
@@ -263,6 +287,12 @@ const SalesPerTeller = forwardRef(function (
                               passengerDiscount.totalSales
                             )}
                           </td>
+                          <td style={{ textAlign: 'left' }}>
+                            PHP&nbsp;
+                            {roundToTwoDecimalPlacesAndAddCommas(
+                              passengerDiscount.totalCollectSales ?? 0
+                            )}
+                          </td>
                         </tr>
                       );
                     }
@@ -279,11 +309,16 @@ const SalesPerTeller = forwardRef(function (
                       PHP&nbsp;
                       {roundToTwoDecimalPlacesAndAddCommas(paxRefunds)}
                     </td>
+                    <td style={{ textAlign: 'left' }}>
+                      PHP&nbsp;
+                      {roundToTwoDecimalPlacesAndAddCommas(paxCollectRefunds)}
+                    </td>
                   </tr>
                 );
 
                 totalPaxRefundsBooked += refundCount;
                 totalPaxRefunds += paxRefunds;
+                totalPaxCollectRefunds += paxCollectRefunds;
 
                 return [...passengerRefundBreakdown, subTotalRow];
               })}
@@ -295,6 +330,10 @@ const SalesPerTeller = forwardRef(function (
                 <td style={{ textAlign: 'left' }}>
                   PHP&nbsp;
                   {roundToTwoDecimalPlacesAndAddCommas(totalPaxRefunds)}
+                </td>
+                <td style={{ textAlign: 'left' }}>
+                  PHP&nbsp;
+                  {roundToTwoDecimalPlacesAndAddCommas(totalPaxCollectRefunds)}
                 </td>
               </tr>
             </tfoot>
@@ -320,7 +359,8 @@ const SalesPerTeller = forwardRef(function (
                 <th></th>
                 <th>Vehicle Type</th>
                 <th style={{ textAlign: 'left' }}>Count</th>
-                <th style={{ textAlign: 'left' }}>Total</th>
+                <th style={{ textAlign: 'left' }}>Total Cash</th>
+                <th style={{ textAlign: 'left' }}>Total Collect</th>
               </tr>
             </thead>
             <tbody>
@@ -337,10 +377,12 @@ const SalesPerTeller = forwardRef(function (
                   tripData.voyageNumber ?? '__'
                 })`;
                 let vehicleSales = 0;
+                let vehicleCollectSales = 0;
 
                 const vehicleBreakdown: any = tripData.vehicleBreakdown.map(
                   (vehicle, idx) => {
                     vehicleSales += vehicle.totalSales;
+                    vehicleCollectSales += vehicle.totalCollectSales ?? 0;
                     bookedCount += vehicle.totalBooked;
                     return (
                       <tr>
@@ -360,6 +402,12 @@ const SalesPerTeller = forwardRef(function (
                             vehicle.totalSales
                           )}
                         </td>
+                        <td style={{ textAlign: 'left' }}>
+                          PHP&nbsp;
+                          {roundToTwoDecimalPlacesAndAddCommas(
+                            vehicle.totalCollectSales ?? 0
+                          )}
+                        </td>
                       </tr>
                     );
                   }
@@ -375,11 +423,16 @@ const SalesPerTeller = forwardRef(function (
                       PHP&nbsp;
                       {roundToTwoDecimalPlacesAndAddCommas(vehicleSales)}
                     </td>
+                    <td style={{ textAlign: 'left' }}>
+                      PHP&nbsp;
+                      {roundToTwoDecimalPlacesAndAddCommas(vehicleCollectSales)}
+                    </td>
                   </tr>
                 );
 
                 totalVehicleBooked += bookedCount;
                 totalVehicleSales += vehicleSales;
+                totalVehicleCollectSales += vehicleCollectSales;
 
                 return [...vehicleBreakdown, subTotalRow];
               })}
@@ -391,6 +444,12 @@ const SalesPerTeller = forwardRef(function (
                 <td style={{ textAlign: 'left' }}>
                   PHP&nbsp;
                   {roundToTwoDecimalPlacesAndAddCommas(totalVehicleSales)}
+                </td>
+                <td style={{ textAlign: 'left' }}>
+                  PHP&nbsp;
+                  {roundToTwoDecimalPlacesAndAddCommas(
+                    totalVehicleCollectSales
+                  )}
                 </td>
               </tr>
             </tfoot>
@@ -416,7 +475,8 @@ const SalesPerTeller = forwardRef(function (
                 <th></th>
                 <th>Vehicle Type</th>
                 <th style={{ textAlign: 'left' }}>Count</th>
-                <th style={{ textAlign: 'left' }}>Total</th>
+                <th style={{ textAlign: 'left' }}>Total Cash</th>
+                <th style={{ textAlign: 'left' }}>Total Collect</th>
               </tr>
             </thead>
             <tbody>
@@ -433,10 +493,12 @@ const SalesPerTeller = forwardRef(function (
                   tripData.voyageNumber ?? '__'
                 })`;
                 let vehicleRefunds = 0;
+                let vehicleCollectRefunds = 0;
 
                 const vehicleRefundBreakdown: any =
                   tripData.vehicleRefundBreakdown.map((vehicle, idx) => {
                     vehicleRefunds += vehicle.totalSales;
+                    vehicleCollectRefunds += vehicle.totalCollectSales ?? 0;
                     refundCount += vehicle.totalBooked;
                     return (
                       <tr>
@@ -456,6 +518,12 @@ const SalesPerTeller = forwardRef(function (
                             vehicle.totalSales
                           )}
                         </td>
+                        <td style={{ textAlign: 'left' }}>
+                          PHP&nbsp;
+                          {roundToTwoDecimalPlacesAndAddCommas(
+                            vehicle.totalCollectSales
+                          )}
+                        </td>
                       </tr>
                     );
                   });
@@ -470,11 +538,18 @@ const SalesPerTeller = forwardRef(function (
                       PHP&nbsp;
                       {roundToTwoDecimalPlacesAndAddCommas(vehicleRefunds)}
                     </td>
+                    <td style={{ textAlign: 'left' }}>
+                      PHP&nbsp;
+                      {roundToTwoDecimalPlacesAndAddCommas(
+                        vehicleCollectRefunds
+                      )}
+                    </td>
                   </tr>
                 );
 
                 totalVehicleRefundBooked += refundCount;
                 totalVehicleRefunds += vehicleRefunds;
+                totalVehicleCollectRefunds += vehicleCollectRefunds;
 
                 return [...vehicleRefundBreakdown, subTotalRow];
               })}
@@ -488,6 +563,12 @@ const SalesPerTeller = forwardRef(function (
                 <td style={{ textAlign: 'left' }}>
                   PHP&nbsp;
                   {roundToTwoDecimalPlacesAndAddCommas(totalVehicleRefunds)}
+                </td>
+                <td style={{ textAlign: 'left' }}>
+                  PHP&nbsp;
+                  {roundToTwoDecimalPlacesAndAddCommas(
+                    totalVehicleCollectRefunds
+                  )}
                 </td>
               </tr>
             </tfoot>
@@ -616,7 +697,8 @@ const SalesPerTeller = forwardRef(function (
         <div
           className={styles['font-style']}
           style={{
-            ...two_columns_grid,
+            display: 'flex',
+            justifyContent: 'space-between',
             marginTop: 15,
             paddingLeft: 22,
             paddingRight: 22,
@@ -627,6 +709,7 @@ const SalesPerTeller = forwardRef(function (
               borderCollapse: 'collapse',
               textAlign: 'center',
               fontSize: 8,
+              width: '50%',
             }}
           >
             <thead style={{ backgroundColor: '#ddebf7' }}>
@@ -686,6 +769,72 @@ const SalesPerTeller = forwardRef(function (
                           totalVehicleSales,
                           totalVehicleRefunds,
                           -totalDisbursements,
+                        ])
+                      )}
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+
+          <table
+            style={{
+              borderCollapse: 'collapse',
+              textAlign: 'center',
+              fontSize: 8,
+              width: '30%',
+            }}
+          >
+            <thead style={{ backgroundColor: '#ddebf7' }}>
+              <tr style={{ fontWeight: 'bold' }}>
+                <th
+                  className={styles['header-border']}
+                  style={{ borderLeft: '0.001px solid black' }}
+                >
+                  Collect Summary
+                </th>
+                <th className={styles['header-border']}>Amount</th>
+              </tr>
+            </thead>
+            <tbody style={{ borderLeft: '0.001px solid black' }}>
+              <tr>
+                <td className={styles['cell-border']}>SALES</td>
+                <td className={styles['cell-border']}>
+                  PHP&nbsp;
+                  {roundToTwoDecimalPlacesAndAddCommas(
+                    totalPaxCollectSales + totalVehicleCollectSales
+                  )}
+                </td>
+              </tr>
+              <tr>
+                <td className={styles['cell-border']}>REFUNDS</td>
+                <td className={styles['cell-border']}>
+                  PHP&nbsp;
+                  {roundToTwoDecimalPlacesAndAddCommas(
+                    totalPaxCollectRefunds + totalVehicleCollectRefunds
+                  )}
+                </td>
+              </tr>
+            </tbody>
+            <tfoot style={{ backgroundColor: '#ddebf7' }}>
+              <tr style={{ fontWeight: 'bold' }}>
+                <td
+                  className={styles['cell-border']}
+                  style={{ borderLeft: '0.001px solid black' }}
+                >
+                  TOTAL COLLECT
+                </td>
+                <td className={styles['cell-border']}>
+                  <div className={styles['wrap']}>
+                    <div style={{ textAlign: 'left' }}>
+                      PHP&nbsp;
+                      {roundToTwoDecimalPlacesAndAddCommas(
+                        sum([
+                          totalPaxCollectSales,
+                          totalPaxCollectRefunds,
+                          totalVehicleCollectSales,
+                          totalVehicleCollectRefunds,
                         ])
                       )}
                     </div>

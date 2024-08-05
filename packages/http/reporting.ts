@@ -70,12 +70,14 @@ export interface PaxBreakdown {
   cabinName: string;
   totalBooked: number;
   totalSales: number;
+  totalCollectSales?: number;
 }
 
 export interface VehicleBreakdown {
   typeOfVehicle: string;
   totalBooked: number;
   totalSales: number;
+  totalCollectSales?: number;
 }
 
 export interface SalesPerTellerReport {
