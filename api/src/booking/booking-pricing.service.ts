@@ -149,7 +149,7 @@ export class BookingPricingService {
     bookingTripPassenger.totalPrice =
       this.calculateTotalPriceOfPaymentItems(bookingPaymentItems);
     bookingTripPassenger.priceWithoutMarkup =
-      bookingTripPassenger.totalPrice - thirdPartyMarkup;
+      bookingTripPassenger.totalPrice - ayahayMarkup - thirdPartyMarkup;
   }
 
   private calculateTicketPriceForBookingTripPassenger(
@@ -324,7 +324,7 @@ export class BookingPricingService {
     bookingTripVehicle.totalPrice =
       this.calculateTotalPriceOfPaymentItems(bookingPaymentItems);
     bookingTripVehicle.priceWithoutMarkup =
-      bookingTripVehicle.totalPrice - thirdPartyMarkup;
+      bookingTripVehicle.totalPrice - ayahayMarkup - thirdPartyMarkup;
   }
 
   private calculateTicketPriceForBookingTripVehicle(
