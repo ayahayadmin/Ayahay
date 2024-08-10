@@ -104,6 +104,17 @@ export function buildSearchQueryFromSearchForm(
   return searchQuery;
 }
 
+export function buildReturnTripQueryFromFirstQuery(
+  firstQuery: TripsSearchQuery
+) {
+  const returnTripQuery = { ...firstQuery };
+  returnTripQuery.srcPortId = firstQuery.destPortId;
+  returnTripQuery.destPortId = firstQuery.srcPortId;
+  returnTripQuery.departureDate = returnTripQuery.returnDateIso ?? '';
+
+  return returnTripQuery;
+}
+
 export function getTime(date: string) {
   return new Date(date).toLocaleTimeString(undefined, {
     hour: '2-digit',

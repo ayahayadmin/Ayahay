@@ -424,7 +424,10 @@ export class BookingService {
   private pruneTempBooking(booking: IBooking): void {
     // don't save bookingTrip.trip in JSON
     booking.bookingTrips.forEach((bookingTrip) => {
-      bookingTrip.trip = undefined;
+      // only save bookingTrip.trip.allowOnlineBooking
+      bookingTrip.trip = {
+        allowOnlineBooking: bookingTrip.trip.allowOnlineBooking,
+      } as any;
 
       bookingTrip.bookingTripPassengers?.forEach((bookingTripPassenger) => {
         bookingTripPassenger.cabin = undefined;

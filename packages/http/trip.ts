@@ -133,6 +133,7 @@ export interface AvailableTrips {
   destPortId: string;
   rateTableId: string;
   status: string;
+  allowOnlineBooking: boolean;
   seatSelection: string;
   availableVehicleCapacity: string;
   vehicleCapacity: string;

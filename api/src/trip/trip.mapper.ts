@@ -1,11 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import {
-  ICabin,
-  ICabinType,
-  ITrip,
-  ITripCabin,
-  IVehicleType,
-} from '@ayahay/models';
+import { ICabin, ICabinType, ITrip, ITripCabin } from '@ayahay/models';
 import { ShippingLineMapper } from '@/shipping-line/shipping-line.mapper';
 import { PortMapper } from '@/port/port.mapper';
 import { map } from 'lodash';
@@ -43,6 +37,7 @@ export class TripMapper {
       destPortId: trip.destPortId,
       destPort: this.portMapper.convertPortToDto(trip.destPort),
       rateTableId: trip.rateTableId,
+      allowOnlineBooking: trip.allowOnlineBooking ?? undefined,
 
       status: trip.status as any,
       departureDateIso: trip.departureDate.toISOString(),
@@ -107,6 +102,7 @@ export class TripMapper {
       destPortId: Number(trip.destPortId),
       rateTableId: Number(trip.rateTableId),
       status: trip.status as any,
+      allowOnlineBooking: trip.allowOnlineBooking ?? undefined,
       seatSelection: Boolean(trip.seatSelection),
       availableVehicleCapacity: Number(trip.availableVehicleCapacity),
       vehicleCapacity: Number(trip.vehicleCapacity),

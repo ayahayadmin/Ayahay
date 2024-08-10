@@ -24,6 +24,7 @@ model Trip {
   rateTableId Int @map("rate_table_id")
   rateTable RateTable @relation(fields: [rateTableId], references: [id])
   voyage Voyage?
+  allowOnlineBooking Boolean @map("allow_online_booking") @default(true)
 
   status String
   departureDate DateTime @map("departure_date")

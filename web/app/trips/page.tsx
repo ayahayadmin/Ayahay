@@ -3,26 +3,26 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Button, Card, Flex, Form, Typography } from 'antd';
 import styles from './page.module.scss';
-import { debounce, isEqual } from 'lodash';
+import { debounce } from 'lodash';
 import {
+  buildReturnTripQueryFromFirstQuery,
   buildSearchQueryFromSearchForm,
   buildUrlQueryParamsFromSearchForm,
   getTime,
   initializeSearchFormFromQueryParams,
 } from '@/services/search.service';
 import TripSearchQuery from '@/components/search/TripSearchQuery';
-import TripSortOptions from '@/components/form/TripSortOptions';
 import TripSearchResult from '@/app/trips/searchResults';
-import CabinFilter from '@/components/form/CabinFilter';
-import ShippingLineFilter from '@/components/form/ShippingLineFilter';
 import { TripsSearchQuery } from '@ayahay/http';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { IPort, ITrip } from '@ayahay/models';
 import { getPort } from '@ayahay/services/port.service';
 import dayjs from 'dayjs';
+import { useAuth } from '@/contexts/AuthContext';
 const { Title } = Typography;
 
 export default function Trips() {
+  const { loggedInAccount } = useAuth();
   const router = useRouter();
   const [form] = Form.useForm();
   const searchParams = useSearchParams();
@@ -42,15 +42,18 @@ export default function Trips() {
   const [activeSearchIndex, setActiveSearchIndex] = useState<number>(0);
   const [errorMessages, setErrorMessages] = useState<string[]>([]);
 
-  const onPageLoad = async () => {
+  const onPageLoad = () => {
     const params = Object.fromEntries(searchParams.entries());
     initializeSearchFormFromQueryParams(form, params);
     debounceSearch();
   };
 
+  useEffect(onPageLoad, []);
+
   useEffect(() => {
-    onPageLoad();
-  }, []);
+    setSelectedTrips([{} as any]);
+    setActiveSearchIndex(0);
+  }, [loggedInAccount]);
 
   useEffect(() => {
     validateSelectedTrips();
@@ -160,28 +163,6 @@ export default function Trips() {
     return styles['flight-schedule-card'];
   };
 
-  const buildReturnTripQueryFromFirstQuery = (firstQuery: TripsSearchQuery) => {
-    const returnTripQuery = { ...firstQuery };
-    returnTripQuery.srcPortId = firstQuery.destPortId;
-    returnTripQuery.destPortId = firstQuery.srcPortId;
-    returnTripQuery.departureDate = returnTripQuery.returnDateIso ?? '';
-
-    return returnTripQuery;
-  };
-
-  const deselectTripIfBeforeDate = (index: number, date: dayjs.Dayjs) => {
-    if (!selectedTrips[index] || !date) {
-      return;
-    }
-    const selectedTripDeparture = dayjs(selectedTrips[index].departureDateIso);
-    if (selectedTripDeparture.isBefore(date)) {
-      return;
-    }
-    const trips = [...selectedTrips];
-    trips[index] = {} as any;
-    setSelectedTrips(trips);
-  };
-
   return (
     <Form
       form={form}
@@ -285,6 +266,7 @@ export default function Trips() {
             <TripSearchResult
               searchQuery={searchQueries[activeSearchIndex]}
               selectedTrip={selectedTrips[activeSearchIndex]}
+              loggedInAccount={loggedInAccount}
               onSelectTrip={(tripId) => selectTrip(activeSearchIndex, tripId)}
             />
           </div>

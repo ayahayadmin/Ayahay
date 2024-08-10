@@ -35,6 +35,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { GetTripsQuery, Trip } from '@/specs/trip.specs';
+import { AllowUnauthenticated } from '@/decorator/authenticated.decorator';
 
 @ApiTags('Trips')
 @Controller('trips')
@@ -54,16 +55,18 @@ export class TripController {
   }
 
   @Get('available')
+  @UseGuards(AuthGuard)
+  @AllowUnauthenticated()
   @ApiQuery({ type: GetTripsQuery })
   @ApiOkResponse({
     description: 'The list of available trips that matches the query.',
     type: [Trip],
   })
   async getAvailableTrips(
-    @Query()
-    query: SearchAvailableTrips
+    @Query() searchQuery: SearchAvailableTrips,
+    @Request() req
   ): Promise<ITrip[]> {
-    return await this.tripService.getAvailableTrips(query);
+    return await this.tripService.getAvailableTrips(searchQuery, req.user);
   }
 
   @Get(':tripId')
@@ -216,5 +219,21 @@ export class TripController {
     @Request() req
   ): Promise<void> {
     return this.tripService.setTripAsArrived(tripId, req.user);
+  }
+
+  @Patch(':tripId/online-booking')
+  @UseGuards(AuthGuard)
+  @Roles('SuperAdmin')
+  @ApiExcludeEndpoint()
+  async updateTripOnlineBooking(
+    @Param('tripId') tripId: number,
+    @Body('allowOnlineBooking') allowOnlineBooking: boolean,
+    @Request() req
+  ): Promise<void> {
+    return this.tripService.updateTripOnlineBooking(
+      tripId,
+      allowOnlineBooking,
+      req.user
+    );
   }
 }
