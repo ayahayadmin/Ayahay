@@ -1,7 +1,7 @@
 import styles from './searchResults.module.scss';
 import React, { useEffect, useState } from 'react';
 import { Button, Pagination, Popover, Skeleton, Table } from 'antd';
-import { ITrip, IShippingLine, ITripCabin } from '@ayahay/models';
+import { ITrip, IShippingLine, ITripCabin, IAccount } from '@ayahay/models';
 import { TripsSearchQuery } from '@ayahay/http';
 import { find, sumBy } from 'lodash';
 import {
@@ -24,12 +24,14 @@ const PAGE_SIZE = 10;
 interface TripSearchResultsProps {
   searchQuery: TripsSearchQuery;
   selectedTrip?: ITrip;
+  loggedInAccount: IAccount | null | undefined;
   onSelectTrip?: (trip: ITrip) => void;
 }
 
 export default function TripSearchResult({
   searchQuery,
   selectedTrip,
+  loggedInAccount,
   onSelectTrip,
 }: TripSearchResultsProps) {
   const [tripData, setTripData] = useState([] as ITrip[]);
@@ -297,14 +299,14 @@ export default function TripSearchResult({
 
   useEffect(() => {
     setPage(1);
-    fetchTrips(page);
-  }, [searchQuery]);
+    fetchTrips();
+  }, [searchQuery, loggedInAccount]);
 
   useEffect(() => {
-    fetchTrips(page);
+    fetchTrips();
   }, [page]);
 
-  const fetchTrips = async (page: number) => {
+  const fetchTrips = async () => {
     setLoading(true);
     const trips = await getAvailableTrips(searchQuery);
     const tripData = find(trips?.data, { page });

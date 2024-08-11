@@ -21,6 +21,7 @@ export interface ITrip {
   voyage?: IVoyage;
   rateTableId: number;
   rateTable?: IRateTable;
+  allowOnlineBooking: Boolean;
 
   status: keyof typeof TRIP_STATUS;
   departureDateIso: string;

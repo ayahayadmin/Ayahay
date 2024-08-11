@@ -1,11 +1,14 @@
 import React, { useEffect } from 'react';
 import { ITrip } from '@ayahay/models/trip.model';
-import { Button, Dropdown, Space } from 'antd';
+import { Button, Dropdown, Space, Switch } from 'antd';
 import { IShippingLine } from '@ayahay/models/shipping-line.model';
 import dayjs from 'dayjs';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
-import { getAvailableTripsByDateRange } from '@/services/trip.service';
+import {
+  getAvailableTripsByDateRange,
+  updateTripOnlineBooking,
+} from '@/services/trip.service';
 import Table, { ColumnsType } from 'antd/es/table';
 import { getLocaleTimeString } from '@ayahay/services/date.service';
 import { PaginatedRequest, PortsAndDateRangeSearch } from '@ayahay/http';
@@ -111,6 +114,13 @@ export default function TripList({
 
   const onClickSetTripAsCancelled = async (tripId: number) => {
     await onSetTripAsCancelled(tripId);
+  };
+
+  const onAllowOnlineBookingChange = async (
+    tripId: number,
+    checked: boolean
+  ) => {
+    await updateTripOnlineBooking(tripId, checked);
   };
 
   const columns: ColumnsType<ITrip> = [
@@ -229,6 +239,19 @@ export default function TripList({
     },
   ];
 
+  const superAdminOnlyColumns = [
+    {
+      title: 'Online Booking',
+      key: 'onlineBooking',
+      render: (_: string, record: ITrip) => (
+        <Switch
+          defaultValue={record.allowOnlineBooking}
+          onChange={(checked) => onAllowOnlineBookingChange(record.id, checked)}
+        />
+      ),
+    },
+  ];
+
   useEffect(() => resetData(), [searchQuery]);
 
   const fetchAvailableTripsByDateRange = async (
@@ -254,7 +277,13 @@ export default function TripList({
   return (
     <Table
       dataSource={availableTrips}
-      columns={hasAdminPrivileges ? [...columns, ...adminOnlyColumns] : columns}
+      columns={
+        loggedInAccount?.role === 'SuperAdmin'
+          ? [...columns, ...adminOnlyColumns, ...superAdminOnlyColumns]
+          : hasAdminPrivileges
+          ? [...columns, ...adminOnlyColumns]
+          : columns
+      }
       pagination={antdPagination}
       onChange={antdOnChange}
       loading={availableTrips === undefined}

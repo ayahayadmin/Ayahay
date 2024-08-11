@@ -3,22 +3,20 @@ import { ceil, forEach, isEmpty } from 'lodash';
 import axios from '@ayahay/services/axios';
 import { TRIP_API } from '@ayahay/constants/api';
 import { fetchAssociatedEntitiesToTrips } from '@ayahay/services/trip.service';
-import {
-  AvailabeTripsResult,
-  SearchAvailableTrips,
-  TripData,
-} from '@ayahay/http';
+import { AvailabeTripsResult, TripData, TripsSearchQuery } from '@ayahay/http';
 
 export async function getAvailableTrips(
-  query: SearchAvailableTrips
+  searchQuery: TripsSearchQuery
 ): Promise<AvailabeTripsResult | undefined> {
-  if (isEmpty(query)) {
+  if (isEmpty(searchQuery)) {
     return;
   }
 
-  const { data: trips } = await axios.get(`${TRIP_API}/available`, {
-    params: { ...query },
-  });
+  const query = new URLSearchParams({
+    ...searchQuery,
+  } as any).toString();
+
+  const { data: trips } = await axios.get(`${TRIP_API}/available?${query}`);
   await fetchAssociatedEntitiesToTrips(trips);
 
   const totalItems = trips.length;

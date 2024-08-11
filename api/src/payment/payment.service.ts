@@ -15,7 +15,7 @@ import {
 } from '@ayahay/http';
 import { createHash, createHmac } from 'crypto';
 import axios, { AxiosError } from 'axios';
-import { IAccount } from '@ayahay/models';
+import { IAccount, IBookingTrip } from '@ayahay/models';
 import {
   DragonpayPaymentInitiationResponse,
   PayMongoCheckoutPaidPostbackRequest,
@@ -54,6 +54,23 @@ export class PaymentService {
     }
     // can't pay for bookings not made by current user
     if ((loggedInAccount?.id ?? null) !== tempBooking.createdByAccountId) {
+      throw new ForbiddenException();
+    }
+
+    const bookingTrips =
+      tempBooking.bookingTripsJson as any[] as IBookingTrip[];
+
+    // value is 'true' if there is a trip that is not allowed for online booking
+    const isOnlineBookingNotAllowed = bookingTrips.some(
+      (bookingTrip) => bookingTrip.trip.allowOnlineBooking === false
+    );
+
+    // if online booking is not allowed and loggedInAccount is either undefined
+    // or loggedInAccount.role is Passenger, return ForbiddenException
+    if (
+      isOnlineBookingNotAllowed &&
+      (!loggedInAccount || loggedInAccount.role === 'Passenger')
+    ) {
       throw new ForbiddenException();
     }
 

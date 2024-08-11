@@ -145,3 +145,12 @@ export async function cancelTrip(
 ): Promise<void> {
   return axios.patch(`${TRIP_API}/${tripId}/cancel`, { reason });
 }
+
+export async function updateTripOnlineBooking(
+  tripId: number,
+  allowOnlineBooking: boolean
+): Promise<void> {
+  return axios.patch(`${TRIP_API}/${tripId}/online-booking`, {
+    allowOnlineBooking,
+  });
+}

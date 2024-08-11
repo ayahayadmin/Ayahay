@@ -87,8 +87,9 @@ export class ShippingLineMapper {
       rateTableId: schedule.rateTableId,
 
       status: 'Awaiting',
-      availableVehicleCapacity: schedule.ship.recommendedVehicleCapacity,
+      allowOnlineBooking: true,
       vehicleCapacity: schedule.ship.recommendedVehicleCapacity,
+      availableVehicleCapacity: schedule.ship.recommendedVehicleCapacity,
       bookingCutOffDateIso: '',
       bookingStartDateIso: '',
       departureDateIso: '',

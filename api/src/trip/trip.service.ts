@@ -39,6 +39,7 @@ const TRIP_AVAILABLE_QUERY_SELECT = Prisma.sql`
     t.src_port_id AS "srcPortId",
     t.dest_port_id AS "destPortId",
     t.status AS "status",
+    t.allow_online_booking AS "allowOnlineBooking",
     t.seat_selection AS "seatSelection",
     t.available_vehicle_capacity AS "availableVehicleCapacity",
     t.vehicle_capacity AS "vehicleCapacity",
@@ -123,7 +124,10 @@ export class TripService {
     return trip;
   }
 
-  async getAvailableTrips(query: SearchAvailableTrips): Promise<ITrip[]> {
+  async getAvailableTrips(
+    searchQuery: SearchAvailableTrips,
+    loggedInAccount: IAccount
+  ): Promise<ITrip[]> {
     const {
       srcPortId,
       destPortId,
@@ -131,7 +135,7 @@ export class TripService {
       passengerCount,
       vehicleCount,
       cabinIds,
-    } = query;
+    } = searchQuery;
 
     const dateSelectedPlusAWeek = new Date(departureDate);
     dateSelectedPlusAWeek.setDate(dateSelectedPlusAWeek.getDate() + 7);
@@ -146,6 +150,13 @@ export class TripService {
         AND t.dest_port_id = ${Number(destPortId)}
         AND t.status = 'Awaiting'
         AND t.rate_table_id = rtr.rate_table_id
+        ${
+          loggedInAccount &&
+          (loggedInAccount.role === 'ShippingLineAdmin' ||
+            loggedInAccount.role === 'SuperAdmin')
+            ? Prisma.empty
+            : Prisma.sql`AND t.allow_online_booking = true`
+        }
         ${
           isEmpty(cabinIds)
             ? Prisma.empty
@@ -786,9 +797,29 @@ export class TripService {
         });
       }
 
-      this.emailService.prepareTripCancelledEmail(
-        { tripId, reason },
-      );
+      this.emailService.prepareTripCancelledEmail({ tripId, reason });
+    });
+  }
+
+  async updateTripOnlineBooking(
+    tripId: number,
+    allowOnlineBooking: boolean,
+    loggedInAccount: IAccount
+  ): Promise<void> {
+    const trip = await this.prisma.trip.findUnique({ where: { id: tripId } });
+
+    if (trip === null) {
+      throw new NotFoundException();
+    }
+
+    this.authService.verifyAccountHasAccessToShippingLineRestrictedEntity(
+      trip,
+      loggedInAccount
+    );
+
+    await this.prisma.trip.update({
+      where: { id: tripId },
+      data: { allowOnlineBooking },
     });
   }
 }
