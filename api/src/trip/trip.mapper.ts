@@ -291,4 +291,64 @@ export class TripMapper {
       passengerCapacity: tripCabin.passengerCapacity,
     };
   }
+
+  convertTripToTripUpdatedVesselForCreation(
+    trip: any,
+    shipId: number,
+    referenceNo: string,
+    rateTableId: number
+  ): Prisma.TripCreateInput {
+    return {
+      ship: {
+        connect: {
+          id: shipId,
+        },
+      },
+      shippingLine: {
+        connect: {
+          id: trip.shippingLineId,
+        },
+      },
+      srcPort: {
+        connect: {
+          id: trip.srcPortId,
+        },
+      },
+      destPort: {
+        connect: {
+          id: trip.destPortId,
+        },
+      },
+      rateTable: {
+        connect: {
+          id: rateTableId,
+        },
+      },
+
+      status: 'Awaiting',
+      departureDate: new Date(trip.departureDate),
+      referenceNo,
+      availableVehicleCapacity: 5,
+      vehicleCapacity: 5,
+      bookingStartDate: new Date(trip.bookingStartDate),
+      bookingCutOffDate: new Date(trip.bookingCutOffDate),
+
+      allowOnlineBooking: true,
+      seatSelection: trip.seatSelection,
+      cancellationReason: null,
+    };
+  }
+
+  convertTripIdAndCabinToTripCabinEntityForCreation(
+    tripId: number,
+    cabin: ICabin
+  ): Prisma.TripCabinCreateManyInput {
+    return {
+      tripId,
+      cabinId: cabin.id,
+      seatPlanId: cabin.defaultSeatPlanId ?? undefined,
+      availablePassengerCapacity: cabin.recommendedPassengerCapacity,
+      passengerCapacity: cabin.recommendedPassengerCapacity,
+    };
+  }
 }

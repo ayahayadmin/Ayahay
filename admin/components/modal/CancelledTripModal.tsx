@@ -1,19 +1,20 @@
-import { Button, Form, Input, Modal, ModalProps } from 'antd';
+import { cancelTrip } from '@/services/trip.service';
+import { Button, Flex, Form, Input, Modal, ModalProps } from 'antd';
 import { useForm } from 'antd/es/form/Form';
 import { NotificationInstance } from 'antd/es/notification/interface';
 import { useState } from 'react';
 
 interface CancelledTripModalProps {
   tripId: number;
-  setTripAsCancelled: (tripId: number, reason: string) => Promise<void>;
-  setIsModalOpen: any;
+  setCancelTripModalOpen: any;
+  resetData: () => void;
   api: NotificationInstance;
 }
 
 export default function CancelledTripModal({
   tripId,
-  setTripAsCancelled,
-  setIsModalOpen,
+  setCancelTripModalOpen,
+  resetData,
   api,
   ...modalProps
 }: CancelledTripModalProps & ModalProps) {
@@ -24,14 +25,16 @@ export default function CancelledTripModal({
     setLoading(true);
     try {
       await form.validateFields(['reason']);
-      await setTripAsCancelled(tripId, form.getFieldValue('reason'));
+      await cancelTrip(tripId, form.getFieldValue('reason'));
       api.success({
         message: 'Set Status Cancelled',
         description:
           'The status of the selected trip has been set to Cancelled.',
       });
-      setIsModalOpen(false);
-      window.location.reload();
+
+      setCancelTripModalOpen(false);
+      form.resetFields();
+      resetData();
     } catch {
       api.error({
         message: 'Set Status Failed',
@@ -62,10 +65,12 @@ export default function CancelledTripModal({
           <Input placeholder='Reason for trip cancellation...' />
         </Form.Item>
         <Form.Item>
-          <Button onClick={() => setIsModalOpen(false)}>Back</Button>
-          <Button type='primary' htmlType='submit' loading={loading}>
-            Send
-          </Button>
+          <Flex justify='space-evenly'>
+            <Button onClick={() => setCancelTripModalOpen(false)}>Back</Button>
+            <Button type='primary' htmlType='submit' loading={loading}>
+              Send
+            </Button>
+          </Flex>
         </Form.Item>
       </Form>
     </Modal>

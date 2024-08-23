@@ -46,6 +46,24 @@ export class RateTableController {
     return this.rateTableService.getRateTables(req.user);
   }
 
+  // TODO: Refactor rate tables to have ship and port IDs so we can filter by IDs instead of ship names
+  @Get('srcPort/:srcPortName/destPort/:destPortName/ship/:shipName')
+  @UseGuards(AuthGuard)
+  @Roles('ShippingLineAdmin', 'SuperAdmin')
+  async getRateTablesByShippingLineIdAndName(
+    @Param('srcPortName') srcPortName: string,
+    @Param('destPortName') destPortName: string,
+    @Param('shipName') shipName: string,
+    @Request() req
+  ): Promise<IRateTable[]> {
+    return this.rateTableService.getRateTablesByShippingLineIdAndName(
+      srcPortName,
+      destPortName,
+      shipName,
+      req.user
+    );
+  }
+
   @Post(':id/markups')
   @UseGuards(AuthGuard)
   @Roles('ShippingLineAdmin', 'TravelAgencyAdmin', 'ClientAdmin')

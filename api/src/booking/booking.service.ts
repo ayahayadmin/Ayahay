@@ -426,6 +426,7 @@ export class BookingService {
     booking.bookingTrips.forEach((bookingTrip) => {
       // only save bookingTrip.trip.allowOnlineBooking
       bookingTrip.trip = {
+        status: bookingTrip.trip.status,
         allowOnlineBooking: bookingTrip.trip.allowOnlineBooking,
       } as any;
 

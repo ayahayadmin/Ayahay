@@ -65,11 +65,17 @@ export class PaymentService {
       (bookingTrip) => bookingTrip.trip.allowOnlineBooking === false
     );
 
+    // value is 'true' if there is a trip status that is not Awaiting
+    const isTripStatusNotAwaiting = bookingTrips.some(
+      (bookingTrip) => bookingTrip.trip.status !== 'Awaiting'
+    );
+
     // if online booking is not allowed and loggedInAccount is either undefined
     // or loggedInAccount.role is Passenger, return ForbiddenException
     if (
-      isOnlineBookingNotAllowed &&
-      (!loggedInAccount || loggedInAccount.role === 'Passenger')
+      (isOnlineBookingNotAllowed &&
+        (!loggedInAccount || loggedInAccount.role === 'Passenger')) ||
+      isTripStatusNotAwaiting
     ) {
       throw new ForbiddenException();
     }

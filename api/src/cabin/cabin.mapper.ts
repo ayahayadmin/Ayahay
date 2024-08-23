@@ -17,7 +17,11 @@ export class CabinMapper {
     };
   }
 
-  convertCabinTypeToDto(cabinType: any): ICabinType {
+  convertCabinTypeToDto(cabinType: any): ICabinType | undefined {
+    if (!cabinType) {
+      return undefined;
+    }
+
     return {
       id: cabinType.id,
       shippingLineId: cabinType.shippingLineId,

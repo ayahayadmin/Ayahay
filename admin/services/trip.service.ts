@@ -66,7 +66,7 @@ export async function getTripDetails(
   return data;
 }
 
-export async function getBookingsOfTrip(
+export async function getVehicleBookingsOfTrip(
   tripId: number,
   pagination: PaginatedRequest
 ): Promise<PaginatedResponse<VehicleBookings> | undefined> {
@@ -74,7 +74,7 @@ export async function getBookingsOfTrip(
 
   try {
     const { data } = await axios.get<PaginatedResponse<VehicleBookings>>(
-      `${TRIP_API}/${tripId}/bookings?${query}`
+      `${TRIP_API}/${tripId}/vehicle-bookings?${query}`
     );
     return data;
   } catch (e) {
@@ -153,4 +153,14 @@ export async function updateTripOnlineBooking(
   return axios.patch(`${TRIP_API}/${tripId}/online-booking`, {
     allowOnlineBooking,
   });
+}
+
+export async function updateTripVessel(
+  tripId: number,
+  shipId: number,
+  rateTableId: number
+): Promise<void> {
+  return axios.patch(
+    `${TRIP_API}/${tripId}/ship/${shipId}/rateTable/${rateTableId}`
+  );
 }
