@@ -2,7 +2,7 @@ import { IBooking, IBookingTripPassenger, ITrip } from '@ayahay/models';
 import React from 'react';
 import { Flex, QRCode } from 'antd';
 import dayjs from 'dayjs';
-import { BlankUnderline } from './BillOfLading';
+import { BlankUnderline } from './BillOfLadingReport';
 import BookingReminders from '@ayahay/components/descriptions/BookingReminders';
 
 interface TripItineraryProps {

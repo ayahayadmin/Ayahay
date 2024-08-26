@@ -124,10 +124,13 @@ export interface BillOfLading {
   freightRateReceipt: string;
   shipName: string;
   shippingLineName: string;
-  destPortName: string;
-  departureDate: string;
   voyageNumber: number;
+
   vehicles: {
+    // destPortName and departureDateIso are for round trip purposes
+    destPortName: string;
+    departureDateIso: string;
+
     classification?: string;
     modelName: string;
     plateNo: string;
@@ -135,6 +138,7 @@ export interface BillOfLading {
     vehicleTypeDesc: string;
     fare: number;
   }[];
+
   isCollectBooking: boolean;
 }
 

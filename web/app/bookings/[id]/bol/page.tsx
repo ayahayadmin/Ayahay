@@ -1,5 +1,4 @@
 'use client';
-import BillOfLading from '@/components/document/BillOfLading';
 import { useEffect, useState } from 'react';
 import {
   getBillOfLading,
@@ -8,6 +7,7 @@ import {
 import { FloatButton, Form, Skeleton } from 'antd';
 import { BillOfLading as IBillOfLading } from '@ayahay/http';
 import { PrinterOutlined } from '@ant-design/icons';
+import BillOfLadingReport from '@/components/document/BillOfLadingReport';
 
 export default function BillOfLadingPage({ params }: any) {
   const [data, setData] = useState<IBillOfLading[] | undefined>();
@@ -38,7 +38,7 @@ export default function BillOfLadingPage({ params }: any) {
           {data &&
             data.map((billOfLadingPerVehicle, index) => (
               <div style={{ breakBefore: index === 0 ? 'auto' : 'page' }}>
-                <BillOfLading data={billOfLadingPerVehicle} />
+                <BillOfLadingReport data={billOfLadingPerVehicle} />
               </div>
             ))}
         </Form>
