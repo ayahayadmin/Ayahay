@@ -1,6 +1,9 @@
 'use client';
 import { useAuthGuard } from '@/hooks/auth';
-import { getBookingsOfTrip, getTripDetails } from '@/services/trip.service';
+import {
+  getVehicleBookingsOfTrip,
+  getTripDetails,
+} from '@/services/trip.service';
 import styles from './page.module.scss';
 import { ColumnsType } from 'antd/es/table';
 import { CarOutlined } from '@ant-design/icons';
@@ -88,12 +91,12 @@ export default function TripBookingsPage({ params }: any) {
     }
   };
 
-  const fetchBookings = async (pagination: PaginatedRequest) => {
-    return getBookingsOfTrip(Number(tripId), pagination);
+  const fetchVehicleBookings = async (pagination: PaginatedRequest) => {
+    return getVehicleBookingsOfTrip(Number(tripId), pagination);
   };
 
   const { dataInPage, antdPagination, antdOnChange } =
-    useServerPagination<VehicleBookings>(fetchBookings, true);
+    useServerPagination<VehicleBookings>(fetchVehicleBookings, true);
 
   return (
     <div className={styles['main-container']}>

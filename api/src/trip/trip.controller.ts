@@ -12,7 +12,6 @@ import {
 } from '@nestjs/common';
 import { TripService } from './trip.service';
 import { ITrip } from '@ayahay/models';
-import { Prisma } from '@prisma/client';
 import { TripMapper } from './trip.mapper';
 import { Roles } from '@/decorator/roles.decorator';
 import { AuthGuard } from '@/auth/auth.guard';
@@ -148,24 +147,20 @@ export class TripController {
     );
   }
 
-  @Get(':tripId/bookings')
+  @Get(':tripId/vehicle-bookings')
   @UseGuards(AuthGuard)
   @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
   @ApiExcludeEndpoint()
-  async getBookingsOfTrip(
+  async getVehicleBookingsOfTrip(
     @Query() pagination: PaginatedRequest,
     @Param('tripId') tripId: number,
     @Request() req
   ): Promise<PaginatedResponse<VehicleBookings>> {
-    return this.tripService.getBookingsOfTrip(pagination, tripId, req.user);
-  }
-
-  @Post()
-  @UseGuards(AuthGuard)
-  @Roles('ShippingLineAdmin', 'SuperAdmin')
-  @ApiExcludeEndpoint()
-  async createTrip(@Body() data: Prisma.TripCreateInput) {
-    return await this.tripService.createTrip(data);
+    return this.tripService.getVehicleBookingsOfTrip(
+      pagination,
+      tripId,
+      req.user
+    );
   }
 
   @Post('from-schedules')
@@ -233,6 +228,24 @@ export class TripController {
     return this.tripService.updateTripOnlineBooking(
       tripId,
       allowOnlineBooking,
+      req.user
+    );
+  }
+
+  @Patch(':tripId/ship/:shipId/rateTable/:rateTableId')
+  @UseGuards(AuthGuard)
+  @Roles('ShippingLineAdmin', 'SuperAdmin')
+  @ApiExcludeEndpoint()
+  async updateTripVessel(
+    @Param('tripId') tripId: number,
+    @Param('shipId') shipId: number,
+    @Param('rateTableId') rateTableId: number,
+    @Request() req
+  ): Promise<void> {
+    return this.tripService.updateTripVessel(
+      tripId,
+      shipId,
+      rateTableId,
       req.user
     );
   }

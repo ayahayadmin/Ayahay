@@ -660,9 +660,6 @@ export class ReportingMapper {
     const shipName = booking.bookingTripVehicles[0].trip.ship.name;
     const shippingLineName =
       booking.bookingTripVehicles[0].trip.shippingLine.name;
-    const destPortName = booking.bookingTripVehicles[0].trip.destPort.name;
-    const departureDate =
-      booking.bookingTripVehicles[0].trip.departureDate.toISOString();
     const voyageNumber = booking.bookingTripVehicles[0].trip.voyage?.number;
 
     const isCollectBooking = booking.voucherCode === 'COLLECT_BOOKING';
@@ -676,6 +673,9 @@ export class ReportingMapper {
         : vehicle.totalPrice;
 
       return {
+        destPortName: vehicle.trip.destPort.name,
+        departureDateIso: vehicle.trip.departureDate.toISOString(),
+
         classification: '', //If needed - Add a new column "class" in vehicle_type
         modelName: vehicle.vehicle.modelName,
         plateNo: vehicle.vehicle.plateNo,
@@ -695,8 +695,6 @@ export class ReportingMapper {
       freightRateReceipt,
       shipName,
       shippingLineName,
-      destPortName,
-      departureDate,
       voyageNumber,
       vehicles,
       isCollectBooking,

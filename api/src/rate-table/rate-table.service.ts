@@ -63,6 +63,44 @@ export class RateTableService {
     );
   }
 
+  async getRateTablesByShippingLineIdAndName(
+    srcPortName: string,
+    destPortName: string,
+    shipName: string,
+    loggedInAccount: IAccount
+  ): Promise<IRateTable[]> {
+    const rateTables = await this.prisma.rateTable.findMany({
+      where: {
+        shippingLineId:
+          loggedInAccount.role === 'SuperAdmin'
+            ? undefined
+            : loggedInAccount.shippingLineId,
+        OR: [
+          {
+            name: {
+              contains: `${srcPortName} <-> ${destPortName} ${shipName} Rate Table`,
+              mode: 'insensitive',
+            },
+          },
+          {
+            name: {
+              contains: `${destPortName} <-> ${srcPortName} ${shipName} Rate Table`,
+              mode: 'insensitive',
+            },
+          },
+        ],
+      },
+      select: {
+        id: true,
+        name: true,
+      },
+    });
+
+    return rateTables.map((rateTable) =>
+      this.rateTableMapper.convertRateTableSimpleDto(rateTable)
+    );
+  }
+
   async getRateTablesOfPartnerShippingLines(
     loggedInAccount: IAccount
   ): Promise<IRateTable[]> {

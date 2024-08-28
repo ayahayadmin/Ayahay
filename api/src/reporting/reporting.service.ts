@@ -1117,11 +1117,6 @@ export class ReportingService {
         id: bookingId,
       },
       include: {
-        bookingTripPassengers: {
-          include: {
-            passenger: true,
-          },
-        },
         bookingTripVehicles: {
           include: {
             trip: {

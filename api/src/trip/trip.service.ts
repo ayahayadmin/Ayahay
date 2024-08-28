@@ -1,7 +1,6 @@
 import {
   BadRequestException,
   Injectable,
-  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { Prisma, PrismaClient, Trip } from '@prisma/client';
@@ -28,6 +27,7 @@ import { UtilityService } from '@/utility.service';
 import { EmailService } from '@/email/email.service';
 import { BookingMapper } from '@/booking/booking.mapper';
 import { AuthService } from '@/auth/auth.service';
+import { CabinService } from '@/cabin/cabin.service';
 
 const TRIP_AVAILABLE_QUERY_SELECT = Prisma.sql`
   SELECT 
@@ -73,6 +73,7 @@ export class TripService {
     private readonly emailService: EmailService,
     private readonly utilityService: UtilityService,
     private readonly authService: AuthService,
+    private readonly cabinService: CabinService,
     private readonly tripMapper: TripMapper,
     private readonly bookingMapper: BookingMapper,
     private readonly tripValidator: TripValidator
@@ -396,7 +397,7 @@ export class TripService {
     };
   }
 
-  async getBookingsOfTrip(
+  async getVehicleBookingsOfTrip(
     pagination: PaginatedRequest,
     tripId: number,
     loggedInAccount: IAccount
@@ -464,35 +465,18 @@ export class TripService {
     };
   }
 
-  async createTrip(data: Prisma.TripCreateInput): Promise<Trip> {
-    const REQUIRED_FIELDS = [
-      'id',
-      'shipId',
-      'destPortId',
-      'srcPortId',
-      'baseFare',
-      'departureDate',
-      'shippingLineId',
-      'referenceNo',
-    ];
+  async createTrip(
+    data: Prisma.TripCreateInput,
+    transactionContext?: PrismaClient
+  ): Promise<number> {
+    transactionContext ??= this.prisma;
 
-    const missingFields = REQUIRED_FIELDS.filter(
-      (field) => !data.hasOwnProperty(field)
-    );
+    const { id: tripId } = await transactionContext.trip.create({
+      data,
+      select: { id: true },
+    });
 
-    if (missingFields.length) {
-      throw new BadRequestException(
-        `The following fields are required: ${missingFields.join(', ')}`
-      );
-    }
-
-    try {
-      return await this.prisma.trip.create({
-        data,
-      });
-    } catch {
-      throw new InternalServerErrorException();
-    }
+    return tripId;
   }
 
   async createTripsFromSchedules(
@@ -739,11 +723,19 @@ export class TripService {
     });
   }
 
+  /**
+   * remarks, cancellationType/removedReasonType, and totalPrice
+   * are hardcoded since this function can only be triggered by
+   * shipping line staffs and admins
+   */
   async cancelTrip(
     tripId: number,
     reason: string,
-    loggedInAccount: IAccount
+    loggedInAccount: IAccount,
+    transactionContext?: PrismaClient
   ): Promise<void> {
+    transactionContext ??= this.prisma;
+
     const tripToUpdate = await this.prisma.trip.findUnique({
       where: {
         id: tripId,
@@ -772,33 +764,51 @@ export class TripService {
       ({ bookingId }) => bookingId
     );
 
-    await this.prisma.$transaction(async (transactionContext) => {
-      await transactionContext.trip.update({
+    await transactionContext.trip.update({
+      where: {
+        id: tripId,
+      },
+      data: {
+        status: 'Cancelled',
+        cancellationReason: reason,
+      },
+    });
+
+    if (bookingIdsToVoid.length > 0) {
+      await transactionContext.booking.updateMany({
         where: {
-          id: tripId,
+          id: {
+            in: bookingIdsToVoid,
+          },
         },
         data: {
-          status: 'Cancelled',
-          cancellationReason: reason,
+          bookingStatus: 'Cancelled',
+          failureCancellationRemarks: 'Trip Cancelled',
+          cancellationType: 'NoFault',
+          totalPrice: 0,
         },
       });
 
-      if (bookingIdsToVoid.length > 0) {
-        await transactionContext.booking.updateMany({
-          where: {
-            id: {
-              in: bookingIdsToVoid,
-            },
-          },
-          data: {
-            bookingStatus: 'Cancelled',
-            failureCancellationRemarks: 'Trip Cancelled',
-          },
-        });
-      }
+      await transactionContext.bookingTripPassenger.updateMany({
+        where: { bookingId: { in: bookingIdsToVoid } },
+        data: {
+          removedReason: 'Trip Cancelled',
+          removedReasonType: 'NoFault',
+          totalPrice: 0,
+        },
+      });
 
-      this.emailService.prepareTripCancelledEmail({ tripId, reason });
-    });
+      await transactionContext.bookingTripVehicle.updateMany({
+        where: { bookingId: { in: bookingIdsToVoid } },
+        data: {
+          removedReason: 'Trip Cancelled',
+          removedReasonType: 'NoFault',
+          totalPrice: 0,
+        },
+      });
+    }
+
+    this.emailService.prepareTripCancelledEmail({ tripId, reason });
   }
 
   async updateTripOnlineBooking(
@@ -820,6 +830,97 @@ export class TripService {
     await this.prisma.trip.update({
       where: { id: tripId },
       data: { allowOnlineBooking },
+    });
+  }
+
+  async updateTripVessel(
+    tripId: number,
+    shipId: number,
+    rateTableId: number,
+    loggedInAccount: IAccount
+  ): Promise<void> {
+    const trip = await this.prisma.trip.findUnique({
+      where: { id: tripId },
+      include: { bookingTripPassengers: true, bookingTripVehicles: true },
+    });
+
+    if (trip === null) {
+      throw new NotFoundException();
+    }
+
+    this.authService.verifyAccountHasAccessToShippingLineRestrictedEntity(
+      trip,
+      loggedInAccount
+    );
+
+    const hasBookings =
+      [...trip.bookingTripPassengers, ...trip.bookingTripVehicles].length > 0;
+
+    await this.prisma.$transaction(async (transactionContext) => {
+      if (hasBookings) {
+        await this.cancelTrip(
+          tripId,
+          'Changed Vessel',
+          loggedInAccount,
+          transactionContext as any
+        );
+
+        const referenceNo =
+          this.utilityService.generateRandomAlphanumericString(6);
+
+        const newTripId = await this.createTrip(
+          this.tripMapper.convertTripToTripUpdatedVesselForCreation(
+            trip,
+            shipId,
+            referenceNo,
+            rateTableId
+          ),
+          transactionContext as any
+        );
+
+        await this.createManyTripCabins(
+          newTripId,
+          shipId,
+          transactionContext as any
+        );
+      } else {
+        await transactionContext.trip.update({
+          where: { id: tripId },
+          data: { shipId, rateTableId },
+        });
+
+        await transactionContext.tripCabin.deleteMany({
+          where: { tripId },
+        });
+
+        await this.createManyTripCabins(
+          tripId,
+          shipId,
+          transactionContext as any
+        );
+      }
+    });
+  }
+
+  private async createManyTripCabins(
+    tripId: number,
+    shipId: number,
+    transactionContext?: PrismaClient
+  ): Promise<void> {
+    transactionContext ??= this.prisma;
+
+    const cabins = await this.cabinService.getCabinsByShip(shipId);
+
+    const tripCabinEntities: Prisma.TripCabinCreateManyInput[] =
+      await cabins.map((cabin) =>
+        this.tripMapper.convertTripIdAndCabinToTripCabinEntityForCreation(
+          tripId,
+          cabin
+        )
+      );
+
+    await transactionContext.tripCabin.createMany({
+      data: tripCabinEntities,
     });
   }
 }

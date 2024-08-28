@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ITrip } from '@ayahay/models/trip.model';
 import { Button, Dropdown, Space, Switch } from 'antd';
 import { IShippingLine } from '@ayahay/models/shipping-line.model';
@@ -16,6 +16,9 @@ import EditCapacity from '@/components/form/EditCapacity';
 import { ArrowRightOutlined, DownOutlined } from '@ant-design/icons';
 import { useServerPagination } from '@ayahay/hooks';
 import { useAuth } from '@/contexts/AuthContext';
+import CancelledTripModal from '@/components/modal/CancelledTripModal';
+import { NotificationInstance } from 'antd/es/notification/interface';
+import AssignVesselModal from '@/components/modal/AssignVesselModal';
 
 dayjs.extend(isSameOrBefore);
 dayjs.extend(isSameOrAfter);
@@ -24,7 +27,7 @@ interface TripListProps {
   searchQuery: PortsAndDateRangeSearch | undefined;
   hasAdminPrivileges: boolean;
   onSetTripAsArrived: (tripId: number) => Promise<void>;
-  onSetTripAsCancelled: (tripId: number) => Promise<void>;
+  api: NotificationInstance;
 }
 
 const tripActions = (trip: ITrip): any[] => {
@@ -97,15 +100,32 @@ const tripActions = (trip: ITrip): any[] => {
   return actions;
 };
 
-const tripAdminActions = (trip: ITrip): any[] => [];
+const tripAdminActions = (trip: ITrip): any[] => {
+  const actions = [];
+
+  if (trip.status === 'Awaiting') {
+    actions.push({
+      label: 'Assign Vessel',
+      key: 'assign-vessel',
+    });
+  }
+
+  return actions;
+};
 
 export default function TripList({
   searchQuery,
   hasAdminPrivileges,
   onSetTripAsArrived,
-  onSetTripAsCancelled,
+  api,
 }: TripListProps) {
   const { loggedInAccount } = useAuth();
+  const [tripId, setTripId] = useState(-1);
+  const [shipId, setShipId] = useState(-1);
+  const [srcPortName, setSrcPortName] = useState<string | undefined>();
+  const [destPortName, setDestPortName] = useState<string | undefined>();
+  const [isCancelTripModalOpen, setCancelTripModalOpen] = useState(false);
+  const [isAssignVesselModalOpen, setAssignVesselModalOpen] = useState(false);
 
   const onClickSetTripAsArrived = async (tripId: number) => {
     await onSetTripAsArrived(tripId);
@@ -113,7 +133,14 @@ export default function TripList({
   };
 
   const onClickSetTripAsCancelled = async (tripId: number) => {
-    await onSetTripAsCancelled(tripId);
+    setTripId(tripId);
+    setCancelTripModalOpen(true);
+  };
+
+  const onClickAssignVessel = async (tripId: number, shipId: number) => {
+    setTripId(tripId);
+    setShipId(shipId);
+    setAssignVesselModalOpen(true);
   };
 
   const onAllowOnlineBookingChange = async (
@@ -207,6 +234,10 @@ export default function TripList({
                 onClickSetTripAsArrived(trip.id);
               } else if (key === 'set-cancelled') {
                 onClickSetTripAsCancelled(trip.id);
+              } else if (key === 'assign-vessel') {
+                setSrcPortName(trip.srcPort?.name);
+                setDestPortName(trip.destPort?.name);
+                onClickAssignVessel(trip.id, trip.shipId);
               }
             },
           }}
@@ -275,20 +306,42 @@ export default function TripList({
   );
 
   return (
-    <Table
-      dataSource={availableTrips}
-      columns={
-        loggedInAccount?.role === 'SuperAdmin'
-          ? [...columns, ...adminOnlyColumns, ...superAdminOnlyColumns]
-          : hasAdminPrivileges
-          ? [...columns, ...adminOnlyColumns]
-          : columns
-      }
-      pagination={antdPagination}
-      onChange={antdOnChange}
-      loading={availableTrips === undefined}
-      tableLayout='fixed'
-      rowKey={(trip) => trip.id}
-    />
+    <>
+      <Table
+        dataSource={availableTrips}
+        columns={
+          loggedInAccount?.role === 'SuperAdmin'
+            ? [...columns, ...adminOnlyColumns, ...superAdminOnlyColumns]
+            : hasAdminPrivileges
+            ? [...columns, ...adminOnlyColumns]
+            : columns
+        }
+        pagination={antdPagination}
+        onChange={antdOnChange}
+        loading={availableTrips === undefined}
+        tableLayout='fixed'
+        rowKey={(trip) => trip.id}
+      />
+
+      <CancelledTripModal
+        tripId={tripId}
+        setCancelTripModalOpen={setCancelTripModalOpen}
+        api={api}
+        resetData={resetData}
+        open={isCancelTripModalOpen}
+      />
+      {srcPortName && destPortName && (
+        <AssignVesselModal
+          tripId={tripId}
+          shipId={shipId}
+          srcPortName={srcPortName}
+          destPortName={destPortName}
+          setAssignVesselModalOpen={setAssignVesselModalOpen}
+          resetData={resetData}
+          api={api}
+          open={isAssignVesselModalOpen}
+        />
+      )}
+    </>
   );
 }

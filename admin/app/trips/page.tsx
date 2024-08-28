@@ -24,8 +24,7 @@ import dayjs from 'dayjs';
 import { RangePickerProps } from 'antd/es/date-picker';
 import { DATE_FORMAT_LIST, DATE_PLACEHOLDER } from '@ayahay/constants';
 import { PlusCircleOutlined } from '@ant-design/icons';
-import { setTripAsArrived, cancelTrip } from '@/services/trip.service';
-import CancelledTripModal from '@/components/modal/CancelledTripModal';
+import { setTripAsArrived } from '@/services/trip.service';
 import PortsFilter from '@/components/form/PortsFilter';
 
 const { RangePicker } = DatePicker;
@@ -50,8 +49,6 @@ export default function Schedules() {
     {} as PortsAndDateRangeSearch | undefined
   );
   const [hasAdminPrivileges, setHasAdminPrivileges] = useState(false);
-  const [tripNumber, setTripNumber] = useState(-1);
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const onPageLoad = () => {
     const params = Object.fromEntries(searchParams.entries());
@@ -72,11 +69,6 @@ export default function Schedules() {
         description: 'Something went wrong.',
       });
     }
-  };
-
-  const onSetTripAsCancelled = async (tripId: number) => {
-    setTripNumber(tripId);
-    setIsModalOpen(true);
   };
 
   useEffect(onPageLoad, []);
@@ -147,22 +139,13 @@ export default function Schedules() {
         </div>
       </Form>
 
-      <div>
-        <TripList
-          searchQuery={searchQuery}
-          hasAdminPrivileges={hasAdminPrivileges}
-          onSetTripAsArrived={onSetTripAsArrived}
-          onSetTripAsCancelled={onSetTripAsCancelled}
-        />
-        {contextHolder}
-      </div>
-      <CancelledTripModal
-        open={isModalOpen}
-        tripId={tripNumber}
-        setTripAsCancelled={cancelTrip}
-        setIsModalOpen={setIsModalOpen}
+      <TripList
+        searchQuery={searchQuery}
+        hasAdminPrivileges={hasAdminPrivileges}
+        onSetTripAsArrived={onSetTripAsArrived}
         api={api}
       />
+      {contextHolder}
     </div>
   );
 }
