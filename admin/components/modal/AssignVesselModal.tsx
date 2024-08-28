@@ -65,16 +65,16 @@ export default function AssignVesselModal({
     try {
       await updateTripVessel(tripId, selectedShip!.value, selectedRate!.value);
       api.success({
-        message: 'Set Status Cancelled',
+        message: 'New Vessel Assigned',
         description:
-          'The status of the selected trip has been set to Cancelled.',
+          'The vessel of the selected trip has been successfully changed.',
       });
       setAssignVesselModalOpen(false);
       form.resetFields();
       resetData();
     } catch {
       api.error({
-        message: 'Set Status Failed',
+        message: 'Vessel Assign Failed',
         description: 'Something went wrong.',
       });
     }
