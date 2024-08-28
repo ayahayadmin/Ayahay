@@ -74,7 +74,7 @@ export default function AssignVesselModal({
       resetData();
     } catch {
       api.error({
-        message: 'Vessel Assign Failed',
+        message: 'Assign Vessel Failed',
         description: 'Something went wrong.',
       });
     }
