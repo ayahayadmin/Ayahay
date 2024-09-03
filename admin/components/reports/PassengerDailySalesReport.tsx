@@ -1,13 +1,15 @@
 import { TripReport as ITripReport } from '@ayahay/http';
-import {
-  getFullDate,
-  getLocaleTimeString,
-} from '@ayahay/services/date.service';
 import { useAuth } from '@/contexts/AuthContext';
 import { forwardRef } from 'react';
 import styles from './Reports.module.scss';
 import { MOPBreakdown } from './SummarySalesPerVessel';
 import { roundToTwoDecimalPlacesAndAddCommas } from '@/services/reporting.service';
+import dayjs from 'dayjs';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
+
+dayjs.extend(timezone);
+dayjs.extend(utc);
 
 interface PassengerDailySalesReportProps {
   data: ITripReport;
@@ -36,7 +38,7 @@ const PassengerDailySalesReport = forwardRef(function (
 ) {
   const { loggedInAccount } = useAuth();
   const user = loggedInAccount?.email;
-  const date = getFullDate(new Date().toString(), true);
+  const date = dayjs().tz('Asia/Shanghai').format('MMMM D, YYYY');
 
   const mopBreakdown: MOPBreakdown = {
     OTC: {
@@ -108,8 +110,10 @@ const PassengerDailySalesReport = forwardRef(function (
               ROUTE: {data.srcPort.name} to {data.destPort.name}
             </p>
             <p>
-              SCHEDULE:&nbsp;{getFullDate(data.departureDate, true)}&nbsp;
-              {getLocaleTimeString(data.departureDate)}
+              SCHEDULE:&nbsp;
+              {dayjs(data.departureDate)
+                .tz('Asia/Shanghai')
+                .format('MMMM D, YYYY [at] h:mm A')}
             </p>
           </div>
           <div

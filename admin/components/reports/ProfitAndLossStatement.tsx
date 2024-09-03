@@ -1,9 +1,5 @@
 import { forwardRef } from 'react';
 import { TripReport as ITripReport } from '@ayahay/http';
-import {
-  getFullDate,
-  getLocaleTimeString,
-} from '@ayahay/services/date.service';
 import { useAuth } from '@/contexts/AuthContext';
 import styles from './Reports.module.scss';
 import {
@@ -13,6 +9,12 @@ import {
 import { OPERATION_COSTS } from '@ayahay/constants';
 import { IDisbursement } from '@ayahay/models';
 import { roundToTwoDecimalPlacesAndAddCommas } from '@/services/reporting.service';
+import dayjs from 'dayjs';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
+
+dayjs.extend(timezone);
+dayjs.extend(utc);
 
 interface ProfitAndLossStatementProps {
   data: ITripReport;
@@ -26,7 +28,7 @@ const ProfitAndLossStatement = forwardRef(function (
 ) {
   const { loggedInAccount } = useAuth();
   const user = loggedInAccount?.email;
-  const date = getFullDate(new Date().toString(), true);
+  const date = dayjs().tz('Asia/Shanghai').format('MMMM D, YYYY');
 
   const breakdown = {
     passenger: {
@@ -205,8 +207,10 @@ const ProfitAndLossStatement = forwardRef(function (
               ROUTE: {data.srcPort.name} to {data.destPort.name}
             </p>
             <p>
-              SCHEDULE: {getFullDate(data.departureDate, true)}&nbsp;
-              {getLocaleTimeString(data.departureDate)}
+              SCHEDULE:&nbsp;
+              {dayjs(data.departureDate)
+                .tz('Asia/Shanghai')
+                .format('MMMM D, YYYY [at] h:mm A')}
             </p>
           </div>
           <div
@@ -441,7 +445,11 @@ const ProfitAndLossStatement = forwardRef(function (
                 totalExpenses += disbursement.amount;
                 return (
                   <tr>
-                    <td>{getFullDate(disbursement.dateIso)}</td>
+                    <td>
+                      {dayjs(disbursement.dateIso)
+                        .tz('Asia/Shanghai')
+                        .format('MM/DD/YYYY')}
+                    </td>
                     {/* TODO: will still discuss what if there are more than 1 teller in a trip */}
                     <td>{disbursement.createdByAccount?.email}</td>
                     <td className={styles['td-text-wrap']}>
@@ -526,9 +534,9 @@ const ProfitAndLossStatement = forwardRef(function (
                 <td>TOTAL SALES</td>
                 <td>
                   {data.srcPort.code}-{data.destPort.code}/WT:&nbsp;
-                  {getFullDate(data.departureDate, true)}
-                  &nbsp;@&nbsp;
-                  {getLocaleTimeString(data.departureDate)}
+                  {dayjs(data.departureDate)
+                    .tz('Asia/Shanghai')
+                    .format('MMMM D, YYYY [at] h:mm A')}
                 </td>
                 <td style={{ textAlign: 'right' }}>
                   PHP&nbsp;
@@ -574,9 +582,9 @@ const ProfitAndLossStatement = forwardRef(function (
                 <td>NET SALES</td>
                 <td>
                   {data.srcPort.code}-{data.destPort.code}/WT:&nbsp;
-                  {getFullDate(data.departureDate, true)}
-                  &nbsp;@&nbsp;
-                  {getLocaleTimeString(data.departureDate)}
+                  {dayjs(data.departureDate)
+                    .tz('Asia/Shanghai')
+                    .format('MMMM D, YYYY [at] h:mm A')}
                 </td>
                 <td style={{ textAlign: 'right' }}>
                   PHP&nbsp;

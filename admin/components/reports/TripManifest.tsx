@@ -1,10 +1,14 @@
+import React from 'react';
 import { TripManifest as ITripManifest } from '@ayahay/http';
 import dayjs from 'dayjs';
 import styles from './TripManifest.module.scss';
-
 import advancedFormat from 'dayjs/plugin/advancedFormat';
-import React from 'react';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
+
 dayjs.extend(advancedFormat);
+dayjs.extend(timezone);
+dayjs.extend(utc);
 
 interface TripManifestProps {
   manifest: ITripManifest;
@@ -38,9 +42,9 @@ export default function TripManifest({ manifest }: TripManifestProps) {
                 <span style={underlined}>{manifest.srcPortName}</span>
                 &nbsp;on the&nbsp;
                 <span style={underlined}>
-                  {dayjs(manifest.departureDate).format(
-                    'Do [day of] MMMM[,] YYYY'
-                  )}
+                  {dayjs(manifest.departureDate)
+                    .tz('Asia/Shanghai')
+                    .format('Do [day of] MMMM[,] YYYY')}
                 </span>
                 &nbsp;for the Port of&nbsp;
                 <span style={underlined}>{manifest.destPortName}</span>
@@ -65,7 +69,11 @@ export default function TripManifest({ manifest }: TripManifestProps) {
           <tr key={index} className={styles['main']}>
             <td>{index + 1}</td>
             <td>{passenger.fullName}</td>
-            <td>{dayjs(passenger.birthDate).format('MM/DD/YYYY')}</td>
+            <td>
+              {dayjs(passenger.birthDate)
+                .tz('Asia/Shanghai')
+                .format('MM/DD/YYYY')}
+            </td>
             <td>{passenger.age}</td>
             <td>{passenger.sex}</td>
             <td></td>
@@ -101,7 +109,9 @@ export default function TripManifest({ manifest }: TripManifestProps) {
               <p>
                 SUBSCRIBED AND SWORN to before me this&nbsp;
                 <span style={underlined}>
-                  {dayjs().format('Do [day of] MMMM[,] YYYY')}
+                  {dayjs()
+                    .tz('Asia/Shanghai')
+                    .format('Do [day of] MMMM[,] YYYY')}
                 </span>
               </p>
               <div className={styles['signature']}>

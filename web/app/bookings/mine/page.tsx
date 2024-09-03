@@ -5,11 +5,17 @@ import {
   getSavedBookingsInBrowser,
 } from '@/services/booking.service';
 import { IBooking } from '@ayahay/models';
-import { Button, Pagination, Typography } from 'antd';
-import Table, { ColumnsType, TablePaginationConfig } from 'antd/es/table';
+import { Button, Typography } from 'antd';
+import Table, { ColumnsType } from 'antd/es/table';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useServerPagination } from '@ayahay/hooks';
+import dayjs from 'dayjs';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
+
+dayjs.extend(timezone);
+dayjs.extend(utc);
 
 const { Title } = Typography;
 
@@ -34,7 +40,8 @@ const bookingColumns: ColumnsType<IBooking> = [
     title: 'Created At',
     dataIndex: 'createdAtIso',
     key: 'createdAtIso',
-    render: (createdAtIso: string) => new Date(createdAtIso).toLocaleString(),
+    render: (createdAtIso: string) =>
+      dayjs(createdAtIso).tz('Asia/Shanghai').format('MM/DD/YY [at] h:mm A'),
     responsive: ['lg'],
   },
   {

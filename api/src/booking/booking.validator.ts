@@ -434,4 +434,42 @@ export class BookingValidator {
 
     throw new ForbiddenException();
   }
+
+  async validatePassengerRebooking(
+    bookingTripPassenger: any,
+    newBooking: IBooking
+  ): Promise<void> {
+    if (newBooking.bookingTrips?.length !== 1) {
+      throw new BadRequestException('Only 1 trip is allowed for rebooking.');
+    }
+    const bookingTrip = newBooking.bookingTrips[0];
+    if (bookingTrip.bookingTripPassengers?.length !== 1) {
+      throw new BadRequestException(
+        'Only 1 trip passenger is allowed for rebooking.'
+      );
+    }
+    const newTrip = bookingTrip.trip;
+    const oldTrip = bookingTripPassenger.trip;
+    if (oldTrip.id === newTrip.id) {
+      throw new BadRequestException(
+        'The old booking and new booking must have different trips.'
+      );
+    }
+    if (
+      oldTrip.srcPortId !== newTrip.srcPortId ||
+      oldTrip.destPortId !== newTrip.destPortId
+    ) {
+      throw new BadRequestException(
+        'Both the old booking and new booking must have the same origin and destination.'
+      );
+    }
+
+    if (bookingTripPassenger.removedReason) {
+      throw new BadRequestException('Removed passengers cannot be rebooked.');
+    }
+
+    if (bookingTripPassenger.failureCancellationRemarks) {
+      throw new BadRequestException('Voided bookings cannot be rebooked.');
+    }
+  }
 }

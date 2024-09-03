@@ -16,6 +16,11 @@ import { ITrip } from '@ayahay/models';
 import { useEffect, useState } from 'react';
 import dayjs from 'dayjs';
 import { getAxiosError } from '@ayahay/services/error.service';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
+
+dayjs.extend(timezone);
+dayjs.extend(utc);
 
 const { Title } = Typography;
 
@@ -116,7 +121,9 @@ export default function TripBookingsPage({ params }: any) {
               </div>
               <div>
                 <strong>Departure Date:</strong>&nbsp;
-                {dayjs(trip.departureDateIso).format('MM/DD/YYYY h:mm A')}
+                {dayjs(trip.departureDateIso)
+                  .tz('Asia/Shanghai')
+                  .format('MM/DD/YYYY [at] h:mm A')}
               </div>
               <div>
                 <strong>Voyage #:</strong>&nbsp;

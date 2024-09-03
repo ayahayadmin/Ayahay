@@ -1,5 +1,4 @@
 import { CollectTripBooking } from '@ayahay/http';
-import { getFullDate } from '@ayahay/services/date.service';
 import { useAuth } from '@/contexts/AuthContext';
 import { forwardRef } from 'react';
 import styles from './Reports.module.scss';
@@ -10,6 +9,11 @@ import {
 import { roundToTwoDecimalPlacesAndAddCommas } from '@/services/reporting.service';
 import dayjs from 'dayjs';
 import { IShippingLine } from '@ayahay/models';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
+
+dayjs.extend(timezone);
+dayjs.extend(utc);
 
 interface CollectTripBookingsProps {
   data: CollectTripBooking[];
@@ -22,7 +26,7 @@ const CollectTripBookings = forwardRef(function (
 ) {
   const { loggedInAccount } = useAuth();
   const user = loggedInAccount?.email;
-  const date = getFullDate(new Date().toString(), true);
+  const date = dayjs().tz('Asia/Shanghai').format('MMMM D, YYYY');
 
   let totalTicketSale = 0;
   let totalRefundAmount = 0;

@@ -17,6 +17,11 @@ import {
 import { ColumnsType } from 'antd/es/table';
 import RemarksConfirmModal from '@ayahay/components/modals/RemarksConfirmModal';
 import dayjs from 'dayjs';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
+
+dayjs.extend(timezone);
+dayjs.extend(utc);
 
 const { Title } = Typography;
 
@@ -31,7 +36,7 @@ const voyageColumns: ColumnsType<IVoyage> = [
     key: 'dateIso',
     dataIndex: 'dateIso',
     render: (dateIso: string) =>
-      dayjs(dateIso).format('MMM D, YYYY [at] h:mm A'),
+      dayjs(dateIso).tz('Asia/Shanghai').format('MMM D, YYYY [at] h:mm A'),
   },
   {
     title: 'Voyage Remarks',
@@ -46,7 +51,7 @@ const dryDockColumns: ColumnsType<IDryDock> = [
     key: 'dateIso',
     dataIndex: 'dateIso',
     render: (dateIso: string) =>
-      dayjs(dateIso).format('MMM D, YYYY [at] h:mm A'),
+      dayjs(dateIso).tz('Asia/Shanghai').format('MMM D, YYYY [at] h:mm A'),
   },
 ];
 

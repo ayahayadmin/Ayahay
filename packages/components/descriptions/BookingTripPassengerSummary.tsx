@@ -12,9 +12,6 @@ import { IBookingTripPassenger } from '@ayahay/models';
 import { PrinterOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import { useBookingControls } from '@ayahay/hooks/booking';
 import BookingCancellationModal from '../modals/BookingCancellationModal';
-import dayjs from 'dayjs';
-import 'dayjs/plugin/relativeTime';
-
 import {
   BOOKING_CANCELLATION_TYPE,
   BOOKING_STATUS,
@@ -24,9 +21,7 @@ import PaymentSummary from './PaymentSummary';
 import useBreakpoint from 'antd/es/grid/hooks/useBreakpoint';
 import { ItineraryContent } from '@/components/document/TripItinerary';
 import BookingReminders from './BookingReminders';
-
-const relativeTime = require('dayjs/plugin/relativeTime');
-dayjs.extend(relativeTime);
+import { toPhilippinesTime, fromNow } from '@ayahay/services/date.service';
 
 const { Title } = Typography;
 
@@ -156,7 +151,10 @@ export default function BookingTripPassengerSummary({
               {PAYMENT_STATUS[booking.paymentStatus]}
             </Descriptions.Item>
             <Descriptions.Item label='Booking Date'>
-              {dayjs(booking.createdAtIso).format('MMMM D, YYYY [at] h:mm A')}
+              {toPhilippinesTime(
+                booking.createdAtIso,
+                'MMMM D, YYYY [at] h:mm A'
+              )}
             </Descriptions.Item>
             <Descriptions.Item label='Passenger Name'>
               {passenger?.firstName} {passenger?.lastName}
@@ -170,9 +168,9 @@ export default function BookingTripPassengerSummary({
               ) : bookingTripPassenger.checkInDate ? (
                 <Badge
                   status='success'
-                  text={`Checked in ${dayjs(
+                  text={`Checked in ${fromNow(
                     bookingTripPassenger.checkInDate
-                  ).fromNow()}`}
+                  )}`}
                 />
               ) : (
                 <Badge status='default' text='Not checked in' />
@@ -212,7 +210,10 @@ export default function BookingTripPassengerSummary({
             {trip.srcPort?.name} - {trip.destPort?.name}
           </p>
           <p>
-            {dayjs(trip.departureDateIso).format('MMM D, YYYY [at] h:mm A')}
+            {toPhilippinesTime(
+              trip.departureDateIso,
+              'MMM D, YYYY [at] h:mm A'
+            )}
           </p>
         </section>
       )}

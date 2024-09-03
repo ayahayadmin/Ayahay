@@ -8,15 +8,16 @@ import {
   buildReturnTripQueryFromFirstQuery,
   buildSearchQueryFromSearchForm,
   buildUrlQueryParamsFromSearchForm,
-  getTime,
   initializeSearchFormFromQueryParams,
 } from '@/services/search.service';
+
 import TripSearchQuery from '@/components/search/TripSearchQuery';
-import TripSearchResult from '@/app/trips/searchResults';
+import TripSearchResults from '@ayahay/components/tables/TripSearchResults';
 import { TripsSearchQuery } from '@ayahay/http';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { IPort, ITrip } from '@ayahay/models';
 import { getPort } from '@ayahay/services/port.service';
+import { toPhilippinesTime } from '@ayahay/services/date.service';
 import dayjs from 'dayjs';
 import { useAuth } from '@/contexts/AuthContext';
 const { Title } = Typography;
@@ -210,11 +211,10 @@ export default function Trips() {
                   </Title>
                   {selectedTrips[0]?.id && (
                     <div>
-                      {dayjs(selectedTrips[0].departureDateIso).format(
-                        'MMMM D, YYYY'
+                      {toPhilippinesTime(
+                        selectedTrips[0].departureDateIso,
+                        'MMMM D, YYYY [at] h:mm A'
                       )}
-                      &nbsp;at&nbsp;
-                      {getTime(selectedTrips[0].departureDateIso)}
                     </div>
                   )}
                   {!selectedTrips[0]?.id && <p>No trip selected</p>}
@@ -231,11 +231,10 @@ export default function Trips() {
                   </Title>
                   {selectedTrips[1]?.id && (
                     <div>
-                      {dayjs(selectedTrips[1].departureDateIso).format(
-                        'MMMM D, YYYY'
+                      {toPhilippinesTime(
+                        selectedTrips[1].departureDateIso,
+                        'MMMM D, YYYY [at] h:mm A'
                       )}
-                      &nbsp;at&nbsp;
-                      {getTime(selectedTrips[1].departureDateIso)}
                     </div>
                   )}
                   {!selectedTrips[1]?.id && <p>No trip selected</p>}
@@ -263,7 +262,7 @@ export default function Trips() {
             </div>
           )}
           <div className={styles['results-card']}>
-            <TripSearchResult
+            <TripSearchResults
               searchQuery={searchQueries[activeSearchIndex]}
               selectedTrip={selectedTrips[activeSearchIndex]}
               loggedInAccount={loggedInAccount}

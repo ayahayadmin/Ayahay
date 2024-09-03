@@ -5,12 +5,13 @@ import { IShippingLine } from '@ayahay/models/shipping-line.model';
 import dayjs from 'dayjs';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
 import {
   getAvailableTripsByDateRange,
   updateTripOnlineBooking,
 } from '@/services/trip.service';
 import Table, { ColumnsType } from 'antd/es/table';
-import { getLocaleTimeString } from '@ayahay/services/date.service';
 import { PaginatedRequest, PortsAndDateRangeSearch } from '@ayahay/http';
 import EditCapacity from '@/components/form/EditCapacity';
 import { ArrowRightOutlined, DownOutlined } from '@ant-design/icons';
@@ -22,6 +23,8 @@ import AssignVesselModal from '@/components/modal/AssignVesselModal';
 
 dayjs.extend(isSameOrBefore);
 dayjs.extend(isSameOrAfter);
+dayjs.extend(timezone);
+dayjs.extend(utc);
 
 interface TripListProps {
   searchQuery: PortsAndDateRangeSearch | undefined;
@@ -181,12 +184,12 @@ export default function TripList({
       title: 'Departure Date',
       key: 'departureDateIso',
       dataIndex: 'departureDateIso',
-      render: (departureDate: string) => (
-        <div>
-          <span>{dayjs(departureDate).format('MM/DD/YYYY')}</span>
-          <br></br>
-          <span>{getLocaleTimeString(departureDate)}</span>
-        </div>
+      render: (departureDateIso: string) => (
+        <span>
+          {dayjs(departureDateIso)
+            .tz('Asia/Shanghai')
+            .format('MM/DD/YYYY h:mm A')}
+        </span>
       ),
       align: 'center',
       responsive: ['sm'],
@@ -211,9 +214,9 @@ export default function TripList({
           </span>
           <br></br>
           <strong>Date:</strong>&nbsp;
-          <span>{dayjs(record.departureDateIso).format('MM/DD/YYYY')}</span>
-          <br></br>
-          <span>{getLocaleTimeString(record.departureDateIso)}</span>
+          {dayjs(record.departureDateIso)
+            .tz('Asia/Shanghai')
+            .format('MM/DD/YYYY h:mm A')}
           <br></br>
           <strong>Status:</strong>&nbsp;<span>{record.status}</span>
         </>

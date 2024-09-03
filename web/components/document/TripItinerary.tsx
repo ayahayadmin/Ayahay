@@ -2,8 +2,13 @@ import { IBooking, IBookingTripPassenger, ITrip } from '@ayahay/models';
 import React from 'react';
 import { Flex, QRCode } from 'antd';
 import dayjs from 'dayjs';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
 import { BlankUnderline } from './BillOfLadingReport';
 import BookingReminders from '@ayahay/components/descriptions/BookingReminders';
+
+dayjs.extend(timezone);
+dayjs.extend(utc);
 
 interface TripItineraryProps {
   booking: IBooking;
@@ -160,11 +165,15 @@ export function ItineraryContent({
           </span>
           <span>
             <strong>Departure Date:</strong>&nbsp;
-            {dayjs(trip?.departureDateIso).format('MMM D, YYYY [at] h:mm A')}
+            {dayjs(trip?.departureDateIso)
+              .tz('Asia/Shanghai')
+              .format('MMM D, YYYY [at] h:mm A')}
           </span>
           <span>
             <strong>Booking Date:</strong>&nbsp;
-            {dayjs(booking.createdAtIso).format('MMM D, YYYY [at] h:mm A')}
+            {dayjs(booking.createdAtIso)
+              .tz('Asia/Shanghai')
+              .format('MMM D, YYYY [at] h:mm A')}
           </span>
         </section>
         <section className='qr-code'>

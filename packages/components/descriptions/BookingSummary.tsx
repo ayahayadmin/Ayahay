@@ -14,12 +14,12 @@ import {
   PAYMENT_STATUS,
 } from '@ayahay/constants';
 import React, { useEffect, useState } from 'react';
-import dayjs from 'dayjs';
 import PaymentSummary from './PaymentSummary';
 import { PrinterOutlined } from '@ant-design/icons';
 import BookingCancellationModal from '../modals/BookingCancellationModal';
 import BookingTripSummary from './BookingTripSummary';
 import { combineBookingPaymentItems } from '@ayahay/services/booking.service';
+import { toPhilippinesTime } from '@ayahay/services/date.service';
 import { useBookingControls } from '@ayahay/hooks/booking';
 import BookingReminders from './BookingReminders';
 import { IPassenger, IVehicle } from '@ayahay/models';
@@ -43,6 +43,11 @@ interface BookingSummaryProps {
     passengerId: number,
     passenger: IPassenger
   ) => Promise<void>;
+  onRebookPassenger?: (
+    tripId: number,
+    passengerId: number,
+    tempBookingId: number
+  ) => Promise<void>;
   onCheckInVehicle?: (tripId: number, vehicleId: number) => Promise<void>;
   onUpdateVehicle?: (
     tripId: number,
@@ -60,6 +65,7 @@ export default function BookingSummary({
   onCancelBooking,
   onCheckInPassenger,
   onUpdatePassenger,
+  onRebookPassenger,
   onCheckInVehicle,
   onUpdateVehicle,
 }: BookingSummaryProps) {
@@ -222,7 +228,10 @@ export default function BookingSummary({
                 {PAYMENT_STATUS[booking.paymentStatus]}
               </Descriptions.Item>
               <Descriptions.Item label='Booking Date'>
-                {dayjs(booking.createdAtIso).format('MMMM D, YYYY [at] h:mm A')}
+                {toPhilippinesTime(
+                  booking.createdAtIso,
+                  'MMMM D, YYYY [at] h:mm A'
+                )}
               </Descriptions.Item>
               <Descriptions.Item label='Booking Reference No'>
                 {booking.referenceNo}
@@ -248,7 +257,9 @@ export default function BookingSummary({
         <Segmented
           size='large'
           options={booking.bookingTrips.map(({ trip }) => ({
-            label: `${trip?.srcPort?.name} -> ${trip?.destPort?.name}`,
+            label: `${trip?.srcPort?.name} -> ${
+              trip?.destPort?.name
+            } (${toPhilippinesTime(trip.departureDateIso, 'MMM D, h:mm A')})`,
             value: trip?.id,
           }))}
           onChange={selectTrip}
@@ -262,6 +273,7 @@ export default function BookingSummary({
           canCheckIn={canCheckIn}
           onCheckInPassenger={onCheckInPassenger}
           onUpdatePassenger={onUpdatePassenger}
+          onRebookPassenger={onRebookPassenger}
           onCheckInVehicle={onCheckInVehicle}
           onUpdateVehicle={onUpdateVehicle}
         />
@@ -269,7 +281,12 @@ export default function BookingSummary({
       {bookingPaymentItems.length > 0 && (
         <section id='payment-summary'>
           <Title level={titleLevel}>Payment Summary</Title>
-          <PaymentSummary paymentItems={bookingPaymentItems} />
+          <PaymentSummary
+            showTripColumn={
+              booking?.bookingTrips && booking.bookingTrips.length > 1
+            }
+            paymentItems={bookingPaymentItems}
+          />
         </section>
       )}
       <BookingReminders
@@ -310,7 +327,8 @@ export default function BookingSummary({
                         {bookingTrip.trip?.destPort?.name}
                       </p>
                       <p>
-                        {dayjs(bookingTrip.trip?.departureDateIso).format(
+                        {toPhilippinesTime(
+                          bookingTrip.trip?.departureDateIso,
                           'MMM D, YYYY [at] h:mm A'
                         )}
                       </p>
@@ -351,7 +369,8 @@ export default function BookingSummary({
                         {bookingTrip.trip?.destPort?.name}
                       </p>
                       <p>
-                        {dayjs(bookingTrip.trip?.departureDateIso).format(
+                        {toPhilippinesTime(
+                          bookingTrip.trip?.departureDateIso,
                           'MMM D, YYYY [at] h:mm A'
                         )}
                       </p>

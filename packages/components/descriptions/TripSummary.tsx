@@ -1,6 +1,11 @@
-import { Descriptions, Skeleton, Typography, Grid } from 'antd';
+import { Descriptions, Skeleton, Grid } from 'antd';
 import { ITrip } from '@ayahay/models';
 import dayjs from 'dayjs';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 interface TripSummaryProps {
   trip?: ITrip;
@@ -25,7 +30,9 @@ export default function TripSummary({ trip, showSlots }: TripSummaryProps) {
             {trip.destPort?.name}
           </Descriptions.Item>
           <Descriptions.Item label='Departure Date'>
-            {dayjs(trip.departureDateIso).format('MMM D, YYYY [at] h:mm A')}
+            {dayjs(trip.departureDateIso)
+              .tz('Asia/Shanghai')
+              .format('MMM D, YYYY [at] h:mm A')}
           </Descriptions.Item>
           <Descriptions.Item label='Shipping Line'>
             {trip.shippingLine?.name}

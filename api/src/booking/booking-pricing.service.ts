@@ -193,16 +193,19 @@ export class BookingPricingService {
     shippingLine: IShippingLine
   ): number {
     if (shippingLine.name === 'E.B. Aznar Shipping Corporation') {
-      const wholePrice = Math.floor(originalPrice);
-      return wholePrice - (wholePrice % 5);
+      return this.roundUpToNearestMultiple(originalPrice, 5);
     } else if (shippingLine.name === 'Jomalia Shipping Corporation') {
-      const wholePrice = Math.floor(originalPrice);
-      if (wholePrice % 100 === 0) {
-        return wholePrice;
-      }
-      return wholePrice + (100 - (wholePrice % 100));
+      return this.roundUpToNearestMultiple(originalPrice, 50);
     }
     return originalPrice;
+  }
+
+  private roundUpToNearestMultiple(price: number, multiple: number): number {
+    const wholePrice = Math.floor(price);
+    if (wholePrice % multiple === 0) {
+      return wholePrice;
+    }
+    return wholePrice + (multiple - (wholePrice % multiple));
   }
 
   private calculateThirdPartyMarkupForPassenger(
@@ -448,6 +451,7 @@ export class BookingPricingService {
       passengerId,
       priceWithoutMarkup,
     }: BookingTripPassenger,
+    removedReason: string,
     removedReasonType: keyof typeof BOOKING_CANCELLATION_TYPE,
     transactionContext: PrismaClient,
     loggedInAccount?: IAccount
@@ -463,7 +467,7 @@ export class BookingPricingService {
         tripId: tripId,
         passengerId: passengerId,
         price: -totalRefund,
-        description: 'Cancellation Refund',
+        description: `Refunded due to ${removedReason}`,
         type: 'CancellationRefund',
         createdByAccountId: loggedInAccount.id,
         createdAt: new Date(),
@@ -512,5 +516,50 @@ export class BookingPricingService {
     });
 
     return totalRefund;
+  }
+
+  // updates old booking total price
+  // mutates newTripPassenger
+  async adjustBookingPaymentItemsOnRebooking(
+    oldTripPassenger: IBookingTripPassenger,
+    newTripPassenger: IBookingTripPassenger,
+    transactionContext: PrismaClient
+  ): Promise<void> {
+    const rebookingCharge = this.calculateRebookingCharge(
+      oldTripPassenger,
+      newTripPassenger
+    );
+    if (rebookingCharge > 0) {
+      newTripPassenger.bookingPaymentItems.push({
+        description: 'Rebooking Charge',
+        type: 'Miscellaneous',
+        price: rebookingCharge,
+      } as any);
+      newTripPassenger.totalPrice += rebookingCharge;
+    }
+
+    await transactionContext.booking.update({
+      where: {
+        id: oldTripPassenger.bookingId,
+      },
+      data: {
+        totalPrice: {
+          increment: newTripPassenger.totalPrice,
+        },
+      },
+    });
+  }
+
+  private calculateRebookingCharge(
+    oldTripPassenger: IBookingTripPassenger,
+    newTripPassenger: IBookingTripPassenger
+  ): number {
+    return 0;
+    // if rebooked fare is cheaper than old booking, then the rebooking
+    // charge is the difference between two (so that no refunds will be given)
+    // return Math.max(
+    //   oldTripPassenger.totalPrice - newTripPassenger.totalPrice,
+    //   0
+    // );
   }
 }

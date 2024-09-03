@@ -17,6 +17,7 @@ import {
   PassengerBookingSearchResponse,
 } from '@ayahay/http';
 import { BookingMapper } from './booking.mapper';
+import * as dayjs from 'dayjs';
 
 @Injectable()
 export class BookingPassengerService {
@@ -226,6 +227,7 @@ export class BookingPassengerService {
 
   async updateAllTripPassengersOnBookingCancellation(
     booking: any,
+    cancellationReason: string,
     reasonType: keyof typeof BOOKING_CANCELLATION_TYPE,
     transactionContext: PrismaClient,
     loggedInAccount?: IAccount
@@ -241,6 +243,7 @@ export class BookingPassengerService {
         const refundedAmount =
           await this.bookingPricingService.refundTripPassenger(
             bookingTripPassenger as any,
+            cancellationReason,
             reasonType,
             transactionContext,
             loggedInAccount
@@ -306,36 +309,59 @@ export class BookingPassengerService {
     }
 
     await this.prisma.$transaction(async (transactionContext) => {
-      const refundedAmount =
-        await this.bookingPricingService.refundTripPassenger(
-          bookingTripPassenger as any,
-          reasonType,
-          transactionContext as any,
-          loggedInAccount
-        );
-
-      await transactionContext.booking.update({
-        where: { id: bookingTripPassenger.bookingId },
-        data: {
-          totalPrice: bookingTripPassenger.booking.totalPrice - refundedAmount,
-        },
-      });
-
-      await transactionContext.bookingTripPassenger.update({
-        where,
-        data: {
-          removedReason,
-          removedReasonType: reasonType as any,
-          totalPrice: bookingTripPassenger.totalPrice - refundedAmount,
-        },
-      });
-
-      await this.bookingReservationService.updatePassengerCapacities(
-        [bookingTripPassenger] as any[],
-        'increment',
+      await this._removeTripPassenger(
+        bookingTripPassenger,
+        removedReason,
+        reasonType,
+        loggedInAccount,
         transactionContext as any
       );
     });
+  }
+
+  // this is a multi-update operation; always use this function in a transaction
+  private async _removeTripPassenger(
+    bookingTripPassenger: any,
+    removedReason: string,
+    reasonType: keyof typeof BOOKING_CANCELLATION_TYPE,
+    loggedInAccount: IAccount,
+    transactionContext: PrismaClient
+  ): Promise<void> {
+    const refundedAmount = await this.bookingPricingService.refundTripPassenger(
+      bookingTripPassenger as any,
+      removedReason,
+      reasonType,
+      transactionContext as any,
+      loggedInAccount
+    );
+
+    await transactionContext.booking.update({
+      where: { id: bookingTripPassenger.bookingId },
+      data: {
+        totalPrice: bookingTripPassenger.booking.totalPrice - refundedAmount,
+      },
+    });
+
+    await transactionContext.bookingTripPassenger.update({
+      where: {
+        bookingId_tripId_passengerId: {
+          bookingId: bookingTripPassenger.bookingId,
+          tripId: bookingTripPassenger.tripId,
+          passengerId: bookingTripPassenger.passengerId,
+        },
+      },
+      data: {
+        removedReason,
+        removedReasonType: reasonType as any,
+        totalPrice: bookingTripPassenger.totalPrice - refundedAmount,
+      },
+    });
+
+    await this.bookingReservationService.updatePassengerCapacities(
+      [bookingTripPassenger] as any[],
+      'increment',
+      transactionContext as any
+    );
   }
 
   async editPassengerInformation(
@@ -403,6 +429,91 @@ export class BookingPassengerService {
           update: bookingUpdate,
         },
       },
+    });
+  }
+
+  async rebookTripPassenger(
+    bookingId: string,
+    tripId: number,
+    passengerId: number,
+    tempBookingId: number,
+    loggedInAccount: IAccount
+  ): Promise<void> {
+    const tripPassenger = await this.prisma.bookingTripPassenger.findUnique({
+      where: {
+        bookingId_tripId_passengerId: {
+          bookingId,
+          tripId,
+          passengerId,
+        },
+      },
+      include: {
+        trip: true,
+        booking: true,
+      },
+    });
+    if (tripPassenger === null) {
+      throw new NotFoundException('Trip passenger not found.');
+    }
+
+    this.bookingValidator.validateBookingWriteAccess(
+      tripPassenger.booking,
+      loggedInAccount
+    );
+
+    const tempBooking = await this.prisma.tempBooking.findUnique({
+      where: {
+        id: tempBookingId,
+      },
+    });
+    if (tempBooking === null) {
+      throw new NotFoundException('Booking quote not found.');
+    }
+
+    const newBooking =
+      this.bookingMapper.convertTempBookingToBooking(tempBooking);
+
+    await this.bookingValidator.validatePassengerRebooking(
+      tripPassenger,
+      newBooking
+    );
+
+    const newBookingTrip = newBooking.bookingTrips[0];
+    const newTripPassenger =
+      newBooking.bookingTrips[0].bookingTripPassengers[0];
+    newBookingTrip.bookingId = newTripPassenger.bookingId = bookingId;
+
+    const tripDepartureDate = dayjs(
+      newBookingTrip.trip.departureDateIso
+    ).format('YYYY, MMM DD, HH:MM AA');
+
+    await this.prisma.$transaction(async (transactionContext) => {
+      await this._removeTripPassenger(
+        tripPassenger,
+        `Rebooked to ${tripDepartureDate} trip`,
+        'NoFault',
+        loggedInAccount,
+        transactionContext as any
+      );
+
+      await this.bookingPricingService.adjustBookingPaymentItemsOnRebooking(
+        tripPassenger as any,
+        newTripPassenger,
+        transactionContext as any
+      );
+
+      await transactionContext.bookingTripPassenger.create(
+        this.bookingMapper.convertTripPassengerToEntityForCreation(
+          newTripPassenger,
+          loggedInAccount
+        )
+      );
+
+      await this.bookingReservationService.updatePassengerCapacities(
+        [newTripPassenger] as any[],
+        'decrement',
+        transactionContext as any
+      );
     });
   }
 }

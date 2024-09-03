@@ -29,13 +29,6 @@ export default function Partners() {
               src='/assets/shipping-line-logos/Jomalia Shipping Corporation.png'
             />
           </a>
-          <a href='#' target='_blank'>
-            <img
-              className={styles['image']}
-              alt='placeholder'
-              src='/assets/logo-placeholder.png'
-            />
-          </a>
         </Carousel>
         <div className={styles['buttons']}>
           <Button

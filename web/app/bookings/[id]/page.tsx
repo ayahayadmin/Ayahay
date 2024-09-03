@@ -10,6 +10,7 @@ import {
   checkInPassenger,
   checkInVehicle,
   updateTripPassenger,
+  rebookTripPassenger,
   updateTripVehicle,
 } from '@ayahay/services/booking.service';
 import { getAxiosError } from '@ayahay/services/error.service';
@@ -185,15 +186,15 @@ export default function BookingSummaryPage({ params }) {
 
   const updatePassenger = async (
     tripId: number,
-    PassengerId: number,
-    Passenger: IPassenger
+    passengerId: number,
+    passenger: IPassenger
   ) => {
     if (booking === undefined) {
       return;
     }
 
     try {
-      await updateTripPassenger(booking.id, tripId, PassengerId, Passenger);
+      await updateTripPassenger(booking.id, tripId, passengerId, passenger);
       notification.success({
         message: 'Update Success',
         description: 'Passenger has been updated successfully.',
@@ -201,6 +202,27 @@ export default function BookingSummaryPage({ params }) {
       loadBooking();
     } catch (e) {
       handleAxiosError(e, 'Update Failed');
+    }
+  };
+
+  const rebookPassenger = async (
+    tripId: number,
+    passengerId: number,
+    tempBookingId: number
+  ) => {
+    if (booking === undefined) {
+      return;
+    }
+
+    try {
+      await rebookTripPassenger(booking.id, tripId, passengerId, tempBookingId);
+      notification.success({
+        message: 'Rebooking Success',
+        description: 'Passenger has been rebooked successfully.',
+      });
+      loadBooking();
+    } catch (e) {
+      handleAxiosError(e, 'Rebooking Failed');
     }
   };
 
@@ -241,6 +263,7 @@ export default function BookingSummaryPage({ params }) {
             onCancelBooking={onCancelBooking}
             onCheckInPassenger={checkInBookingPassenger}
             onUpdatePassenger={updatePassenger}
+            onRebookPassenger={rebookPassenger}
             onCheckInVehicle={checkInBookingVehicle}
             onUpdateVehicle={updateVehicle}
           />

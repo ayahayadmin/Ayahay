@@ -25,7 +25,6 @@ export interface IBookingTripPassenger {
    * if the booking trip allows for seat selection, a
    * passenger will also be assigned a seat in the
    * cabin above.
-   * TODO: seat selection is still WIP
    */
   seatId?: number;
   seat?: ISeat;

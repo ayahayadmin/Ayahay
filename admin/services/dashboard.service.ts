@@ -1,6 +1,10 @@
 import { DashboardTrips } from '@ayahay/http';
-import { getLocaleTimeString } from '@ayahay/services/date.service';
 import dayjs from 'dayjs';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
+
+dayjs.extend(timezone);
+dayjs.extend(utc);
 
 export function buildPaxAndVehicleBookedData(tripData: DashboardTrips[]) {
   if (!tripData || tripData.length === 0) {
@@ -17,9 +21,9 @@ export function buildPaxAndVehicleBookedData(tripData: DashboardTrips[]) {
     labels.push(
       `${trip.srcPort?.code}-${trip.destPort?.code} ${dayjs(
         trip.departureDateIso
-      ).format('MM/DD/YYYY')} ${getLocaleTimeString(trip.departureDateIso)} (${
-        trip.ship?.name
-      })`
+      )
+        .tz('Asia/Shanghai')
+        .format('MM/DD/YYYY h:mm A')} (${trip.ship?.name})`
     );
     paxBooked.push(trip.passengerCapacities - trip.availableCapacities);
     vehicleBooked.push(trip.vehicleCapacity - trip.availableVehicleCapacity);

@@ -141,11 +141,11 @@ export class AuthService {
 
   /**
    * This function does not check if the account is a third-party
-   * account and if this third-party is partnered with the shipping line,
+   * account or if this third party is partnered with the shipping line,
    * because in general, third-party partners only have access
    * to a select number of shipping line restricted entities
    *
-   * to check if a third-party is partnered with the shipping line,
+   * to check if a third party is partnered with the shipping line,
    * use the verifyThirdPartyIsPartneredWithShippingLine method.
    */
   verifyAccountHasAccessToShippingLineRestrictedEntity(
