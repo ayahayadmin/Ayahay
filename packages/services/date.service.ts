@@ -17,13 +17,6 @@ export function getFullDate(date: string, monthName?: boolean): string {
         newDate.getFullYear();
 }
 
-export function getLocaleTimeString(date: string): string {
-  return new Date(date).toLocaleTimeString(undefined, {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
-
 export function computeAge(birthday: string) {
   var today = new Date();
   var birthDate = new Date(birthday);

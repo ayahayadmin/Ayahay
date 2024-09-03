@@ -13,8 +13,9 @@ import { PrinterOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import { useBookingControls } from '@ayahay/hooks/booking';
 import BookingCancellationModal from '../modals/BookingCancellationModal';
 import dayjs from 'dayjs';
-import 'dayjs/plugin/relativeTime';
-
+import relativeTime from 'dayjs/plugin/relativeTime';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
 import {
   BOOKING_CANCELLATION_TYPE,
   BOOKING_STATUS,
@@ -25,8 +26,9 @@ import useBreakpoint from 'antd/es/grid/hooks/useBreakpoint';
 import { ItineraryContent } from '@/components/document/TripItinerary';
 import BookingReminders from './BookingReminders';
 
-const relativeTime = require('dayjs/plugin/relativeTime');
 dayjs.extend(relativeTime);
+dayjs.extend(timezone);
+dayjs.extend(utc);
 
 const { Title } = Typography;
 
@@ -156,7 +158,9 @@ export default function BookingTripPassengerSummary({
               {PAYMENT_STATUS[booking.paymentStatus]}
             </Descriptions.Item>
             <Descriptions.Item label='Booking Date'>
-              {dayjs(booking.createdAtIso).format('MMMM D, YYYY [at] h:mm A')}
+              {dayjs(booking.createdAtIso)
+                .tz('Asia/Shanghai')
+                .format('MMMM D, YYYY [at] h:mm A')}
             </Descriptions.Item>
             <Descriptions.Item label='Passenger Name'>
               {passenger?.firstName} {passenger?.lastName}

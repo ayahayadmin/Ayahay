@@ -240,7 +240,11 @@ export class TripMapper {
     trips.forEach((trip) => {
       const label = `${trip.srcPort.name} to ${
         trip.destPort.name
-      } at ${new Date(trip.departureDate).toLocaleTimeString()}`;
+      } at ${new Date(trip.departureDate).toLocaleString('en-US', {
+        timeZone: 'Asia/Shanghai',
+        hour: '2-digit',
+        minute: '2-digit',
+      })}`;
 
       const index = collectOptions.findIndex(
         (collectOption) => collectOption.label === label

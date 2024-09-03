@@ -1,6 +1,5 @@
 'use client';
 import SalesPerTeller from '@/components/reports/SalesPerTeller';
-import { useAuth } from '@/contexts/AuthContext';
 import { getSalesPerTeller } from '@/services/reporting.service';
 import { DownloadOutlined } from '@ant-design/icons';
 import {
@@ -18,7 +17,6 @@ interface SalesPerTellerReportProps {
 export default function SalesPerTellerReport({
   searchQuery,
 }: SalesPerTellerReportProps) {
-  const { loggedInAccount } = useAuth();
   const { notification } = App.useApp();
   const [data, setData] = useState<ISalesPerTeller | undefined>();
   const salesPerTellerRef = useRef();

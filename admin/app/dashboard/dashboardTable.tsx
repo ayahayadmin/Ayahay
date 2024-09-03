@@ -11,10 +11,6 @@ import {
   PaginatedRequest,
   PortsAndDateRangeSearch,
 } from '@ayahay/http';
-import {
-  getFullDate,
-  getLocaleTimeString,
-} from '@ayahay/services/date.service';
 import { Button, Popover, Skeleton, Table } from 'antd';
 import { ColumnsType } from 'antd/es/table';
 import { useEffect } from 'react';
@@ -22,6 +18,12 @@ import styles from './page.module.scss';
 import { useAuth } from '@/contexts/AuthContext';
 import { NotCheckedInModal } from '@/components/modal/NotCheckedInModal';
 import { useServerPagination } from '@ayahay/hooks';
+import dayjs from 'dayjs';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
+
+dayjs.extend(timezone);
+dayjs.extend(utc);
 
 const columns: ColumnsType<DashboardTrips> = [
   {
@@ -40,12 +42,12 @@ const columns: ColumnsType<DashboardTrips> = [
     title: 'Departure Date',
     key: 'departureDateIso',
     dataIndex: 'departureDateIso',
-    render: (departureDate: string) => (
-      <div>
-        <span>{getFullDate(departureDate)}</span>
-        <br></br>
-        <span>{getLocaleTimeString(departureDate)}</span>
-      </div>
+    render: (departureDateIso: string) => (
+      <span>
+        {dayjs(departureDateIso)
+          .tz('Asia/Shanghai')
+          .format('MM/DD/YYYY h:mm A')}
+      </span>
     ),
     align: 'center',
   },

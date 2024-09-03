@@ -221,9 +221,11 @@ export class ReportingService {
       const isRoundTrip = !!bookingTripPassenger[0].booking.firstTripId;
       const isOriginTrip =
         tripId === bookingTripPassenger[0].booking.firstTripId;
+      const isOnlineBooker =
+        bookingTripPassenger[0].booking.createdByAccount.role === 'Passenger';
 
       let roundTripPassengers = {};
-      if (isRoundTrip) {
+      if (isRoundTrip && !isOnlineBooker) {
         roundTripPassengers =
           this.reportingMapper.convertTripPassengersToRoundTripPassengers(
             bookingTripPassenger,
@@ -231,68 +233,70 @@ export class ReportingService {
             isOriginTrip
           );
       } else {
-        bookingTripPassenger.forEach((passenger) => {
-          const cabinName = passenger.cabin.cabinType.name;
-          const collect = passenger.booking.voucherCode === 'COLLECT_BOOKING';
-          const isBookingCancelled =
-            passenger.booking.cancellationType === 'PassengersFault';
-          const paymentStatus = collect
-            ? 'Collect'
-            : this.authService.isShippingLineAccount(
-                passenger.booking.createdByAccount
+        bookingTripPassenger
+          .filter((tripPassenger) => tripPassenger.tripId === tripId)
+          .forEach((passenger) => {
+            const cabinName = passenger.cabin.cabinType.name;
+            const collect = passenger.booking.voucherCode === 'COLLECT_BOOKING';
+            const isBookingCancelled =
+              passenger.booking.cancellationType === 'PassengersFault';
+            const paymentStatus = collect
+              ? 'Collect'
+              : this.authService.isShippingLineAccount(
+                  passenger.booking.createdByAccount
+                )
+              ? 'OTC'
+              : this.authService.isTravelAgencyAccount(
+                  passenger.booking.createdByAccount
+                )
+              ? 'Agency'
+              : 'Online';
+
+            let passengerFare = 0;
+            let discountAmount = 0;
+            let partialRefundAmount = 0;
+            passenger.bookingPaymentItems.forEach((paymentItem) => {
+              if (paymentItem.type === 'Fare') {
+                passengerFare = paymentItem.price;
+              } else if (paymentItem.type === 'VoucherDiscount') {
+                discountAmount = paymentItem.price;
+              } else if (paymentItem.type === 'CancellationRefund') {
+                partialRefundAmount = paymentItem.price;
+              }
+            });
+
+            passengers.push(
+              this.reportingMapper.convertTripPassengersForReporting(
+                `${passenger.passenger.firstName.trim() ?? ''} ${
+                  passenger.passenger.lastName.trim() ?? ''
+                }`,
+                passenger.booking.createdByAccount?.email,
+                passenger.cabin.cabinType.name,
+                passenger.discountType ?? 'Adult',
+                collect,
+                isBookingCancelled,
+                isRoundTrip && !isOnlineBooker,
+                passengerFare,
+                passenger.totalPrice,
+                discountAmount,
+                partialRefundAmount,
+                paymentStatus
               )
-            ? 'OTC'
-            : this.authService.isTravelAgencyAccount(
-                passenger.booking.createdByAccount
-              )
-            ? 'Agency'
-            : 'Online';
-
-          let passengerFare = 0;
-          let discountAmount = 0;
-          let partialRefundAmount = 0;
-          passenger.bookingPaymentItems.forEach((paymentItem) => {
-            if (paymentItem.type === 'Fare') {
-              passengerFare = paymentItem.price;
-            } else if (paymentItem.type === 'VoucherDiscount') {
-              discountAmount = paymentItem.price;
-            } else if (paymentItem.type === 'CancellationRefund') {
-              partialRefundAmount = paymentItem.price;
-            }
-          });
-
-          passengers.push(
-            this.reportingMapper.convertTripPassengersForReporting(
-              `${passenger.passenger.firstName.trim() ?? ''} ${
-                passenger.passenger.lastName.trim() ?? ''
-              }`,
-              passenger.booking.createdByAccount?.email,
-              passenger.cabin.cabinType.name,
-              passenger.discountType ?? 'Adult',
-              collect,
-              isBookingCancelled,
-              isRoundTrip,
-              passengerFare,
-              passenger.totalPrice,
-              discountAmount,
-              partialRefundAmount,
-              paymentStatus
-            )
-          );
-
-          const passengerDiscountsBreakdownArr =
-            this.reportingMapper.convertTripPassengersToPassengerBreakdown(
-              passenger.discountType ?? 'Adult',
-              cabinName,
-              collect,
-              isBookingCancelled,
-              passengerFare,
-              discountAmount,
-              partialRefundAmount,
-              passengerDiscountsBreakdown
             );
-          passengerDiscountsBreakdown = passengerDiscountsBreakdownArr;
-        });
+
+            const passengerDiscountsBreakdownArr =
+              this.reportingMapper.convertTripPassengersToPassengerBreakdown(
+                passenger.discountType ?? 'Adult',
+                cabinName,
+                collect,
+                isBookingCancelled,
+                passengerFare,
+                discountAmount,
+                partialRefundAmount,
+                passengerDiscountsBreakdown
+              );
+            passengerDiscountsBreakdown = passengerDiscountsBreakdownArr;
+          });
       }
 
       if (!isEmpty(roundTripPassengers)) {
@@ -350,9 +354,11 @@ export class ReportingService {
     ) as any) {
       const isRoundTrip = !!bookingTripVehicle[0].booking.firstTripId;
       const isOriginTrip = tripId === bookingTripVehicle[0].booking.firstTripId;
+      const isOnlineBooker =
+        bookingTripVehicle[0].booking.createdByAccount.role === 'Passenger';
 
       let roundTripVehicles = {};
-      if (isRoundTrip) {
+      if (isRoundTrip && !isOnlineBooker) {
         roundTripVehicles =
           this.reportingMapper.convertTripVehiclesToRoundTripVehicles(
             bookingTripVehicle,
@@ -360,65 +366,67 @@ export class ReportingService {
             isOriginTrip
           );
       } else {
-        bookingTripVehicle.forEach((vehicle) => {
-          const collect = vehicle.booking.voucherCode === 'COLLECT_BOOKING';
-          const isBookingCancelled =
-            vehicle.booking.cancellationType === 'PassengersFault';
-          const paymentStatus = collect
-            ? 'Collect'
-            : this.authService.isShippingLineAccount(
-                vehicle.booking.createdByAccount
+        bookingTripVehicle
+          .filter((tripVehicle) => tripVehicle.tripId === tripId)
+          .forEach((vehicle) => {
+            const collect = vehicle.booking.voucherCode === 'COLLECT_BOOKING';
+            const isBookingCancelled =
+              vehicle.booking.cancellationType === 'PassengersFault';
+            const paymentStatus = collect
+              ? 'Collect'
+              : this.authService.isShippingLineAccount(
+                  vehicle.booking.createdByAccount
+                )
+              ? 'OTC'
+              : this.authService.isTravelAgencyAccount(
+                  vehicle.booking.createdByAccount
+                )
+              ? 'Agency'
+              : 'Online';
+
+            let vehicleFare = 0;
+            let discountAmount = 0;
+            let partialRefundAmount = 0;
+            vehicle.bookingPaymentItems.forEach((paymentItem) => {
+              if (paymentItem.type === 'Fare') {
+                vehicleFare = paymentItem.price;
+              } else if (paymentItem.type === 'VoucherDiscount') {
+                discountAmount = paymentItem.price;
+              } else if (paymentItem.type === 'CancellationRefund') {
+                partialRefundAmount = paymentItem.price;
+              }
+            });
+
+            vehicles.push(
+              this.reportingMapper.convertTripVehiclesForReporting(
+                vehicle.booking.createdByAccount?.email,
+                vehicle.booking.referenceNo,
+                vehicle.booking.freightRateReceipt,
+                vehicle.vehicle.vehicleType.description,
+                vehicle.vehicle.plateNo,
+                collect,
+                isBookingCancelled,
+                isRoundTrip && !isOnlineBooker,
+                vehicleFare,
+                vehicle.totalPrice,
+                discountAmount,
+                partialRefundAmount,
+                paymentStatus
               )
-            ? 'OTC'
-            : this.authService.isTravelAgencyAccount(
-                vehicle.booking.createdByAccount
-              )
-            ? 'Agency'
-            : 'Online';
-
-          let vehicleFare = 0;
-          let discountAmount = 0;
-          let partialRefundAmount = 0;
-          vehicle.bookingPaymentItems.forEach((paymentItem) => {
-            if (paymentItem.type === 'Fare') {
-              vehicleFare = paymentItem.price;
-            } else if (paymentItem.type === 'VoucherDiscount') {
-              discountAmount = paymentItem.price;
-            } else if (paymentItem.type === 'CancellationRefund') {
-              partialRefundAmount = paymentItem.price;
-            }
-          });
-
-          vehicles.push(
-            this.reportingMapper.convertTripVehiclesForReporting(
-              vehicle.booking.createdByAccount?.email,
-              vehicle.booking.referenceNo,
-              vehicle.booking.freightRateReceipt,
-              vehicle.vehicle.vehicleType.description,
-              vehicle.vehicle.plateNo,
-              collect,
-              isBookingCancelled,
-              isRoundTrip,
-              vehicleFare,
-              vehicle.totalPrice,
-              discountAmount,
-              partialRefundAmount,
-              paymentStatus
-            )
-          );
-
-          const vehicleTypesBreakdownArr =
-            this.reportingMapper.convertTripVehiclesToVehicleBreakdown(
-              vehicle.vehicle.vehicleType.description,
-              collect,
-              isBookingCancelled,
-              vehicleFare,
-              discountAmount,
-              partialRefundAmount,
-              vehicleTypesBreakdown
             );
-          vehicleTypesBreakdown = vehicleTypesBreakdownArr;
-        });
+
+            const vehicleTypesBreakdownArr =
+              this.reportingMapper.convertTripVehiclesToVehicleBreakdown(
+                vehicle.vehicle.vehicleType.description,
+                collect,
+                isBookingCancelled,
+                vehicleFare,
+                discountAmount,
+                partialRefundAmount,
+                vehicleTypesBreakdown
+              );
+            vehicleTypesBreakdown = vehicleTypesBreakdownArr;
+          });
       }
 
       if (!isEmpty(roundTripVehicles)) {

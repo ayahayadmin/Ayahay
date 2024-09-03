@@ -11,13 +11,17 @@ import {
   getMaximumFare,
 } from '@/services/trip.service';
 import {
-  getTime,
   getCabinPopoverContent,
   getFarePopoverContent,
 } from '@/services/search.service';
 import { ArrowRightOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
+
+dayjs.extend(timezone);
+dayjs.extend(utc);
 
 const PAGE_SIZE = 10;
 
@@ -80,13 +84,10 @@ export default function TripSearchResult({
     {
       key: 'departureDateTime',
       dataIndex: 'departureDateIso',
-      render: (text: string) => (
-        <div className={styles['departureDateTime']}>
-          <span>{dayjs(text).format('MMMM D, YYYY')}</span>
-          <br></br>
-          <span>{getTime(text)}</span>
-        </div>
-      ),
+      render: (departureDateIso: string) =>
+        dayjs(departureDateIso)
+          .tz('Asia/Shanghai')
+          .format('MMMM D, YYYY [at] h:mm A'),
       responsive: ['lg'],
     },
     {
@@ -99,8 +100,9 @@ export default function TripSearchResult({
             {record.destPort!.name}
           </div>
           <div>
-            {dayjs(record.departureDateIso).format('MMMM D, YYYY')} at&nbsp;
-            {getTime(record.departureDateIso)}
+            {dayjs(record.departureDateIso)
+              .tz('Asia/Shanghai')
+              .format('MMMM D, YYYY [at] h:mm A')}
           </div>
         </span>
       ),
@@ -269,8 +271,9 @@ export default function TripSearchResult({
               {record.destPort!.name}
             </div>
             <div>
-              {dayjs(record.departureDateIso).format('MMMM D, YYYY')} at&nbsp;
-              {getTime(record.departureDateIso)}
+              {dayjs(record.departureDateIso)
+                .tz('Asia/Shanghai')
+                .format('MMMM D, YYYY [at] h:mm A')}
             </div>
             <div style={{ marginTop: 10 }}>
               {`${totalAvailable} slot/s left`}

@@ -2,6 +2,8 @@
 import { Button, Flex, Spin, Typography } from 'antd';
 import styles from './page.module.scss';
 import dayjs from 'dayjs';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
 import { getDisbursementsByTrip } from '@/services/disbursement.service';
 import { useAuthGuard } from '@/hooks/auth';
 import { useEffect, useState } from 'react';
@@ -14,6 +16,9 @@ import { useServerPagination } from '@ayahay/hooks';
 import { PaginatedRequest } from '@ayahay/http';
 import { EditOutlined, PlusCircleOutlined } from '@ant-design/icons';
 import DisbursementModal from '@/components/modal/DisbursementModal';
+
+dayjs.extend(timezone);
+dayjs.extend(utc);
 
 const { Title } = Typography;
 
@@ -75,7 +80,7 @@ export default function DisbursementPage({ params }: any) {
       title: 'Date',
       key: 'date',
       render: (_, { dateIso }) => (
-        <span>{dayjs(dateIso).format('MM/DD/YYYY')}</span>
+        <span>{dayjs(dateIso).tz('Asia/Shanghai').format('MM/DD/YYYY')}</span>
       ),
       align: 'center',
       responsive: ['md'],
@@ -159,7 +164,9 @@ export default function DisbursementPage({ params }: any) {
                   </div>
                   <div>
                     <strong>Departure Date:</strong>&nbsp;
-                    {dayjs(trip.departureDateIso).format('MM/DD/YYYY h:mm A')}
+                    {dayjs(trip.departureDateIso)
+                      .tz('Asia/Shanghai')
+                      .format('MM/DD/YYYY [at] h:mm A')}
                   </div>
                   <div>
                     <strong>Voyage #:</strong>&nbsp;
@@ -182,7 +189,11 @@ export default function DisbursementPage({ params }: any) {
 
               <Table
                 dataSource={disbursements}
-                columns={hasAdminPrivileges ? [...columns, ...adminOnlyColumns] : columns}
+                columns={
+                  hasAdminPrivileges
+                    ? [...columns, ...adminOnlyColumns]
+                    : columns
+                }
                 pagination={antdPagination}
                 onChange={antdOnChange}
                 loading={disbursements === undefined}

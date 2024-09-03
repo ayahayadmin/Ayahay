@@ -13,6 +13,8 @@ import { ArrowLeftOutlined, PrinterOutlined } from '@ant-design/icons';
 import { useBookingControls } from '@ayahay/hooks/booking';
 import BookingCancellationModal from '../modals/BookingCancellationModal';
 import dayjs from 'dayjs';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
 import {
   BOOKING_CANCELLATION_TYPE,
   BOOKING_STATUS,
@@ -20,6 +22,9 @@ import {
 } from '@ayahay/constants';
 import PaymentSummary from './PaymentSummary';
 import useBreakpoint from 'antd/es/grid/hooks/useBreakpoint';
+
+dayjs.extend(timezone);
+dayjs.extend(utc);
 
 const { Title } = Typography;
 
@@ -134,9 +139,9 @@ export default function BookingTripVehicleSummary({
                   {PAYMENT_STATUS[booking.paymentStatus]}
                 </Descriptions.Item>
                 <Descriptions.Item label='Booking Date'>
-                  {dayjs(booking.createdAtIso).format(
-                    'MMMM D, YYYY [at] h:mm A'
-                  )}
+                  {dayjs(booking.createdAtIso)
+                    .tz('Asia/Shanghai')
+                    .format('MMMM D, YYYY [at] h:mm A')}
                 </Descriptions.Item>
                 <Descriptions.Item label='Vehicle Plate Number'>
                   {vehicle?.plateNo}

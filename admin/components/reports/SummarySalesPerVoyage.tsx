@@ -1,9 +1,5 @@
 import { forwardRef } from 'react';
 import { TripReport as ITripReport } from '@ayahay/http';
-import {
-  getFullDate,
-  getLocaleTimeString,
-} from '@ayahay/services/date.service';
 import { useAuth } from '@/contexts/AuthContext';
 import styles from './Reports.module.scss';
 import {
@@ -14,6 +10,12 @@ import { MOPBreakdown } from './SummarySalesPerVessel';
 import { roundToTwoDecimalPlacesAndAddCommas } from '@/services/reporting.service';
 import { IDisbursement } from '@ayahay/models';
 import { sumBy } from 'lodash';
+import dayjs from 'dayjs';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
+
+dayjs.extend(timezone);
+dayjs.extend(utc);
 
 interface SummarySalesPerVoyageProps {
   data: ITripReport;
@@ -27,7 +29,7 @@ const SummarySalesPerVoyage = forwardRef(function (
 ) {
   const { loggedInAccount } = useAuth();
   const user = loggedInAccount?.email;
-  const date = getFullDate(new Date().toString(), true);
+  const date = dayjs().tz('Asia/Shanghai').format('MMMM D, YYYY');
 
   const mopBreakdown: MOPBreakdown = {
     OTC: {
@@ -147,8 +149,10 @@ const SummarySalesPerVoyage = forwardRef(function (
               ROUTE: {data.srcPort.name} to {data.destPort.name}
             </p>
             <p>
-              SCHEDULE: {getFullDate(data.departureDate, true)}&nbsp;
-              {getLocaleTimeString(data.departureDate)}
+              SCHEDULE:&nbsp;
+              {dayjs(data.departureDate)
+                .tz('Asia/Shanghai')
+                .format('MMMM D, YYYY [at] h:mm A')}
             </p>
             <p>STATUS: {status}</p>
           </div>

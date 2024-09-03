@@ -7,10 +7,14 @@ import {
   TripSearchByDateRange,
 } from '@ayahay/http';
 import { IAccount } from '@ayahay/models';
-import { getLocaleTimeString } from '@ayahay/services/date.service';
 import Table, { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 import { useEffect } from 'react';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
+
+dayjs.extend(timezone);
+dayjs.extend(utc);
 
 interface CanccelledTripListProps {
   shippingLineId: number | undefined;
@@ -36,12 +40,12 @@ const columns: ColumnsType<CancelledTrips> = [
     title: 'Departure Date',
     key: 'departureDateIso',
     dataIndex: 'departureDateIso',
-    render: (departureDate: string) => (
-      <div>
-        <span>{dayjs(departureDate).format('MM/DD/YYYY')}</span>
-        <br></br>
-        <span>{getLocaleTimeString(departureDate)}</span>
-      </div>
+    render: (departureDateIso: string) => (
+      <span>
+        {dayjs(departureDateIso)
+          .tz('Asia/Shanghai')
+          .format('MM/DD/YYYY h:mm A')}
+      </span>
     ),
     align: 'center',
     responsive: ['sm'],
@@ -66,9 +70,9 @@ const columns: ColumnsType<CancelledTrips> = [
         </span>
         <br></br>
         <strong>Date:</strong>&nbsp;
-        <span>{dayjs(record.departureDateIso).format('MM/DD/YYYY')}</span>
-        <br></br>
-        <span>{getLocaleTimeString(record.departureDateIso)}</span>
+        {dayjs(record.departureDateIso)
+          .tz('Asia/Shanghai')
+          .format('MM/DD/YYYY h:mm A')}
         <br></br>
         <strong>Vessel:</strong>&nbsp;<span>{record.shipName}</span>
       </>

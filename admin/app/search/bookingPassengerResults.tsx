@@ -2,7 +2,9 @@ import { Badge, Button, Table } from 'antd';
 import React, { useEffect } from 'react';
 import { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
-import 'dayjs/plugin/relativeTime';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
 import { useServerPagination } from '@ayahay/hooks';
 import {
   PaginatedRequest,
@@ -12,8 +14,9 @@ import {
 import { searchPassengerBookings } from '@/services/booking.service';
 import { DISCOUNT_TYPE } from '@ayahay/constants';
 
-const relativeTime = require('dayjs/plugin/relativeTime');
 dayjs.extend(relativeTime);
+dayjs.extend(timezone);
+dayjs.extend(utc);
 
 interface BookingPassengerResultsProps {
   query: string;
@@ -48,9 +51,9 @@ export default function BookingPassengerResults({
           {passengerBooking.tripSrcPortName} -&gt;&nbsp;
           {passengerBooking.tripDestPortName}
           <br />
-          {dayjs(passengerBooking.tripDepartureDateIso).format(
-            'MM/DD/YYYY hh:mm'
-          )}
+          {dayjs(passengerBooking.tripDepartureDateIso)
+            .tz('Asia/Shanghai')
+            .format('MM/DD/YYYY hh:mm')}
         </div>
       ),
     },

@@ -13,6 +13,11 @@ import {
 import { ColumnsType } from 'antd/es/table';
 import CreateVoucherModal from '@/components/modal/CreateVoucherModal';
 import dayjs from 'dayjs';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
+
+dayjs.extend(timezone);
+dayjs.extend(utc);
 
 const { Title } = Typography;
 
@@ -43,7 +48,7 @@ const voucherColumns: ColumnsType<IVoucher> = [
     key: 'expiryIso',
     dataIndex: 'expiryIso',
     render: (dateIso: string) =>
-      dayjs(dateIso).format('MMM D, YYYY [at] h:mm A'),
+      dayjs(dateIso).tz('Asia/Shanghai').format('MMM D, YYYY [at] h:mm A'),
   },
   {
     title: 'Remaining Uses',

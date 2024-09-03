@@ -15,6 +15,8 @@ import {
 } from '@ayahay/constants';
 import React, { useEffect, useState } from 'react';
 import dayjs from 'dayjs';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
 import PaymentSummary from './PaymentSummary';
 import { PrinterOutlined } from '@ant-design/icons';
 import BookingCancellationModal from '../modals/BookingCancellationModal';
@@ -23,6 +25,9 @@ import { combineBookingPaymentItems } from '@ayahay/services/booking.service';
 import { useBookingControls } from '@ayahay/hooks/booking';
 import BookingReminders from './BookingReminders';
 import { IPassenger, IVehicle } from '@ayahay/models';
+
+dayjs.extend(timezone);
+dayjs.extend(utc);
 
 const { useBreakpoint } = Grid;
 const { Title } = Typography;
@@ -222,7 +227,9 @@ export default function BookingSummary({
                 {PAYMENT_STATUS[booking.paymentStatus]}
               </Descriptions.Item>
               <Descriptions.Item label='Booking Date'>
-                {dayjs(booking.createdAtIso).format('MMMM D, YYYY [at] h:mm A')}
+                {dayjs(booking.createdAtIso)
+                  .tz('Asia/Shanghai')
+                  .format('MMMM D, YYYY [at] h:mm A')}
               </Descriptions.Item>
               <Descriptions.Item label='Booking Reference No'>
                 {booking.referenceNo}
@@ -310,9 +317,9 @@ export default function BookingSummary({
                         {bookingTrip.trip?.destPort?.name}
                       </p>
                       <p>
-                        {dayjs(bookingTrip.trip?.departureDateIso).format(
-                          'MMM D, YYYY [at] h:mm A'
-                        )}
+                        {dayjs(bookingTrip.trip?.departureDateIso)
+                          .tz('Asia/Shanghai')
+                          .format('MMM D, YYYY [at] h:mm A')}
                       </p>
                     </section>
                     <section>
@@ -351,9 +358,9 @@ export default function BookingSummary({
                         {bookingTrip.trip?.destPort?.name}
                       </p>
                       <p>
-                        {dayjs(bookingTrip.trip?.departureDateIso).format(
-                          'MMM D, YYYY [at] h:mm A'
-                        )}
+                        {dayjs(bookingTrip.trip?.departureDateIso)
+                          .tz('Asia/Shanghai')
+                          .format('MMM D, YYYY [at] h:mm A')}
                       </p>
                     </section>
                     <section>

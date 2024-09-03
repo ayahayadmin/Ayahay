@@ -1,7 +1,12 @@
 import dayjs from 'dayjs';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
 import styles from './BillOfLadingReport.module.scss';
 import { BillOfLading as IBillOfLading } from '@ayahay/http';
 import { Button, Form, Input } from 'antd';
+
+dayjs.extend(timezone);
+dayjs.extend(utc);
 
 const underlined = {
   textDecoration: 'underline',
@@ -97,13 +102,15 @@ export default function BillOfLadingReport({ data }: BillOfLadingProps) {
                     <p>
                       DATE AT&nbsp;
                       <span style={underlined}>
-                        {dayjs(data.vehicles[0].departureDateIso).format(
-                          'MM-DD'
-                        )}
+                        {dayjs(data.vehicles[0].departureDateIso)
+                          .tz('Asia/Shanghai')
+                          .format('MM-DD')}
                       </span>
                       &nbsp;,20
                       <span style={underlined}>
-                        {dayjs(data.vehicles[0].departureDateIso).format('YY')}
+                        {dayjs(data.vehicles[0].departureDateIso)
+                          .tz('Asia/Shanghai')
+                          .format('YY')}
                       </span>
                       &nbsp;VGE. No.&nbsp;
                       {data.voyageNumber ? (
@@ -260,11 +267,15 @@ export default function BillOfLadingReport({ data }: BillOfLadingProps) {
           <div style={{ fontSize: '12px' }}>
             Date&nbsp;
             <span style={underlined}>
-              {dayjs(data.vehicles[0].departureDateIso).format('MM-DD')}
+              {dayjs(data.vehicles[0].departureDateIso)
+                .tz('Asia/Shanghai')
+                .format('MM-DD')}
             </span>
             &nbsp;,20
             <span style={underlined}>
-              {dayjs(data.vehicles[0].departureDateIso).format('YY')}
+              {dayjs(data.vehicles[0].departureDateIso)
+                .tz('Asia/Shanghai')
+                .format('YY')}
             </span>
           </div>
           <div

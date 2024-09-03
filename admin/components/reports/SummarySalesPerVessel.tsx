@@ -1,9 +1,6 @@
 import { forwardRef } from 'react';
 import { PerVesselReport as IPerVesselReport } from '@ayahay/http';
-import {
-  getFullDate,
-  getLocaleTimeString,
-} from '@ayahay/services/date.service';
+import { getFullDate } from '@ayahay/services/date.service';
 import { useAuth } from '@/contexts/AuthContext';
 import styles from './Reports.module.scss';
 import {
@@ -13,6 +10,12 @@ import {
 import { first, sum } from 'lodash';
 import { roundToTwoDecimalPlacesAndAddCommas } from '@/services/reporting.service';
 import { IShippingLine } from '@ayahay/models';
+import dayjs from 'dayjs';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
+
+dayjs.extend(timezone);
+dayjs.extend(utc);
 
 interface SummarySalesPerVoyageProps {
   data: IPerVesselReport[];
@@ -52,7 +55,7 @@ const SummarySalesPerVessel = forwardRef(function (
 ) {
   const { loggedInAccount } = useAuth();
   const user = loggedInAccount?.email;
-  const date = getFullDate(new Date().toString(), true);
+  const date = dayjs().tz('Asia/Shanghai').format('MMMM D, YYYY');
 
   const mopBreakdown: MOPBreakdown = {
     OTC: {
@@ -172,7 +175,7 @@ const SummarySalesPerVessel = forwardRef(function (
             <tbody>
               {data.map((shipData) => {
                 if (
-                  shipData.passengers.length === 0 &&
+                  shipData.passengers?.length === 0 &&
                   shipData.passengerDiscountsBreakdown?.length === 0
                 ) {
                   return;
@@ -180,7 +183,7 @@ const SummarySalesPerVessel = forwardRef(function (
 
                 let bookedCount = 0;
 
-                shipData.passengers.map((passenger: any) => {
+                shipData.passengers?.map((passenger: any) => {
                   totalPaxFare += passenger.ticketCost;
                   if (passenger.paymentStatus === 'Online') {
                     mopBreakdown.Online.aggFare += passenger.ticketCost;
@@ -196,10 +199,9 @@ const SummarySalesPerVessel = forwardRef(function (
                 });
 
                 totalDisbursements += shipData.totalDisbursements;
-                const voyage = `${getFullDate(
-                  shipData.departureDate,
-                  true
-                )} @ ${getLocaleTimeString(shipData.departureDate)} (Voyage: ${
+                const voyage = `${dayjs(shipData.departureDate)
+                  .tz('Asia/Shanghai')
+                  .format('MMM D, YYYY [at] h:mm A')} (Voyage: ${
                   shipData.voyageNumber ?? '__'
                 })`;
                 let paxSales = 0;
@@ -293,7 +295,7 @@ const SummarySalesPerVessel = forwardRef(function (
             <tbody>
               {data.map((shipData) => {
                 if (
-                  shipData.vehicles.length === 0 &&
+                  shipData.vehicles?.length === 0 &&
                   shipData.vehicleTypesBreakdown?.length === 0
                 ) {
                   return;
@@ -301,7 +303,7 @@ const SummarySalesPerVessel = forwardRef(function (
 
                 let bookedCount = 0;
 
-                shipData.vehicles.map((vehicle: any) => {
+                shipData.vehicles?.map((vehicle: any) => {
                   totalVehicleFare += vehicle.ticketCost;
                   if (vehicle.paymentStatus === 'Online') {
                     mopBreakdown.Online.aggFare += vehicle.ticketCost;
@@ -312,10 +314,9 @@ const SummarySalesPerVessel = forwardRef(function (
                   }
                 });
 
-                const voyage = `${getFullDate(
-                  shipData.departureDate,
-                  true
-                )} @ ${getLocaleTimeString(shipData.departureDate)} (Voyage: ${
+                const voyage = `${dayjs(shipData.departureDate)
+                  .tz('Asia/Shanghai')
+                  .format('MMM D, YYYY [at] h:mm A')} (Voyage: ${
                   shipData.voyageNumber ?? '__'
                 })`;
                 let vehicleSales = 0;

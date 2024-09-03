@@ -1,9 +1,6 @@
 import { forwardRef } from 'react';
 import { SalesPerTellerReport } from '@ayahay/http';
-import {
-  getFullDate,
-  getLocaleTimeString,
-} from '@ayahay/services/date.service';
+import { getFullDate } from '@ayahay/services/date.service';
 import { useAuth } from '@/contexts/AuthContext';
 import styles from './Reports.module.scss';
 import {
@@ -13,6 +10,12 @@ import {
 import { first, sum } from 'lodash';
 import { roundToTwoDecimalPlacesAndAddCommas } from '@/services/reporting.service';
 import { OPERATION_COSTS } from '@ayahay/constants';
+import dayjs from 'dayjs';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
+
+dayjs.extend(timezone);
+dayjs.extend(utc);
 
 interface SalesPerTellerProps {
   data: SalesPerTellerReport;
@@ -26,7 +29,7 @@ const SalesPerTeller = forwardRef(function (
 ) {
   const { loggedInAccount } = useAuth();
   const user = loggedInAccount?.email;
-  const date = getFullDate(new Date().toString(), true);
+  const date = dayjs().tz('Asia/Shanghai').format('MMMM D, YYYY');
 
   let totalPaxSales = 0;
   let totalPaxCollectSales = 0;
@@ -135,10 +138,9 @@ const SalesPerTeller = forwardRef(function (
                 }
 
                 let bookedCount = 0;
-                const voyage = `${getFullDate(
-                  tripData.departureDate,
-                  true
-                )} @ ${getLocaleTimeString(tripData.departureDate)} (Voyage: ${
+                const voyage = `${dayjs(tripData.departureDate)
+                  .tz('Asia/Shanghai')
+                  .format('MMM D, YYYY [at] h:mm A')} (Voyage: ${
                   tripData.voyageNumber ?? '__'
                 })`;
                 let paxSales = 0;
@@ -252,10 +254,9 @@ const SalesPerTeller = forwardRef(function (
                 }
 
                 let refundCount = 0;
-                const voyage = `${getFullDate(
-                  tripData.departureDate,
-                  true
-                )} @ ${getLocaleTimeString(tripData.departureDate)} (Voyage: ${
+                const voyage = `${dayjs(tripData.departureDate)
+                  .tz('Asia/Shanghai')
+                  .format('MMM D, YYYY [at] h:mm A')} (Voyage: ${
                   tripData.voyageNumber ?? '__'
                 })`;
                 let paxRefunds = 0;
@@ -370,10 +371,9 @@ const SalesPerTeller = forwardRef(function (
                 }
 
                 let bookedCount = 0;
-                const voyage = `${getFullDate(
-                  tripData.departureDate,
-                  true
-                )} @ ${getLocaleTimeString(tripData.departureDate)} (Voyage: ${
+                const voyage = `${dayjs(tripData.departureDate)
+                  .tz('Asia/Shanghai')
+                  .format('MMM D, YYYY [at] h:mm A')} (Voyage: ${
                   tripData.voyageNumber ?? '__'
                 })`;
                 let vehicleSales = 0;
@@ -486,10 +486,9 @@ const SalesPerTeller = forwardRef(function (
                 }
 
                 let refundCount = 0;
-                const voyage = `${getFullDate(
-                  tripData.departureDate,
-                  true
-                )} @ ${getLocaleTimeString(tripData.departureDate)} (Voyage: ${
+                const voyage = `${dayjs(tripData.departureDate)
+                  .tz('Asia/Shanghai')
+                  .format('MMM D, YYYY [at] h:mm A')} (Voyage: ${
                   tripData.voyageNumber ?? '__'
                 })`;
                 let vehicleRefunds = 0;
@@ -521,7 +520,7 @@ const SalesPerTeller = forwardRef(function (
                         <td style={{ textAlign: 'left' }}>
                           PHP&nbsp;
                           {roundToTwoDecimalPlacesAndAddCommas(
-                            vehicle.totalCollectSales
+                            vehicle.totalCollectSales ?? 0
                           )}
                         </td>
                       </tr>
@@ -614,12 +613,9 @@ const SalesPerTeller = forwardRef(function (
                     (disbursement, idx) => {
                       disbursementsSum += disbursement.amount;
 
-                      const voyage = `${getFullDate(
-                        disbursement.departureDateIso,
-                        true
-                      )} @ ${getLocaleTimeString(
-                        disbursement.departureDateIso
-                      )}`;
+                      const voyage = dayjs(disbursement.departureDateIso)
+                        .tz('Asia/Shanghai')
+                        .format('MMM D, YYYY [at] h:mm A');
 
                       return (
                         <tr>
@@ -629,7 +625,11 @@ const SalesPerTeller = forwardRef(function (
                             <td></td>
                           )}
                           <td></td>
-                          <td>{getFullDate(disbursement.dateIso)}</td>
+                          <td>
+                            {dayjs(disbursement.dateIso)
+                              .tz('Asia/Shanghai')
+                              .format('MM/DD/YYYY')}
+                          </td>
                           {/* TODO: will still discuss what if there are more than 1 teller in a trip */}
                           <td>{user}</td>
                           <td className={styles['td-text-wrap']}>
