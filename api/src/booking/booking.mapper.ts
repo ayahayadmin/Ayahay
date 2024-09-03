@@ -5,6 +5,7 @@ import {
   IBookingTripPassenger,
   IBookingTripVehicle,
   IBookingPaymentItem,
+  IAccount,
 } from '@ayahay/models';
 import { Prisma } from '@prisma/client';
 import { TripMapper } from '@/trip/trip.mapper';
@@ -431,6 +432,89 @@ export class BookingMapper {
       checkInDateIso:
         bookingTripVehicle.checkInDate?.toISOString() ?? undefined,
       referenceNo: bookingTripVehicle.booking.referenceNo,
+    };
+  }
+
+  convertTripPassengerToEntityForCreation(
+    tripPassenger: IBookingTripPassenger,
+    loggedInAccount: IAccount
+  ): Prisma.BookingTripPassengerCreateArgs {
+    return {
+      data: {
+        meal: tripPassenger.meal ?? null,
+        checkInDate: null,
+        booking: {
+          connect: {
+            id: tripPassenger.bookingId,
+          },
+        },
+        trip: {
+          connect: {
+            id: tripPassenger.tripId,
+          },
+        },
+        bookingTrip: {
+          connectOrCreate: {
+            where: {
+              bookingId_tripId: {
+                bookingId: tripPassenger.bookingId,
+                tripId: tripPassenger.tripId,
+              },
+            },
+            create: {
+              booking: {
+                connect: {
+                  id: tripPassenger.bookingId,
+                },
+              },
+              trip: {
+                connect: {
+                  id: tripPassenger.tripId,
+                },
+              },
+            },
+          },
+        },
+        passenger: {
+          connect: {
+            id: tripPassenger.passengerId,
+          },
+        },
+        seat: tripPassenger.seatId
+          ? {
+              connect: {
+                id: tripPassenger.seatId,
+              },
+            }
+          : undefined,
+        cabin: {
+          connect: {
+            id: tripPassenger.cabinId,
+          },
+        },
+        tripCabin: {
+          connect: {
+            tripId_cabinId: {
+              tripId: tripPassenger.tripId,
+              cabinId: tripPassenger.cabinId,
+            },
+          },
+        },
+        totalPrice: tripPassenger.totalPrice ?? 0,
+        priceWithoutMarkup: tripPassenger.priceWithoutMarkup ?? 0,
+        discountType: tripPassenger.discountType ?? null,
+        bookingPaymentItems: {
+          createMany: {
+            data: tripPassenger.bookingPaymentItems.map((paymentItem) => ({
+              price: paymentItem.price,
+              description: paymentItem.description,
+              type: paymentItem.type,
+              createdByAccountId: loggedInAccount.id,
+              createdAt: new Date(),
+            })),
+          },
+        },
+      },
     };
   }
 }

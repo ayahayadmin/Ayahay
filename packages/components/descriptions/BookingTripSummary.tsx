@@ -1,5 +1,5 @@
 import { IBookingTrip, IPassenger, IVehicle } from '@ayahay/models';
-import { Typography } from 'antd';
+import { Flex, Typography } from 'antd';
 import React from 'react';
 import TripSummary from './TripSummary';
 import PassengersSummary from './PassengersSummary';
@@ -17,6 +17,11 @@ interface BookingTripSummaryProps {
     passengerId: number,
     passenger: IPassenger
   ) => Promise<void>;
+  onRebookPassenger?: (
+    tripId: number,
+    passengerId: number,
+    tempBookingId: number
+  ) => Promise<void>;
   onCheckInVehicle?: (tripId: number, vehicleId: number) => Promise<void>;
   onUpdateVehicle?: (
     tripId: number,
@@ -31,11 +36,12 @@ export default function BookingTripSummary({
   canCheckIn,
   onCheckInPassenger,
   onUpdatePassenger,
+  onRebookPassenger,
   onCheckInVehicle,
   onUpdateVehicle,
 }: BookingTripSummaryProps) {
   return (
-    <>
+    <Flex vertical gap={24}>
       <section>
         <Title level={titleLevel}>Trip Itinerary</Title>
         <TripSummary trip={bookingTrip.trip} />
@@ -45,10 +51,12 @@ export default function BookingTripSummary({
           <section>
             <Title level={titleLevel + 1}>Passengers</Title>
             <PassengersSummary
+              bookingTrip={bookingTrip}
               passengers={bookingTrip.bookingTripPassengers}
               canCheckIn={canCheckIn}
               onCheckInPassenger={onCheckInPassenger}
               onUpdatePassenger={onUpdatePassenger}
+              onRebookPassenger={onRebookPassenger}
             />
           </section>
         )}
@@ -64,6 +72,6 @@ export default function BookingTripSummary({
             />
           </section>
         )}
-    </>
+    </Flex>
   );
 }

@@ -6,7 +6,6 @@ import {
   DEFAULT_NUM_VEHICLES,
   DEFAULT_BOOKING_TYPE,
 } from '@ayahay/constants/default';
-import { forEach } from 'lodash';
 
 const utc = require('dayjs/plugin/utc');
 const timezone = require('dayjs/plugin/timezone'); // dependent on utc plugin
@@ -113,37 +112,4 @@ export function buildReturnTripQueryFromFirstQuery(
   returnTripQuery.departureDate = returnTripQuery.returnDateIso ?? '';
 
   return returnTripQuery;
-}
-
-export function getTime(date: string) {
-  return new Date(date).toLocaleTimeString(undefined, {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
-
-export function getCabinPopoverContent(cabinCapacities: any[]) {
-  let tooltipTitle = '';
-  forEach(cabinCapacities, (cabin, idx) => {
-    if (idx === cabinCapacities.length - 1) {
-      tooltipTitle += `${cabin.name}: ${cabin.available}/${cabin.total}`;
-    } else {
-      tooltipTitle += `${cabin.name}: ${cabin.available}/${cabin.total}; `;
-    }
-  });
-
-  return tooltipTitle;
-}
-
-export function getFarePopoverContent(adultFares: any[]) {
-  let tooltipTitle = '';
-  forEach(adultFares, (fare, idx) => {
-    if (idx === adultFares.length - 1) {
-      tooltipTitle += `${fare.name}: ${fare.fare}`;
-    } else {
-      tooltipTitle += `${fare.name}: ${fare.fare}; `;
-    }
-  });
-
-  return tooltipTitle;
 }

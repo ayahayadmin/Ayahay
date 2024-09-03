@@ -47,26 +47,3 @@ export async function getAvailableTrips(
     totalItems,
   };
 }
-
-export function getCabinCapacities(cabins: ITripCabin[]) {
-  return cabins.map((cabin) => {
-    return {
-      name: cabin.cabin.name,
-      available: Number(cabin.availablePassengerCapacity),
-      total: Number(cabin.passengerCapacity),
-    };
-  });
-}
-
-export function getCabinFares(cabins: ITripCabin[]) {
-  return cabins.map((cabin) => {
-    return {
-      name: cabin.cabin.name,
-      fare: cabin.adultFare,
-    };
-  });
-}
-
-export function getMaximumFare(fares: any) {
-  return Math.max(...fares.map((fare: any) => fare.fare));
-}

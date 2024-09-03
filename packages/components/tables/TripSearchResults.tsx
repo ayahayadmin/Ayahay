@@ -1,39 +1,58 @@
-import styles from './searchResults.module.scss';
+import styles from './TripSearchResults.module.scss';
 import React, { useEffect, useState } from 'react';
 import { Button, Pagination, Popover, Skeleton, Table } from 'antd';
 import { ITrip, IShippingLine, ITripCabin, IAccount } from '@ayahay/models';
 import { TripsSearchQuery } from '@ayahay/http';
-import { find, sumBy } from 'lodash';
+import { find, forEach, sumBy } from 'lodash';
 import {
   getAvailableTrips,
   getCabinCapacities,
   getCabinFares,
   getMaximumFare,
-} from '@/services/trip.service';
-import {
-  getCabinPopoverContent,
-  getFarePopoverContent,
-} from '@/services/search.service';
+} from '@ayahay/services/trip.service';
+import { toPhilippinesTime } from '@ayahay/services/date.service';
 import { ArrowRightOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
-import dayjs from 'dayjs';
-import timezone from 'dayjs/plugin/timezone';
-import utc from 'dayjs/plugin/utc';
-
-dayjs.extend(timezone);
-dayjs.extend(utc);
 
 const PAGE_SIZE = 10;
 
 interface TripSearchResultsProps {
   searchQuery: TripsSearchQuery;
+  excludeTripId?: number;
   selectedTrip?: ITrip;
   loggedInAccount: IAccount | null | undefined;
   onSelectTrip?: (trip: ITrip) => void;
 }
 
-export default function TripSearchResult({
+export function getCabinPopoverContent(cabinCapacities: any[]) {
+  let tooltipTitle = '';
+  forEach(cabinCapacities, (cabin, idx) => {
+    if (idx === cabinCapacities.length - 1) {
+      tooltipTitle += `${cabin.name}: ${cabin.available}/${cabin.total}`;
+    } else {
+      tooltipTitle += `${cabin.name}: ${cabin.available}/${cabin.total}; `;
+    }
+  });
+
+  return tooltipTitle;
+}
+
+export function getFarePopoverContent(adultFares: any[]) {
+  let tooltipTitle = '';
+  forEach(adultFares, (fare, idx) => {
+    if (idx === adultFares.length - 1) {
+      tooltipTitle += `${fare.name}: ${fare.fare}`;
+    } else {
+      tooltipTitle += `${fare.name}: ${fare.fare}; `;
+    }
+  });
+
+  return tooltipTitle;
+}
+
+export default function TripSearchResults({
   searchQuery,
+  excludeTripId,
   selectedTrip,
   loggedInAccount,
   onSelectTrip,
@@ -48,7 +67,7 @@ export default function TripSearchResult({
     <Button
       type='primary'
       size='large'
-      disabled={trip.id === selectedTrip?.id}
+      disabled={trip.id === selectedTrip?.id || trip.id === excludeTripId}
       onClick={() => onSelectTrip && onSelectTrip(trip)}
       className={styles['book-button']}
     >
@@ -85,9 +104,7 @@ export default function TripSearchResult({
       key: 'departureDateTime',
       dataIndex: 'departureDateIso',
       render: (departureDateIso: string) =>
-        dayjs(departureDateIso)
-          .tz('Asia/Shanghai')
-          .format('MMMM D, YYYY [at] h:mm A'),
+        toPhilippinesTime(departureDateIso, 'MMMM D, YYYY [at] h:mm A'),
       responsive: ['lg'],
     },
     {
@@ -100,9 +117,10 @@ export default function TripSearchResult({
             {record.destPort!.name}
           </div>
           <div>
-            {dayjs(record.departureDateIso)
-              .tz('Asia/Shanghai')
-              .format('MMMM D, YYYY [at] h:mm A')}
+            {toPhilippinesTime(
+              record.departureDateIso,
+              'MMMM D, YYYY [at] h:mm A'
+            )}
           </div>
         </span>
       ),
@@ -117,7 +135,6 @@ export default function TripSearchResult({
         );
         const popoverContent = getCabinPopoverContent(cabinCapacities);
         const totalAvailable = sumBy(cabinCapacities, 'available');
-        const totalCapacity = sumBy(cabinCapacities, 'total');
 
         return (
           <div>
@@ -271,9 +288,10 @@ export default function TripSearchResult({
               {record.destPort!.name}
             </div>
             <div>
-              {dayjs(record.departureDateIso)
-                .tz('Asia/Shanghai')
-                .format('MMMM D, YYYY [at] h:mm A')}
+              {toPhilippinesTime(
+                record.departureDateIso,
+                'MMMM D, YYYY [at] h:mm A'
+              )}
             </div>
             <div style={{ marginTop: 10 }}>
               {`${totalAvailable} slot/s left`}
@@ -341,6 +359,7 @@ export default function TripSearchResult({
           rowClassName={(trip, index) =>
             trip.id === selectedTrip?.id ? styles['selected'] : ''
           }
+          showHeader={false}
           pagination={false}
         ></Table>
         {totalItems / PAGE_SIZE > 1 && (

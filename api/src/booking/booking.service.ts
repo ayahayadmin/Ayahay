@@ -1,24 +1,15 @@
 import {
   BadRequestException,
-  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { Prisma, PrismaClient } from '@prisma/client';
 import { PrismaService } from '@/prisma.service';
-import {
-  IBooking,
-  IAccount,
-  IBookingTrip,
-  IBookingTripVehicle,
-  IBookingTripPassenger,
-} from '@ayahay/models';
+import { IBooking, IAccount, IBookingTrip } from '@ayahay/models';
 import {
   PaginatedRequest,
   PaginatedResponse,
-  PassengerBookingSearchResponse,
   TripSearchByDateRange,
-  VehicleBookingSearchResponse,
 } from '@ayahay/http';
 import { TripService } from '@/trip/trip.service';
 import { BookingMapper } from './booking.mapper';
@@ -262,6 +253,24 @@ export class BookingService {
               },
             },
           },
+          where: {
+            OR: [
+              {
+                bookingTripPassengers: {
+                  some: {
+                    removedReason: null,
+                  },
+                },
+              },
+              {
+                bookingTripVehicles: {
+                  some: {
+                    removedReason: null,
+                  },
+                },
+              },
+            ],
+          },
         },
         bookingPaymentItems: {
           where: {
@@ -424,11 +433,9 @@ export class BookingService {
   private pruneTempBooking(booking: IBooking): void {
     // don't save bookingTrip.trip in JSON
     booking.bookingTrips.forEach((bookingTrip) => {
-      // only save bookingTrip.trip.allowOnlineBooking
-      bookingTrip.trip = {
-        status: bookingTrip.trip.status,
-        allowOnlineBooking: bookingTrip.trip.allowOnlineBooking,
-      } as any;
+      bookingTrip.trip.rateTable = undefined;
+      bookingTrip.trip.availableCabins = undefined;
+      bookingTrip.trip.availableSeatTypes = undefined;
 
       bookingTrip.bookingTripPassengers?.forEach((bookingTripPassenger) => {
         bookingTripPassenger.cabin = undefined;
@@ -566,6 +573,7 @@ export class BookingService {
       const passengersRefundAmount =
         await this.bookingPassengerService.updateAllTripPassengersOnBookingCancellation(
           booking,
+          remarks,
           reasonType,
           transactionContext as any,
           loggedInAccount
