@@ -222,6 +222,7 @@ export class ReportingService {
       const isOriginTrip =
         tripId === bookingTripPassenger[0].booking.firstTripId;
       const isOnlineBooker =
+        bookingTripPassenger[0].booking.createdByAccount === null ||
         bookingTripPassenger[0].booking.createdByAccount.role === 'Passenger';
 
       let roundTripPassengers = {};
@@ -355,6 +356,7 @@ export class ReportingService {
       const isRoundTrip = !!bookingTripVehicle[0].booking.firstTripId;
       const isOriginTrip = tripId === bookingTripVehicle[0].booking.firstTripId;
       const isOnlineBooker =
+        bookingTripVehicle[0].booking.createdByAccount === null ||
         bookingTripVehicle[0].booking.createdByAccount.role === 'Passenger';
 
       let roundTripVehicles = {};
