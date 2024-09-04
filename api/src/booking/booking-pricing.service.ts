@@ -560,11 +560,5 @@ export class BookingPricingService {
     newTripPassenger: IBookingTripPassenger
   ): number {
     return 0;
-    // if rebooked fare is cheaper than old booking, then the rebooking
-    // charge is the difference between two (so that no refunds will be given)
-    // return Math.max(
-    //   oldTripPassenger.totalPrice - newTripPassenger.totalPrice,
-    //   0
-    // );
   }
 }

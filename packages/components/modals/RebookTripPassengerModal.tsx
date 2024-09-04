@@ -108,22 +108,6 @@ export default function RebookTripPassengerModal({
       } as any);
     });
 
-    // const oldPassengerPaymentSum = oldPaymentItems
-    //   .map((paymentItem) => paymentItem.price)
-    //   .reduce((total, itemPrice) => total + itemPrice, 0);
-    // const newPassengerPaymentSum =
-    //   newTripPassenger.bookingPaymentItems
-    //     ?.map((paymentItem) => paymentItem.price)
-    //     ?.reduce((total, itemPrice) => total + itemPrice, 0) ?? 0;
-    // const rebookingFee = newPassengerPaymentSum - oldPassengerPaymentSum;
-    // if (rebookingFee > 0) {
-    //   newTripPassenger.bookingPaymentItems?.push({
-    //     description: 'Rebooking Fee',
-    //     type: 'ServiceCharge',
-    //     price: rebookingFee,
-    //   } as any);
-    // }
-
     setNewBookingTrip({
       tripId: newTrip.tripId,
       trip: newTrip.trip,
