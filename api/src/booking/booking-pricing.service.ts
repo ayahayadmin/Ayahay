@@ -193,11 +193,16 @@ export class BookingPricingService {
     shippingLine: IShippingLine
   ): number {
     if (shippingLine.name === 'E.B. Aznar Shipping Corporation') {
-      return this.roundUpToNearestMultiple(originalPrice, 5);
+      return this.roundDownToNearestMultiple(originalPrice, 5);
     } else if (shippingLine.name === 'Jomalia Shipping Corporation') {
       return this.roundUpToNearestMultiple(originalPrice, 50);
     }
     return originalPrice;
+  }
+
+  private roundDownToNearestMultiple(price: number, multiple: number): number {
+    const wholePrice = Math.floor(price);
+    return wholePrice - (wholePrice % multiple);
   }
 
   private roundUpToNearestMultiple(price: number, multiple: number): number {
