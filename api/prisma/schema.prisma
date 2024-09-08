@@ -611,6 +611,7 @@ model RateTableRow {
   rateTable RateTable @relation(fields: [rateTableId], references: [id])
   cabinId Int? @map("cabin_id")
   cabin Cabin? @relation(fields: [cabinId], references: [id])
+  discountType String? @map("discount_type")
   vehicleTypeId Int? @map("vehicle_type_id")
   vehicleType VehicleType? @relation(fields: [vehicleTypeId], references: [id])
 

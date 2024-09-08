@@ -54,6 +54,7 @@ export class RateTableMapper {
         rateTableRow.cabin !== null
           ? this.cabinMapper.convertCabinToDto(rateTableRow.cabin)
           : undefined,
+      discountType: rateTableRow.discountType ?? undefined,
       vehicleTypeId: rateTableRow.vehicleTypeId ?? undefined,
       vehicleType:
         rateTableRow.vehicleType !== null
