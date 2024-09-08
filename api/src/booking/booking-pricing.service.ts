@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import {
   IAccount,
-  IShippingLine,
   IBooking,
   IBookingPaymentItem,
   IBookingTripPassenger,
@@ -10,7 +9,7 @@ import {
   IRateTable,
   IRateTableMarkup,
 } from '@ayahay/models';
-import { BOOKING_CANCELLATION_TYPE } from '@ayahay/constants';
+import { BOOKING_CANCELLATION_TYPE, DISCOUNT_TYPE } from '@ayahay/constants';
 import {
   PrismaClient,
   BookingTripPassenger,
@@ -43,7 +42,6 @@ export class BookingPricingService {
       bookingTrip.bookingTripPassengers.forEach((bookingTripPassenger) => {
         this.assignBookingTripPassengerPricing(
           bookingTripPassenger,
-          bookingTrip.trip.shippingLine,
           bookingTrip.trip.rateTable,
           booking.voucher,
           loggedInAccount
@@ -65,41 +63,36 @@ export class BookingPricingService {
 
   private assignBookingTripPassengerPricing(
     bookingTripPassenger: IBookingTripPassenger,
-    shippingLine: IShippingLine,
     rateTable: IRateTable,
     voucher?: IVoucher,
     loggedInAccount?: IAccount
   ): void {
-    const tripCabin = bookingTripPassenger.tripCabin;
     const bookingPaymentItems: IBookingPaymentItem[] = [];
 
-    const ticketPrice = this.calculateTicketPriceForBookingTripPassenger(
-      bookingTripPassenger,
-      rateTable
-    );
-
-    const roundedTicketPrice = this.roundPassengerPriceBasedOnShippingLine(
-      ticketPrice,
-      shippingLine
+    const ticketPrice = this.roundToTwoDecimalPlaces(
+      this.calculateTicketPriceForBookingTripPassenger(
+        bookingTripPassenger,
+        rateTable
+      )
     );
 
     const passengerType = bookingTripPassenger.discountType ?? 'Adult';
-    bookingPaymentItems.push({
+    this.addPaymentItemToList(bookingPaymentItems, {
       id: -1,
       bookingId: '',
       tripId: bookingTripPassenger.tripId,
       passengerId: bookingTripPassenger.passengerId,
-      price: roundedTicketPrice,
+      price: ticketPrice,
       description: `${passengerType} Fare (${bookingTripPassenger.cabin.name})`,
       type: 'Fare',
     });
 
     const voucherDiscount = this.calculateVoucherDiscountForPassenger(
-      roundedTicketPrice,
+      ticketPrice,
       voucher
     );
     if (voucherDiscount > 0) {
-      bookingPaymentItems.push({
+      this.addPaymentItemToList(bookingPaymentItems, {
         id: -1,
         bookingId: '',
         tripId: bookingTripPassenger.tripId,
@@ -112,11 +105,11 @@ export class BookingPricingService {
 
     const ayahayMarkup = this.calculateAyahayMarkupForPassenger(
       bookingTripPassenger,
-      roundedTicketPrice,
+      ticketPrice,
       loggedInAccount
     );
     if (ayahayMarkup > 0) {
-      bookingPaymentItems.push({
+      this.addPaymentItemToList(bookingPaymentItems, {
         id: -1,
         bookingId: '',
         tripId: bookingTripPassenger.tripId,
@@ -129,12 +122,12 @@ export class BookingPricingService {
 
     const thirdPartyMarkup = this.calculateThirdPartyMarkupForPassenger(
       bookingTripPassenger,
-      roundedTicketPrice,
+      ticketPrice,
       rateTable,
       loggedInAccount
     );
     if (thirdPartyMarkup > 0) {
-      bookingPaymentItems.push({
+      this.addPaymentItemToList(bookingPaymentItems, {
         id: -1,
         bookingId: '',
         tripId: bookingTripPassenger.tripId,
@@ -160,57 +153,64 @@ export class BookingPricingService {
       return 0;
     }
 
-    const cabinRateWithVat = rateTable.rows.find(
-      (rate) => rate.cabinId === bookingTripPassenger.cabinId
-    ).fare;
+    const cabinRateForDiscountType = rateTable.rows.find(
+      (rate) =>
+        rate.cabinId === bookingTripPassenger.cabinId &&
+        rate.discountType === bookingTripPassenger.discountType
+    );
+    /**
+     * e.g. if there exists an explicit rate in the rate table for students, we
+     * override the default 20% discount and use that instead
+     */
+    if (cabinRateForDiscountType !== undefined) {
+      return cabinRateForDiscountType.fare;
+    }
 
-    switch (bookingTripPassenger.discountType) {
+    const adultCabinRateWithVat = rateTable.rows.find(
+      (rate) =>
+        rate.cabinId === bookingTripPassenger.cabinId &&
+        rate.discountType === undefined
+    ).fare;
+    const discount = this.calculateDiscountForPassenger(
+      bookingTripPassenger.discountType,
+      adultCabinRateWithVat
+    );
+    return adultCabinRateWithVat - discount;
+  }
+
+  private calculateDiscountForPassenger(
+    discountType: keyof typeof DISCOUNT_TYPE,
+    priceWithVat: number
+  ) {
+    switch (discountType) {
       case 'Infant':
       case 'Driver':
       case 'Passes':
       case 'Helper':
-        return 0;
+        return priceWithVat;
       case 'Student':
-        return cabinRateWithVat - cabinRateWithVat * 0.2;
+        return priceWithVat * 0.2;
       case 'Senior':
       case 'PWD':
-        const cabinFeeWithoutVat = cabinRateWithVat / 1.12;
-        const vatAmount = cabinFeeWithoutVat * 0.12;
-        return cabinRateWithVat - cabinFeeWithoutVat * 0.2 - vatAmount;
+        const priceWithoutVat = priceWithVat / 1.12;
+        const vatAmount = priceWithoutVat * 0.12;
+        return priceWithoutVat * 0.2 + vatAmount;
       case 'Child':
-        return cabinRateWithVat * 0.5;
+        return priceWithVat * 0.5;
       case undefined:
-        return cabinRateWithVat;
+        return 0;
     }
   }
 
-  /**
-   * Some shipping lines want their prices to be a multiple of 5
-   * for an easier time to count change when customer pays OTC
-   */
-  private roundPassengerPriceBasedOnShippingLine(
-    originalPrice: number,
-    shippingLine: IShippingLine
-  ): number {
-    if (shippingLine.name === 'E.B. Aznar Shipping Corporation') {
-      return this.roundDownToNearestMultiple(originalPrice, 5);
-    } else if (shippingLine.name === 'Jomalia Shipping Corporation') {
-      return this.roundUpToNearestMultiple(originalPrice, 50);
-    }
-    return originalPrice;
-  }
-
-  private roundDownToNearestMultiple(price: number, multiple: number): number {
-    const wholePrice = Math.floor(price);
-    return wholePrice - (wholePrice % multiple);
-  }
-
-  private roundUpToNearestMultiple(price: number, multiple: number): number {
-    const wholePrice = Math.floor(price);
-    if (wholePrice % multiple === 0) {
-      return wholePrice;
-    }
-    return wholePrice + (multiple - (wholePrice % multiple));
+  // helper function that rounds the price (so no need to do it everywhere)
+  private addPaymentItemToList(
+    paymentItems: IBookingPaymentItem[],
+    paymentItem: IBookingPaymentItem
+  ): void {
+    paymentItems.push({
+      ...paymentItem,
+      price: this.roundToTwoDecimalPlaces(paymentItem.price),
+    });
   }
 
   private calculateThirdPartyMarkupForPassenger(
@@ -269,7 +269,7 @@ export class BookingPricingService {
       rateTable
     );
 
-    bookingPaymentItems.push({
+    this.addPaymentItemToList(bookingPaymentItems, {
       id: -1,
       bookingId: '',
       tripId: bookingTripVehicle.tripId,
@@ -284,7 +284,7 @@ export class BookingPricingService {
       voucher
     );
     if (voucherDiscount > 0) {
-      bookingPaymentItems.push({
+      this.addPaymentItemToList(bookingPaymentItems, {
         id: -1,
         bookingId: '',
         tripId: bookingTripVehicle.tripId,
@@ -300,7 +300,7 @@ export class BookingPricingService {
       loggedInAccount
     );
     if (ayahayMarkup > 0) {
-      bookingPaymentItems.push({
+      this.addPaymentItemToList(bookingPaymentItems, {
         id: -1,
         bookingId: '',
         tripId: bookingTripVehicle.tripId,
@@ -317,7 +317,7 @@ export class BookingPricingService {
       loggedInAccount
     );
     if (thirdPartyMarkup > 0) {
-      bookingPaymentItems.push({
+      this.addPaymentItemToList(bookingPaymentItems, {
         id: -1,
         bookingId: '',
         tripId: bookingTripVehicle.tripId,
@@ -413,7 +413,7 @@ export class BookingPricingService {
       return discountablePrice;
     }
 
-    return this.roundToTwoDecimalPlaces(totalDiscount);
+    return totalDiscount;
   }
 
   private calculateTotalPriceOfPaymentItems(
@@ -535,7 +535,7 @@ export class BookingPricingService {
       newTripPassenger
     );
     if (rebookingCharge > 0) {
-      newTripPassenger.bookingPaymentItems.push({
+      this.addPaymentItemToList(newTripPassenger.bookingPaymentItems, {
         description: 'Rebooking Charge',
         type: 'Miscellaneous',
         price: rebookingCharge,
