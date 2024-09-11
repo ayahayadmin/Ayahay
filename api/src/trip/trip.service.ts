@@ -151,6 +151,7 @@ export class TripService {
         AND t.dest_port_id = ${Number(destPortId)}
         AND t.status = 'Awaiting'
         AND t.rate_table_id = rtr.rate_table_id
+        AND rtr.discount_type IS NULL
         ${
           loggedInAccount &&
           (loggedInAccount.role === 'ShippingLineAdmin' ||
