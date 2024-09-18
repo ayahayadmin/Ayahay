@@ -8,7 +8,7 @@ import { Content } from 'antd/es/layout/layout';
 import WebFooter from '@/components/WebFooter';
 import WebSider from '@/components/WebSider';
 import AuthContextProvider from '@/contexts/AuthContext';
-import { Analytics } from "@vercel/analytics/react"
+import { Analytics } from '@vercel/analytics/react';
 import { useShippingLineForWhiteLabel } from '@/hooks/shipping-line';
 
 const jost = Jost({ subsets: ['latin'], display: 'swap' });
@@ -28,16 +28,11 @@ export default function RootLayout({
           name='description'
           content='Hasul nga proseso? Kalas ug oras? Walay kasiguradohan makakuha ug ticket? Book now at Ayahay.com. Kay ang pagsakay dapay, ayahay!'
         />
-        {shippingLine ? 
-          <link
-            rel='icon'
-            href={`assets/favicon/${shippingLine.name}.ico`}
-          /> : 
-          <link
-            rel='icon'
-            href={`assets/favicon/ayahay.ico`}
-          />
-        }
+        {shippingLine ? (
+          <link rel='icon' href={`assets/favicon/${shippingLine.name}.ico`} />
+        ) : (
+          <link rel='icon' href={`assets/favicon/ayahay.ico`} />
+        )}
       </head>
       <body>
         <AuthContextProvider>
