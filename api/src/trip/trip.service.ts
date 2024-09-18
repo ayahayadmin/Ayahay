@@ -145,7 +145,7 @@ export class TripService {
     const where = Prisma.sql`
       WHERE t.available_vehicle_capacity >= ${Number(vehicleCount)}
         AND t.departure_date > ${departureDate}::TIMESTAMP
-        AND t.departure_date < '3000-01-01T16:00:00.000Z'::TIMESTAMP
+        AND t.departure_date < '2500-01-01T16:00:00.000Z'::TIMESTAMP
         AND t.src_port_id = ${Number(srcPortId)}
         AND t.dest_port_id = ${Number(destPortId)}
         AND t.status = 'Awaiting'
