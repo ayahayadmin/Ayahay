@@ -145,6 +145,11 @@ export default function CreateBookingForm({
           errors: [error.message],
         }))
       );
+      notification.error({
+        message: 'Something went wrong.',
+        description: `There might be required fields that are empty or the trip you're booking is outdated. Contact us at help@ayahay.com for assistance if necessary.`,
+        duration: 10,
+      });
     }
   };
 
