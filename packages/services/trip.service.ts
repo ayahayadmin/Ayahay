@@ -5,11 +5,11 @@ import { getShippingLine, getShippingLines } from './shipping-line.service';
 import { cacheItem, fetchItem } from './cache.service';
 import axios from './axios';
 import { getRateTableById } from './rate-table.service';
-import { ceil, forEach, isEmpty } from 'lodash';
+import { isEmpty } from 'lodash';
 import {
-  AvailabeTripsResult,
+  PaginatedRequest,
+  PaginatedResponse,
   SearchAvailableTrips,
-  TripData,
 } from '@ayahay/http';
 
 export async function getTrips(
@@ -81,44 +81,26 @@ export async function fetchAssociatedEntitiesToTrip(
 }
 
 export async function getAvailableTrips(
-  query: SearchAvailableTrips
-): Promise<AvailabeTripsResult | undefined> {
-  if (isEmpty(query)) {
+  shippingLineId: number | undefined,
+  searchQuery: SearchAvailableTrips,
+  pagination: PaginatedRequest
+): Promise<PaginatedResponse<ITrip> | undefined> {
+  if (isEmpty(searchQuery)) {
     return;
   }
 
-  const { data: trips } = await axios.get(`${TRIP_API}/available`, {
-    params: { ...query },
-  });
-  await fetchAssociatedEntitiesToTrips(trips);
+  const query = new URLSearchParams({
+    shippingLineId,
+    ...searchQuery,
+    ...pagination
+  } as any).toString();
 
-  const totalItems = trips.length;
-  const totalPages = ceil(totalItems / 10);
+  const { data: trips } = await axios.get<PaginatedResponse<ITrip>>(
+    `${TRIP_API}/available?${query}`
+  );
 
-  const data: TripData[] = [];
-  let availableTrips: ITrip[] = [];
-  forEach(trips, (trip, idx) => {
-    const incrementOfTen = (Number(idx) + 1) % 10 === 0;
-    const lastElement = idx + 1 === totalItems;
-
-    availableTrips.push({
-      ...trip,
-    });
-
-    if (incrementOfTen || lastElement) {
-      data.push({
-        availableTrips,
-        page: ceil((Number(idx) + 1) / 10),
-      });
-      availableTrips = [];
-    }
-  });
-
-  return {
-    data,
-    totalPages,
-    totalItems,
-  };
+  await fetchAssociatedEntitiesToTrips(trips.data);
+  return trips;
 }
 
 export function getCabinCapacities(cabins: ITripCabin[]) {

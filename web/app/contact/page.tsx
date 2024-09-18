@@ -10,12 +10,13 @@ import {
   PhoneOutlined,
   TwitterSquareFilled,
 } from '@ant-design/icons';
-import Link from 'next/link';
+import { useShippingLineToRestrictAccess } from '@/hooks/shipping-line';
 
 const { Title } = Typography;
 const { TextArea } = Input;
 
 export default function Contact() {
+  useShippingLineToRestrictAccess('Contact');
   const [emailBody, setEmailBody] = useState('');
   const [emailName, setEmailName] = useState('');
 

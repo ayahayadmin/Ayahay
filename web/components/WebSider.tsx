@@ -1,14 +1,22 @@
 'use client';
 import Sider from 'antd/es/layout/Sider';
 import { Menu } from 'antd';
-import { webLinks } from '@/services/nav.service';
+import { onlineLinks, whiteLabelLinks } from '@/services/nav.service';
 import React from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import styles from './WebSider.module.scss';
+import { useShippingLineForWhiteLabel } from '@/hooks/shipping-line';
 
 export default function WebSider() {
   const pathName = usePathname();
   const router = useRouter();
+  const shippingLine = useShippingLineForWhiteLabel();
+
+  const selectedTab = (links: any[]) => {
+    return links
+      .filter((link) => pathName === `/${link.key}`)
+      .map((link) => link.key);
+  };
 
   return (
     <Sider
@@ -22,10 +30,12 @@ export default function WebSider() {
         <Menu
           theme='dark'
           mode='inline'
-          defaultSelectedKeys={webLinks
-            .filter((link) => pathName === `/${link.key}`)
-            .map((link) => link.key)}
-          items={webLinks}
+          defaultSelectedKeys={
+            shippingLine
+              ? selectedTab(whiteLabelLinks)
+              : selectedTab(onlineLinks)
+          }
+          items={shippingLine ? whiteLabelLinks : onlineLinks}
           onClick={({ key }) => router.push(key)}
         />
       </nav>

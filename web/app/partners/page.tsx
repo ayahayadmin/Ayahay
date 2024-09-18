@@ -2,10 +2,12 @@
 import { Button, Carousel, Typography } from 'antd';
 import styles from './page.module.scss';
 import React, { useRef } from 'react';
+import { useShippingLineToRestrictAccess } from '@/hooks/shipping-line';
 
 const { Title } = Typography;
 
 export default function Partners() {
+  useShippingLineToRestrictAccess('Partners');
   const ref = useRef();
 
   return (
