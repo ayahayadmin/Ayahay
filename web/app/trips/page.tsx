@@ -265,7 +265,6 @@ export default function Trips() {
             <TripSearchResults
               searchQuery={searchQueries[activeSearchIndex]}
               selectedTrip={selectedTrips[activeSearchIndex]}
-              loggedInAccount={loggedInAccount}
               onSelectTrip={(tripId) => selectTrip(activeSearchIndex, tripId)}
             />
           </div>

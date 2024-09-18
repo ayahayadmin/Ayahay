@@ -102,17 +102,6 @@ export interface CancelledTrips {
   cancellationReason: string;
 }
 
-export interface TripData {
-  availableTrips: ITrip[];
-  page: number;
-}
-
-export interface AvailabeTripsResult {
-  data: TripData[];
-  totalPages: number;
-  totalItems: number;
-}
-
 export interface SearchAvailableTrips {
   tripIds?: string;
   srcPortId: number;
@@ -121,6 +110,7 @@ export interface SearchAvailableTrips {
   passengerCount: number;
   vehicleCount: number;
   cabinIds?: string;
+  shippingLineId?: number;
 }
 
 export interface AvailableTrips {

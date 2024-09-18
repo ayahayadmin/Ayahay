@@ -62,10 +62,15 @@ export class TripController {
     type: [Trip],
   })
   async getAvailableTrips(
+    @Query() pagination: PaginatedRequest,
     @Query() searchQuery: SearchAvailableTrips,
     @Request() req
-  ): Promise<ITrip[]> {
-    return await this.tripService.getAvailableTrips(searchQuery, req.user);
+  ): Promise<PaginatedResponse<ITrip>> {
+    return await this.tripService.getAvailableTrips(
+      pagination,
+      searchQuery,
+      req.user
+    );
   }
 
   @Get(':tripId')

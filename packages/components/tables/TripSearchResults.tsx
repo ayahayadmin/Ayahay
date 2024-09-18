@@ -1,9 +1,9 @@
 import styles from './TripSearchResults.module.scss';
-import React, { useEffect, useState } from 'react';
-import { Button, Pagination, Popover, Skeleton, Table } from 'antd';
-import { ITrip, IShippingLine, ITripCabin, IAccount } from '@ayahay/models';
-import { TripsSearchQuery } from '@ayahay/http';
-import { find, forEach, sumBy } from 'lodash';
+import React, { useEffect } from 'react';
+import { Button, Popover, Table } from 'antd';
+import { ITrip, IShippingLine, ITripCabin } from '@ayahay/models';
+import { PaginatedRequest, TripsSearchQuery } from '@ayahay/http';
+import { forEach, sumBy } from 'lodash';
 import {
   getAvailableTrips,
   getCabinCapacities,
@@ -13,14 +13,13 @@ import {
 import { toPhilippinesTime } from '@ayahay/services/date.service';
 import { ArrowRightOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
-
-const PAGE_SIZE = 10;
+import { useShippingLineForWhiteLabel } from '@/hooks/shipping-line';
+import { useServerPagination } from '@ayahay/hooks';
 
 interface TripSearchResultsProps {
   searchQuery: TripsSearchQuery;
   excludeTripId?: number;
   selectedTrip?: ITrip;
-  loggedInAccount: IAccount | null | undefined;
   onSelectTrip?: (trip: ITrip) => void;
 }
 
@@ -54,14 +53,9 @@ export default function TripSearchResults({
   searchQuery,
   excludeTripId,
   selectedTrip,
-  loggedInAccount,
   onSelectTrip,
 }: TripSearchResultsProps) {
-  const [tripData, setTripData] = useState([] as ITrip[]);
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(0);
-  const [totalItems, setTotalItems] = useState(0);
-  const [loading, setLoading] = useState(false);
+  const shippingLine = useShippingLineForWhiteLabel();
 
   const TripActionButton = ({ trip }: { trip: ITrip }) => (
     <Button
@@ -318,59 +312,43 @@ export default function TripSearchResults({
     },
   ];
 
-  useEffect(() => {
-    setPage(1);
-    fetchTrips();
-  }, [searchQuery, loggedInAccount]);
+  useEffect(() => resetData(), [searchQuery]);
 
-  useEffect(() => {
-    fetchTrips();
-  }, [page]);
-
-  const fetchTrips = async () => {
-    setLoading(true);
-    const trips = await getAvailableTrips(searchQuery);
-    const tripData = find(trips?.data, { page });
-
-    setTripData(tripData?.availableTrips || []);
-    setTotalPages(totalPages);
-    setTotalItems(
-      tripData?.availableTrips ? tripData?.availableTrips.length : 0
-    );
-    setLoading(false);
+  const fetchTrips = async (
+    pagination: PaginatedRequest
+  ) => {
+    return getAvailableTrips(shippingLine?.id, searchQuery, pagination);
   };
 
+  const {
+    dataInPage: trips,
+    totalCount,
+    antdPagination,
+    antdOnChange,
+    resetData,
+  } = useServerPagination<ITrip>(
+    fetchTrips,
+    true
+  );
+
   return (
-    <div>
+    <>
       <div className={styles['results-container']}>
-        <strong>{totalItems} result(s)</strong> based on the search
+        <strong>{totalCount} result(s)</strong> based on the search
       </div>
-      <Skeleton
-        loading={loading}
-        active
-        title={false}
-        paragraph={{ rows: 5, width: ['100%', '100%', '100%', '100%', '100%'] }}
-      >
-        <Table
-          columns={columns}
-          dataSource={tripData}
-          className={styles['search-result']}
-          rowKey={(trip) => trip.id}
-          rowClassName={(trip, index) =>
-            trip.id === selectedTrip?.id ? styles['selected'] : ''
-          }
-          showHeader={false}
-          pagination={false}
-        ></Table>
-        {totalItems / PAGE_SIZE > 1 && (
-          <Pagination
-            total={totalItems}
-            current={page}
-            pageSize={PAGE_SIZE}
-            onChange={(page) => setPage(page)}
-          ></Pagination>
-        )}
-      </Skeleton>
-    </div>
+      <Table
+        columns={columns}
+        dataSource={trips}
+        pagination={antdPagination}
+        onChange={antdOnChange}
+        loading={trips === undefined}
+        rowKey={(trip) => trip.id}
+        rowClassName={(trip, index) =>
+          trip.id === selectedTrip?.id ? styles['selected'] : ''
+        }
+        showHeader={false}
+        className={styles['search-result']}
+      />
+    </>
   );
 }

@@ -126,9 +126,10 @@ export class TripService {
   }
 
   async getAvailableTrips(
+    pagination: PaginatedRequest,
     searchQuery: SearchAvailableTrips,
     loggedInAccount: IAccount
-  ): Promise<ITrip[]> {
+  ): Promise<PaginatedResponse<ITrip>> {
     const {
       srcPortId,
       destPortId,
@@ -136,17 +137,14 @@ export class TripService {
       passengerCount,
       vehicleCount,
       cabinIds,
+      shippingLineId,
     } = searchQuery;
 
-    const dateSelectedPlusAWeek = new Date(departureDate);
-    dateSelectedPlusAWeek.setDate(dateSelectedPlusAWeek.getDate() + 7);
-
-    const trips = await this.prisma.$queryRaw<AvailableTrips[]>`
-      ${TRIP_AVAILABLE_QUERY_SELECT}
-      ${TRIP_AVAILABLE_QUERY_FROM}
+    const itemsPerPage = 10;
+    const skip = (pagination.page - 1) * itemsPerPage;
+    const where = Prisma.sql`
       WHERE t.available_vehicle_capacity >= ${Number(vehicleCount)}
         AND t.departure_date > ${departureDate}::TIMESTAMP
-        AND t.departure_date <= ${dateSelectedPlusAWeek.toISOString()}::DATE + 1 - interval '1 sec'
         AND t.src_port_id = ${Number(srcPortId)}
         AND t.dest_port_id = ${Number(destPortId)}
         AND t.status = 'Awaiting'
@@ -160,20 +158,43 @@ export class TripService {
             : Prisma.sql`AND t.allow_online_booking = true`
         }
         ${
+          isNaN(shippingLineId)
+            ? Prisma.empty
+            : Prisma.sql`AND t.shipping_line_id = ${Number(shippingLineId)}`
+        }
+        ${
           isEmpty(cabinIds)
             ? Prisma.empty
             : Prisma.sql`AND c.cabin_type_id IN (${Prisma.join(
                 cabinIds.split(',').map((id) => Number(id))
               )})`
         }
+    `;
+
+    const trips = await this.prisma.$queryRaw<AvailableTrips[]>`
+      ${TRIP_AVAILABLE_QUERY_SELECT}
+      ${TRIP_AVAILABLE_QUERY_FROM}
+      ${where}
       GROUP BY t.id
       HAVING SUM(tc.available_passenger_capacity) >= ${Number(passengerCount)}
       ORDER BY t.departure_date ASC
+      OFFSET ${skip}
+      LIMIT ${itemsPerPage};
     `;
 
-    return trips.map((trip) =>
-      this.tripMapper.convertAvailableTripsToDto(trip)
-    );
+    const tripsCount = await this.prisma.$queryRaw<number>`
+      SELECT 
+        COUNT(DISTINCT t.id)::integer
+      ${TRIP_AVAILABLE_QUERY_FROM}
+      ${where}
+    `;
+
+    return {
+      total: tripsCount[0].count,
+      data: trips.map((trip) =>
+        this.tripMapper.convertAvailableTripsToDto(trip)
+      ),
+    };
   }
 
   async getTripsByIds(tripIds: number[]): Promise<ITrip[]> {
@@ -287,7 +308,7 @@ export class TripService {
 
     const tripsCount = await this.prisma.$queryRaw<number>`
       SELECT 
-        COUNT(t.id)::integer
+        COUNT(DISTINCT t.id)::integer
       ${TRIP_AVAILABLE_QUERY_FROM}
       ${where}
     `;

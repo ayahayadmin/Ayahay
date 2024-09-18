@@ -1,4 +1,4 @@
-export const webLinks = [
+export const whiteLabelLinks = [
   {
     label: 'Home',
     key: '',
@@ -7,10 +7,10 @@ export const webLinks = [
     label: 'My Bookings',
     key: 'bookings/mine',
   },
-  // {
-  //   label: 'About',
-  //   key: 'about',
-  // },
+];
+
+export const onlineLinks = [
+  ...whiteLabelLinks,
   {
     label: 'Contact',
     key: 'contact',
