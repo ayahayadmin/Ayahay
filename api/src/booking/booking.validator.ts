@@ -49,12 +49,12 @@ export class BookingValidator {
       });
     }
 
-    if (trips.some((trip) => new Date(trip.departureDateIso) < new Date())) {
-      errorMessages.push({
-        fieldName: ['bookingTrips'],
-        message: 'All trips must be a future trip',
-      });
-    }
+    // if (trips.some((trip) => new Date(trip.departureDateIso) < new Date())) {
+    //   errorMessages.push({
+    //     fieldName: ['bookingTrips'],
+    //     message: 'All trips must be a future trip',
+    //   });
+    // }
 
     if (trips.length > this.MAX_TRIPS_PER_BOOKING) {
       errorMessages.push({
