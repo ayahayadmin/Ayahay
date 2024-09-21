@@ -424,7 +424,7 @@ export default function CreateBookingForm({
         >
           <BookingConfirmation
             tentativeBooking={bookingPreview}
-            hasPrivilegedAccess={true}
+            hasPrivilegedAccess={hasPrivilegedAccess}
             onPreviousStep={previousStep}
             onRequestBooking={requestBooking}
             onStartPayment={payBooking}
