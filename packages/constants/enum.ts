@@ -110,6 +110,7 @@ export enum OPERATION_COSTS {
   CustomerSupportServices = 'Customer Support Services',
   ComplianceAndRegulatoryCosts = 'Compliance and Regulatory Costs', //#26 medj doble sa #12
   TechnologyUpgrades = 'Technology Upgrades',
+  OnlineBooking = 'Online Booking',
 }
 
 export enum BOOKING_CANCELLATION_TYPE {

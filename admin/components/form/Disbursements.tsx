@@ -27,7 +27,7 @@ interface DisbursementsProps {
 export default function Disbursements({
   tripDate,
   isEdit,
-  handleDisbursementDelete
+  handleDisbursementDelete,
 }: DisbursementsProps) {
   return (
     <Form.List name='disbursement'>
@@ -72,6 +72,7 @@ export default function Disbursements({
                   <EnumSelect
                     _enum={OPERATION_COSTS}
                     disabled={false}
+                    showSearch={true}
                     name={[name, 'description']}
                     label='Description'
                     rules={[{ required: true, message: 'Missing description' }]}
@@ -104,16 +105,16 @@ export default function Disbursements({
             </div>
           ))}
 
-          {isEdit &&
+          {isEdit && (
             <Button
-              type="primary"
+              type='primary'
               danger
               onClick={handleDisbursementDelete}
               style={{ textAlign: 'right' }}
             >
               Delete Disbursement
             </Button>
-          }
+          )}
           <Button
             type='dashed'
             onClick={() => add({ date: dayjs(tripDate) })}
