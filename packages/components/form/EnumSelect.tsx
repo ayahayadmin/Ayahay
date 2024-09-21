@@ -4,11 +4,13 @@ import React from 'react';
 interface EnumProps {
   _enum: any;
   disabled: boolean;
+  showSearch?: boolean;
 }
 
 export default function EnumSelect({
   _enum,
   disabled,
+  showSearch,
   ...formItemProps
 }: EnumProps & FormItemProps) {
   return (
@@ -20,6 +22,7 @@ export default function EnumSelect({
           value: enumKey,
           label: _enum[enumKey],
         }))}
+        showSearch={showSearch}
       />
     </Form.Item>
   );
