@@ -172,7 +172,7 @@ export default function BookingSummary({
             type='default'
             onClick={() => setIsCancellationModalOpen(true)}
           >
-            Void
+            Refund
           </Button>
           <BookingCancellationModal
             open={isCancellationModalOpen}
