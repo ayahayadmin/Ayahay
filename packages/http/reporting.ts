@@ -123,8 +123,12 @@ export interface BillOfLading {
   consigneeName: string;
   freightRateReceipt: string;
   shipName: string;
-  shippingLineName: string;
   voyageNumber: number;
+  shippingLineName: string;
+  shippingLineSubsidiary?: string;
+  shippingLineAddress: string;
+  shippingLineTelephoneNo: string;
+  shippingLineFaxNo?: string;
 
   vehicles: {
     // destPortName and departureDateIso are for round trip purposes

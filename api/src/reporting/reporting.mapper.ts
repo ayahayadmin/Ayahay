@@ -658,9 +658,17 @@ export class ReportingMapper {
     const consigneeName = booking.consigneeName;
     const freightRateReceipt = booking.freightRateReceipt;
     const shipName = booking.bookingTripVehicles[0].trip.ship.name;
+    const voyageNumber = booking.bookingTripVehicles[0].trip.voyage?.number;
     const shippingLineName =
       booking.bookingTripVehicles[0].trip.shippingLine.name;
-    const voyageNumber = booking.bookingTripVehicles[0].trip.voyage?.number;
+    const shippingLineSubsidiary = 
+      booking.bookingTripVehicles[0].trip.shippingLine.subsidiary;
+    const shippingLineAddress = 
+      booking.bookingTripVehicles[0].trip.shippingLine.address;
+    const shippingLineTelephoneNo = 
+      booking.bookingTripVehicles[0].trip.shippingLine.telephoneNo;
+    const shippingLineFaxNo = 
+      booking.bookingTripVehicles[0].trip.shippingLine.faxNo;
 
     const isCollectBooking = booking.voucherCode === 'COLLECT_BOOKING';
     const vehicles = booking.bookingTripVehicles.map((vehicle) => {
@@ -695,6 +703,10 @@ export class ReportingMapper {
       freightRateReceipt,
       shipName,
       shippingLineName,
+      shippingLineSubsidiary,
+      shippingLineAddress,
+      shippingLineTelephoneNo,
+      shippingLineFaxNo,
       voyageNumber,
       vehicles,
       isCollectBooking,

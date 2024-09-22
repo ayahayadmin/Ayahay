@@ -63,9 +63,11 @@ INSERT INTO ayahay.port
 ;
 
 INSERT INTO ayahay.shipping_line
-    ("name")
+    ("name", "address", fax_number, subsidiary, telephone_number)
     VALUES
-    ('E.B. Aznar Shipping Corporation')
+    ('E.B. Aznar Shipping Corporation', 'Manoling Bldg. V. Gullas St., San Roque Cebu City', null, 'Tabuelan Sea Transport, Inc.', '266-7178'),
+    ('Jomalia Shipping Corporation', 'Kimwa Compound, S. Albano St., Subangdaku, Mandaue City', '(032) 344-4251', null, '(032) 344-4251, 343-3753'),
+    ('AYAHAY SHIPPING LINES', 'Mezzanine, unit 4, New Market Bldg, Kinasang-an Cebu City, Cebu City, Philippines', null, null, '(032) 517 4255')
 ;
 
 INSERT INTO ayahay.cabin_type

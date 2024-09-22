@@ -50,7 +50,7 @@ export default function BillOfLadingReport({ data }: BillOfLadingProps) {
                     fontWeight: 'bold',
                   }}
                 >
-                  Tabuelan Sea Transport, Inc.
+                  {data.shippingLineSubsidiary ?? data.shippingLineName}
                 </p>
                 <div
                   style={{
@@ -59,8 +59,15 @@ export default function BillOfLadingReport({ data }: BillOfLadingProps) {
                     fontSize: '10px',
                   }}
                 >
-                  <p>Manoling Bldg. V. Gullas St., San Roque Cebu City</p>
-                  <p>Tel. No. 266-7178</p>
+                  <p>{data.shippingLineAddress}</p>
+                  <div
+                    style={{ display: 'flex', justifyContent: 'space-evenly' }}
+                  >
+                    <p>Tel. No. {data.shippingLineTelephoneNo}</p>
+                    {data.shippingLineFaxNo && (
+                      <p>Fax No. {data.shippingLineFaxNo}</p>
+                    )}
+                  </div>
                 </div>
                 <div style={{ ...two_columns_grid, width: '100%' }}>
                   <div></div>
