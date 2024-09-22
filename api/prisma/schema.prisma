@@ -137,6 +137,10 @@ model ShippingLine {
   id Int @default(autoincrement()) @id
 
   name String
+  subsidiary String?
+  address String
+  telephoneNo String @map("telephone_number")
+  faxNo String? @map("fax_number")
 
   trips Trip[]
   ships Ship[]
