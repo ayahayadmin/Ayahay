@@ -41,9 +41,9 @@ export default function BookingCancellationModal({
   };
 
   return (
-    <Modal onOk={onOkModal} okText='Void' closeIcon={true} {...modalProps}>
+    <Modal onOk={onOkModal} okText='Refund' closeIcon={true} {...modalProps}>
       <Title level={2} style={{ fontSize: '20px' }}>
-        Are you sure you want to void this booking? This action cannot be
+        Are you sure you want to refund this booking? This action cannot be
         undone.
       </Title>
       <Form form={form} initialValues={{ reasonType: 'NoFault' }}>
