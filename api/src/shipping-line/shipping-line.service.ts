@@ -150,10 +150,13 @@ export class ShippingLineService {
             `${yyyyYear}-${mmMonth}-${ddDay}T${hhHour}:${mmMinute}:00.000${hhMmTimezone}`
           );
 
-          tripToCreate.departureDateIso =
-            tripToCreate.bookingCutOffDateIso =
-            tripToCreate.bookingStartDateIso =
-              departureDate.toISOString();
+          tripToCreate.departureDateIso = tripToCreate.bookingStartDateIso =
+            departureDate.toISOString();
+
+          // Additional 2hrs for booking cut-off date
+          departureDate.setHours(departureDate.getHours() + 2);
+
+          tripToCreate.bookingCutOffDateIso = departureDate.toISOString();
 
           tripToCreate.referenceNo =
             this.utilityService.generateRandomAlphanumericString(6);

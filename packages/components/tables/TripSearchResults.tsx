@@ -252,7 +252,7 @@ export default function TripSearchResults({
               </Popover>
             </div>
             <div>
-              <TripActionButton trip={record} />,
+              <TripActionButton trip={record} />
             </div>
           </span>
         );
@@ -314,9 +314,7 @@ export default function TripSearchResults({
 
   useEffect(() => resetData(), [searchQuery]);
 
-  const fetchTrips = async (
-    pagination: PaginatedRequest
-  ) => {
+  const fetchTrips = async (pagination: PaginatedRequest) => {
     return getAvailableTrips(shippingLine?.id, searchQuery, pagination);
   };
 
@@ -326,10 +324,7 @@ export default function TripSearchResults({
     antdPagination,
     antdOnChange,
     resetData,
-  } = useServerPagination<ITrip>(
-    fetchTrips,
-    true
-  );
+  } = useServerPagination<ITrip>(fetchTrips, true);
 
   return (
     <>

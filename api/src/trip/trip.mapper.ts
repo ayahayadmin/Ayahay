@@ -86,6 +86,7 @@ export class TripMapper {
         this.convertTripCabinToDto(tripCabin)
       ),
       departureDateIso: trip.departureDate.toISOString(),
+      bookingCutOffDateIso: trip.bookingCutOffDate.toISOString(),
       voyage: trip.voyage,
       availableSeatTypes: [],
       meals: [],

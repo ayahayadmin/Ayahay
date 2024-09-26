@@ -140,6 +140,7 @@ export class TripService {
       shippingLineId,
     } = searchQuery;
 
+    const currentDate = new Date().toISOString();
     const itemsPerPage = 10;
     const skip = (pagination.page - 1) * itemsPerPage;
     const where = Prisma.sql`
@@ -151,6 +152,11 @@ export class TripService {
         AND t.status = 'Awaiting'
         AND t.rate_table_id = rtr.rate_table_id
         AND rtr.discount_type IS NULL
+        ${
+          loggedInAccount === undefined || loggedInAccount.role === 'Passenger'
+            ? Prisma.sql`AND t.booking_cut_off_date > ${currentDate}::TIMESTAMP`
+            : Prisma.empty
+        }
         ${
           loggedInAccount &&
           (loggedInAccount.role === 'ShippingLineAdmin' ||
