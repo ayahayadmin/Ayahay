@@ -302,7 +302,7 @@ export default function TripSearchResults({
               </Popover>
             </div>
             <div>
-              <TripActionButton trip={record} />,
+              <TripActionButton trip={record} />
             </div>
           </span>
         );
