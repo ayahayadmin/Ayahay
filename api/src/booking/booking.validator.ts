@@ -55,7 +55,7 @@ export class BookingValidator {
     ) {
       errorMessages.push({
         fieldName: ['bookingTrips'],
-        message: 'All trips must be a future trip',
+        message: 'All trip bookings must be before the booking cut-off date',
       });
     }
 

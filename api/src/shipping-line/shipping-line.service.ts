@@ -153,8 +153,8 @@ export class ShippingLineService {
           tripToCreate.departureDateIso = tripToCreate.bookingStartDateIso =
             departureDate.toISOString();
 
-          // Additional 2hrs for booking cut-off date
-          departureDate.setHours(departureDate.getHours() + 2);
+          // Deduct 2hrs for booking cut-off date
+          departureDate.setHours(departureDate.getHours() - 2);
 
           tripToCreate.bookingCutOffDateIso = departureDate.toISOString();
 
