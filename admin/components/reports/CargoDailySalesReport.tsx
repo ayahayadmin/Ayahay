@@ -155,7 +155,7 @@ const CargoDailySalesReport = forwardRef(function (
                   mopBreakdown.Online.aggFare += vehicle.ticketSale;
                 } else if (paymentStatus === 'Agency') {
                   mopBreakdown.Agency.aggFare += vehicle.ticketSale;
-                } else if (paymentStatus === 'Collect') {
+                } else if (collect) {
                   mopBreakdown.Collect.aggFare += vehicle.discountAmount;
                 } else if (paymentStatus === 'Round Trip') {
                   mopBreakdown.RoundTrip.aggFare += vehicle.ticketSale;

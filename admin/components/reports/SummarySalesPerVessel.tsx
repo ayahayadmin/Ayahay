@@ -189,7 +189,7 @@ const SummarySalesPerVessel = forwardRef(function (
                     mopBreakdown.Online.aggFare += passenger.ticketCost;
                   } else if (passenger.paymentStatus === 'Agency') {
                     mopBreakdown.Agency.aggFare += passenger.ticketCost;
-                  } else if (passenger.paymentStatus === 'Collect') {
+                  } else if (passenger.collect) {
                     mopBreakdown.Collect.aggFare += passenger.discountAmount;
                   } else if (passenger.paymentStatus === 'Round Trip') {
                     mopBreakdown.RoundTrip.aggFare += passenger.ticketCost;

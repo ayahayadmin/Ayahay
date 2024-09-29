@@ -172,7 +172,7 @@ const PassengerDailySalesReport = forwardRef(function (
                   mopBreakdown.Online.aggFare += passenger.ticketSale;
                 } else if (paymentStatus === 'Agency') {
                   mopBreakdown.Agency.aggFare += passenger.ticketSale;
-                } else if (paymentStatus === 'Collect') {
+                } else if (collect) {
                   mopBreakdown.Collect.aggFare += passenger.discountAmount;
                 } else if (paymentStatus === 'Round Trip') {
                   mopBreakdown.RoundTrip.aggFare += passenger.ticketSale;

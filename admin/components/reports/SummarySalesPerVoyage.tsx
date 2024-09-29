@@ -66,7 +66,7 @@ const SummarySalesPerVoyage = forwardRef(function (
       mopBreakdown.Online.aggFare += passenger.ticketSale;
     } else if (paymentStatus === 'Agency') {
       mopBreakdown.Agency.aggFare += passenger.ticketSale;
-    } else if (paymentStatus === 'Collect') {
+    } else if (passenger.collect) {
       mopBreakdown.Collect.aggFare += passenger.discountAmount;
     } else if (paymentStatus === 'Round Trip') {
       mopBreakdown.RoundTrip.aggFare += passenger.ticketSale;
@@ -92,7 +92,7 @@ const SummarySalesPerVoyage = forwardRef(function (
       mopBreakdown.Online.aggFare += vehicle.ticketSale;
     } else if (paymentStatus === 'Agency') {
       mopBreakdown.Agency.aggFare += vehicle.ticketSale;
-    } else if (paymentStatus === 'Collect') {
+    } else if (vehicle.collect) {
       mopBreakdown.Collect.aggFare += vehicle.discountAmount;
     } else if (paymentStatus === 'Round Trip') {
       mopBreakdown.RoundTrip.aggFare += vehicle.ticketSale;

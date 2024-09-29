@@ -34,6 +34,8 @@ export interface TripReport extends TripBasicInfo {
   }[];
 
   passengerDiscountsBreakdown?: PaxBreakdown[];
+  passengerBreakdown?: PaxBreakdown[];
+  passengerRefundBreakdown?: PaxBreakdown[];
 
   vehicles?: {
     teller: string;
@@ -59,6 +61,8 @@ export interface TripReport extends TripBasicInfo {
   }[];
 
   vehicleTypesBreakdown?: VehicleBreakdown[];
+  vehicleBreakdown?: VehicleBreakdown[];
+  vehicleRefundBreakdown?: VehicleBreakdown[];
 }
 
 export interface PerVesselReport extends TripReport {

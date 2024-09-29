@@ -661,13 +661,13 @@ export class ReportingMapper {
     const voyageNumber = booking.bookingTripVehicles[0].trip.voyage?.number;
     const shippingLineName =
       booking.bookingTripVehicles[0].trip.shippingLine.name;
-    const shippingLineSubsidiary = 
+    const shippingLineSubsidiary =
       booking.bookingTripVehicles[0].trip.shippingLine.subsidiary;
-    const shippingLineAddress = 
+    const shippingLineAddress =
       booking.bookingTripVehicles[0].trip.shippingLine.address;
-    const shippingLineTelephoneNo = 
+    const shippingLineTelephoneNo =
       booking.bookingTripVehicles[0].trip.shippingLine.telephoneNo;
-    const shippingLineFaxNo = 
+    const shippingLineFaxNo =
       booking.bookingTripVehicles[0].trip.shippingLine.faxNo;
 
     const isCollectBooking = booking.voucherCode === 'COLLECT_BOOKING';

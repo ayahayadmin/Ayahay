@@ -1,30 +1,29 @@
 import { forwardRef } from 'react';
-import { SalesPerTellerReport } from '@ayahay/http';
-import { getFullDate } from '@ayahay/services/date.service';
+import { TripReport as ITripReport } from '@ayahay/http';
 import { useAuth } from '@/contexts/AuthContext';
 import styles from './Reports.module.scss';
 import {
   three_columns_grid,
   two_columns_grid,
 } from './PassengerDailySalesReport';
-import { first, sum } from 'lodash';
+import { sum } from 'lodash';
 import { roundToTwoDecimalPlacesAndAddCommas } from '@/services/reporting.service';
 import { OPERATION_COSTS } from '@ayahay/constants';
 import dayjs from 'dayjs';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
+import { IDisbursement } from '@ayahay/models';
 
 dayjs.extend(timezone);
 dayjs.extend(utc);
 
-interface SalesPerTellerProps {
-  data: SalesPerTellerReport;
-  startDate: string;
-  endDate: string;
+interface MySalesProps {
+  data: ITripReport;
+  disbursements: IDisbursement[];
 }
 
-const SalesPerTeller = forwardRef(function (
-  { data, startDate, endDate }: SalesPerTellerProps,
+const MySalesReport = forwardRef(function (
+  { data, disbursements }: MySalesProps,
   ref
 ) {
   const { loggedInAccount } = useAuth();
@@ -70,17 +69,13 @@ const SalesPerTeller = forwardRef(function (
             }}
           >
             <img
-              src={`/assets/shipping-line-logos/${
-                first(data.bookingTripsBreakdown)?.shippingLine.name
-              }.png`}
+              src={`/assets/shipping-line-logos/${data.shippingLine.name}.png`}
               height={50}
             />
-            <span style={{ fontWeight: 'bold' }}>
-              {first(data.bookingTripsBreakdown)?.shippingLine.name}
-            </span>
+            <span style={{ fontWeight: 'bold' }}>{data.shippingLine.name}</span>
           </div>
           <span className={styles['center-div']} style={{ fontWeight: 'bold' }}>
-            SALES REPORT
+            MY SALES REPORT
           </span>
         </div>
         <div
@@ -92,8 +87,13 @@ const SalesPerTeller = forwardRef(function (
         >
           <div>
             <p>
-              Date Range: {getFullDate(startDate, true)} to&nbsp;
-              {getFullDate(endDate, true)}
+              Route: {data.srcPort.name} to {data.destPort.name}
+            </p>
+            <p>
+              Schedule:&nbsp;
+              {dayjs(data.departureDate)
+                .tz('Asia/Shanghai')
+                .format('MMMM D, YYYY [at] h:mm A')}
             </p>
           </div>
           <div
@@ -122,8 +122,6 @@ const SalesPerTeller = forwardRef(function (
             <caption style={{ textAlign: 'left' }}>PASSENGER SALES</caption>
             <thead style={{ backgroundColor: '#ddebf7' }}>
               <tr>
-                <th>Voyage</th>
-                <th></th>
                 <th>Accommodation</th>
                 <th>Discounts</th>
                 <th style={{ textAlign: 'left' }}>Count</th>
@@ -132,83 +130,37 @@ const SalesPerTeller = forwardRef(function (
               </tr>
             </thead>
             <tbody>
-              {data.bookingTripsBreakdown?.map((tripData) => {
-                if (tripData.passengerBreakdown.length === 0) {
-                  return;
-                }
-
-                let bookedCount = 0;
-                const voyage = `${dayjs(tripData.departureDate)
-                  .tz('Asia/Shanghai')
-                  .format('MMM D, YYYY [at] h:mm A')} (Voyage: ${
-                  tripData.voyageNumber ?? '__'
-                })`;
-                let paxSales = 0;
-                let paxCollectSales = 0;
-
-                const passengerBreakdown: any = tripData.passengerBreakdown.map(
-                  (passengerDiscount, idx) => {
-                    paxSales += passengerDiscount.totalSales;
-                    paxCollectSales += passengerDiscount.totalCollectSales ?? 0;
-                    bookedCount += passengerDiscount.totalBooked;
-                    return (
-                      <tr>
-                        {idx === 0 ? (
-                          <td>{`${tripData.srcPort.code} to ${tripData.destPort.code} ${voyage}`}</td>
-                        ) : (
-                          <td></td>
-                        )}
-                        <td></td>
-                        <td>{passengerDiscount.cabinName}</td>
-                        <td>{passengerDiscount.typeOfDiscount}</td>
-                        <td style={{ textAlign: 'left' }}>
-                          {passengerDiscount.totalBooked}
-                        </td>
-                        <td style={{ textAlign: 'left' }}>
-                          PHP&nbsp;
-                          {roundToTwoDecimalPlacesAndAddCommas(
-                            passengerDiscount.totalSales
-                          )}
-                        </td>
-                        <td style={{ textAlign: 'left' }}>
-                          PHP&nbsp;
-                          {roundToTwoDecimalPlacesAndAddCommas(
-                            passengerDiscount.totalCollectSales ?? 0
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  }
-                );
-
-                const subTotalRow = (
-                  <tr style={{ fontWeight: 'bold' }}>
-                    <td></td>
-                    <td>Sub-total</td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
+              {data.passengerBreakdown?.map((passengerDiscount) => {
+                totalPaxSales += passengerDiscount.totalSales;
+                totalPaxCollectSales +=
+                  passengerDiscount.totalCollectSales ?? 0;
+                totalPaxBooked += passengerDiscount.totalBooked;
+                return (
+                  <tr>
+                    <td>{passengerDiscount.cabinName}</td>
+                    <td>{passengerDiscount.typeOfDiscount}</td>
                     <td style={{ textAlign: 'left' }}>
-                      PHP&nbsp;
-                      {roundToTwoDecimalPlacesAndAddCommas(paxSales)}
+                      {passengerDiscount.totalBooked}
                     </td>
                     <td style={{ textAlign: 'left' }}>
                       PHP&nbsp;
-                      {roundToTwoDecimalPlacesAndAddCommas(paxCollectSales)}
+                      {roundToTwoDecimalPlacesAndAddCommas(
+                        passengerDiscount.totalSales
+                      )}
+                    </td>
+                    <td style={{ textAlign: 'left' }}>
+                      PHP&nbsp;
+                      {roundToTwoDecimalPlacesAndAddCommas(
+                        passengerDiscount.totalCollectSales ?? 0
+                      )}
                     </td>
                   </tr>
                 );
-
-                totalPaxBooked += bookedCount;
-                totalPaxSales += paxSales;
-                totalPaxCollectSales += paxCollectSales;
-
-                return [...passengerBreakdown, subTotalRow];
               })}
             </tbody>
             <tfoot style={{ backgroundColor: '#ddebf7' }}>
               <tr>
-                <td colSpan={4}>TOTAL</td>
+                <td colSpan={2}>TOTAL</td>
                 <td style={{ textAlign: 'left' }}>{totalPaxBooked}</td>
                 <td style={{ textAlign: 'left' }}>
                   PHP&nbsp;
@@ -238,8 +190,6 @@ const SalesPerTeller = forwardRef(function (
             <caption style={{ textAlign: 'left' }}>PASSENGER REFUNDS</caption>
             <thead style={{ backgroundColor: '#ddebf7' }}>
               <tr>
-                <th>Voyage</th>
-                <th></th>
                 <th>Accommodation</th>
                 <th>Discounts</th>
                 <th style={{ textAlign: 'left' }}>Count</th>
@@ -248,85 +198,37 @@ const SalesPerTeller = forwardRef(function (
               </tr>
             </thead>
             <tbody>
-              {data.bookingTripsBreakdown?.map((tripData) => {
-                if (tripData.passengerRefundBreakdown.length === 0) {
-                  return;
-                }
-
-                let refundCount = 0;
-                const voyage = `${dayjs(tripData.departureDate)
-                  .tz('Asia/Shanghai')
-                  .format('MMM D, YYYY [at] h:mm A')} (Voyage: ${
-                  tripData.voyageNumber ?? '__'
-                })`;
-                let paxRefunds = 0;
-                let paxCollectRefunds = 0;
-
-                const passengerRefundBreakdown: any =
-                  tripData.passengerRefundBreakdown.map(
-                    (passengerDiscount, idx) => {
-                      paxRefunds += passengerDiscount.totalSales;
-                      paxCollectRefunds +=
-                        passengerDiscount.totalCollectSales ?? 0;
-                      refundCount += passengerDiscount.totalBooked;
-                      return (
-                        <tr>
-                          {idx === 0 ? (
-                            <td>{`${tripData.srcPort.code} to ${tripData.destPort.code} ${voyage}`}</td>
-                          ) : (
-                            <td></td>
-                          )}
-                          <td></td>
-                          <td>{passengerDiscount.cabinName}</td>
-                          <td>{passengerDiscount.typeOfDiscount}</td>
-                          <td style={{ textAlign: 'left' }}>
-                            {passengerDiscount.totalBooked}
-                          </td>
-                          <td style={{ textAlign: 'left' }}>
-                            PHP&nbsp;
-                            {roundToTwoDecimalPlacesAndAddCommas(
-                              passengerDiscount.totalSales
-                            )}
-                          </td>
-                          <td style={{ textAlign: 'left' }}>
-                            PHP&nbsp;
-                            {roundToTwoDecimalPlacesAndAddCommas(
-                              passengerDiscount.totalCollectSales ?? 0
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    }
-                  );
-
-                const subTotalRow = (
-                  <tr style={{ fontWeight: 'bold' }}>
-                    <td></td>
-                    <td>Sub-total</td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
+              {data.passengerRefundBreakdown?.map((passengerDiscount) => {
+                totalPaxRefunds += passengerDiscount.totalSales;
+                totalPaxCollectRefunds +=
+                  passengerDiscount.totalCollectSales ?? 0;
+                totalPaxRefundsBooked += passengerDiscount.totalBooked;
+                return (
+                  <tr>
+                    <td>{passengerDiscount.cabinName}</td>
+                    <td>{passengerDiscount.typeOfDiscount}</td>
                     <td style={{ textAlign: 'left' }}>
-                      PHP&nbsp;
-                      {roundToTwoDecimalPlacesAndAddCommas(paxRefunds)}
+                      {passengerDiscount.totalBooked}
                     </td>
                     <td style={{ textAlign: 'left' }}>
                       PHP&nbsp;
-                      {roundToTwoDecimalPlacesAndAddCommas(paxCollectRefunds)}
+                      {roundToTwoDecimalPlacesAndAddCommas(
+                        passengerDiscount.totalSales
+                      )}
+                    </td>
+                    <td style={{ textAlign: 'left' }}>
+                      PHP&nbsp;
+                      {roundToTwoDecimalPlacesAndAddCommas(
+                        passengerDiscount.totalCollectSales ?? 0
+                      )}
                     </td>
                   </tr>
                 );
-
-                totalPaxRefundsBooked += refundCount;
-                totalPaxRefunds += paxRefunds;
-                totalPaxCollectRefunds += paxCollectRefunds;
-
-                return [...passengerRefundBreakdown, subTotalRow];
               })}
             </tbody>
             <tfoot style={{ backgroundColor: '#ddebf7' }}>
               <tr>
-                <td colSpan={4}>TOTAL</td>
+                <td colSpan={2}>TOTAL</td>
                 <td style={{ textAlign: 'left' }}>{totalPaxRefundsBooked}</td>
                 <td style={{ textAlign: 'left' }}>
                   PHP&nbsp;
@@ -356,8 +258,6 @@ const SalesPerTeller = forwardRef(function (
             <caption style={{ textAlign: 'left' }}>CARGO SALES</caption>
             <thead style={{ backgroundColor: '#ddebf7' }}>
               <tr>
-                <th>Voyage</th>
-                <th></th>
                 <th>Vehicle Type</th>
                 <th style={{ textAlign: 'left' }}>Count</th>
                 <th style={{ textAlign: 'left' }}>Total Cash</th>
@@ -365,81 +265,31 @@ const SalesPerTeller = forwardRef(function (
               </tr>
             </thead>
             <tbody>
-              {data.bookingTripsBreakdown?.map((tripData) => {
-                if (tripData.vehicleBreakdown.length === 0) {
-                  return;
-                }
-
-                let bookedCount = 0;
-                const voyage = `${dayjs(tripData.departureDate)
-                  .tz('Asia/Shanghai')
-                  .format('MMM D, YYYY [at] h:mm A')} (Voyage: ${
-                  tripData.voyageNumber ?? '__'
-                })`;
-                let vehicleSales = 0;
-                let vehicleCollectSales = 0;
-
-                const vehicleBreakdown: any = tripData.vehicleBreakdown.map(
-                  (vehicle, idx) => {
-                    vehicleSales += vehicle.totalSales;
-                    vehicleCollectSales += vehicle.totalCollectSales ?? 0;
-                    bookedCount += vehicle.totalBooked;
-                    return (
-                      <tr>
-                        {idx === 0 ? (
-                          <td>{`${tripData.srcPort.code} to ${tripData.destPort.code} ${voyage}`}</td>
-                        ) : (
-                          <td></td>
-                        )}
-                        <td></td>
-                        <td>{vehicle.typeOfVehicle}</td>
-                        <td style={{ textAlign: 'left' }}>
-                          {vehicle.totalBooked}
-                        </td>
-                        <td style={{ textAlign: 'left' }}>
-                          PHP&nbsp;
-                          {roundToTwoDecimalPlacesAndAddCommas(
-                            vehicle.totalSales
-                          )}
-                        </td>
-                        <td style={{ textAlign: 'left' }}>
-                          PHP&nbsp;
-                          {roundToTwoDecimalPlacesAndAddCommas(
-                            vehicle.totalCollectSales ?? 0
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  }
-                );
-
-                const subTotalRow = (
-                  <tr style={{ fontWeight: 'bold' }}>
-                    <td></td>
-                    <td>Sub-total</td>
-                    <td></td>
-                    <td></td>
+              {data.vehicleBreakdown?.map((vehicle) => {
+                totalVehicleSales += vehicle.totalSales;
+                totalVehicleCollectSales += vehicle.totalCollectSales ?? 0;
+                totalVehicleBooked += vehicle.totalBooked;
+                return (
+                  <tr>
+                    <td>{vehicle.typeOfVehicle}</td>
+                    <td style={{ textAlign: 'left' }}>{vehicle.totalBooked}</td>
                     <td style={{ textAlign: 'left' }}>
                       PHP&nbsp;
-                      {roundToTwoDecimalPlacesAndAddCommas(vehicleSales)}
+                      {roundToTwoDecimalPlacesAndAddCommas(vehicle.totalSales)}
                     </td>
                     <td style={{ textAlign: 'left' }}>
                       PHP&nbsp;
-                      {roundToTwoDecimalPlacesAndAddCommas(vehicleCollectSales)}
+                      {roundToTwoDecimalPlacesAndAddCommas(
+                        vehicle.totalCollectSales ?? 0
+                      )}
                     </td>
                   </tr>
                 );
-
-                totalVehicleBooked += bookedCount;
-                totalVehicleSales += vehicleSales;
-                totalVehicleCollectSales += vehicleCollectSales;
-
-                return [...vehicleBreakdown, subTotalRow];
               })}
             </tbody>
             <tfoot style={{ backgroundColor: '#ddebf7' }}>
               <tr>
-                <td colSpan={3}>TOTAL</td>
+                <td colSpan={1}>TOTAL</td>
                 <td style={{ textAlign: 'left' }}>{totalVehicleBooked}</td>
                 <td style={{ textAlign: 'left' }}>
                   PHP&nbsp;
@@ -471,8 +321,6 @@ const SalesPerTeller = forwardRef(function (
             <caption style={{ textAlign: 'left' }}>CARGO REFUNDS</caption>
             <thead style={{ backgroundColor: '#ddebf7' }}>
               <tr>
-                <th>Voyage</th>
-                <th></th>
                 <th>Vehicle Type</th>
                 <th style={{ textAlign: 'left' }}>Count</th>
                 <th style={{ textAlign: 'left' }}>Total Cash</th>
@@ -480,82 +328,31 @@ const SalesPerTeller = forwardRef(function (
               </tr>
             </thead>
             <tbody>
-              {data.bookingTripsBreakdown?.map((tripData) => {
-                if (tripData.vehicleRefundBreakdown.length === 0) {
-                  return;
-                }
-
-                let refundCount = 0;
-                const voyage = `${dayjs(tripData.departureDate)
-                  .tz('Asia/Shanghai')
-                  .format('MMM D, YYYY [at] h:mm A')} (Voyage: ${
-                  tripData.voyageNumber ?? '__'
-                })`;
-                let vehicleRefunds = 0;
-                let vehicleCollectRefunds = 0;
-
-                const vehicleRefundBreakdown: any =
-                  tripData.vehicleRefundBreakdown.map((vehicle, idx) => {
-                    vehicleRefunds += vehicle.totalSales;
-                    vehicleCollectRefunds += vehicle.totalCollectSales ?? 0;
-                    refundCount += vehicle.totalBooked;
-                    return (
-                      <tr>
-                        {idx === 0 ? (
-                          <td>{`${tripData.srcPort.code} to ${tripData.destPort.code} ${voyage}`}</td>
-                        ) : (
-                          <td></td>
-                        )}
-                        <td></td>
-                        <td>{vehicle.typeOfVehicle}</td>
-                        <td style={{ textAlign: 'left' }}>
-                          {vehicle.totalBooked}
-                        </td>
-                        <td style={{ textAlign: 'left' }}>
-                          PHP&nbsp;
-                          {roundToTwoDecimalPlacesAndAddCommas(
-                            vehicle.totalSales
-                          )}
-                        </td>
-                        <td style={{ textAlign: 'left' }}>
-                          PHP&nbsp;
-                          {roundToTwoDecimalPlacesAndAddCommas(
-                            vehicle.totalCollectSales ?? 0
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  });
-
-                const subTotalRow = (
-                  <tr style={{ fontWeight: 'bold' }}>
-                    <td></td>
-                    <td>Sub-total</td>
-                    <td></td>
-                    <td></td>
+              {data.vehicleRefundBreakdown?.map((vehicle) => {
+                totalVehicleRefunds += vehicle.totalSales;
+                totalVehicleCollectRefunds += vehicle.totalCollectSales ?? 0;
+                totalVehicleRefundBooked += vehicle.totalBooked;
+                return (
+                  <tr>
+                    <td>{vehicle.typeOfVehicle}</td>
+                    <td style={{ textAlign: 'left' }}>{vehicle.totalBooked}</td>
                     <td style={{ textAlign: 'left' }}>
                       PHP&nbsp;
-                      {roundToTwoDecimalPlacesAndAddCommas(vehicleRefunds)}
+                      {roundToTwoDecimalPlacesAndAddCommas(vehicle.totalSales)}
                     </td>
                     <td style={{ textAlign: 'left' }}>
                       PHP&nbsp;
                       {roundToTwoDecimalPlacesAndAddCommas(
-                        vehicleCollectRefunds
+                        vehicle.totalCollectSales ?? 0
                       )}
                     </td>
                   </tr>
                 );
-
-                totalVehicleRefundBooked += refundCount;
-                totalVehicleRefunds += vehicleRefunds;
-                totalVehicleCollectRefunds += vehicleCollectRefunds;
-
-                return [...vehicleRefundBreakdown, subTotalRow];
               })}
             </tbody>
             <tfoot style={{ backgroundColor: '#ddebf7' }}>
               <tr>
-                <td colSpan={3}>TOTAL</td>
+                <td colSpan={1}>TOTAL</td>
                 <td style={{ textAlign: 'left' }}>
                   {totalVehicleRefundBooked}
                 </td>
@@ -589,8 +386,6 @@ const SalesPerTeller = forwardRef(function (
             <caption style={{ textAlign: 'left' }}>DISBURSEMENT</caption>
             <thead style={{ backgroundColor: '#ddebf7' }}>
               <tr>
-                <th>Voyage</th>
-                <th></th>
                 <th>Date</th>
                 <th>Teller</th>
                 <th>Official Receipt</th>
@@ -601,89 +396,44 @@ const SalesPerTeller = forwardRef(function (
               </tr>
             </thead>
             <tbody>
-              {Object.entries(data.disbursements).map(
-                ([_tripId, disbursements]) => {
-                  if (disbursements.length === 0) {
-                    return;
-                  }
+              {disbursements.map((disbursement) => {
+                totalDisbursements += disbursement.amount;
 
-                  let disbursementsSum = 0;
-
-                  const disbursementRow: any = disbursements.map(
-                    (disbursement, idx) => {
-                      disbursementsSum += disbursement.amount;
-
-                      const voyage = dayjs(disbursement.departureDateIso)
+                return (
+                  <tr>
+                    <td>
+                      {dayjs(disbursement.dateIso)
                         .tz('Asia/Shanghai')
-                        .format('MMM D, YYYY [at] h:mm A');
-
-                      return (
-                        <tr>
-                          {idx === 0 ? (
-                            <td>{`${disbursement.srcPortCode} to ${disbursement.destPortCode} ${voyage}`}</td>
-                          ) : (
-                            <td></td>
-                          )}
-                          <td></td>
-                          <td>
-                            {dayjs(disbursement.dateIso)
-                              .tz('Asia/Shanghai')
-                              .format('MM/DD/YYYY')}
-                          </td>
-                          <td>{disbursement.createdByAccount?.email}</td>
-                          <td className={styles['td-text-wrap']}>
-                            {disbursement.officialReceipt}
-                          </td>
-                          <td className={styles['td-text-wrap']}>
-                            {disbursement.paidTo}
-                          </td>
-                          <td className={styles['td-text-wrap']}>
-                            {
-                              OPERATION_COSTS[
-                                disbursement.description as keyof typeof OPERATION_COSTS
-                              ]
-                            }
-                          </td>
-                          <td className={styles['td-text-wrap']}>
-                            {disbursement.purpose}
-                          </td>
-                          <td style={{ textAlign: 'left' }}>
-                            PHP&nbsp;
-                            {roundToTwoDecimalPlacesAndAddCommas(
-                              disbursement.amount
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    }
-                  );
-
-                  const subTotalRow = (
-                    <tr style={{ fontWeight: 'bold' }}>
-                      <td></td>
-                      <td>Sub-total</td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td style={{ textAlign: 'left' }}>
-                        PHP&nbsp;
-                        {roundToTwoDecimalPlacesAndAddCommas(disbursementsSum)}
-                      </td>
-                    </tr>
-                  );
-
-                  totalDisbursements += disbursementsSum;
-
-                  return [...disbursementRow, subTotalRow];
-                }
-              )}
+                        .format('MM/DD/YYYY')}
+                    </td>
+                    <td>{disbursement.createdByAccount?.email}</td>
+                    <td className={styles['td-text-wrap']}>
+                      {disbursement.officialReceipt}
+                    </td>
+                    <td className={styles['td-text-wrap']}>
+                      {disbursement.paidTo}
+                    </td>
+                    <td className={styles['td-text-wrap']}>
+                      {
+                        OPERATION_COSTS[
+                          disbursement.description as keyof typeof OPERATION_COSTS
+                        ]
+                      }
+                    </td>
+                    <td className={styles['td-text-wrap']}>
+                      {disbursement.purpose}
+                    </td>
+                    <td style={{ textAlign: 'left' }}>
+                      PHP&nbsp;
+                      {roundToTwoDecimalPlacesAndAddCommas(disbursement.amount)}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
             <tfoot style={{ backgroundColor: '#ddebf7' }}>
               <tr>
-                <td colSpan={8}>TOTAL EXPENSES</td>
+                <td colSpan={6}>TOTAL EXPENSES</td>
                 <td style={{ textAlign: 'left' }}>
                   PHP&nbsp;
                   {roundToTwoDecimalPlacesAndAddCommas(totalDisbursements)}
@@ -884,4 +634,4 @@ const SalesPerTeller = forwardRef(function (
   );
 });
 
-export default SalesPerTeller;
+export default MySalesReport;

@@ -113,7 +113,7 @@ const ProfitAndLossStatement = forwardRef(function (
       breakdown.passenger.Agency.totalSales += passenger.ticketSale;
       breakdown.passenger.Agency.totalRefund += passenger.refundAmount;
       breakdown.passenger.Agency.totalNetSales += passenger.ticketCost;
-    } else if (paymentStatus === 'Collect') {
+    } else if (passenger.collect) {
       breakdown.passenger.Collect.totalSales += passenger.discountAmount;
       breakdown.passenger.Collect.totalRefund += passenger.refundAmount;
       breakdown.passenger.Collect.totalNetSales += passenger.ticketCost;
@@ -144,7 +144,7 @@ const ProfitAndLossStatement = forwardRef(function (
       breakdown.vehicle.Agency.totalSales += vehicle.ticketSale;
       breakdown.vehicle.Agency.totalRefund += vehicle.refundAmount;
       breakdown.vehicle.Agency.totalNetSales += vehicle.ticketCost;
-    } else if (paymentStatus === 'Collect') {
+    } else if (vehicle.collect) {
       breakdown.vehicle.Collect.totalSales += vehicle.discountAmount;
       breakdown.vehicle.Collect.totalRefund += vehicle.refundAmount;
       breakdown.vehicle.Collect.totalNetSales += vehicle.ticketCost;

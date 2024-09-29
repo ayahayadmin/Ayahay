@@ -18,6 +18,7 @@ import { IDisbursement } from '@ayahay/models';
 import { getDisbursementsByTrip } from '@/services/disbursement.service';
 import { getAxiosError } from '@ayahay/services/error.service';
 import styles from './page.module.scss';
+import MySalesReport from '@/components/reports/MySales';
 
 const { Title } = Typography;
 
@@ -33,6 +34,7 @@ export default function TripReportingPage({ params }: any) {
   const cargoDailySalesReportRef = useRef();
   const summarySalesPerVoyageRef = useRef();
   const profitAndLossStatementRef = useRef();
+  const mySalesRef = useRef();
   const [tripsReporting, setTripsReporting] = useState<
     ITripReport | undefined
   >();
@@ -111,6 +113,16 @@ export default function TripReportingPage({ params }: any) {
     doc.html(profitAndLossStatementRef.current, {
       async callback(doc) {
         await doc.save('profit-and-loss-statement');
+      },
+      margin: [25, 0, 25, 0],
+    });
+  };
+
+  const handleDownloadMySales = async () => {
+    const doc = new jsPDF('l', 'pt', 'a4', true);
+    doc.html(mySalesRef.current, {
+      async callback(doc) {
+        await doc.save('my-sales');
       },
       margin: [25, 0, 25, 0],
     });
@@ -213,6 +225,27 @@ export default function TripReportingPage({ params }: any) {
                 disbursements={disbursements}
                 expenses={expenses}
                 ref={profitAndLossStatementRef}
+              />
+            )}
+          </div>
+          <Title level={1} className={styles['title']}>
+            My Sales
+          </Title>
+          <Button
+            type='primary'
+            htmlType='submit'
+            loading={tripsReporting === undefined}
+            onClick={handleDownloadMySales}
+            className={styles['download-btn']}
+          >
+            <DownloadOutlined /> Download
+          </Button>
+          <div style={{ display: 'none' }}>
+            {tripsReporting && disbursements && (
+              <MySalesReport
+                data={tripsReporting}
+                disbursements={disbursements}
+                ref={mySalesRef}
               />
             )}
           </div>
