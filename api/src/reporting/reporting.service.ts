@@ -190,6 +190,8 @@ export class ReportingService {
     const {
       sortedPassengers: passengers,
       sortedPassengerDiscountsBreakdown: passengerDiscountsBreakdown,
+      passengerBreakdown,
+      passengerRefundBreakdown,
     } = this.buildPassengerDataForTripReporting(
       bookingTripPassengersGroupByBookingId,
       trip.id
@@ -197,6 +199,8 @@ export class ReportingService {
     const {
       sortedVehicles: vehicles,
       sortedVehicleTypesBreakdown: vehicleTypesBreakdown,
+      vehicleBreakdown,
+      vehicleRefundBreakdown,
     } = this.buildVehicleDataForTripReporting(
       bookingTripVehiclesGroupByBookingId,
       trip.id
@@ -207,13 +211,19 @@ export class ReportingService {
       passengers,
       vehicles,
       passengerDiscountsBreakdown,
+      passengerBreakdown,
+      passengerRefundBreakdown,
       vehicleTypesBreakdown,
+      vehicleBreakdown,
+      vehicleRefundBreakdown,
     };
   }
 
   private buildPassengerDataForTripReporting(bookingTripPassengers, tripId) {
     const passengers = [];
     let passengerDiscountsBreakdown = [];
+    let passengerBreakdown = [];
+    let passengerRefundBreakdown = [];
 
     for (const [_key, bookingTripPassenger] of Object.entries(
       bookingTripPassengers
@@ -252,19 +262,12 @@ export class ReportingService {
                 )
               ? 'Agency'
               : 'Online';
-
-            let passengerFare = 0;
-            let discountAmount = 0;
-            let partialRefundAmount = 0;
-            passenger.bookingPaymentItems.forEach((paymentItem) => {
-              if (paymentItem.type === 'Fare') {
-                passengerFare = paymentItem.price;
-              } else if (paymentItem.type === 'VoucherDiscount') {
-                discountAmount = paymentItem.price;
-              } else if (paymentItem.type === 'CancellationRefund') {
-                partialRefundAmount = paymentItem.price;
-              }
-            });
+            const {
+              fare: passengerFare,
+              discountAmount,
+              partialRefundAmount,
+              isCancelled: isPassengerCancelled,
+            } = this.retrievePaymentTypes(passenger.bookingPaymentItems);
 
             passengers.push(
               this.reportingMapper.convertTripPassengersForReporting(
@@ -297,11 +300,39 @@ export class ReportingService {
                 passengerDiscountsBreakdown
               );
             passengerDiscountsBreakdown = passengerDiscountsBreakdownArr;
+
+            if (!isPassengerCancelled) {
+              const passengerBreakdownArr =
+                this.reportingMapper.convertTripPassengersToPassengerBreakdown(
+                  passenger.discountType ?? 'Adult',
+                  cabinName,
+                  collect,
+                  isPassengerCancelled,
+                  passengerFare,
+                  discountAmount,
+                  partialRefundAmount,
+                  passengerBreakdown
+                );
+              passengerBreakdown = passengerBreakdownArr;
+            } else {
+              const passengerRefundBreakdownArr =
+                this.reportingMapper.convertTripPassengersToPassengerBreakdown(
+                  passenger.discountType ?? 'Adult',
+                  cabinName,
+                  collect,
+                  isPassengerCancelled,
+                  passengerFare,
+                  discountAmount,
+                  partialRefundAmount,
+                  passengerRefundBreakdown
+                );
+              passengerRefundBreakdown = passengerRefundBreakdownArr;
+            }
           });
       }
 
       if (!isEmpty(roundTripPassengers)) {
-        for (const [_key, roundTripPassenger] of Object.entries(
+        for (const [_passengerId, roundTripPassenger] of Object.entries(
           roundTripPassengers
         ) as any) {
           passengers.push(
@@ -333,6 +364,34 @@ export class ReportingService {
               passengerDiscountsBreakdown
             );
           passengerDiscountsBreakdown = passengerDiscountsBreakdownArr;
+
+          if (!roundTripPassenger.isBookingCancelled) {
+            const passengerBreakdownArr =
+              this.reportingMapper.convertTripPassengersToPassengerBreakdown(
+                roundTripPassenger.discount,
+                roundTripPassenger.accommodation,
+                roundTripPassenger.collect,
+                roundTripPassenger.isBookingCancelled,
+                roundTripPassenger.passengerFare,
+                roundTripPassenger.discountAmount,
+                roundTripPassenger.partialRefundAmount,
+                passengerBreakdown
+              );
+            passengerBreakdown = passengerBreakdownArr;
+          } else {
+            const passengerRefundBreakdownArr =
+              this.reportingMapper.convertTripPassengersToPassengerBreakdown(
+                roundTripPassenger.discount,
+                roundTripPassenger.accommodation,
+                roundTripPassenger.collect,
+                roundTripPassenger.isBookingCancelled,
+                roundTripPassenger.passengerFare,
+                roundTripPassenger.discountAmount,
+                roundTripPassenger.partialRefundAmount,
+                passengerRefundBreakdown
+              );
+            passengerRefundBreakdown = passengerRefundBreakdownArr;
+          }
         }
       }
     }
@@ -343,12 +402,19 @@ export class ReportingService {
       ['typeOfDiscount']
     );
 
-    return { sortedPassengers, sortedPassengerDiscountsBreakdown };
+    return {
+      sortedPassengers,
+      sortedPassengerDiscountsBreakdown,
+      passengerBreakdown,
+      passengerRefundBreakdown,
+    };
   }
 
   private buildVehicleDataForTripReporting(bookingTripVehicles, tripId) {
     const vehicles = [];
     let vehicleTypesBreakdown = [];
+    let vehicleBreakdown = [];
+    let vehicleRefundBreakdown = [];
 
     for (const [_key, bookingTripVehicle] of Object.entries(
       bookingTripVehicles
@@ -385,19 +451,12 @@ export class ReportingService {
                 )
               ? 'Agency'
               : 'Online';
-
-            let vehicleFare = 0;
-            let discountAmount = 0;
-            let partialRefundAmount = 0;
-            vehicle.bookingPaymentItems.forEach((paymentItem) => {
-              if (paymentItem.type === 'Fare') {
-                vehicleFare = paymentItem.price;
-              } else if (paymentItem.type === 'VoucherDiscount') {
-                discountAmount = paymentItem.price;
-              } else if (paymentItem.type === 'CancellationRefund') {
-                partialRefundAmount = paymentItem.price;
-              }
-            });
+            const {
+              fare: vehicleFare,
+              discountAmount,
+              partialRefundAmount,
+              isCancelled: isVehicleCancelled,
+            } = this.retrievePaymentTypes(vehicle.bookingPaymentItems);
 
             vehicles.push(
               this.reportingMapper.convertTripVehiclesForReporting(
@@ -428,11 +487,37 @@ export class ReportingService {
                 vehicleTypesBreakdown
               );
             vehicleTypesBreakdown = vehicleTypesBreakdownArr;
+
+            if (!isVehicleCancelled) {
+              const vehicleBreakdownArr =
+                this.reportingMapper.convertTripVehiclesToVehicleBreakdown(
+                  vehicle.vehicle.vehicleType.description,
+                  collect,
+                  isVehicleCancelled,
+                  vehicleFare,
+                  discountAmount,
+                  partialRefundAmount,
+                  vehicleBreakdown
+                );
+              vehicleBreakdown = vehicleBreakdownArr;
+            } else {
+              const vehicleRefundBreakdownArr =
+                this.reportingMapper.convertTripVehiclesToVehicleBreakdown(
+                  vehicle.vehicle.vehicleType.description,
+                  collect,
+                  isVehicleCancelled,
+                  vehicleFare,
+                  discountAmount,
+                  partialRefundAmount,
+                  vehicleRefundBreakdown
+                );
+              vehicleRefundBreakdown = vehicleRefundBreakdownArr;
+            }
           });
       }
 
       if (!isEmpty(roundTripVehicles)) {
-        for (const [_key, roundTripVehicle] of Object.entries(
+        for (const [_vehicleId, roundTripVehicle] of Object.entries(
           roundTripVehicles
         ) as any) {
           vehicles.push(
@@ -464,6 +549,32 @@ export class ReportingService {
               vehicleTypesBreakdown
             );
           vehicleTypesBreakdown = passengerDiscountsBreakdownArr;
+
+          if (!roundTripVehicle.isBookingCancelled) {
+            const vehicleBreakdownArr =
+              this.reportingMapper.convertTripVehiclesToVehicleBreakdown(
+                roundTripVehicle.typeOfVehicle,
+                roundTripVehicle.collect,
+                roundTripVehicle.isBookingCancelled,
+                roundTripVehicle.vehicleFare,
+                roundTripVehicle.discountAmount,
+                roundTripVehicle.partialRefundAmount,
+                vehicleBreakdown
+              );
+            vehicleBreakdown = vehicleBreakdownArr;
+          } else {
+            const vehicleRefundBreakdownArr =
+              this.reportingMapper.convertTripVehiclesToVehicleBreakdown(
+                roundTripVehicle.typeOfVehicle,
+                roundTripVehicle.collect,
+                roundTripVehicle.isBookingCancelled,
+                roundTripVehicle.vehicleFare,
+                roundTripVehicle.discountAmount,
+                roundTripVehicle.partialRefundAmount,
+                vehicleRefundBreakdown
+              );
+            vehicleRefundBreakdown = vehicleRefundBreakdownArr;
+          }
         }
       }
     }
@@ -473,7 +584,37 @@ export class ReportingService {
       'typeOfVehicle',
     ]);
 
-    return { sortedVehicles, sortedVehicleTypesBreakdown };
+    return {
+      sortedVehicles,
+      sortedVehicleTypesBreakdown,
+      vehicleBreakdown,
+      vehicleRefundBreakdown,
+    };
+  }
+
+  private retrievePaymentTypes(bookingPaymentItems) {
+    let fare = 0;
+    let discountAmount = 0;
+    let partialRefundAmount = 0;
+    let isCancelled = false;
+
+    bookingPaymentItems.forEach((paymentItem) => {
+      if (paymentItem.type === 'Fare') {
+        fare = paymentItem.price;
+      } else if (paymentItem.type === 'VoucherDiscount') {
+        discountAmount = paymentItem.price;
+      } else if (paymentItem.type === 'CancellationRefund') {
+        partialRefundAmount = paymentItem.price;
+        isCancelled = true;
+      }
+    });
+
+    return {
+      fare,
+      discountAmount,
+      partialRefundAmount,
+      isCancelled,
+    };
   }
 
   async getPortsByShip(
@@ -876,20 +1017,12 @@ export class ReportingService {
 
           booking.booking.bookingTripPassengers.forEach((passenger) => {
             const cabinName = passenger.cabin.cabinType.name;
-            let passengerFare = 0;
-            let discountAmount = 0;
-            let partialRefundAmount = 0;
-            let isPassengerCancelled = false;
-            passenger.bookingPaymentItems.forEach((paymentItem) => {
-              if (paymentItem.type === 'Fare') {
-                passengerFare = paymentItem.price;
-              } else if (paymentItem.type === 'VoucherDiscount') {
-                discountAmount = paymentItem.price;
-              } else if (paymentItem.type === 'CancellationRefund') {
-                partialRefundAmount = paymentItem.price;
-                isPassengerCancelled = true;
-              }
-            });
+            const {
+              fare: passengerFare,
+              discountAmount,
+              partialRefundAmount,
+              isCancelled: isPassengerCancelled,
+            } = this.retrievePaymentTypes(passenger.bookingPaymentItems);
 
             if (!isPassengerCancelled) {
               const passengerBreakdownArr =
@@ -921,20 +1054,12 @@ export class ReportingService {
           });
 
           booking.booking.bookingTripVehicles.forEach((vehicle) => {
-            let vehicleFare = 0;
-            let discountAmount = 0;
-            let partialRefundAmount = 0;
-            let isVehicleCancelled = false;
-            vehicle.bookingPaymentItems.forEach((paymentItem) => {
-              if (paymentItem.type === 'Fare') {
-                vehicleFare = paymentItem.price;
-              } else if (paymentItem.type === 'VoucherDiscount') {
-                discountAmount = paymentItem.price;
-              } else if (paymentItem.type === 'CancellationRefund') {
-                partialRefundAmount = paymentItem.price;
-                isVehicleCancelled = true;
-              }
-            });
+            const {
+              fare: vehicleFare,
+              discountAmount,
+              partialRefundAmount,
+              isCancelled: isVehicleCancelled,
+            } = this.retrievePaymentTypes(vehicle.bookingPaymentItems);
 
             if (!isVehicleCancelled) {
               const vehicleBreakdownArr =
