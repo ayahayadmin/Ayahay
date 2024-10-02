@@ -256,6 +256,7 @@ export class ReportingMapper {
         };
       } else {
         roundTripPassengers[passengerId] = {
+          createdByAccountId: passenger.booking.createdByAccount?.id,
           passengerName: `${passenger.passenger.firstName.trim() ?? ''} ${
             passenger.passenger.lastName.trim() ?? ''
           }`,
@@ -335,6 +336,7 @@ export class ReportingMapper {
         };
       } else {
         roundTripVehicles[vehicleId] = {
+          createdByAccountId: vehicle.booking.createdByAccount?.id,
           teller: vehicle.booking.createdByAccount?.email,
           referenceNo: vehicle.booking.referenceNo,
           freightRateReceipt: vehicle.booking.freightRateReceipt,

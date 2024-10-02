@@ -119,6 +119,7 @@ export class ReportingService {
             include: {
               createdByAccount: {
                 select: {
+                  id: true,
                   email: true,
                   role: true,
                 },
@@ -149,6 +150,7 @@ export class ReportingService {
           include: {
             createdByAccount: {
               select: {
+                id: true,
                 email: true,
                 role: true,
               },
@@ -194,7 +196,8 @@ export class ReportingService {
       passengerRefundBreakdown,
     } = this.buildPassengerDataForTripReporting(
       bookingTripPassengersGroupByBookingId,
-      trip.id
+      trip.id,
+      loggedInAccount
     );
     const {
       sortedVehicles: vehicles,
@@ -203,7 +206,8 @@ export class ReportingService {
       vehicleRefundBreakdown,
     } = this.buildVehicleDataForTripReporting(
       bookingTripVehiclesGroupByBookingId,
-      trip.id
+      trip.id,
+      loggedInAccount
     );
 
     return {
@@ -219,7 +223,11 @@ export class ReportingService {
     };
   }
 
-  private buildPassengerDataForTripReporting(bookingTripPassengers, tripId) {
+  private buildPassengerDataForTripReporting(
+    bookingTripPassengers,
+    tripId,
+    loggedInAccount?
+  ) {
     const passengers = [];
     let passengerDiscountsBreakdown = [];
     let passengerBreakdown = [];
@@ -301,7 +309,10 @@ export class ReportingService {
               );
             passengerDiscountsBreakdown = passengerDiscountsBreakdownArr;
 
-            if (!isPassengerCancelled) {
+            const bookedByLoggedInUser =
+              passenger.booking.createdByAccount.id === loggedInAccount?.id;
+            // if-else block is only used for My Sales reporting for now
+            if (bookedByLoggedInUser && !isPassengerCancelled) {
               const passengerBreakdownArr =
                 this.reportingMapper.convertTripPassengersToPassengerBreakdown(
                   passenger.discountType ?? 'Adult',
@@ -314,7 +325,7 @@ export class ReportingService {
                   passengerBreakdown
                 );
               passengerBreakdown = passengerBreakdownArr;
-            } else {
+            } else if (bookedByLoggedInUser) {
               const passengerRefundBreakdownArr =
                 this.reportingMapper.convertTripPassengersToPassengerBreakdown(
                   passenger.discountType ?? 'Adult',
@@ -365,7 +376,10 @@ export class ReportingService {
             );
           passengerDiscountsBreakdown = passengerDiscountsBreakdownArr;
 
-          if (!roundTripPassenger.isBookingCancelled) {
+          const bookedByLoggedInUser =
+            roundTripPassenger.createdByAccountId === loggedInAccount?.id;
+          // if-else block is only used for My Sales reporting for now
+          if (bookedByLoggedInUser && !roundTripPassenger.isBookingCancelled) {
             const passengerBreakdownArr =
               this.reportingMapper.convertTripPassengersToPassengerBreakdown(
                 roundTripPassenger.discount,
@@ -378,7 +392,7 @@ export class ReportingService {
                 passengerBreakdown
               );
             passengerBreakdown = passengerBreakdownArr;
-          } else {
+          } else if (bookedByLoggedInUser) {
             const passengerRefundBreakdownArr =
               this.reportingMapper.convertTripPassengersToPassengerBreakdown(
                 roundTripPassenger.discount,
@@ -410,7 +424,11 @@ export class ReportingService {
     };
   }
 
-  private buildVehicleDataForTripReporting(bookingTripVehicles, tripId) {
+  private buildVehicleDataForTripReporting(
+    bookingTripVehicles,
+    tripId,
+    loggedInAccount?
+  ) {
     const vehicles = [];
     let vehicleTypesBreakdown = [];
     let vehicleBreakdown = [];
@@ -488,7 +506,10 @@ export class ReportingService {
               );
             vehicleTypesBreakdown = vehicleTypesBreakdownArr;
 
-            if (!isVehicleCancelled) {
+            const bookedByLoggedInUser =
+              vehicle.booking.createdByAccount.id === loggedInAccount?.id;
+            // if-else block is only used for My Sales reporting for now
+            if (bookedByLoggedInUser && !isVehicleCancelled) {
               const vehicleBreakdownArr =
                 this.reportingMapper.convertTripVehiclesToVehicleBreakdown(
                   vehicle.vehicle.vehicleType.description,
@@ -500,7 +521,7 @@ export class ReportingService {
                   vehicleBreakdown
                 );
               vehicleBreakdown = vehicleBreakdownArr;
-            } else {
+            } else if (bookedByLoggedInUser) {
               const vehicleRefundBreakdownArr =
                 this.reportingMapper.convertTripVehiclesToVehicleBreakdown(
                   vehicle.vehicle.vehicleType.description,
@@ -550,7 +571,10 @@ export class ReportingService {
             );
           vehicleTypesBreakdown = passengerDiscountsBreakdownArr;
 
-          if (!roundTripVehicle.isBookingCancelled) {
+          const bookedByLoggedInUser =
+            roundTripVehicle.createdByAccountId === loggedInAccount?.id;
+          // if-else block is only used for My Sales reporting for now
+          if (bookedByLoggedInUser && !roundTripVehicle.isBookingCancelled) {
             const vehicleBreakdownArr =
               this.reportingMapper.convertTripVehiclesToVehicleBreakdown(
                 roundTripVehicle.typeOfVehicle,
@@ -562,7 +586,7 @@ export class ReportingService {
                 vehicleBreakdown
               );
             vehicleBreakdown = vehicleBreakdownArr;
-          } else {
+          } else if (bookedByLoggedInUser) {
             const vehicleRefundBreakdownArr =
               this.reportingMapper.convertTripVehiclesToVehicleBreakdown(
                 roundTripVehicle.typeOfVehicle,
