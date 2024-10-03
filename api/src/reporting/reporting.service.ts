@@ -310,7 +310,7 @@ export class ReportingService {
             passengerDiscountsBreakdown = passengerDiscountsBreakdownArr;
 
             const bookedByLoggedInUser =
-              passenger.booking.createdByAccount.id === loggedInAccount?.id;
+              passenger.booking.createdByAccount?.id === loggedInAccount?.id;
             // if-else block is only used for My Sales reporting for now
             if (bookedByLoggedInUser && !isPassengerCancelled) {
               const passengerBreakdownArr =
@@ -507,7 +507,7 @@ export class ReportingService {
             vehicleTypesBreakdown = vehicleTypesBreakdownArr;
 
             const bookedByLoggedInUser =
-              vehicle.booking.createdByAccount.id === loggedInAccount?.id;
+              vehicle.booking.createdByAccount?.id === loggedInAccount?.id;
             // if-else block is only used for My Sales reporting for now
             if (bookedByLoggedInUser && !isVehicleCancelled) {
               const vehicleBreakdownArr =
