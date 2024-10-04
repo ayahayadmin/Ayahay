@@ -12,20 +12,15 @@ import { OPERATION_COSTS } from '@ayahay/constants';
 import dayjs from 'dayjs';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
-import { IDisbursement } from '@ayahay/models';
 
 dayjs.extend(timezone);
 dayjs.extend(utc);
 
 interface MySalesProps {
   data: ITripReport;
-  disbursements: IDisbursement[];
 }
 
-const MySalesReport = forwardRef(function (
-  { data, disbursements }: MySalesProps,
-  ref
-) {
+const MySalesReport = forwardRef(function ({ data }: MySalesProps, ref) {
   const { loggedInAccount } = useAuth();
   const user = loggedInAccount?.email;
   const date = dayjs().tz('Asia/Shanghai').format('MMMM D, YYYY');
@@ -396,7 +391,12 @@ const MySalesReport = forwardRef(function (
               </tr>
             </thead>
             <tbody>
-              {disbursements.map((disbursement) => {
+              {data.disbursements?.map((disbursement) => {
+                // only show disbursements inputted by logged in user
+                if (loggedInAccount?.id !== disbursement.createdByAccountId) {
+                  return;
+                }
+
                 totalDisbursements += disbursement.amount;
 
                 return (

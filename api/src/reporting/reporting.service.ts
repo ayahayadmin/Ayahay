@@ -17,11 +17,12 @@ import {
 import { ReportingMapper } from './reporting.mapper';
 import { Prisma } from '@prisma/client';
 import { TripMapper } from '@/trip/trip.mapper';
-import { IAccount, ITrip } from '@ayahay/models';
+import { IAccount, IDisbursement, ITrip } from '@ayahay/models';
 import { ShipService } from '@/ship/ship.service';
 import { AuthService } from '@/auth/auth.service';
 import { groupBy, isEmpty, sortBy } from 'lodash';
 import { DisbursementService } from '@/disbursement/disbursement.service';
+import { DisbursementMapper } from '@/disbursement/disbursement.mapper';
 
 const BOOKING_TRIP_PAX_VEHICLE_WHERE = {
   OR: [{ removedReasonType: null }, { removedReasonType: 'PassengersFault' }],
@@ -46,7 +47,8 @@ export class ReportingService {
     private readonly disbursementService: DisbursementService,
     private readonly shipService: ShipService,
     private readonly reportingMapper: ReportingMapper,
-    private readonly tripMapper: TripMapper
+    private readonly tripMapper: TripMapper,
+    private readonly disbursementMapper: DisbursementMapper
   ) {}
 
   async getTripsReporting(
@@ -86,6 +88,7 @@ export class ReportingService {
             number: true,
           },
         },
+        disbursements: true,
       },
     });
 
@@ -212,6 +215,9 @@ export class ReportingService {
 
     return {
       ...tripBasicInfo,
+      disbursements: trip.disbursements.map((disbursement) =>
+        this.disbursementMapper.convertDisbursementToDto(disbursement)
+      ),
       passengers,
       vehicles,
       passengerDiscountsBreakdown,
