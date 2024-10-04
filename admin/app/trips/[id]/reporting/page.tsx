@@ -14,8 +14,6 @@ import jsPDF from 'jspdf';
 import SummarySalesPerVoyage from '@/components/reports/SummarySalesPerVoyage';
 import ProfitAndLossStatement from '@/components/reports/ProfitAndLossStatement';
 import CargoDailySalesReport from '@/components/reports/CargoDailySalesReport';
-import { IDisbursement } from '@ayahay/models';
-import { getDisbursementsByTrip } from '@/services/disbursement.service';
 import { getAxiosError } from '@ayahay/services/error.service';
 import styles from './page.module.scss';
 import MySalesReport from '@/components/reports/MySales';
@@ -39,10 +37,7 @@ export default function TripReportingPage({ params }: any) {
     ITripReport | undefined
   >();
   const [status, setStatus] = useState(STATUS.ON_TIME);
-  const [disbursements, setDisbursements] = useState<
-    IDisbursement[] | undefined
-  >(undefined);
-  const [expenses, setExpenses] = useState();
+  const [expenses, setExpenses] = useState({});
   const [errorCode, setErrorCode] = useState<number | undefined>();
 
   useEffect(() => {
@@ -51,12 +46,15 @@ export default function TripReportingPage({ params }: any) {
     }
     const tripId = params.id;
     fetchTripsReporting(tripId);
-    fetchDisbursements(tripId);
   }, [loggedInAccount]);
 
   const fetchTripsReporting = async (tripId: number): Promise<void> => {
     try {
-      setTripsReporting(await getTripsReporting(tripId));
+      const data = await getTripsReporting(tripId);
+      setTripsReporting(data);
+
+      const computedExpenses = computeExpenses(data.disbursements);
+      setExpenses(computedExpenses);
     } catch (e) {
       const axiosError = getAxiosError(e);
       if (axiosError === undefined) {
@@ -65,13 +63,6 @@ export default function TripReportingPage({ params }: any) {
         setErrorCode(axiosError.statusCode);
       }
     }
-  };
-
-  const fetchDisbursements = async (tripId: number) => {
-    const { data } = await getDisbursementsByTrip(tripId);
-    const computedExpenses = computeExpenses(data);
-    setExpenses(computedExpenses);
-    setDisbursements(data);
   };
 
   const handleStatusChange = (value: string) => {
@@ -197,11 +188,10 @@ export default function TripReportingPage({ params }: any) {
             <DownloadOutlined /> Download
           </Button>
           <div style={{ display: 'none' }}>
-            {tripsReporting && disbursements && (
+            {tripsReporting && (
               <SummarySalesPerVoyage
                 data={tripsReporting}
                 status={status}
-                disbursements={disbursements}
                 ref={summarySalesPerVoyageRef}
               />
             )}
@@ -219,10 +209,9 @@ export default function TripReportingPage({ params }: any) {
             <DownloadOutlined /> Download
           </Button>
           <div style={{ display: 'none' }}>
-            {tripsReporting && disbursements && expenses && (
+            {tripsReporting && (
               <ProfitAndLossStatement
                 data={tripsReporting}
-                disbursements={disbursements}
                 expenses={expenses}
                 ref={profitAndLossStatementRef}
               />
@@ -241,12 +230,8 @@ export default function TripReportingPage({ params }: any) {
             <DownloadOutlined /> Download
           </Button>
           <div style={{ display: 'none' }}>
-            {tripsReporting && disbursements && (
-              <MySalesReport
-                data={tripsReporting}
-                disbursements={disbursements}
-                ref={mySalesRef}
-              />
+            {tripsReporting && (
+              <MySalesReport data={tripsReporting} ref={mySalesRef} />
             )}
           </div>
         </>

@@ -7,7 +7,6 @@ import {
   two_columns_grid,
 } from './PassengerDailySalesReport';
 import { OPERATION_COSTS } from '@ayahay/constants';
-import { IDisbursement } from '@ayahay/models';
 import { roundToTwoDecimalPlacesAndAddCommas } from '@/services/reporting.service';
 import dayjs from 'dayjs';
 import timezone from 'dayjs/plugin/timezone';
@@ -18,12 +17,11 @@ dayjs.extend(utc);
 
 interface ProfitAndLossStatementProps {
   data: ITripReport;
-  disbursements: IDisbursement[];
   expenses: any;
 }
 
 const ProfitAndLossStatement = forwardRef(function (
-  { expenses, data, disbursements }: ProfitAndLossStatementProps,
+  { expenses, data }: ProfitAndLossStatementProps,
   ref
 ) {
   const { loggedInAccount } = useAuth();
@@ -253,7 +251,6 @@ const ProfitAndLossStatement = forwardRef(function (
                 <tbody>
                   <tr>
                     <td>{data.shipName}</td>
-                    {/* will still discuss what if there are more than 1 teller in a trip */}
                     <td>{data.passengers && data.passengers[0]?.teller}</td>
                     <td>PAX INCOME</td>
                     <td style={{ textAlign: 'left' }}>
@@ -301,7 +298,6 @@ const ProfitAndLossStatement = forwardRef(function (
                   </tr>
                   <tr>
                     <td>{data.shipName}</td>
-                    {/* will still discuss what if there are more than 1 teller in a trip */}
                     <td>{data.passengers && data.passengers[0]?.teller}</td>
                     <td>CARGO INCOME</td>
                     <td style={{ textAlign: 'left' }}>
@@ -441,7 +437,7 @@ const ProfitAndLossStatement = forwardRef(function (
               </tr>
             </thead>
             <tbody>
-              {disbursements.map((disbursement) => {
+              {data.disbursements?.map((disbursement) => {
                 totalExpenses += disbursement.amount;
                 return (
                   <tr>
@@ -450,7 +446,6 @@ const ProfitAndLossStatement = forwardRef(function (
                         .tz('Asia/Shanghai')
                         .format('MM/DD/YYYY')}
                     </td>
-                    {/* TODO: will still discuss what if there are more than 1 teller in a trip */}
                     <td>{disbursement.createdByAccount?.email}</td>
                     <td className={styles['td-text-wrap']}>
                       {disbursement.officialReceipt}

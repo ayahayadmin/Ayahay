@@ -32,7 +32,6 @@ export interface TripReport extends TripBasicInfo {
     // round trip fare
     roundTripFare: number;
   }[];
-
   passengerDiscountsBreakdown?: PaxBreakdown[];
   passengerBreakdown?: PaxBreakdown[];
   passengerRefundBreakdown?: PaxBreakdown[];
@@ -59,10 +58,11 @@ export interface TripReport extends TripBasicInfo {
     // round trip fare
     roundTripFare: number;
   }[];
-
   vehicleTypesBreakdown?: VehicleBreakdown[];
   vehicleBreakdown?: VehicleBreakdown[];
   vehicleRefundBreakdown?: VehicleBreakdown[];
+
+  disbursements?: IDisbursement[];
 }
 
 export interface PerVesselReport extends TripReport {

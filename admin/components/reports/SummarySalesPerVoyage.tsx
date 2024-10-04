@@ -8,7 +8,6 @@ import {
 } from './PassengerDailySalesReport';
 import { MOPBreakdown } from './SummarySalesPerVessel';
 import { roundToTwoDecimalPlacesAndAddCommas } from '@/services/reporting.service';
-import { IDisbursement } from '@ayahay/models';
 import { sumBy } from 'lodash';
 import dayjs from 'dayjs';
 import timezone from 'dayjs/plugin/timezone';
@@ -20,11 +19,10 @@ dayjs.extend(utc);
 interface SummarySalesPerVoyageProps {
   data: ITripReport;
   status: string;
-  disbursements: IDisbursement[];
 }
 
 const SummarySalesPerVoyage = forwardRef(function (
-  { data, status, disbursements }: SummarySalesPerVoyageProps,
+  { data, status }: SummarySalesPerVoyageProps,
   ref
 ) {
   const { loggedInAccount } = useAuth();
@@ -101,7 +99,7 @@ const SummarySalesPerVoyage = forwardRef(function (
     }
   });
 
-  const totalDisbursements = sumBy(disbursements, 'amount');
+  const totalDisbursements = sumBy(data.disbursements, 'amount');
 
   return (
     <div ref={ref}>
