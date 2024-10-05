@@ -338,7 +338,7 @@ export default function TripSearchResults({
         onChange={antdOnChange}
         loading={trips === undefined}
         rowKey={(trip) => trip.id}
-        rowClassName={(trip, index) =>
+        rowClassName={(trip) =>
           trip.id === selectedTrip?.id ? styles['selected'] : ''
         }
         showHeader={false}

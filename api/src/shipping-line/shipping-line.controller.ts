@@ -1,9 +1,9 @@
 import { Request, Controller, Get, Param, UseGuards } from '@nestjs/common';
 import { ShippingLineService } from './shipping-line.service';
-import { IShippingLine, IShippingLineSchedule } from '@ayahay/models';
+import { IPort, IShippingLine, IShippingLineSchedule } from '@ayahay/models';
 import { AuthGuard } from '@/auth/auth.guard';
 import { Roles } from '@/decorator/roles.decorator';
-import { ApiExcludeController } from '@nestjs/swagger';
+import { ApiExcludeController, ApiExcludeEndpoint } from '@nestjs/swagger';
 
 @Controller('shipping-lines')
 @ApiExcludeController()
@@ -25,6 +25,16 @@ export class ShippingLineController {
     return this.shippingLineService.getSchedulesOfShippingLine(
       shippingLineId,
       req.user
+    );
+  }
+
+  @Get(':shippingLineId/ports')
+  @ApiExcludeEndpoint()
+  async getPortsByShippingLine(
+    @Param('shippingLineId') shippingLineId: number
+  ): Promise<IPort[]> {
+    return await this.shippingLineService.getPortsByShippingLine(
+      shippingLineId
     );
   }
 }

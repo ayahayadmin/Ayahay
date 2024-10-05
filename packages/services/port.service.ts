@@ -1,4 +1,4 @@
-import { PORTS_API } from '@ayahay/constants';
+import { PORTS_API, SHIPPING_LINE_API } from '@ayahay/constants';
 import { IPort } from '@ayahay/models';
 import axios from './axios';
 import { cacheItem, fetchItem } from './cache.service';
@@ -9,10 +9,23 @@ export async function getPorts(): Promise<IPort[] | undefined> {
     return cachedPorts;
   }
 
+  // If white label, only get the ports of the specific shipping line
+  const shippingLineId = process.env.NEXT_PUBLIC_SHIPPING_LINE_ID;
   try {
-    const { data } = await axios.get(`${PORTS_API}`);
-    cacheItem('ports', data, 60 * 24 * 7);
-    return data;
+    let ports;
+
+    if (shippingLineId === undefined) {
+      const { data } = await axios.get(PORTS_API);
+      ports = data;
+    } else {
+      const { data } = await axios.get(
+        `${SHIPPING_LINE_API}/${shippingLineId}/ports`
+      );
+      ports = data;
+    }
+
+    cacheItem('ports', ports, 60 * 24 * 7);
+    return ports;
   } catch (e) {
     console.error(e);
     return undefined;

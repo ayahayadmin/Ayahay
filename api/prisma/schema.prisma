@@ -154,6 +154,7 @@ model ShippingLine {
   webhooks Webhook[]
   travelAgencies TravelAgencyShippingLine[]
   rateTables RateTable[]
+  shippingLinePorts ShippingLinePort[]
 
   @@map("shipping_line")
 }
@@ -190,6 +191,8 @@ model Port {
   tripsDest Trip[] @relation("destPort")
   schedulesSrc ShippingLineSchedule[] @relation("srcPort")
   schedulesDest ShippingLineSchedule[] @relation("destPort")
+
+  shippingLinePorts ShippingLinePort[]
 
   @@map("port")
 }
@@ -639,4 +642,14 @@ model RateTableMarkup {
   markupMaxFlat Float @map("markup_max_flat")
 
   @@map("rate_table_markup")
+}
+
+model ShippingLinePort {
+  shippingLineId Int @map("shipping_line_id")
+  shippingLine ShippingLine @relation(fields: [shippingLineId], references: [id])
+  portId Int @map("port_id")
+  port Port @relation(fields: [portId], references: [id])
+
+  @@map("shipping_line_port")
+  @@id([shippingLineId, portId])
 }
