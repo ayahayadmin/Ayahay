@@ -4,7 +4,7 @@ import { IPort } from '@ayahay/models';
 
 @Injectable()
 export class PortService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async getPorts(): Promise<IPort[]> {
     return await this.prisma.port.findMany({});

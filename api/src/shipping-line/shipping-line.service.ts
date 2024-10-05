@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '@/prisma.service';
 import {
   IAccount,
+  IPort,
   IShippingLine,
   IShippingLineSchedule,
   ITrip,
@@ -10,12 +11,14 @@ import { CreateTripsFromSchedulesRequest } from '@ayahay/http';
 import { ShippingLineMapper } from './shipping-line.mapper';
 import { UtilityService } from '@/utility.service';
 import { AuthService } from '@/auth/auth.service';
+import { PortMapper } from '@/port/port.mapper';
 
 @Injectable()
 export class ShippingLineService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly shippingLineMapper: ShippingLineMapper,
+    private readonly portMapper: PortMapper,
     private readonly utilityService: UtilityService,
     private readonly authService: AuthService
   ) {}
@@ -78,6 +81,15 @@ export class ShippingLineService {
         shippingLineScheduleEntity
       )
     );
+  }
+
+  async getPortsByShippingLine(shippingLineId: number): Promise<IPort[]> {
+    const ports = await this.prisma.shippingLinePort.findMany({
+      where: { shippingLineId },
+      include: { port: true },
+    });
+
+    return ports.map(({ port }) => this.portMapper.convertPortToDto(port));
   }
 
   async convertSchedulesToTrips(
