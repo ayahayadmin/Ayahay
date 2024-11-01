@@ -1260,6 +1260,11 @@ export class ReportingService {
           include: {
             passenger: true,
           },
+          orderBy: {
+            booking: {
+              createdAt: 'asc',
+            },
+          },
         },
       },
     });
