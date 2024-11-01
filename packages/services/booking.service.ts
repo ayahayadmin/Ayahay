@@ -173,3 +173,15 @@ export async function updateTripVehicle(
     vehicle
   );
 }
+
+export async function rebookTripVehicle(
+  bookingId: string,
+  tripId: number,
+  vehicleId: number,
+  tempBookingId: number
+): Promise<void> {
+  return axios.post(
+    `${BOOKING_API}/${bookingId}/trips/${tripId}/vehicles/${vehicleId}/rebook`,
+    { tempBookingId }
+  );
+}

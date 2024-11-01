@@ -1,4 +1,4 @@
-import { IBookingTrip, IBookingTripPassenger, ITrip } from '@ayahay/models';
+import { IBookingTrip, IBookingTripVehicle, ITrip } from '@ayahay/models';
 import {
   Button,
   DatePicker,
@@ -21,21 +21,21 @@ import { toPhilippinesTime } from '@ayahay/services/date.service';
 
 const { Title } = Typography;
 
-interface RebookTripPassengerModalProps {
+interface RebookTripVehicleModalProps {
   originalTrip?: IBookingTrip;
-  tripPassenger?: IBookingTripPassenger;
-  onRebookPassenger: (tempBookingId: number) => Promise<void>;
+  tripVehicle?: IBookingTripVehicle;
+  onRebookVehicle: (tempBookingId: number) => Promise<void>;
 }
 
 const steps = [{ title: 'Select New Trip' }, { title: 'Confirm Rebooking' }];
 
-export default function RebookTripPassengerModal({
+export default function RebookTripVehicleModal({
   originalTrip,
-  tripPassenger,
-  onRebookPassenger,
+  tripVehicle,
+  onRebookVehicle,
   onOk,
   ...modalProps
-}: RebookTripPassengerModalProps & ModalProps) {
+}: RebookTripVehicleModalProps & ModalProps) {
   const screens = useBreakpoint();
   const [currentStep, setCurrentStep] = useState(0);
   const [searchDateIso, setSearchDateIso] = useState<string>(
@@ -49,7 +49,7 @@ export default function RebookTripPassengerModal({
   const stepDirection = screens.md ? 'horizontal' : 'vertical';
 
   useEffect(() => {
-    if (!tripPassenger?.passenger || !originalTrip?.trip) {
+    if (!tripVehicle?.vehicle || !originalTrip?.trip) {
       return;
     }
 
@@ -58,19 +58,19 @@ export default function RebookTripPassengerModal({
       srcPortId: originalTrip.trip.srcPortId,
       destPortId: originalTrip.trip.destPortId,
       departureDate: searchDateIso,
-      passengerCount: 1,
-      vehicleCount: 0,
+      passengerCount: 0,
+      vehicleCount: 1,
       shippingLineIds: [originalTrip.trip.shippingLineId],
       sort: 'departureDate',
     });
-  }, [tripPassenger, searchDateIso]);
+  }, [tripVehicle, searchDateIso]);
 
   useEffect(() => {
     resetTripSelection();
-  }, [tripPassenger]);
+  }, [tripVehicle]);
 
   const selectTrip = async (trip: ITrip) => {
-    if (!tripPassenger) {
+    if (!tripVehicle) {
       return;
     }
 
@@ -80,41 +80,40 @@ export default function RebookTripPassengerModal({
         {
           tripId: trip.id,
           trip,
-          bookingTripPassengers: [
+          bookingTripPassengers: [],
+          bookingTripVehicles: [
             {
               tripId: trip.id,
-              passengerId: tripPassenger.passengerId,
-              passenger: tripPassenger.passenger,
-              discountType: tripPassenger.discountType,
+              vehicleId: tripVehicle.vehicleId,
+              vehicle: tripVehicle.vehicle,
             },
           ],
-          bookingTripVehicles: [],
         },
       ],
     } as any);
 
     const newTrip = tempBooking.bookingTrips?.[0];
-    const newTripPassenger = newTrip?.bookingTripPassengers?.[0];
-    const oldPaymentItems = tripPassenger?.bookingPaymentItems;
+    const newTripVehicle = newTrip?.bookingTripVehicles?.[0];
+    const oldPaymentItems = tripVehicle?.bookingPaymentItems;
 
-    if (!newTrip || !newTripPassenger || !oldPaymentItems) {
+    if (!newTrip || !newTripVehicle || !oldPaymentItems) {
       return;
     }
 
     const oldFare = oldPaymentItems.find(paymentItem => paymentItem.type === 'Fare');
     if (oldFare !== undefined && oldFare.price > 0) {
-      newTripPassenger.bookingPaymentItems?.push({
+      newTripVehicle.bookingPaymentItems?.push({
         description: `Refund old fare`,
         type: 'CancellationRefund',
         price: -oldFare.price,
       } as any);
     }
-    
+
     setNewBookingTrip({
       tripId: newTrip.tripId,
       trip: newTrip.trip,
-      bookingTripPassengers: [newTripPassenger],
-      bookingTripVehicles: [],
+      bookingTripPassengers: [],
+      bookingTripVehicles: [newTripVehicle],
     } as any);
     setCurrentStep(1);
     setTempBookingId(Number(tempBooking.id));
@@ -129,12 +128,11 @@ export default function RebookTripPassengerModal({
   return (
     <Modal centered closeIcon={true} footer={null} {...modalProps}>
       <Title level={2} style={{ fontSize: '20px', marginBottom: '16px' }}>
-        Rebook Trip Passenger
+        Rebook Trip Vehicle
       </Title>
       <p style={{ fontSize: '16px', marginBottom: '20px' }}>
         You are rebooking&nbsp;
-        {tripPassenger?.passenger?.firstName}&nbsp;
-        {tripPassenger?.passenger?.lastName}'s&nbsp;
+        {tripVehicle?.vehicle?.plateNo}&nbsp;
         {toPhilippinesTime(
           originalTrip?.trip?.departureDateIso,
           'MMM DD, h:mm A'
@@ -168,7 +166,7 @@ export default function RebookTripPassengerModal({
           />
           <TripSearchResults
             searchQuery={tripQuery}
-            excludeTripId={tripPassenger?.tripId}
+            excludeTripId={tripVehicle?.tripId}
             onSelectTrip={(trip) => selectTrip(trip)}
           />
         </>
@@ -180,7 +178,7 @@ export default function RebookTripPassengerModal({
             <Title level={3}>Payment Summary</Title>
             <PaymentSummary
               paymentItems={
-                newBookingTrip?.bookingTripPassengers?.[0]?.bookingPaymentItems
+                newBookingTrip?.bookingTripVehicles?.[0]?.bookingPaymentItems
               }
             />
           </section>
@@ -191,7 +189,7 @@ export default function RebookTripPassengerModal({
             <Popconfirm
               title='Confirm Rebooking'
               description='This action cannot be undone.'
-              onConfirm={() => onRebookPassenger(tempBookingId)}
+              onConfirm={() => onRebookVehicle(tempBookingId)}
               okText='Confirm'
               cancelText='No'
             >

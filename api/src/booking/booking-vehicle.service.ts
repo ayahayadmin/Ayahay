@@ -17,6 +17,7 @@ import {
   PaginatedResponse,
   VehicleBookingSearchResponse,
 } from '@ayahay/http';
+import * as dayjs from 'dayjs';
 
 @Injectable()
 export class BookingVehicleService {
@@ -296,35 +297,58 @@ export class BookingVehicleService {
     }
 
     await this.prisma.$transaction(async (transactionContext) => {
-      const refundedAmount = await this.bookingPricingService.refundTripVehicle(
+      await this._removeTripVehicle(
         bookingTripVehicle as any,
+        removedReason,
         reasonType,
-        transactionContext as any,
-        loggedInAccount
-      );
-
-      await transactionContext.booking.update({
-        where: { id: bookingTripVehicle.bookingId },
-        data: {
-          totalPrice: bookingTripVehicle.booking.totalPrice - refundedAmount,
-        },
-      });
-
-      await transactionContext.bookingTripVehicle.update({
-        where,
-        data: {
-          removedReason,
-          removedReasonType: reasonType as any,
-          totalPrice: bookingTripVehicle.totalPrice - refundedAmount,
-        },
-      });
-
-      await this.bookingReservationService.updateVehicleCapacities(
-        [bookingTripVehicle] as any[],
-        'increment',
+        loggedInAccount,
         transactionContext as any
       );
     });
+  }
+
+  // this is a multi-update operation; always use this function in a transaction
+  private async _removeTripVehicle(
+    bookingTripVehicle: IBookingTripVehicle,
+    removedReason: string,
+    reasonType: keyof typeof BOOKING_CANCELLATION_TYPE,
+    loggedInAccount: IAccount,
+    transactionContext: PrismaClient
+  ): Promise<void> {
+    const refundedAmount = await this.bookingPricingService.refundTripVehicle(
+      bookingTripVehicle as any,
+      reasonType,
+      transactionContext as any,
+      loggedInAccount
+    );
+
+    await transactionContext.booking.update({
+      where: { id: bookingTripVehicle.bookingId },
+      data: {
+        totalPrice: bookingTripVehicle.booking.totalPrice - refundedAmount,
+      },
+    });
+
+    await transactionContext.bookingTripVehicle.update({
+      where: {
+        bookingId_tripId_vehicleId: {
+          bookingId: bookingTripVehicle.bookingId,
+          tripId: bookingTripVehicle.tripId,
+          vehicleId: bookingTripVehicle.vehicleId,
+        },
+      },
+      data: {
+        removedReason,
+        removedReasonType: reasonType as any,
+        totalPrice: bookingTripVehicle.totalPrice - refundedAmount,
+      },
+    });
+
+    await this.bookingReservationService.updateVehicleCapacities(
+      [bookingTripVehicle] as any[],
+      'increment',
+      transactionContext as any
+    );
   }
 
   async editVehicleInformation(
@@ -367,6 +391,90 @@ export class BookingVehicleService {
           },
         },
       },
+    });
+  }
+
+  async rebookTripVehicle(
+    bookingId: string,
+    tripId: number,
+    vehicleId: number,
+    tempBookingId: number,
+    loggedInAccount: IAccount
+  ): Promise<void> {
+    const tripVehicle = await this.prisma.bookingTripVehicle.findUnique({
+      where: {
+        bookingId_tripId_vehicleId: {
+          bookingId,
+          tripId,
+          vehicleId,
+        },
+      },
+      include: {
+        trip: true,
+        booking: true,
+      },
+    });
+    if (tripVehicle === null) {
+      throw new NotFoundException('Trip vehicle not found.');
+    }
+
+    this.bookingValidator.validateBookingWriteAccess(
+      tripVehicle.booking,
+      loggedInAccount
+    );
+
+    const tempBooking = await this.prisma.tempBooking.findUnique({
+      where: {
+        id: tempBookingId,
+      },
+    });
+    if (tempBooking === null) {
+      throw new NotFoundException('Booking quote not found.');
+    }
+
+    const newBooking =
+      this.bookingMapper.convertTempBookingToBooking(tempBooking);
+
+    await this.bookingValidator.validateRebooking(
+      tripVehicle as any,
+      newBooking
+    );
+
+    const newBookingTrip = newBooking.bookingTrips[0];
+    const newTripVehicle = newBooking.bookingTrips[0].bookingTripVehicles[0];
+    newBookingTrip.bookingId = newTripVehicle.bookingId = bookingId;
+
+    const tripDepartureDate = dayjs(
+      newBookingTrip.trip.departureDateIso
+    ).format('YYYY, MMM DD, HH:MM AA');
+
+    await this.prisma.$transaction(async (transactionContext) => {
+      await this._removeTripVehicle(
+        tripVehicle as any,
+        `Rebooked to ${tripDepartureDate} trip`,
+        'NoFault',
+        loggedInAccount,
+        transactionContext as any
+      );
+
+      await this.bookingPricingService.adjustBookingPaymentItemsOnRebooking(
+        tripVehicle as any,
+        newTripVehicle,
+        transactionContext as any
+      );
+
+      await transactionContext.bookingTripVehicle.create(
+        this.bookingMapper.convertTripVehicleToEntityForCreation(
+          newTripVehicle,
+          loggedInAccount
+        )
+      );
+
+      await this.bookingReservationService.updateVehicleCapacities(
+        [newTripVehicle] as any[],
+        'decrement',
+        transactionContext as any
+      );
     });
   }
 }

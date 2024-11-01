@@ -62,7 +62,7 @@ export default function PaymentSummary({
       loading={paymentItems === undefined}
       tableLayout='fixed'
       summary={paymentItemTotal}
-      rowKey={(paymentItem) => paymentItem.id}
+      rowKey={(_, index) => index ?? 0}
     ></Table>
   );
 }

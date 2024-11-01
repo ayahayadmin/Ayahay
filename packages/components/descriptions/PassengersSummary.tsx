@@ -194,6 +194,7 @@ export default function PassengersSummary({
         pagination={false}
         loading={passengers === undefined}
         tableLayout='fixed'
+        rowKey={({ passengerId }) => passengerId}
       ></Table>
       {onUpdatePassenger && (
         <UpdateTripPassengerModal

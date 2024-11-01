@@ -473,8 +473,8 @@ export class BookingPassengerService {
     const newBooking =
       this.bookingMapper.convertTempBookingToBooking(tempBooking);
 
-    await this.bookingValidator.validatePassengerRebooking(
-      tripPassenger,
+    await this.bookingValidator.validateRebooking(
+      tripPassenger as any,
       newBooking
     );
 

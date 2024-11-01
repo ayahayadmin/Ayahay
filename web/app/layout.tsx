@@ -8,7 +8,6 @@ import { Content } from 'antd/es/layout/layout';
 import WebFooter from '@/components/WebFooter';
 import WebSider from '@/components/WebSider';
 import AuthContextProvider from '@/contexts/AuthContext';
-import { Analytics } from '@vercel/analytics/react';
 import { useShippingLineForWhiteLabel } from '@/hooks/shipping-line';
 
 const jost = Jost({ subsets: ['latin'], display: 'swap' });
@@ -57,7 +56,6 @@ export default function RootLayout({
             </App>
           </ConfigProvider>
         </AuthContextProvider>
-        <Analytics />
       </body>
     </html>
   );

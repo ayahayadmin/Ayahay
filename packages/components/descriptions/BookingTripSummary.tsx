@@ -28,6 +28,11 @@ interface BookingTripSummaryProps {
     vehicleId: number,
     vehicle: IVehicle
   ) => Promise<void>;
+  onRebookVehicle?: (
+    tripId: number,
+    vehicleId: number,
+    tempBookingId: number
+  ) => Promise<void>;
 }
 
 export default function BookingTripSummary({
@@ -39,6 +44,7 @@ export default function BookingTripSummary({
   onRebookPassenger,
   onCheckInVehicle,
   onUpdateVehicle,
+  onRebookVehicle,
 }: BookingTripSummaryProps) {
   return (
     <Flex vertical gap={24}>
@@ -65,10 +71,12 @@ export default function BookingTripSummary({
           <section>
             <Title level={titleLevel + 1}>Vehicles</Title>
             <VehiclesSummary
+              bookingTrip={bookingTrip}
               vehicles={bookingTrip.bookingTripVehicles}
               canCheckIn={canCheckIn}
               onCheckInVehicle={onCheckInVehicle}
               onUpdateVehicle={onUpdateVehicle}
+              onRebookVehicle={onRebookVehicle}
             />
           </section>
         )}
