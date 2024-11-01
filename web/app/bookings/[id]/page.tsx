@@ -12,6 +12,7 @@ import {
   updateTripPassenger,
   rebookTripPassenger,
   updateTripVehicle,
+  rebookTripVehicle,
 } from '@ayahay/services/booking.service';
 import { getAxiosError } from '@ayahay/services/error.service';
 import { useAuth } from '@/contexts/AuthContext';
@@ -246,6 +247,28 @@ export default function BookingSummaryPage({ params }) {
       handleAxiosError(e, 'Update Failed');
     }
   };
+
+  const rebookVehicle = async (
+    tripId: number,
+    vehicleId: number,
+    tempBookingId: number
+  ) => {
+    if (booking === undefined) {
+      return;
+    }
+
+    try {
+      await rebookTripVehicle(booking.id, tripId, vehicleId, tempBookingId);
+      notification.success({
+        message: 'Rebooking Success',
+        description: 'Vehicle has been rebooked successfully.',
+      });
+      loadBooking();
+    } catch (e) {
+      handleAxiosError(e, 'Rebooking Failed');
+    }
+  };
+
   return (
     <div className={styles['main-container']}>
       {errorCode === undefined && (
@@ -266,6 +289,7 @@ export default function BookingSummaryPage({ params }) {
             onRebookPassenger={rebookPassenger}
             onCheckInVehicle={checkInBookingVehicle}
             onUpdateVehicle={updateVehicle}
+            onRebookVehicle={rebookVehicle}
           />
         </>
       )}

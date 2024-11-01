@@ -453,4 +453,23 @@ export class BookingController {
       req.user
     );
   }
+
+  @Post(':bookingId/trips/:tripId/vehicles/:vehicleId/rebook')
+  @UseGuards(AuthGuard)
+  @Roles('ShippingLineStaff', 'ShippingLineAdmin', 'SuperAdmin')
+  async rebookTripVehicle(
+    @Param('bookingId') bookingId: string,
+    @Param('tripId') tripId: number,
+    @Param('vehicleId') vehicleId: number,
+    @Body('tempBookingId') tempBookingId: number,
+    @Request() req: any
+  ): Promise<void> {
+    return this.bookingVehicleService.rebookTripVehicle(
+      bookingId,
+      tripId,
+      vehicleId,
+      tempBookingId,
+      req.user
+    );
+  }
 }

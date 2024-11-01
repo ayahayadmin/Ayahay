@@ -517,4 +517,65 @@ export class BookingMapper {
       },
     };
   }
+
+  convertTripVehicleToEntityForCreation(
+    tripVehicle: IBookingTripVehicle,
+    loggedInAccount: IAccount
+  ): Prisma.BookingTripVehicleCreateArgs {
+    return {
+      data: {
+        checkInDate: null,
+        booking: {
+          connect: {
+            id: tripVehicle.bookingId,
+          },
+        },
+        trip: {
+          connect: {
+            id: tripVehicle.tripId,
+          },
+        },
+        bookingTrip: {
+          connectOrCreate: {
+            where: {
+              bookingId_tripId: {
+                bookingId: tripVehicle.bookingId,
+                tripId: tripVehicle.tripId,
+              },
+            },
+            create: {
+              booking: {
+                connect: {
+                  id: tripVehicle.bookingId,
+                },
+              },
+              trip: {
+                connect: {
+                  id: tripVehicle.tripId,
+                },
+              },
+            },
+          },
+        },
+        vehicle: {
+          connect: {
+            id: tripVehicle.vehicleId,
+          },
+        },
+        totalPrice: tripVehicle.totalPrice ?? 0,
+        priceWithoutMarkup: tripVehicle.priceWithoutMarkup ?? 0,
+        bookingPaymentItems: {
+          createMany: {
+            data: tripVehicle.bookingPaymentItems.map((paymentItem) => ({
+              price: paymentItem.price,
+              description: paymentItem.description,
+              type: paymentItem.type,
+              createdByAccountId: loggedInAccount.id,
+              createdAt: new Date(),
+            })),
+          },
+        },
+      },
+    };
+  }
 }

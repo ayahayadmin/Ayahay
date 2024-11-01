@@ -23,8 +23,5 @@
     "admin:start:dev": "yarn workspace @ayahay/admin start:dev -p 3002",
     "admin:start:prod": "yarn workspace @ayahay/admin start:prod -p 3002"
   },
-  "packageManager": "yarn@3.6.3",
-  "dependencies": {
-    "@vercel/analytics": "^1.3.1"
-  }
+  "packageManager": "yarn@3.6.3"
 }

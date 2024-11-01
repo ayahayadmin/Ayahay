@@ -54,6 +54,11 @@ interface BookingSummaryProps {
     vehicleId: number,
     vehicle: IVehicle
   ) => Promise<void>;
+  onRebookVehicle?: (
+    tripId: number,
+    vehicleId: number,
+    tempBookingId: number
+  ) => Promise<void>;
 }
 
 export default function BookingSummary({
@@ -68,6 +73,7 @@ export default function BookingSummary({
   onRebookPassenger,
   onCheckInVehicle,
   onUpdateVehicle,
+  onRebookVehicle,
 }: BookingSummaryProps) {
   const screens = useBreakpoint();
 
@@ -276,6 +282,7 @@ export default function BookingSummary({
           onRebookPassenger={onRebookPassenger}
           onCheckInVehicle={onCheckInVehicle}
           onUpdateVehicle={onUpdateVehicle}
+          onRebookVehicle={onRebookVehicle}
         />
       )}
       {bookingPaymentItems.length > 0 && (

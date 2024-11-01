@@ -93,7 +93,7 @@ export class BookingPricingService {
     );
     if (voucherDiscount > 0) {
       this.addPaymentItemToList(bookingPaymentItems, {
-        id: -1,
+        id: -2,
         bookingId: '',
         tripId: bookingTripPassenger.tripId,
         passengerId: bookingTripPassenger.passengerId,
@@ -110,7 +110,7 @@ export class BookingPricingService {
     );
     if (ayahayMarkup > 0) {
       this.addPaymentItemToList(bookingPaymentItems, {
-        id: -1,
+        id: -3,
         bookingId: '',
         tripId: bookingTripPassenger.tripId,
         passengerId: bookingTripPassenger.passengerId,
@@ -128,7 +128,7 @@ export class BookingPricingService {
     );
     if (thirdPartyMarkup > 0) {
       this.addPaymentItemToList(bookingPaymentItems, {
-        id: -1,
+        id: -4,
         bookingId: '',
         tripId: bookingTripPassenger.tripId,
         passengerId: bookingTripPassenger.passengerId,
@@ -285,7 +285,7 @@ export class BookingPricingService {
     );
     if (voucherDiscount > 0) {
       this.addPaymentItemToList(bookingPaymentItems, {
-        id: -1,
+        id: -2,
         bookingId: '',
         tripId: bookingTripVehicle.tripId,
         vehicleId: bookingTripVehicle.vehicleId,
@@ -301,7 +301,7 @@ export class BookingPricingService {
     );
     if (ayahayMarkup > 0) {
       this.addPaymentItemToList(bookingPaymentItems, {
-        id: -1,
+        id: -3,
         bookingId: '',
         tripId: bookingTripVehicle.tripId,
         vehicleId: bookingTripVehicle.vehicleId,
@@ -318,7 +318,7 @@ export class BookingPricingService {
     );
     if (thirdPartyMarkup > 0) {
       this.addPaymentItemToList(bookingPaymentItems, {
-        id: -1,
+        id: -4,
         bookingId: '',
         tripId: bookingTripVehicle.tripId,
         vehicleId: bookingTripVehicle.vehicleId,
@@ -526,38 +526,38 @@ export class BookingPricingService {
   // updates old booking total price
   // mutates newTripPassenger
   async adjustBookingPaymentItemsOnRebooking(
-    oldTripPassenger: IBookingTripPassenger,
-    newTripPassenger: IBookingTripPassenger,
+    oldPassengerOrVehicle: IBookingTripPassenger | IBookingTripVehicle,
+    newPassengerOrVehicle: IBookingTripPassenger | IBookingTripVehicle,
     transactionContext: PrismaClient
   ): Promise<void> {
     const rebookingCharge = this.calculateRebookingCharge(
-      oldTripPassenger,
-      newTripPassenger
+      oldPassengerOrVehicle,
+      newPassengerOrVehicle
     );
     if (rebookingCharge > 0) {
-      this.addPaymentItemToList(newTripPassenger.bookingPaymentItems, {
+      this.addPaymentItemToList(newPassengerOrVehicle.bookingPaymentItems, {
         description: 'Rebooking Charge',
         type: 'Miscellaneous',
         price: rebookingCharge,
       } as any);
-      newTripPassenger.totalPrice += rebookingCharge;
+      newPassengerOrVehicle.totalPrice += rebookingCharge;
     }
 
     await transactionContext.booking.update({
       where: {
-        id: oldTripPassenger.bookingId,
+        id: oldPassengerOrVehicle.bookingId,
       },
       data: {
         totalPrice: {
-          increment: newTripPassenger.totalPrice,
+          increment: newPassengerOrVehicle.totalPrice,
         },
       },
     });
   }
 
   private calculateRebookingCharge(
-    oldTripPassenger: IBookingTripPassenger,
-    newTripPassenger: IBookingTripPassenger
+    oldPassengerOrVehicle: IBookingTripPassenger | IBookingTripVehicle,
+    newPassengerOrVehicle: IBookingTripPassenger | IBookingTripVehicle
   ): number {
     return 0;
   }
