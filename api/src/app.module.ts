@@ -24,6 +24,7 @@ import { VoucherModule } from './voucher/voucher.module';
 import { WebhookModule } from '@/webhook/webhook.module';
 import { RateTableModule } from '@/rate-table/rate-table.module';
 import { SeatPlanModule } from '@/seat-plan/seat-plan.module';
+import { HealthCheckModule } from './health-check/health-check.module';
 
 @Module({
   imports: [
@@ -52,6 +53,7 @@ import { SeatPlanModule } from '@/seat-plan/seat-plan.module';
     WebhookModule,
     RateTableModule,
     SeatPlanModule,
+    HealthCheckModule,
   ],
 })
 export class AppModule {}
