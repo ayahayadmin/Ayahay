@@ -6,6 +6,7 @@ import {
   sendEmailVerification,
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
+  signInWithPopup,
   signInWithRedirect,
   signOut,
 } from 'firebase/auth';
@@ -104,15 +105,13 @@ export default function AuthContextProvider({ children }: any) {
         return user.uid;
       })
       .catch((error) => {
-        const errorCode = error.code;
-        const errorMessage = error.message;
         throw new Error(`sign in error`);
       });
   }
 
   function signInWithGoogle() {
     const provider = new GoogleAuthProvider();
-    return signInWithRedirect(firebase, provider);
+    return signInWithPopup(firebase, provider);
   }
 
   function signInWithFacebook() {
