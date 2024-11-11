@@ -23,6 +23,7 @@ import { toPhilippinesTime } from '@ayahay/services/date.service';
 import { useBookingControls } from '@ayahay/hooks/booking';
 import BookingReminders from './BookingReminders';
 import { IPassenger, IVehicle } from '@ayahay/models';
+import BookingTermsAndConditions from './BookingTermsAndConditions';
 
 const { useBreakpoint } = Grid;
 const { Title } = Typography;
@@ -353,6 +354,7 @@ export default function BookingSummary({
                         </tbody>
                       </table>
                     </section>
+                    <BookingTermsAndConditions />
                     <p style={{ textAlign: 'center' }}>Powered by AYAHAY</p>
                   </div>
                 )
@@ -393,6 +395,7 @@ export default function BookingSummary({
                         </tbody>
                       </table>
                     </section>
+                    <BookingTermsAndConditions />
                     <p style={{ textAlign: 'center' }}>Powered by AYAHAY</p>
                   </div>
                 )

@@ -22,6 +22,7 @@ import useBreakpoint from 'antd/es/grid/hooks/useBreakpoint';
 import { ItineraryContent } from '@/components/document/TripItinerary';
 import BookingReminders from './BookingReminders';
 import { toPhilippinesTime, fromNow } from '@ayahay/services/date.service';
+import BookingTermsAndConditions from './BookingTermsAndConditions';
 
 const { Title } = Typography;
 
@@ -230,6 +231,7 @@ export default function BookingTripPassengerSummary({
           </tbody>
         </table>
       </section>
+      <BookingTermsAndConditions />
       <p style={{ textAlign: 'center' }}>Powered by AYAHAY</p>
     </div>
   );
