@@ -3,14 +3,14 @@ const { Title } = Typography;
 
 export default function BookingTermsAndConditions() {
   return (
-    <section style={{ marginTop: 10 }}>
-      <Title level={1} style={{ fontSize: 12 }}>
+    <section style={{ margin: 10 }}>
+      <Title level={1} style={{ fontSize: 11 }}>
         Terms and Conditions
       </Title>
-      <ul style={{ fontSize: 10 }}>
+      <ul style={{ fontSize: 9 }}>
         <li>This ticket is valid for one voyage only</li>
         <li>
-          Tickets may refund after 24hours of booking may have 20% surcharge.
+          Tickets may refund after 24 hours of booking may have 20% surcharge.
           (validity of ticket for refund is one month).
         </li>
         <li>Service fee is NON REFUNDABLE.</li>
