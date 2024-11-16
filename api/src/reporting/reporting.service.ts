@@ -104,9 +104,13 @@ export class ReportingService {
       select: { bookingId: true },
     });
 
+    const disbursements = trip.disbursements.map((disbursement) =>
+      this.disbursementMapper.convertDisbursementToDto(disbursement)
+    );
+
     if (bookingTrips.length === 0) {
       // no bookings in this trip yet
-      return tripBasicInfo;
+      return { ...tripBasicInfo, disbursements };
     }
 
     const bookingIds = bookingTrips.map(({ bookingId }) => bookingId);
@@ -215,9 +219,7 @@ export class ReportingService {
 
     return {
       ...tripBasicInfo,
-      disbursements: trip.disbursements.map((disbursement) =>
-        this.disbursementMapper.convertDisbursementToDto(disbursement)
-      ),
+      disbursements,
       passengers,
       vehicles,
       passengerDiscountsBreakdown,
