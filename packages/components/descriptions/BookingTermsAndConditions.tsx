@@ -3,7 +3,7 @@ const { Title } = Typography;
 
 export default function BookingTermsAndConditions() {
   return (
-    <section style={{ margin: 10 }}>
+    <section style={{ marginTop: 10, padding: '0 25px', textWrap: 'wrap' }}>
       <Title level={1} style={{ fontSize: 11 }}>
         Terms and Conditions
       </Title>
