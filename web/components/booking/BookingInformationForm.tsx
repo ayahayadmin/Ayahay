@@ -191,6 +191,9 @@ export default function BookingInformationForm({
         [...tripNamePath, 'bookingTripPassengers'],
         [...tripNamePath, 'bookingTripVehicles'],
         ['voucherCode'],
+        ['contactEmail'],
+        ['contactMobile'],
+        ['consigneeName'],
       ];
 
       await form.validateFields(namePaths, { recursive: true });
