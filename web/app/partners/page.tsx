@@ -31,6 +31,13 @@ export default function Partners() {
               src='/assets/shipping-line-logos/Jomalia Shipping Corporation.png'
             />
           </a>
+          <a href='https://sunriser.ph/' target='_blank'>
+            <img
+              className={styles['image']}
+              alt='sunriser'
+              src='/assets/shipping-line-logos/Cordova Inter-Island Shipping Lines Inc..png'
+            />
+          </a>
         </Carousel>
         <div className={styles['buttons']}>
           <Button
