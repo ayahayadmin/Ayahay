@@ -32,6 +32,7 @@ async function bootstrap() {
       process.env.WEB_URL,
       process.env.ADMIN_URL,
       process.env.AZNAR_URL,
+      process.env.JOMALIA_URL,
       process.env.DRAGONPAY_GATEWAY_URL,
     ],
   });
