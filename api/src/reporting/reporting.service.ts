@@ -247,12 +247,15 @@ export class ReportingService {
       const isRoundTrip = !!bookingTripPassenger[0].booking.firstTripId;
       const isOriginTrip =
         tripId === bookingTripPassenger[0].booking.firstTripId;
-      const isOnlineBooker =
-        bookingTripPassenger[0].booking.createdByAccount === null ||
-        bookingTripPassenger[0].booking.createdByAccount.role === 'Passenger';
+      const isOnlineBooker = this.authService.isPassengerAccount(
+        bookingTripPassenger[0].booking.createdByAccount
+      );
+      const isTravelAgencyBooker = this.authService.isTravelAgencyAccount(
+        bookingTripPassenger[0].booking.createdByAccount
+      );
 
       let roundTripPassengers = {};
-      if (isRoundTrip && !isOnlineBooker) {
+      if (isRoundTrip && !isOnlineBooker && !isTravelAgencyBooker) {
         roundTripPassengers =
           this.reportingMapper.convertTripPassengersToRoundTripPassengers(
             bookingTripPassenger,
@@ -295,7 +298,7 @@ export class ReportingService {
                 passenger.discountType ?? 'Adult',
                 collect,
                 isBookingCancelled,
-                isRoundTrip && !isOnlineBooker,
+                isRoundTrip && !isOnlineBooker && !isTravelAgencyBooker,
                 passengerFare,
                 passenger.totalPrice,
                 discountAmount,
@@ -447,12 +450,15 @@ export class ReportingService {
     ) as any) {
       const isRoundTrip = !!bookingTripVehicle[0].booking.firstTripId;
       const isOriginTrip = tripId === bookingTripVehicle[0].booking.firstTripId;
-      const isOnlineBooker =
-        bookingTripVehicle[0].booking.createdByAccount === null ||
-        bookingTripVehicle[0].booking.createdByAccount.role === 'Passenger';
+      const isOnlineBooker = this.authService.isPassengerAccount(
+        bookingTripVehicle[0].booking.createdByAccount
+      );
+      const isTravelAgencyBooker = this.authService.isTravelAgencyAccount(
+        bookingTripVehicle[0].booking.createdByAccount
+      );
 
       let roundTripVehicles = {};
-      if (isRoundTrip && !isOnlineBooker) {
+      if (isRoundTrip && !isOnlineBooker && !isTravelAgencyBooker) {
         roundTripVehicles =
           this.reportingMapper.convertTripVehiclesToRoundTripVehicles(
             bookingTripVehicle,
@@ -493,7 +499,7 @@ export class ReportingService {
                 vehicle.vehicle.plateNo,
                 collect,
                 isBookingCancelled,
-                isRoundTrip && !isOnlineBooker,
+                isRoundTrip && !isOnlineBooker && !isTravelAgencyBooker,
                 vehicleFare,
                 vehicle.totalPrice,
                 discountAmount,

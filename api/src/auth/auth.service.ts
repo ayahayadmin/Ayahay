@@ -228,6 +228,10 @@ export class AuthService {
     return privilegedAccessRoles.includes(loggedInAccount.role);
   }
 
+  isPassengerAccount(loggedInAccount?: IAccount): boolean {
+    return loggedInAccount === null || loggedInAccount?.role === 'Passenger';
+  }
+
   isTravelAgencyAccount(loggedInAccount?: IAccount): boolean {
     return (
       loggedInAccount?.role === 'TravelAgencyStaff' ||
