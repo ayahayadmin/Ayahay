@@ -18,6 +18,7 @@ import {
 } from '@ayahay/http';
 import { BookingMapper } from './booking.mapper';
 import * as dayjs from 'dayjs';
+import { AuthService } from '@/auth/auth.service';
 
 @Injectable()
 export class BookingPassengerService {
@@ -26,6 +27,7 @@ export class BookingPassengerService {
     private readonly bookingValidator: BookingValidator,
     private readonly bookingPricingService: BookingPricingService,
     private readonly bookingReservationService: BookingReservationService,
+    private readonly authService: AuthService,
     private readonly bookingMapper: BookingMapper
   ) {}
 
@@ -389,13 +391,12 @@ export class BookingPassengerService {
       loggedInAccount
     );
 
+    const isPassengerLinkedToPassengerAccount = passengerToUpdate.account !== null 
+      || passengerToUpdate.buddyId !== null;
     // if the passenger is linked to an account
-    if (
-      passengerToUpdate.account !== null ||
-      passengerToUpdate.buddyId !== null
-    ) {
-      // we don't allow updating the passenger information without account owner's consent,
-      throw new ForbiddenException('This passenger is linked to an account.');
+    if (isPassengerLinkedToPassengerAccount && !this.authService.hasAdminAccess(loggedInAccount)) {
+      // we don't allow updating the passenger information without account owner's consent
+      throw new ForbiddenException('This passenger is linked to an account. Please contact an admin to assist.');
     }
 
     const oldPassengerFullName = `${passengerToUpdate.firstName} ${passengerToUpdate.lastName}`;

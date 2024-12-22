@@ -13,6 +13,16 @@ import { PrismaService } from '@/prisma.service';
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
+  private readonly ADMIN_ROLES = [
+    'ShippingLineAdmin',
+    'TravelAgencyAdmin',
+    'SuperAdmin',
+  ];
+  private readonly PRIVILEGED_ROLES = [
+    ...this.ADMIN_ROLES,
+    'ShippingLineStaff',
+    'TravelAgencyStaff',
+  ];
 
   constructor(
     private readonly accountMapper: AccountMapper,
@@ -214,18 +224,11 @@ export class AuthService {
   }
 
   hasPrivilegedAccess(loggedInAccount?: IAccount): boolean {
-    if (loggedInAccount === undefined) {
-      return false;
-    }
+    return this.PRIVILEGED_ROLES.includes(loggedInAccount?.role);
+  }
 
-    const privilegedAccessRoles = [
-      'ShippingLineStaff',
-      'ShippingLineAdmin',
-      'TravelAgencyStaff',
-      'TravelAgencyAdmin',
-      'SuperAdmin',
-    ];
-    return privilegedAccessRoles.includes(loggedInAccount.role);
+  hasAdminAccess(loggedInAccount?: IAccount): boolean {
+    return this.ADMIN_ROLES.includes(loggedInAccount?.role);
   }
 
   isPassengerAccount(loggedInAccount?: IAccount): boolean {
