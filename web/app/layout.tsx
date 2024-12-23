@@ -9,6 +9,7 @@ import WebFooter from '@/components/WebFooter';
 import WebSider from '@/components/WebSider';
 import AuthContextProvider from '@/contexts/AuthContext';
 import { useShippingLineForWhiteLabel } from '@/hooks/shipping-line';
+import QABanner from '@/components/banner/QABanner';
 
 const jost = Jost({ subsets: ['latin'], display: 'swap' });
 
@@ -45,6 +46,7 @@ export default function RootLayout({
             <App>
               <Layout hasSider>
                 <Layout className='body'>
+                  <QABanner/>
                   <WebHeader />
                   <Content style={{ backgroundColor: 'white' }}>
                     {children}
