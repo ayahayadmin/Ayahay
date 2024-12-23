@@ -6,6 +6,7 @@ import { App, ConfigProvider, Layout } from 'antd';
 import AuthContextProvider from '../contexts/AuthContext';
 import AdminSider from '@/components/AdminSider';
 import { Content } from 'antd/es/layout/layout';
+import QABanner from '@/components/banner/QABanner';
 
 const jost = Jost({ subsets: ['latin'], display: 'swap' });
 
@@ -31,6 +32,7 @@ export default function RootLayout({
             <App>
               <Layout hasSider>
                 <Layout className='body'>
+                  <QABanner/>
                   <AdminHeader />
                   <Content style={{ backgroundColor: 'white' }}>
                     {children}
