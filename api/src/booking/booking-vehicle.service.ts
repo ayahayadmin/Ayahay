@@ -18,6 +18,7 @@ import {
   VehicleBookingSearchResponse,
 } from '@ayahay/http';
 import * as dayjs from 'dayjs';
+import { AuthService } from '@/auth/auth.service';
 
 @Injectable()
 export class BookingVehicleService {
@@ -26,6 +27,7 @@ export class BookingVehicleService {
     private readonly bookingValidator: BookingValidator,
     private readonly bookingPricingService: BookingPricingService,
     private readonly bookingReservationService: BookingReservationService,
+    private readonly authService: AuthService,
     private readonly bookingMapper: BookingMapper
   ) {}
 
@@ -373,10 +375,9 @@ export class BookingVehicleService {
       booking,
       loggedInAccount
     );
-    // if the vehicle is linked to an account
-    if (vehicleToUpdate.account !== null) {
+    if (vehicleToUpdate.account !== null && !this.authService.hasAdminAccess(loggedInAccount)) {
       // we don't allow updating the vehicle information without account owner's consent,
-      throw new ForbiddenException('This vehicle is linked to an account.');
+      throw new ForbiddenException('This vehicle is linked to an account. Please contact an admin to assist.');
     }
     await this.prisma.bookingTripVehicle.update({
       where: { bookingId_tripId_vehicleId: { bookingId, tripId, vehicleId } },
